@@ -1,0 +1,70 @@
+﻿
+<div class="pt-5 mt-5">
+
+    <div class="container-fluid">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2 class="mb-4">Quản lý cửa hàng</h2>
+                <div class="card">
+                    <div class="card-body">
+                        <!-- Search and Filters -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="Tìm kiếm cửa hàng..." id="searchStore">
+                                    <button class="btn btn-outline-secondary" type="button">
+                                        <i class="bi bi-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select" id="sortTime">
+                                    <option value="" selected>Sắp xếp theo thời gian</option>
+                                    <option value="newest">Mới nhất</option>
+                                    <option value="oldest">Cũ nhất</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select" id="sortName">
+                                    <option value="" selected>Sắp xếp theo tên</option>
+                                    <option value="asc">A-Z</option>
+                                    <option value="desc">Z-A</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Stores Table -->
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Tên cửa hàng</th>
+                                        <th>Chủ sở hữu</th>
+                                        <th>Ngày đăng ký</th>
+                                        <th>Trạng thái</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>ST001</td>
+                                        <td>Nhà hàng ABC</td>
+                                        <td>Nguyễn Văn A</td>
+                                        <td>25/04/2025</td>
+                                        <td><span class="badge bg-success">Đang hoạt động</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary view-store-btn">
+                                                <i class="bi bi-eye"></i> Xem
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

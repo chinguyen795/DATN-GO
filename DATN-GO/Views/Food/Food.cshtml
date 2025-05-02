@@ -1,0 +1,445 @@
+﻿@{
+    ViewData["Title"] = "Food Page";
+}
+
+
+<!-- Filter bar -->
+<div class="container bg-danger rounded-3 mt-3 mb-5 py-3">
+    <div class="row">
+        <div class="col">
+            <select class="form-select bg-danger rounded-0 text-white fw-bold border-0 border-bottom" id="foodTypeFilter">
+                <option value="">
+                    <i class="bi bi-egg-fried"></i> Tất cả món ăn
+                </option>
+                <option value="mon-nuoc">Món nước</option>
+                <option value="mon-kho">Món khô</option>
+                <option value="do-an-vat">Đồ ăn vặt</option>
+                <option value="trang-mieng">Tráng miệng</option>
+            </select>
+        </div>
+        <div class="col">
+            <select class="form-select bg-danger rounded-0 text-white fw-bold border-0 border-bottom" id="sortFilter">
+                <option value="">
+                    <i class="bi bi-fire"></i> Sắp xếp theo
+                </option>
+                <option value="price-asc">Giá tăng dần</option>
+                <option value="price-desc">Giá giảm dần</option>
+                <option value="rating-desc">Đánh giá cao nhất</option>
+                <option value="popular">Phổ biến nhất</option>
+            </select>
+        </div>
+        <div class="col">
+            <select class="form-select bg-danger rounded-0 text-white fw-bold border-0 border-bottom" id="provinceFilter">
+                <option value="">
+                    <i class="bi bi-geo-alt"></i> Tất cả tỉnh/thành
+                </option>
+            </select>
+        </div>
+        <div class="col">
+            <select class="form-select bg-danger rounded-0 text-white fw-bold border-0 border-bottom" id="districtFilter" disabled>
+                <option value="">
+                    <i class="bi bi-geo"></i> Tất cả quận/huyện
+                </option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<div class="row container mx-auto">
+    <div class="col-lg-3">
+        <!-- Store Filter -->
+        <h5 class="mb-3">Lọc sản phẩm</h5>
+        <div class="mb-3">
+            <label for="searchInput" class="form-label">
+                <i class="bi bi-search"></i> Tìm kiếm
+            </label>
+            <input type="text" id="searchInput" class="form-control" placeholder="Nhập từ khóa" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Khoảng giá</label>
+            <div class="row g-2">
+                <div class="col-6">
+                    <input type="number" class="form-control" id="minPrice" placeholder="Tối thiểu">
+                </div>
+                <div class="col-6">
+                    <input type="number" class="form-control" id="maxPrice" placeholder="Tối đa">
+                </div>
+            </div>
+        </div>
+
+        <!-- Star Rating Filter -->
+        <div class="mb-3">
+            <label class="form-label">Đánh giá</label>
+            <div class="d-grid gap-2">
+                <button class="btn btn-outline-danger" type="button">
+                    5 <i class="bi bi-star-fill"></i>
+                </button>
+                <button class="btn btn-outline-danger" type="button">
+                    3 đến 4 <i class="bi bi-star-fill"></i>
+                </button>
+                <button class="btn btn-outline-danger" type="button">
+                    1 đến 2 <i class="bi bi-star-fill"></i>
+                </button>
+            </div>
+        </div>
+
+        <button class="btn btn-danger w-100">
+            <i class="bi bi-search"></i> Tìm kiếm
+        </button>
+        <!-- End of Store Filter -->
+    </div>
+
+    <div class="col-lg-9">
+        <div class="row">
+
+            <div class="col-lg-4 col-md-6 col-sm-6 mb-3">
+                <div class="card" data-food-type="mon-nuoc">
+                    <div class="card-header p-0 position-relative">
+                        <a asp-controller="Food" asp-action="DetailFood">
+                            <img src="https://i.pinimg.com/736x/75/f3/9f/75f39f3ba8033ee5201532c6d54dc7cd.jpg"
+                                 class="card-img-top img-food-custom" alt="Chicago Skyscrapers" />
+                        </a>
+                        <div class="btn btn-danger btn-sm position-absolute top-0 end-0 rounded">-20%</div>
+                    </div>
+
+                    <div class="card-body">
+                        <h4 class="card-title fw-bold text-truncate">
+                            Lẩu gà lá é é é é é é é é é é é </h5>
+                            <div class="price-food d-flex text-nowrap">
+                                <p class="fs-5 text-danger fw-bold">250.000 đ</p>
+                                <p class="text-decoration-line-through bg-secondary bg-gradient text-white mx-2 py-1 px-2">
+                                    300.000 đ
+                                </p>
+                            </div>
+                            <div class="row text-nowrap">
+                                <div class="col-3 col-md-3 d-flex">
+                                    <p>4.4</p>
+                                    <i class="bi bi-star-fill text-danger ms-1"></i>
+                                </div>
+                                <div class="col-3 col-md-3 d-flex ">
+                                    <p>10k </p>
+                                    <i class="text-muted bi bi-cart-check-fill ms-1"></i>
+                                </div>
+                                <div class="col-6 col-md-6 d-flex justify-content-end">
+                                    <i class="bi bi-geo-alt-fill text-muted me-1"></i>
+                                    <p>Cần Thơ</p>
+
+                                </div>
+                            </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 col-sm-6 mb-3">
+                <div class="card" data-food-type="mon-kho">
+                    <div class="card-header p-0 position-relative">
+                        <a href="./DetailsProduct.html">
+                            <img src="https://i.pinimg.com/736x/75/f3/9f/75f39f3ba8033ee5201532c6d54dc7cd.jpg"
+                                 class="card-img-top img-food-custom" alt="Chicago Skyscrapers" />
+                        </a>
+                        <div class="btn btn-danger btn-sm position-absolute top-0 end-0 rounded">-20%</div>
+                    </div>
+
+                    <div class="card-body">
+                        <h4 class="card-title fw-bold text-truncate">
+                            Lẩu gà lá é é é é é é é é é é é </h5>
+                            <div class="price-food d-flex text-nowrap">
+                                <p class="fs-5 text-danger fw-bold">250.000 đ</p>
+                                <p class="text-decoration-line-through bg-secondary bg-gradient text-white mx-2 py-1 px-2">
+                                    300.000 đ
+                                </p>
+                            </div>
+                            <div class="row text-nowrap">
+                                <div class="col-3 col-md-3 d-flex">
+                                    <p>4.4</p>
+                                    <i class="bi bi-star-fill text-danger ms-1"></i>
+                                </div>
+                                <div class="col-3 col-md-3 d-flex ">
+                                    <p>10k </p>
+                                    <i class="text-muted bi bi-cart-check-fill ms-1"></i>
+                                </div>
+                                <div class="col-6 col-md-6 d-flex justify-content-end">
+                                    <i class="bi bi-geo-alt-fill text-muted me-1"></i>
+                                    <p>Cần Thơ</p>
+
+                                </div>
+                            </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 col-sm-6 mb-3">
+                <div class="card" data-food-type="do-an-vat">
+                    <div class="card-header p-0 position-relative">
+                        <a href="">
+                            <img src="https://i.pinimg.com/736x/75/f3/9f/75f39f3ba8033ee5201532c6d54dc7cd.jpg"
+                                 class="card-img-top img-food-custom" alt="Chicago Skyscrapers" />
+                        </a>
+                        <div class="btn btn-danger btn-sm position-absolute top-0 end-0 rounded">-20%</div>
+                    </div>
+
+                    <div class="card-body">
+                        <h4 class="card-title fw-bold text-truncate">
+                            Lẩu gà lá é é é é é é é é é é é </h5>
+                            <div class="price-food d-flex text-nowrap">
+                                <p class="fs-5 text-danger fw-bold">250.000 đ</p>
+                                <p class="text-decoration-line-through bg-secondary bg-gradient text-white mx-2 py-1 px-2">
+                                    300.000 đ
+                                </p>
+                            </div>
+                            <div class="row text-nowrap">
+                                <div class="col-3 col-md-3 d-flex">
+                                    <p>4.4</p>
+                                    <i class="bi bi-star-fill text-danger ms-1"></i>
+                                </div>
+                                <div class="col-3 col-md-3 d-flex ">
+                                    <p>10k </p>
+                                    <i class="text-muted bi bi-cart-check-fill ms-1"></i>
+                                </div>
+                                <div class="col-6 col-md-6 d-flex justify-content-end">
+                                    <i class="bi bi-geo-alt-fill text-muted me-1"></i>
+                                    <p>Cần Thơ</p>
+
+                                </div>
+                            </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="col-lg-4 col-md-6 col-sm-6 mb-3">
+                <div class="card" data-food-type="mon-nuoc">
+                    <div class="card-header p-0 position-relative">
+                        <a href="">
+                            <img src="https://i.pinimg.com/736x/75/f3/9f/75f39f3ba8033ee5201532c6d54dc7cd.jpg"
+                                 class="card-img-top img-food-custom" alt="Chicago Skyscrapers" />
+                        </a>
+                        <div class="btn btn-danger btn-sm position-absolute top-0 end-0 rounded">-20%</div>
+                    </div>
+
+                    <div class="card-body">
+                        <h4 class="card-title fw-bold text-truncate">
+                            Lẩu gà lá é é é é é é é é é é é </h5>
+                            <div class="price-food d-flex text-nowrap">
+                                <p class="fs-5 text-danger fw-bold">250.000 đ</p>
+                                <p class="text-decoration-line-through bg-secondary bg-gradient text-white mx-2 py-1 px-2">
+                                    300.000 đ
+                                </p>
+                            </div>
+                            <div class="row text-nowrap">
+                                <div class="col-3 col-md-3 d-flex">
+                                    <p>4.4</p>
+                                    <i class="bi bi-star-fill text-danger ms-1"></i>
+                                </div>
+                                <div class="col-3 col-md-3 d-flex ">
+                                    <p>10k </p>
+                                    <i class="text-muted bi bi-cart-check-fill ms-1"></i>
+                                </div>
+                                <div class="col-6 col-md-6 d-flex justify-content-end">
+                                    <i class="bi bi-geo-alt-fill text-muted me-1"></i>
+                                    <p>Cần Thơ</p>
+
+                                </div>
+                            </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 col-sm-6 mb-3">
+                <div class="card" data-food-type="mon-kho">
+                    <div class="card-header p-0 position-relative">
+                        <a href="">
+                            <img src="https://i.pinimg.com/736x/75/f3/9f/75f39f3ba8033ee5201532c6d54dc7cd.jpg"
+                                 class="card-img-top img-food-custom" alt="Chicago Skyscrapers" />
+                        </a>
+                        <div class="btn btn-danger btn-sm position-absolute top-0 end-0 rounded">-20%</div>
+                    </div>
+
+                    <div class="card-body">
+                        <h4 class="card-title fw-bold text-truncate">
+                            Lẩu gà lá é é é é é é é é é é é </h5>
+                            <div class="price-food d-flex text-nowrap">
+                                <p class="fs-5 text-danger fw-bold">250.000 đ</p>
+                                <p class="text-decoration-line-through bg-secondary bg-gradient text-white mx-2 py-1 px-2">
+                                    300.000 đ
+                                </p>
+                            </div>
+                            <div class="row text-nowrap">
+                                <div class="col-3 col-md-3 d-flex">
+                                    <p>4.4</p>
+                                    <i class="bi bi-star-fill text-danger ms-1"></i>
+                                </div>
+                                <div class="col-3 col-md-3 d-flex ">
+                                    <p>10k </p>
+                                    <i class="text-muted bi bi-cart-check-fill ms-1"></i>
+                                </div>
+                                <div class="col-6 col-md-6 d-flex justify-content-end">
+                                    <i class="bi bi-geo-alt-fill text-muted me-1"></i>
+                                    <p>Cần Thơ</p>
+
+                                </div>
+                            </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 col-sm-6 mb-3">
+                <div class="card" data-food-type="do-an-vat">
+                    <div class="card-header p-0 position-relative">
+                        <a href="">
+                            <img src="https://i.pinimg.com/736x/75/f3/9f/75f39f3ba8033ee5201532c6d54dc7cd.jpg"
+                                 class="card-img-top img-food-custom" alt="Chicago Skyscrapers" />
+                        </a>
+                        <div class="btn btn-danger btn-sm position-absolute top-0 end-0 rounded">-20%</div>
+                    </div>
+
+                    <div class="card-body">
+                        <h4 class="card-title fw-bold text-truncate">
+                            Lẩu gà lá é é é é é é é é é é é </h5>
+                            <div class="price-food d-flex text-nowrap">
+                                <p class="fs-5 text-danger fw-bold">250.000 đ</p>
+                                <p class="text-decoration-line-through bg-secondary bg-gradient text-white mx-2 py-1 px-2">
+                                    300.000 đ
+                                </p>
+                            </div>
+                            <div class="row text-nowrap">
+                                <div class="col-3 col-md-3 d-flex">
+                                    <p>4.4</p>
+                                    <i class="bi bi-star-fill text-danger ms-1"></i>
+                                </div>
+                                <div class="col-3 col-md-3 d-flex ">
+                                    <p>10k </p>
+                                    <i class="text-muted bi bi-cart-check-fill ms-1"></i>
+                                </div>
+                                <div class="col-6 col-md-6 d-flex justify-content-end">
+                                    <i class="bi bi-geo-alt-fill text-muted me-1"></i>
+                                    <p>Cần Thơ</p>
+
+                                </div>
+                            </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="col-lg-4 col-md-6 col-sm-6 mb-3">
+                <div class="card" data-food-type="mon-nuoc">
+                    <div class="card-header p-0 position-relative">
+                        <a href="">
+                            <img src="https://i.pinimg.com/736x/75/f3/9f/75f39f3ba8033ee5201532c6d54dc7cd.jpg"
+                                 class="card-img-top img-food-custom" alt="Chicago Skyscrapers" />
+                        </a>
+                        <div class="btn btn-danger btn-sm position-absolute top-0 end-0 rounded">-20%</div>
+                    </div>
+
+                    <div class="card-body">
+                        <h4 class="card-title fw-bold text-truncate">
+                            Lẩu gà lá é é é é é é é é é é é </h5>
+                            <div class="price-food d-flex text-nowrap">
+                                <p class="fs-5 text-danger fw-bold">250.000 đ</p>
+                                <p class="text-decoration-line-through bg-secondary bg-gradient text-white mx-2 py-1 px-2">
+                                    300.000 đ
+                                </p>
+                            </div>
+                            <div class="row text-nowrap">
+                                <div class="col-3 col-md-3 d-flex">
+                                    <p>4.4</p>
+                                    <i class="bi bi-star-fill text-danger ms-1"></i>
+                                </div>
+                                <div class="col-3 col-md-3 d-flex ">
+                                    <p>10k </p>
+                                    <i class="text-muted bi bi-cart-check-fill ms-1"></i>
+                                </div>
+                                <div class="col-6 col-md-6 d-flex justify-content-end">
+                                    <i class="bi bi-geo-alt-fill text-muted me-1"></i>
+                                    <p>Cần Thơ</p>
+
+                                </div>
+                            </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 col-sm-6 mb-3">
+                <div class="card" data-food-type="mon-kho">
+                    <div class="card-header p-0 position-relative">
+                        <a href="">
+                            <img src="https://i.pinimg.com/736x/75/f3/9f/75f39f3ba8033ee5201532c6d54dc7cd.jpg"
+                                 class="card-img-top img-food-custom" alt="Chicago Skyscrapers" />
+                        </a>
+                        <div class="btn btn-danger btn-sm position-absolute top-0 end-0 rounded">-20%</div>
+                    </div>
+
+                    <div class="card-body">
+                        <h4 class="card-title fw-bold text-truncate">
+                            Lẩu gà lá é é é é é é é é é é é </h5>
+                            <div class="price-food d-flex text-nowrap">
+                                <p class="fs-5 text-danger fw-bold">250.000 đ</p>
+                                <p class="text-decoration-line-through bg-secondary bg-gradient text-white mx-2 py-1 px-2">
+                                    300.000 đ
+                                </p>
+                            </div>
+                            <div class="row text-nowrap">
+                                <div class="col-3 col-md-3 d-flex">
+                                    <p>4.4</p>
+                                    <i class="bi bi-star-fill text-danger ms-1"></i>
+                                </div>
+                                <div class="col-3 col-md-3 d-flex ">
+                                    <p>10k </p>
+                                    <i class="text-muted bi bi-cart-check-fill ms-1"></i>
+                                </div>
+                                <div class="col-6 col-md-6 d-flex justify-content-end">
+                                    <i class="bi bi-geo-alt-fill text-muted me-1"></i>
+                                    <p>Cần Thơ</p>
+
+                                </div>
+                            </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 col-sm-6 mb-3">
+                <div class="card" data-food-type="do-an-vat">
+                    <div class="card-header p-0 position-relative">
+                        <a href="">
+                            <img src="https://i.pinimg.com/736x/75/f3/9f/75f39f3ba8033ee5201532c6d54dc7cd.jpg"
+                                 class="card-img-top img-food-custom" alt="Chicago Skyscrapers" />
+                        </a>
+                        <div class="btn btn-danger btn-sm position-absolute top-0 end-0 rounded">-20%</div>
+                    </div>
+
+                    <div class="card-body">
+                        <h4 class="card-title fw-bold text-truncate">
+                            Lẩu gà lá é é é é é é é é é é é </h5>
+                            <div class="price-food d-flex text-nowrap">
+                                <p class="fs-5 text-danger fw-bold">250.000 đ</p>
+                                <p class="text-decoration-line-through bg-secondary bg-gradient text-white mx-2 py-1 px-2">
+                                    300.000 đ
+                                </p>
+                            </div>
+                            <div class="row text-nowrap">
+                                <div class="col-3 col-md-3 d-flex">
+                                    <p>4.4</p>
+                                    <i class="bi bi-star-fill text-danger ms-1"></i>
+                                </div>
+                                <div class="col-3 col-md-3 d-flex ">
+                                    <p>10k </p>
+                                    <i class="text-muted bi bi-cart-check-fill ms-1"></i>
+                                </div>
+                                <div class="col-6 col-md-6 d-flex justify-content-end">
+                                    <i class="bi bi-geo-alt-fill text-muted me-1"></i>
+                                    <p>Cần Thơ</p>
+
+                                </div>
+                            </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+</div>

@@ -1,0 +1,81 @@
+﻿
+<div class="container-fluid mt-5 pt-5">
+    <div class="card">
+        <div class="card-header bg-danger text-white">
+            <h4 class="mb-0">Quản lý người dùng</h4>
+        </div>
+        <div class="card-body">
+            <!-- Search and Filter Section -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Tìm kiếm người dùng...">
+                        <button class="btn btn-danger" type="button">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <select class="form-select w-auto d-inline-block">
+                        <option value="" selected>Sắp xếp theo</option>
+                        <option value="newest">Mới nhất</option>
+                        <option value="oldest">Cũ nhất</option>
+                        <option value="asc">Tên A-Z</option>
+                        <option value="desc">Tên Z-A</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Users Table -->
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-danger">
+                        <tr>
+                            <th>ID</th>
+                            <th>Ảnh</th>
+                            <th>Tên người dùng</th>
+                            <th>Email</th>
+                            <th>Số điện thoại</th>
+                            <th>Địa chỉ</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td><img src="https://via.placeholder.com/40" class="rounded-circle" alt="User"></td>
+                            <td>Nguyễn Văn A</td>
+                            <td>nguyenvana@email.com</td>
+                            <td>0123456789</td>
+                            <td>Hà Nội</td>
+                            <td><span class="badge bg-success">Hoạt động</span></td>
+                            <td>
+                                <button class="btn btn-danger btn-sm">
+                                    <i class="bi bi-trash me-2">Dừng hoạt động</i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td><img src="https://via.placeholder.com/40" class="rounded-circle" alt="User"></td>
+                            <td>Trần Thị B</td>
+                            <td>tranthib@email.com</td>
+                            <td>0987654321</td>
+                            <td>TP. Hồ Chí Minh</td>
+                            <td><span class="badge bg-secondary">Không hoạt động</span></td>
+                            <td>
+                                <button class="btn btn-danger btn-sm">
+                                    <i class="bi bi-trash me-2">Dừng hoạt động</i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+
+        </div>
+    </div>
+</div>

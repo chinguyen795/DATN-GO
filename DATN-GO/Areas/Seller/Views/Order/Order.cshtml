@@ -1,0 +1,226 @@
+﻿<div class="container-fluid">
+    <div class="row">
+        <!-- Orders Management Section -->
+        <div class="col-lg-8 p-4">
+            <div class="card shadow">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">Quản Lý Đơn Hàng</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Order Status Tabs -->
+                    <!-- Order Status Tabs -->
+                    <ul class="nav nav-tabs mb-4">
+                        <li class="nav-item">
+                            <a class="nav-link active text-dark" href="#">Tất cả</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-warning" href="#">Chờ xử lý</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-info" href="#">Chờ lấy hàng</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-success" href="#">Đang giao</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-primary" href="#">Đã hoàn thành</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-danger" href="#">Đã hủy</a>
+                        </li>
+                    </ul>
+
+                    <!-- Search and Filter Section -->
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="orderSearch" placeholder="Tìm kiếm theo mã đơn hàng...">
+                                <button class="btn btn-danger" type="button" id="searchBtn">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <select class="form-select" id="orderSort">
+                                <option value="">Sắp xếp theo thời gian</option>
+                                <option value="newest">Mới nhất</option>
+                                <option value="oldest">Cũ nhất</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- Tab Contents -->
+                    <div class="tab-content" id="orderTabsContent">
+                        <!-- Pending Orders -->
+                        <div class="tab-pane fade show active" id="pending" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Mã Đơn</th>
+                                            <th>Khách Hàng</th>
+                                            <th>Số Lượng</th>
+                                            <th>Tổng Tiền</th>
+                                            <th>Ngày Đặt</th>
+                                            <th>Thao Tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>#12345</td>
+                                            <td>Nguyễn Văn A</td>
+                                            <td>2 món</td>
+                                            <td>1.050.000đ</td>
+                                            <td>19/04/2025</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-success">Xác Nhận</button>
+                                                <button class="btn btn-sm btn-danger">Từ Chối</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Completed Orders -->
+                        <div class="tab-pane fade" id="completed" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Mã Đơn</th>
+                                            <th>Khách Hàng</th>
+                                            <th>Số Lượng</th>
+                                            <th>Tổng Tiền</th>
+                                            <th>Ngày Đặt</th>
+                                            <th>Trạng Thái</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>#12344</td>
+                                            <td>Trần Thị B</td>
+                                            <td>3 món</td>
+                                            <td>1.750.000đ</td>
+                                            <td>18/04/2025</td>
+                                            <td><span class="badge bg-success">Hoàn Thành</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Cancelled Orders -->
+                        <div class="tab-pane fade" id="cancelled" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Mã Đơn</th>
+                                            <th>Khách Hàng</th>
+                                            <th>Số Lượng</th>
+                                            <th>Tổng Tiền</th>
+                                            <th>Ngày Đặt</th>
+                                            <th>Lý Do Hủy</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>#12343</td>
+                                            <td>Lê Văn C</td>
+                                            <td>1 món</td>
+                                            <td>580.000đ</td>
+                                            <td>17/04/2025</td>
+                                            <td>Khách hàng hủy đơn</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sales Analysis Section -->
+        <div class="col-lg-4 p-4">
+            <div class="card shadow">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">Phân Tích Doanh Số</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Time Filter -->
+                    <div class="mb-4">
+                        <label class="form-label">Thời Gian</label>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-danger text-white">Từ</span>
+                                    <input type="text" class="form-control date-picker" id="startDate"
+                                           placeholder="DD/MM/YYYY">
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-danger text-white">Đến</span>
+                                    <input type="text" class="form-control date-picker" id="endDate"
+                                           placeholder="DD/MM/YYYY">
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <select class="form-select" id="quickDateSelect">
+                                    <option value="">Chọn nhanh</option>
+                                    <option value="today">Hôm Nay</option>
+                                    <option value="yesterday">Hôm Qua</option>
+                                    <option value="thisWeek">Tuần Này</option>
+                                    <option value="lastWeek">Tuần Trước</option>
+                                    <option value="thisMonth">Tháng Này</option>
+                                    <option value="lastMonth">Tháng Trước</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Cards -->
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="card bg-danger text-white">
+                                <div class="card-body">
+                                    <h6 class="card-title">Tổng Doanh Thu</h6>
+                                    <h3 class="card-text">28.750.000đ</h3>
+                                    <small>+12% so với kỳ trước</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-danger text-white">
+                                <div class="card-body">
+                                    <h6 class="card-title">Đơn Hàng</h6>
+                                    <h3 class="card-text">45</h3>
+                                    <small>+5% so với kỳ trước</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-danger text-white">
+                                <div class="card-body">
+                                    <h6 class="card-title">Lượt Xem</h6>
+                                    <h3 class="card-text">1.567</h3>
+                                    <small>+8% so với kỳ trước</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-danger text-white">
+                                <div class="card-body">
+                                    <h6 class="card-title">Tỷ Lệ Chuyển Đổi</h6>
+                                    <h3 class="card-text">2,87%</h3>
+                                    <small>+0,5% so với kỳ trước</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

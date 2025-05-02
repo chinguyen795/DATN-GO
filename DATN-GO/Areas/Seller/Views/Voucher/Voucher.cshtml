@@ -1,0 +1,98 @@
+﻿<div class="container-fluid py-4">
+    <!-- Add Voucher Button -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0">Danh Sách Voucher</h4>
+        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#addVoucherModal">
+            <i class="bi-plus-lg me-2"></i>Thêm Voucher Mới
+        </button>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-3">Bộ Lọc</h5>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Thời Gian Bổ Sung</label>
+                    <input type="date" class="form-control">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Giá Giảm</label>
+                    <input type="number" class="form-control" placeholder="Nhập số tiền">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Sắp xếp theo</label>
+                    <select class="form-select">
+                        <option value="">Chọn sắp xếp</option>
+                        <option value="newest">Mới nhất</option>
+                        <option value="oldest">Cũ nhất</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button class="btn btn-danger w-100">Tìm Kiếm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vouchers Section -->
+    <div class="row g-4">
+        <!-- Voucher Item 1 -->
+        <div class="col-12 col-md-6">
+            <div class="voucher-item">
+                <div class="border rounded p-3 d-flex align-items-center justify-content-between bg-light" style="min-width: 320px;">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="text-danger" style="font-size: 2rem;">
+                            <i class="bi-ticket-perforated-fill"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">Giảm 20K</h6>
+                            <p class="text-muted small mb-0">Đơn tối thiểu 150K</p>
+                            <small class="text-danger">Hết hạn: 30/04/2025</small>
+                            <div class="mt-1">
+                                <span class="badge bg-success">Còn lại: 50</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editVoucherModal">
+                            <i class="bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm">
+                            <i class="bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Voucher Item 2 -->
+        <div class="col-12 col-md-6">
+            <div class="voucher-item">
+                <div class="border rounded p-3 d-flex align-items-center justify-content-between bg-light" style="min-width: 320px;">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="text-danger" style="font-size: 2rem;">
+                            <i class="bi-ticket-perforated-fill"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">Giảm 50K</h6>
+                            <p class="text-muted small mb-0">Đơn tối thiểu 300K</p>
+                            <small class="text-danger">Hết hạn: 30/04/2025</small>
+                            <div class="mt-1">
+                                <span class="badge bg-warning">Còn lại: 10</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editVoucherModal">
+                            <i class="bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm">
+                            <i class="bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

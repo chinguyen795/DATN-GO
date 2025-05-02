@@ -1,0 +1,187 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="container-fluid p-0">
+    <!-- Store Information Card -->
+    <div class="store-header position-relative mb-4">
+        <!-- Cover Image Upload -->
+        <div class="cover-upload rounded-top d-flex flex-column align-items-center justify-content-center position-relative" onclick="document.getElementById('coverInput').click()">
+            <div id="coverPreview" class="w-100 h-100 position-relative d-flex align-items-center justify-content-center">
+                <img src="" class="preview-image rounded-top d-none w-100 h-100" alt="Cover preview">
+                <div class="upload-prompt position-absolute top-50 start-50 translate-middle text-center">
+                    <i class="bi bi-image text-muted fs-1"></i>
+                    <p class="text-muted mb-0">Click để tải ảnh bìa</p>
+                </div>
+            </div>
+            <input type="file" id="coverInput" accept="image/*" class="d-none" onchange="previewImage(this, 'coverPreview')">
+        </div>
+
+        <!-- Store Info Overlay -->
+        <div class="store-info-overlay position-relative mx-auto px-0 py-2 ">
+            <div class="container">
+                <!-- Avatar Upload -->
+                <div class="d-flex justify-content-center mb-5">
+                    <div class="avatar-upload position-relative rounded-circle border border-3 border-white bg-light d-flex flex-column align-items-center justify-content-center" onclick="document.getElementById('avatarInput').click()">
+                        <div id="avatarPreview" class="w-100 h-100 position-relative">
+                            <img src="" class="preview-image rounded-circle d-none w-100 h-100" alt="Avatar preview">
+                            <div class="upload-prompt position-absolute top-50 start-50 translate-middle text-center w-100">
+                                <i class="bi bi-person text-muted fs-1"></i>
+                                <p class="text-muted mb-0 small">Click để tải avatar</p>
+                            </div>
+                        </div>
+                        <input type="file" id="avatarInput" accept="image/*" class="d-none" onchange="previewImage(this, 'avatarPreview')">
+                    </div>
+                </div>
+
+                <!-- Store Info -->
+                <div class="bg-white shadow-sm rounded-3 mt-5 p-4">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="d-flex justify-content-start align-items-center mb-3">
+                                <h2 class="mb-0">Store Name</h2>
+                                <button class="btn btn-outline-danger mx-2 text-nowrap" data-bs-toggle="modal" data-bs-target="#editStoreModal">
+                                    <i class="bi bi-pencil me-2"></i>Chỉnh sửa thông tin
+                                </button>
+                            </div>
+                            <div class="store-info">
+                                <p class="text-secondary mb-2">
+                                    <i class="bi bi-geo-alt me-2"></i>
+                                    123 Street Name, District, City
+                                </p>
+                                <p class="text-secondary mb-2">
+                                    <i class="bi bi-telephone me-2"></i>
+                                    +84 123 456 789
+                                </p>
+                                <p class="text-secondary mb-2">
+                                    <i class="bi bi-envelope me-2"></i>
+                                    store@email.com
+                                </p>
+                                <p class="text-secondary mb-2">
+                                    <i class="bi bi-clock me-2"></i>
+                                    Open Hours: 8:00 AM - 10:00 PM
+                                </p>
+                            </div>
+                            <a class="btn btn-info text-white text-nowrap">
+                                <i class="bi bi-tv m-2"></i>Xem cửa hàng
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <h5 class="card-title">Quick Stats</h5>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Rating</span>
+                                        <span class="text-danger">
+                                            4.5 <i class="bi bi-star-fill"></i>
+                                        </span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Total Orders</span>
+                                        <span class="text-danger">1,234</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span>Products</span>
+                                        <span class="text-danger">56</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Edit Store Modal -->
+<div class="modal fade" id="editStoreModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Chỉnh sửa thông tin cửa hàng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="storeInfoForm">
+                    <div class="mb-3">
+                        <label class="form-label">Tên cửa hàng</label>
+                        <input type="text" class="form-control" value="Store Name">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Địa chỉ</label>
+                        <input type="text" class="form-control" value="123 Street Name, District, City">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Số điện thoại</label>
+                        <input type="tel" class="form-control" value="+84 123 456 789">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" value="store@email.com">
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <label class="form-label">Giờ mở cửa</label>
+                            <input type="time" class="form-control" value="08:00">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Giờ đóng cửa</label>
+                            <input type="time" class="form-control" value="22:00">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary">Lưu thay đổi</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Avatar Modal -->
+<div class="modal fade" id="editAvatarModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Change Store Avatar</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="mb-3">
+                    <img src="../image/logo.png" class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;" alt="Store Avatar">
+                    <input type="file" class="form-control" accept="image/*">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary">Upload</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Cover Modal -->
+<div class="modal fade" id="editCoverModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Change Cover Photo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <img src="https://via.placeholder.com/1200x400" class="img-fluid mb-3 rounded" alt="Cover Preview">
+                    <input type="file" class="form-control" accept="image/*">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary">Upload</button>
+            </div>
+        </div>
+    </div>
+</div>
+

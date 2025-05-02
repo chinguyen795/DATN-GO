@@ -1,0 +1,169 @@
+﻿<div class="pt-5 mt-5">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Store Information -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="position-relative">
+                        <!-- Cover Photo -->
+                        <img src="https://via.placeholder.com/800x200" class="card-img-top" alt="Store Cover" style="height: 200px; object-fit: cover;">
+                        <!-- Profile Photo -->
+                        <div class="position-absolute start-50 translate-middle-x" style="bottom: -50px;">
+                            <img src="https://via.placeholder.com/100" class="rounded-circle border border-3 border-white" alt="Store Profile" width="100" height="100" style="object-fit: cover;">
+                        </div>
+                    </div>
+                    <div class="card-body pt-5 mt-3">
+                        <div class="text-center mb-4">
+                            <h4 class="card-title">Tên cửa hàng</h4>
+                            <div class="badge bg-success mb-2">Đang hoạt động</div>
+                        </div>
+
+                        <div class="store-details">
+                            <div class="mb-3">
+                                <h6 class="text-muted">Thông tin pháp lý</h6>
+                                <p><i class="bi bi-file-text me-2"></i>Mã số thuế: 0123456789</p>
+                                <p><i class="bi bi-person-vcard me-2"></i>CCCD/CMND: 123456789012</p>
+                            </div>
+
+                            <div class="mb-3">
+                                <h6 class="text-muted">Thông tin liên hệ</h6>
+                                <p><i class="bi bi-person me-2"></i>Chủ cửa hàng: Nguyễn Văn A</p>
+                                <p><i class="bi bi-telephone me-2"></i>Số điện thoại: 0123456789</p>
+                                <p><i class="bi bi-envelope me-2"></i>Email: store@example.com</p>
+                            </div>
+
+                            <div class="mb-3">
+                                <h6 class="text-muted">Địa chỉ</h6>
+                                <p><i class="bi bi-geo-alt me-2"></i>123 Đường ABC, Quận XYZ, TP.HCM</p>
+                            </div>
+
+                            <div class="mb-3">
+                                <h6 class="text-muted">Thống kê</h6>
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <div class="border rounded p-2 text-center">
+                                            <h5>4.5/5</h5>
+                                            <small class="text-muted">Đánh giá</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="border rounded p-2 text-center">
+                                            <h5>1.2k</h5>
+                                            <small class="text-muted">Đơn hàng</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-grid">
+                                <button class="btn btn-outline-danger m-1">
+                                    <i class="bi bi-flag me-2"></i>Cảnh báo
+                                </button>
+                            </div>
+
+                            <div class="d-grid">
+                                <button class="btn btn-danger m-1">
+                                    <i class="bi bi-exclamation-octagon me-2"></i>Dừng hoạt động
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products List -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="card-title mb-0">Danh sách sản phẩm</h5>
+                            <div class="d-flex gap-2">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="Tìm kiếm sản phẩm...">
+                                    <button class="btn btn-outline-secondary" type="button">
+                                        <i class="bi bi-search"></i>
+                                    </button>
+                                </div>
+                                <select class="form-select" style="width: auto;">
+                                    <option selected>Sắp xếp theo</option>
+                                    <option value="1">Giá tăng dần</option>
+                                    <option value="2">Giá giảm dần</option>
+                                    <option value="3">Mới nhất</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Sản phẩm</th>
+                                        <th>Danh mục</th>
+                                        <th>Giá</th>
+                                        <th>Tồn kho</th>
+                                        <th>Trạng thái</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="position-relative" style="width: 50px; height: 50px;">
+                                                    <img src="https://via.placeholder.com/50" class="rounded" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+                                                </div>
+                                                <div class="ms-2">
+                                                    <h6 class="mb-0">Tên sản phẩm 1</h6>
+                                                    <small class="text-muted">#SP001</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>Thực phẩm</td>
+                                        <td>150.000đ</td>
+                                        <td>50</td>
+                                        <td>
+                                            <span class="badge bg-success">Đang bán</span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-danger">
+                                                <i class="bi bi-x-circle me-1"></i>
+                                                Dừng bán
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="position-relative" style="width: 50px; height: 50px;">
+                                                    <img src="https://via.placeholder.com/50" class="rounded" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+                                                </div>
+                                                <div class="ms-2">
+                                                    <h6 class="mb-0">Tên sản phẩm 2</h6>
+                                                    <small class="text-muted">#SP002</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>Đồ uống</td>
+                                        <td>75.000đ</td>
+                                        <td>0</td>
+                                        <td>
+                                            <span class="badge bg-secondary">Đã ẩn</span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-danger">
+                                                <i class="bi bi-x-circle me-1"></i>
+                                                Dừng bán
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

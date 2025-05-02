@@ -1,0 +1,60 @@
+﻿@{
+    ViewData["Title"] = "Địa chỉ  Page";
+}
+
+<div class="container py-5">
+    <!-- Header Section -->
+    <div class="bg-danger text-white p-3 rounded-top d-flex align-items-center mb-4">
+        <h5 class="mb-0">Địa chỉ của tôi</h5>
+    </div>
+
+    <!-- Search Bar and Add Button Row -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="input-group">
+                <input type="text" class="form-control border-only-bottom" placeholder="Tìm kiếm địa chỉ...">
+                <button class="btn btn-outline-danger" type="button">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </div>
+        <div class="col-md-6 d-flex justify-content-md-end mt-3 mt-md-0">
+            <button class="btn btn-danger">
+                <i class="bi bi-plus-lg me-1"></i>Thêm địa chỉ mới
+            </button>
+        </div>
+    </div>
+
+    <!-- Address Table -->
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col" class="text-center">#</th>
+                    <th scope="col">Thông tin nhận hàng</th>
+                    <th scope="col">Địa chỉ</th>
+                    <th scope="col" class="text-center">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <tr>
+                    <td class="text-center">2</td>
+                    <td>
+                        <strong>Nguyễn Văn A</strong><br>
+                        <span class="text-muted">0987654321</span>
+                    </td>
+                    <td>456 Đường DEF, Phường UVW, Quận 2, TP. Hồ Chí Minh</td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-outline-warning m-2">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-trash3"></i>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

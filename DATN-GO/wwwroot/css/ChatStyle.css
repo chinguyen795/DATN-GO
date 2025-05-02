@@ -1,0 +1,64 @@
+
+
+.seller-list {
+    height: calc(100vh - 280px);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.chat-messages {
+    height: calc(100vh - 350px) !important;
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+}
+
+.chat-input-area {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    padding: 1rem;
+    border-top: 1px solid #dee2e6;
+}
+
+/* Custom scrollbar styling */
+.seller-list::-webkit-scrollbar,
+.chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.seller-list::-webkit-scrollbar-thumb,
+.chat-messages::-webkit-scrollbar-thumb {
+    background-color: #dc3545;
+    border-radius: 3px;
+}
+
+.seller-list::-webkit-scrollbar-track,
+.chat-messages::-webkit-scrollbar-track {
+    background-color: #f8f9fa;
+}
+
+.chat-message-receive {
+    background-color: #f8f9fa;
+    border-radius: 15px;
+    padding: 10px 15px;
+    max-width: 75%;
+    margin-bottom: 10px;
+}
+
+.chat-message-send {
+    background-color: #dc3545;
+    color: white;
+    border-radius: 15px;
+    padding: 10px 15px;
+    max-width: 75%;
+    margin-bottom: 10px;
+    margin-left: auto;
+}
+
+.chat-timestamp {
+    font-size: 0.75rem;
+    margin-top: 5px;
+}

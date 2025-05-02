@@ -1,0 +1,229 @@
+﻿/* Essential layout styles */
+body {
+    overflow-x: hidden;
+}
+
+.sidebar {
+    width: 280px;
+    min-height: 100vh;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateX(0);
+    z-index: 1000;
+}
+
+    .sidebar.collapsed {
+        transform: translateX(-280px);
+    }
+
+    .sidebar .nav-link {
+        transition: all 0.2s ease;
+    }
+
+        .sidebar .nav-link:hover:not(.active) {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+.main-content {
+    margin-left: 280px;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    width: calc(100% - 280px);
+}
+
+    .main-content.expanded {
+        margin-left: 0;
+        width: 100%;
+    }
+
+        .main-content.expanded header {
+            left: 0;
+        }
+
+    /* Header styles */
+    .main-content header {
+        top: 0;
+        right: 0;
+        left: 280px;
+        z-index: 999;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .main-content main {
+        padding-top: 60px;
+    }
+
+
+.store-info-overlay {
+    margin-top: -100px;
+    z-index: 2;
+    max-width: 1200px;
+}
+
+
+.cover-upload {
+    height: 500px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 2px dashed #dee2e6;
+}
+
+    .cover-upload:hover {
+        border-color: #dc3545;
+    }
+
+    .cover-upload .preview-image {
+        object-fit: cover;
+        object-position: center;
+        transition: transform 0.3s ease;
+    }
+
+    .cover-upload:hover .preview-image:not(.d-none) {
+        transform: scale(1.02);
+    }
+
+.avatar-upload {
+    width: 150px;
+    height: 150px;
+    margin-top: -75px;
+    cursor: pointer;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.preview-image {
+    object-fit: cover;
+}
+
+.upload-prompt {
+    transform: translate(-50%, -50%);
+    z-index: 1;
+}
+
+/* Product Management Styles */
+
+.card-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Category page specific styles */
+.card {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+
+.table-hover tbody tr:hover {
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+.list-group-item:hover {
+    background-color: rgba(220, 53, 69, 0.05);
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: rgba(220, 53, 69, 0.5);
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+}
+
+/* Responsive essentials */
+@media (max-width: 768px) {
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+    }
+
+        .main-content header {
+            left: 0;
+        }
+
+    .sidebar {
+        transform: translateX(-280px);
+    }
+
+        .sidebar.show {
+            transform: translateX(0);
+        }
+
+    .store-cover {
+        height: 200px;
+        border-radius: 0;
+    }
+
+    .store-avatar img {
+        width: 140px;
+        height: 140px;
+    }
+
+    .store-info-overlay {
+        margin-top: -70px;
+        padding: 0 0.5rem;
+    }
+
+    .store-avatar {
+        margin-bottom: -40px;
+        padding-left: 1rem;
+    }
+
+    .store-details {
+        border-radius: 0.5rem;
+    }
+
+    .cover-upload {
+        height: 200px;
+    }
+
+    .col-md-4 {
+        margin-bottom: 1.5rem;
+    }
+
+    .card {
+        margin-bottom: 1rem;
+    }
+
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+}
+
+/* Animation for delete/edit actions */
+.btn-outline-primary:hover,
+.btn-outline-danger:hover {
+    transform: scale(1.1);
+    transition: transform 0.2s ease;
+}
+
+/* Category list styling */
+.list-group-item {
+    border-left: 4px solid transparent;
+    transition: all 0.3s ease;
+}
+
+    .list-group-item:hover {
+        border-left-color: #dc3545;
+    }
+
+/* Chat styles */
+.chat-container {
+    height: calc(100vh - 100px);
+    overflow: hidden;
+    position: relative;
+}
+
+
+.product-img-container {
+    position: relative;
+    padding-top: 100%; /* 1:1 Aspect Ratio */
+    overflow: hidden;
+}
+
+    .product-img-container img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }

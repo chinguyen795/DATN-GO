@@ -1,0 +1,260 @@
+﻿@{
+    ViewData["Title"] = "Oder Page";
+}
+
+
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Left Sidebar -->
+        <div class="col-lg-3 col-xl-2 d-none d-lg-block sidebar bg-white border-end">
+            <div class="position-sticky" style="top: 1rem;">
+                <div class="p-3 border-bottom">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="https://i.pinimg.com/736x/f0/cd/c4/f0cdc47ddb7f9dd5e86c3e7915c8b337.jpg" alt="Profile" class="rounded-circle me-2" style="width: 45px; height: 45px;">
+                        <div>
+                            <h6 class="mb-0">Nguyễn Văn A</h6>
+                            <small class="text-muted">nguyenvana</small>
+                        </div>
+                    </div>
+                </div>
+
+                <ul class="nav flex-column p-3">
+                    <li class="nav-item mb-2">
+                        <a asp-controller="Profile" asp-action="Profile" class="nav-link active text-danger">
+                            <i class="bi bi-person-circle me-2"></i>
+                            Thông tin cá nhân
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a asp-controller="Oder" asp-action="Oder" class="nav-link text-dark">
+                            <i class="bi bi-box-seam me-2"></i>
+                            Đơn hàng của tôi
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a asp-controller="Address" asp-action="Address" class="nav-link text-dark">
+                            <i class="bi bi-geo-alt me-2"></i>
+                            Địa chỉ
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a asp-controller="Voucher" asp-action="Voucher" class="nav-link text-dark">
+                            <i class="bi bi-ticket-perforated me-2"></i>
+                            Voucher
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a asp-controller="" asp-action="" class="nav-link text-dark">
+                            <i class="bi bi-bell me-2"></i>
+                            Thông báo
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a asp-controller="" asp-action="" class="nav-link text-dark">
+                            <i class="bi bi-box-arrow-right me-2"></i>
+                            Đăng xuất
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-lg-9 col-xl-10 p-4">
+            <div class="bg-white p-4 rounded shadow-sm border border-danger">
+                <h4 class="mb-4 text-danger">Đơn hàng của tôi</h4>
+
+                <!-- Order Status Tabs -->
+                <ul class="nav nav-tabs mb-4">
+                    <li class="nav-item">
+                        <a class="nav-link active text-dark" href="#">Tất cả</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-warning" href="#">Chờ xác nhận</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-info" href="#">Chờ lấy hàng</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-success" href="#">Đang giao</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-primary" href="#">Đã giao</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-danger" href="#">Đã hủy</a>
+                    </li>
+                </ul>
+
+                <!-- Search and Filter Section -->
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3 mb-md-0">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="orderSearch" placeholder="Tìm kiếm theo mã đơn hàng...">
+                            <button class="btn btn-danger" type="button" id="searchBtn">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <select class="form-select" id="orderSort">
+                            <option value="">Sắp xếp theo thời gian</option>
+                            <option value="newest">Mới nhất</option>
+                            <option value="oldest">Cũ nhất</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Orders List -->
+                <div class="orders-list">
+                    <!-- Order with Pending Delivery -->
+                    <div class="order-item border rounded p-3 mb-3" data-order-id="123457" data-date="2025-04-24">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h6 class="mb-0">Mã đơn hàng: #123457</h6>
+                                <small class="text-muted">24/04/2025 16:45</small>
+                            </div>
+                            <span class="badge bg-info">Chờ lấy hàng</span>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-2">
+                                <img src="path_to_product_image" alt="Product" class="img-fluid rounded">
+                            </div>
+                            <div class="col-md-7">
+                                <h6>Combo Bánh mì gà + Cà phê sữa</h6>
+                                <p class="text-muted mb-0">Số lượng: 2</p>
+                            </div>
+                            <div class="col-md-3 text-end">
+                                <h6 class="text-danger">75.000 ₫</h6>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <p class="mb-0">Tổng tiền: <span class="text-danger fw-bold">150.000 ₫</span></p>
+                            <div>
+                                <button class="btn btn-danger btn-sm">Chi tiết</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order 1 -->
+                    <div class="order-item border rounded p-3 mb-3" data-order-id="123456" data-date="2025-04-24">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h6 class="mb-0">Mã đơn hàng: #123456</h6>
+                                <small class="text-muted">24/04/2025 15:30</small>
+                            </div>
+                            <span class="badge bg-warning">Chờ xác nhận</span>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-2">
+                                <img src="path_to_product_image" alt="Product" class="img-fluid rounded">
+                            </div>
+                            <div class="col-md-7">
+                                <h6>Cà phê rang xay nguyên chất</h6>
+                                <p class="text-muted mb-0">Số lượng: 2</p>
+                            </div>
+                            <div class="col-md-3 text-end">
+                                <h6 class="text-danger">199.000 ₫</h6>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <p class="mb-0">Tổng tiền: <span class="text-danger fw-bold">398.000 ₫</span></p>
+                            <div>
+                                <button class="btn btn-outline-danger btn-sm">Hủy đơn</button>
+                                <button class="btn btn-danger btn-sm">Chi tiết</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order 2 -->
+                    <div class="order-item border rounded p-3 mb-3" data-order-id="123455" data-date="2025-04-23">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h6 class="mb-0">Mã đơn hàng: #123455</h6>
+                                <small class="text-muted">23/04/2025 09:15</small>
+                            </div>
+                            <span class="badge bg-success">Đang giao</span>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-2">
+                                <img src="path_to_product_image" alt="Product" class="img-fluid rounded">
+                            </div>
+                            <div class="col-md-7">
+                                <h6>Trà sữa trân châu đường đen</h6>
+                                <p class="text-muted mb-0">Số lượng: 3</p>
+                            </div>
+                            <div class="col-md-3 text-end">
+                                <h6 class="text-danger">45.000 ₫</h6>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <p class="mb-0">Tổng tiền: <span class="text-danger fw-bold">135.000 ₫</span></p>
+                            <div>
+                                <button class="btn btn-danger btn-sm">Chi tiết</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order 3 -->
+                    <div class="order-item border rounded p-3 mb-3" data-order-id="123454" data-date="2025-04-22">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h6 class="mb-0">Mã đơn hàng: #123454</h6>
+                                <small class="text-muted">22/04/2025 14:45</small>
+                            </div>
+                            <span class="badge bg-primary">Đã giao</span>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-2">
+                                <img src="path_to_product_image" alt="Product" class="img-fluid rounded">
+                            </div>
+                            <div class="col-md-7">
+                                <h6>Bánh mì thịt nướng</h6>
+                                <p class="text-muted mb-0">Số lượng: 1</p>
+                            </div>
+                            <div class="col-md-3 text-end">
+                                <h6 class="text-danger">25.000 ₫</h6>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <p class="mb-0">Tổng tiền: <span class="text-danger fw-bold">25.000 ₫</span></p>
+                            <div>
+                                <button class="btn btn-danger btn-sm">Chi tiết</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order 4 (Canceled) -->
+                    <div class="order-item border rounded p-3 mb-3" data-order-id="123453" data-date="2025-04-21">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h6 class="mb-0">Mã đơn hàng: #123453</h6>
+                                <small class="text-muted">21/04/2025 10:20</small>
+                            </div>
+                            <span class="badge bg-danger">Đã hủy</span>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-2">
+                                <img src="path_to_product_image" alt="Product" class="img-fluid rounded">
+                            </div>
+                            <div class="col-md-7">
+                                <h6>Cà phê sữa đá</h6>
+                                <p class="text-muted mb-0">Số lượng: 4</p>
+                            </div>
+                            <div class="col-md-3 text-end">
+                                <h6 class="text-danger">29.000 ₫</h6>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <p class="mb-0">Tổng tiền: <span class="text-danger fw-bold">116.000 ₫</span></p>
+                            <div>
+                                <button class="btn btn-danger btn-sm">Chi tiết</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

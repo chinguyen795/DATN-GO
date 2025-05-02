@@ -1,0 +1,146 @@
+﻿@{
+    ViewData["Title"] = "SalesRegistration Page";
+}
+
+
+
+<div class="container py-5 bg-light">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="bg-white rounded shadow-sm">
+                <!-- Cover Image Upload -->
+                <div class="cover-upload rounded-top d-flex flex-column align-items-center justify-content-center" onclick="document.getElementById('coverInput').click()">
+                    <div id="coverPreview" class="w-100 h-100 position-relative">
+                        <img src="" class="preview-image rounded-top d-none" alt="Cover preview">
+                        <div class="upload-prompt position-absolute top-50 start-50 translate-middle text-center">
+                            <i class="bi bi-image text-muted fs-1"></i>
+                            <p class="text-muted mb-0">Click để tải ảnh bìa</p>
+                        </div>
+                    </div>
+                    <input type="file" id="coverInput" accept="image/*" class="d-none" onchange="previewImage(this, 'coverPreview')">
+                </div>
+
+                <!-- Avatar Upload -->
+                <div class="d-flex justify-content-center">
+                    <div class="avatar-upload rounded-circle border border-3 border-white bg-light d-flex flex-column align-items-center justify-content-center" onclick="document.getElementById('avatarInput').click()">
+                        <div id="avatarPreview" class="w-100 h-100 position-relative">
+                            <img src="" class="preview-image rounded-circle d-none" alt="Avatar preview">
+                            <div class="upload-prompt position-absolute top-50 start-50 translate-middle text-center">
+                                <i class="bi bi-person text-muted fs-1"></i>
+                                <p class="text-muted mb-0 small">Click để tải avatar</p>
+                            </div>
+                        </div>
+                        <input type="file" id="avatarInput" accept="image/*" class="d-none" onchange="previewImage(this, 'avatarPreview')">
+                    </div>
+                </div>
+
+                <!-- Form Content -->
+                <div class="p-4">
+                    <form>
+                        <div class="mb-4">
+                            <label class="form-label">Tên cửa hàng</label>
+                            <input type="text" class="form-control border-only-bottom" placeholder="Nhập tên cửa hàng">
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Người đại diện</label>
+                            <input type="text" class="form-control border-only-bottom" placeholder="Nhập tên người đại diện">
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Mã số thuế</label>
+                            <input type="text" class="form-control border-only-bottom" placeholder="Nhập mã số thuế">
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Thông tin tài khoản ngân hàng</label>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control border-only-bottom" placeholder="Số tài khoản">
+                                </div>
+                                <div class="col-md-6">
+                                    <select class="form-select border-only-bottom">
+                                        <option value="">Chọn ngân hàng</option>
+                                        <option value="BIDV">BIDV - Ngân hàng TMCP Đầu tư và Phát triển Việt Nam</option>
+                                        <option value="Vietcombank">Vietcombank - Ngân hàng TMCP Ngoại thương Việt Nam</option>
+                                        <option value="Agribank">Agribank - Ngân hàng Nông nghiệp và Phát triển Nông thôn Việt Nam</option>
+                                        <option value="VietinBank">VietinBank - Ngân hàng TMCP Công Thương Việt Nam</option>
+                                        <option value="Techcombank">Techcombank - Ngân hàng TMCP Kỹ Thương Việt Nam</option>
+                                        <option value="ACB">ACB - Ngân hàng TMCP Á Châu</option>
+                                        <option value="MBBank">MB Bank - Ngân hàng TMCP Quân đội</option>
+                                        <option value="TPBank">TPBank - Ngân hàng TMCP Tiên Phong</option>
+                                        <option value="VPBank">VPBank - Ngân hàng TMCP Việt Nam Thịnh Vượng</option>
+                                        <option value="SacomBank">Sacombank - Ngân hàng TMCP Sài Gòn Thương Tín</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <input type="text" class="form-control border-only-bottom" placeholder="Tên chủ tài khoản">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Ảnh CCCD/CMND</label>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="id-front-upload border rounded p-3 text-center" onclick="document.getElementById('idFrontInput').click()">
+                                        <div id="idFrontPreview" class="position-relative" style="min-height: 120px;">
+                                            <img src="" class="preview-image img-fluid d-none" alt="ID front preview">
+                                            <div class="upload-prompt">
+                                                <i class="bi bi-credit-card-2-front text-muted fs-1"></i>
+                                                <p class="text-muted mb-0">Mặt trước CCCD/CMND</p>
+                                            </div>
+                                        </div>
+                                        <input type="file" id="idFrontInput" accept="image/*" class="d-none" onchange="previewImage(this, 'idFrontPreview')">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="id-back-upload border rounded p-3 text-center" onclick="document.getElementById('idBackInput').click()">
+                                        <div id="idBackPreview" class="position-relative" style="min-height: 120px;">
+                                            <img src="" class="preview-image img-fluid d-none" alt="ID back preview">
+                                            <div class="upload-prompt">
+                                                <i class="bi bi-credit-card-2-back text-muted fs-1"></i>
+                                                <p class="text-muted mb-0">Mặt sau CCCD/CMND</p>
+                                            </div>
+                                        </div>
+                                        <input type="file" id="idBackInput" accept="image/*" class="d-none" onchange="previewImage(this, 'idBackPreview')">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Địa chỉ</label>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <select class="form-select border-only-bottom" id="province">
+                                        <option value="">Chọn tỉnh/thành</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <select class="form-select border-only-bottom" id="district" disabled>
+                                        <option value="">Chọn quận/huyện</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <select class="form-select border-only-bottom" id="commune" disabled>
+                                        <option value="">Chọn phường/xã</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <input type="text" class="form-control border-only-bottom" placeholder="Số nhà, tên đường">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-shop me-2"></i>Đăng ký
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

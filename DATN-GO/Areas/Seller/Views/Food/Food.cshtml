@@ -1,0 +1,168 @@
+﻿<div class="container-fluid my-4">
+    <!-- Product Filter Section -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="selectAllProducts">
+            <label class="form-check-label" for="selectAllProducts">
+                Chọn Tất Cả
+            </label>
+        </div>
+        <div id="bulkActionButtons" style="display: none;">
+            <button class="btn btn-primary me-2">
+                <i class="fas fa-shopping-bag me-1"></i>Đăng bán
+            </button>
+            <button class="btn btn-warning me-2">
+                <i class="fas fa-eye-slash me-1"></i>Ẩn
+            </button>
+            <button class="btn btn-danger">
+                <i class="fas fa-trash-alt me-1"></i>Xóa
+            </button>
+        </div>
+        <a asp-area="Seller" asp-controller="Food" asp-action="CreateFood" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#newProductModal">
+            <i class="fas fa-plus me-2"></i>Thêm Sản Phẩm Mới
+        </a>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-12 mb-3">
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Tìm kiếm sản phẩm..." id="searchProduct">
+                                <button class="btn btn-danger">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Trạng thái</label>
+                            <select class="form-select" id="productStatus">
+                                <option value="all" selected>Tất Cả Sản Phẩm</option>
+                                <option value="sale">Đang Bán</option>
+                                <option value="pending">Đang ẩn</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Sắp xếp theo</label>
+                            <select class="form-select" id="sortBy">
+                                <option value="newest">Mới Nhất</option>
+                                <option value="bestseller">Bán Chạy Nhất</option>
+                                <option value="price-asc">Giá Tăng Dần</option>
+                                <option value="price-desc">Giá Giảm Dần</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Khoảng giá</label>
+                            <select class="form-select" id="priceRange">
+                                <option value="all">Tất Cả Giá</option>
+                                <option value="0-100000">Dưới 100.000₫</option>
+                                <option value="100000-500000">100.000₫ - 500.000₫</option>
+                                <option value="500000-plus">Trên 500.000₫</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Thao tác</label>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-danger flex-grow-1">
+                                    <i class="fas fa-filter me-1"></i> Lọc
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products Display Section -->
+    <div class="row g-4">
+        <!-- For Sale Product Example -->
+        <div class="col-md-4 col-lg-3">
+            <div class="card h-100">
+                <div class="position-relative">
+                    <div class="position-absolute top-0 start-0 m-2 z-1">
+                        <div class="form-check">
+                            <input class="form-check-input product-checkbox" type="checkbox">
+                        </div>
+                    </div>
+                    <div class="product-img-container">
+                        <img src="https://i.pinimg.com/736x/02/95/cd/0295cd0e2a88805f643da26de4e8a83b.jpg" alt="Ảnh sản phẩm">
+                        <span class="position-absolute top-0 end-0 badge bg-success m-2">Đang Bán</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Tên Sản Phẩm</h5>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <span class="text-danger fw-bold">99.000₫</span>
+                        </div>
+                        <small class="text-muted"><i class="fas fa-shopping-cart"></i> Đã bán: 50</small>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">Số lượng còn: 100</small>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">Ngày đăng: 19/04/2025</small>
+                    </div>
+                    <div class="d-flex justify-content-between gap-2">
+                        <button class="btn btn-outline-danger btn-sm">Chỉnh Sửa</button>
+                        <div class="btn-group">
+                            <button class="btn btn-outline-primary btn-sm" onclick="updateProductStatus('product1', 'forSale')" title="Đăng bán">
+                                <i class="fas fa-shopping-bag"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="updateProductStatus('product1', 'hidden')" title="Ẩn sản phẩm">
+                                <i class="fas fa-eye-slash"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm">Xóa</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Product Example -->
+        <div class="col-md-4 col-lg-3">
+            <div class="card h-100">
+                <div class="position-relative">
+                    <div class="position-absolute top-0 start-0 m-2 z-1">
+                        <div class="form-check">
+                            <input class="form-check-input product-checkbox" type="checkbox">
+                        </div>
+                    </div>
+                    <div class="product-img-container">
+                        <img src="https://i.pinimg.com/736x/3c/4c/36/3c4c368d7fe927a4a87efa5e06b580ea.jpg" alt="Ảnh sản phẩm">
+                        <span class="position-absolute top-0 end-0 badge bg-warning m-2">Chờ Duyệt</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Tên Sản Phẩm</h5>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-danger fw-bold">149.000₫</span>
+                        <small class="text-muted"><i class="fas fa-shopping-cart"></i> Đã bán: 0</small>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">Số lượng còn: 75</small>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">Ngày đăng: 18/04/2025</small>
+                    </div>
+                    <div class="d-flex justify-content-between gap-2">
+                        <button class="btn btn-outline-danger btn-sm">Chỉnh Sửa</button>
+                        <div class="btn-group">
+                            <button class="btn btn-outline-primary btn-sm" onclick="updateProductStatus('product2', 'forSale')" title="Đăng bán">
+                                <i class="fas fa-shopping-bag"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="updateProductStatus('product2', 'hidden')" title="Ẩn sản phẩm">
+                                <i class="fas fa-eye-slash"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm">Xóa</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
