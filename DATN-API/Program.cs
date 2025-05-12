@@ -1,4 +1,5 @@
 ﻿using DATN_API.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -6,41 +7,47 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-builder.Services.AddControllers();
-// Cấu hình Swagger/OpenAPI
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-
-// Cấu hình DbContext với SQL Server
+// Cấu hình DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Thêm Authentication & Authorization
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.RequireHttpsMetadata = false;
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],      // Đọc từ appsettings.json
+            ValidAudience = builder.Configuration["Jwt:Audience"],  // Đọc từ appsettings.json
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+// Thêm controllers và Swagger
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-app.UseStaticFiles();
-// Configure the HTTP request pipeline.
+
+// Cấu hình middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.UseCors(policy =>
-{
-    policy.WithOrigins("https://localhost:7057")
-          .AllowAnyHeader()
-          .AllowAnyMethod();
-});
 
 app.UseHttpsRedirection();
-
-// Áp dụng CORS trước các middleware khác
-app.UseCors("AllowSpecificOrigin");
-
-app.UseAuthentication(); // Đảm bảo đăng nhập bằng JWT
-app.UseAuthorization();
+app.UseAuthentication();  // xxác thực
+app.UseAuthorization();   // kiem tra quyền sau
 
 app.MapControllers();
 

@@ -47,17 +47,30 @@
                             <span
                                 class="badge rounded-pill badge-notification bg-light position-absolute top-0 start-100 translate-middle text-danger">99</span>
                         </a>
-                        <div class="dropdown mx-5 d-none d-lg-inline-block">
-                            <button class="btn btn-danger no-hover-button dropdown-toggle text-white" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                                👤 Tài khoản
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                <li><a class="dropdown-item" data-bs-toggle="modal" href="#exampleModalToggle"><i class="bi bi-person-circle"></i> Đăng nhập</a></li>
-                                <li><a class="dropdown-item" data-bs-toggle="modal" href="#exampleModalToggle2"><i class="bi bi-person-plus-fill"></i> Đăng kí</a></li>
-                                <li><a class="dropdown-item" asp-controller="Profile" asp-action="Profile"><i class="bi bi-person-square"></i> Thông tin cá nhân</a></li>
-                                <li><a class="dropdown-item" href=""><i class="bi bi-box-arrow-right"></i> Đăng xuất</a></li>
-                            </ul>
-                        </div>
+						@{
+							var fullName = Context.Session.GetString("FullName");
+						}
+						<div class="dropdown mx-5 d-none d-lg-inline-block">
+							<button class="btn btn-danger no-hover-button dropdown-toggle text-white" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+								👤 Tài khoản
+							</button>
+							<ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+								@if (string.IsNullOrEmpty(fullName))
+								{
+									<!-- Chưa đăng nhập -->
+									<li><a class="dropdown-item" data-bs-toggle="modal" href="#exampleModalToggle"><i class="bi bi-person-circle"></i> Đăng nhập</a></li>
+									<li><a class="dropdown-item" data-bs-toggle="modal" href="#exampleModalToggle2"><i class="bi bi-person-plus-fill"></i> Đăng ký</a></li>
+								}
+								else
+								{
+									<!-- Đã đăng nhập -->
+									<li><span class="dropdown-item disabled text-muted"><i class="bi bi-person-check"></i> Xin chào, @fullName</span></li>
+									<li><a class="dropdown-item" asp-controller="Profile" asp-action="Profile"><i class="bi bi-person-square"></i> Thông tin cá nhân</a></li>
+									<li><a class="dropdown-item" asp-controller="UserAuthentication" asp-action="Logout"><i class="bi bi-box-arrow-right"></i> Đăng xuất</a></li>
+								}
+							</ul>
+						</div>
+
                         
                     
                         <button class="navbar-toggler me-2 text-white" type="button" data-bs-toggle="collapse"
@@ -244,6 +257,8 @@
 			crossorigin="anonymous">
 	</script>
 
+	<script src="~/js/Toast.js"></script>
+
 
 
 
@@ -271,23 +286,14 @@
 						Đăng nhập
 					</h1>
 					<div class="d-block justify-content-center">
-						<form class="d-block mx-5">
-							<input class="form-control mx-2 rounded-pill form-control-lg mb-2" type="text" id="emailHelpId"
+						<form asp-controller="UserAuthentication" asp-action="Login" method="post" class="d-block mx-5">
+							<input name="Identifier" class="form-control mx-2 rounded-pill form-control-lg mb-2" type="text" id="emailHelpId"
 								   placeholder="Email / Số điện thoại" aria-label="">
 							<small id="emailHelpId" class="form-text text-muted mx-2 mb-2"> </small>
-							<input class="form-control mx-2 rounded-pill form-control-lg mb-2" type="password" id="password"
+							<input name="Password" class="form-control mx-2 rounded-pill form-control-lg mb-2" type="password" id="password"
 								   placeholder="Mật khẩu" aria-label="password">
 							<small id="password" class="form-text text-muted mx-2 mb-2"> </small>
 							<div class="row mx-3 mb-4">
-								<div class="col d-flex justify-content-start">
-									<!-- Checkbox -->
-									<div class="form-check">
-										<input class="form-check-input" type="checkbox" value="" id="form2Example34"
-											   checked />
-										<label class="form-check-label" for="form2Example34"> Ghi nhớ tôi </label>
-									</div>
-								</div>
-
 								<div class="col d-flex justify-content-end">
 									<!-- Simple link -->
 									<a asp-controller="UserAuthentication" asp-action="ForgotPassword">Quên mật khẩu?</a>
@@ -296,6 +302,8 @@
 							<div class="d-grid gap-2 col-6 mx-auto mb-2">
 								<button class="btn btn-danger rounded-pill" type="submit">Đăng nhập</button>
 							</div>
+						</form>
+
 							<div class="text-center mb-4">
 								<p>
 									Bạn chưa có tài khoản? <a href="#" data-bs-target="#exampleModalToggle2"
@@ -312,7 +320,6 @@
 									<i class="fab fa-google"></i>
 								</button>
 							</div>
-						</form>
 					</div>
 				</div>
 			</div>
@@ -370,6 +377,25 @@
 	</div>
 
 
+	<div class="position-fixed top-0 end-0 p-3" style="z-index: 1056">
+		@if (TempData["ToastMessage"] != null && TempData["ToastType"] != null)
+		{
+			var toastType = TempData["ToastType"].ToString();
+			var isSuccess = toastType == "success";
+			<div class="toast @(isSuccess ? "" : "mt-3")" role="alert" aria-live="assertive" aria-atomic="true" id="autoToast">
+				<div class="toast-header @(isSuccess ? "bg-success" : "bg-danger") text-white">
+					<img src="@(isSuccess ? "../Icons/happy.gif" : "../Icons/sad.gif")"
+						 class="rounded me-2" alt="@(isSuccess ? "Success" : "Error")" width="20" height="20">
+					<strong class="me-auto">@((isSuccess) ? "Thành công" : "Lỗi")</strong>
+					<small>Vừa xong</small>
+					<button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+				</div>
+				<div class="toast-body">
+					@TempData["ToastMessage"]
+				</div>
+			</div>
+		}
+	</div>
 
 </body>
 
