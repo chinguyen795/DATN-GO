@@ -41,8 +41,8 @@ namespace DATN_GO.Controllers
 				string redirectUrl = loginResult.Roles switch
 				{
 					1 => "/",
-					2 => "/",
-					_ => "/"
+					2 => "/Seller/Home/",
+					_ => "/Admin/Home/"
 				};
 				return Redirect(redirectUrl);
 			}
