@@ -1,43 +1,112 @@
 ﻿@{
     ViewData["Title"] = "AuthenticationCode Page";
+    var identifier = ViewBag.Identifier as string;
 }
-<section class=" py-5 bg-light min-vh-100 d-flex align-items-center">
+<section class="py-5 bg-light min-vh-100 d-flex align-items-center">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8">
+                <div class="bg-white p-4 p-md-5 rounded shadow-sm">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-shield-lock text-danger display-1"></i>
+                        <h4 class="text-danger mt-3">Xác nhận mã OTP</h4>
+                        <p class="text-muted">
+                            @if (!string.IsNullOrEmpty(ViewBag.VerificationMessage))
+                            {
+                                <span>@ViewBag.VerificationMessage</span>
+                            }
+                            else
+                            {
+                                <span>Mã xác nhận đã được gửi đến <strong class="text-danger">@identifier</strong></span>
+                            }
+                        </p>
+                    </div>
 
-	<div class="container">
-		<div class="row justify-content-center">
-			<div class="col-lg-6 col-md-8">
-				<div class="bg-white p-4 p-md-5 rounded shadow-sm">
-					<div class="text-center mb-4">
-						<i class="bi bi-shield-lock text-danger display-1"></i>
-						<h4 class="text-danger mt-3">Xác nhận mã OTP</h4>
-						<p class="text-muted">Mã xác nhận đã được gửi đến <strong class="text-danger">Email</strong></p>
-					</div>
+                    <!-- Form gửi mã xác minh -->
+                    <form method="post" asp-action="AuthenticationCode" asp-controller="UserAuthentication">
+                        <input type="hidden" name="identifier" value="@identifier" />
+                        <input type="hidden" id="otpCode" name="code" />
 
-					<div class="otp-inputs d-flex justify-content-center gap-2 gap-md-3 mb-4">
-						<input type="text" class="form-control border-only text-center otp-input align-items-center" maxlength="1" data-index="1">
-						<input type="text" class="form-control border-only text-center otp-input align-items-center" maxlength="1" data-index="2">
-						<input type="text" class="form-control border-only text-center otp-input align-items-center" maxlength="1" data-index="3">
-						<input type="text" class="form-control border-only text-center otp-input align-items-center" maxlength="1" data-index="4">
-						<input type="text" class="form-control border-only text-center otp-input align-items-center" maxlength="1" data-index="5">
-						<input type="text" class="form-control border-only text-center otp-input align-items-center" maxlength="1" data-index="6">
-					</div>
+                        <div class="otp-inputs d-flex justify-content-center gap-2 gap-md-3 mb-4">
+                            @for (int i = 1; i <= 6; i++)
+                            {
+                                <input type="text" class="form-control text-center otp-input" maxlength="1" data-index="@i" />
+                            }
+                        </div>
 
-					<div class="text-center mb-4">
-						<p class="text-muted mb-0">
-							Không nhận được mã?
-							<button class="btn btn-link text-danger p-0 border-0" id="resendBtn">Gửi lại</button>
-						</p>
-						<div id="countdown" class="text-muted small"></div>
-					</div>
+                        <div class="text-center mb-4">
+                            <p class="text-muted mb-0">
+                                Không nhận được mã?
+                                <button type="button" class="btn btn-link text-danger p-0 border-0" id="resendBtn">Gửi lại</button>
+                            </p>
+                            <div id="countdown" class="text-muted small"></div>
+                        </div>
 
-					<div class="d-grid">
-						<button class="btn btn-danger" type="button" id="verifyBtn">
-							<i class="bi bi-check-circle me-2"></i>Xác nhận
-						</button>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+                        <div class="d-grid">
+                            <button class="btn btn-danger" type="submit" id="verifyBtn">
+                                <i class="bi bi-check-circle me-2"></i>Xác nhận
+                            </button>
+                        </div>
+                    </form>
 
+                </div>
+            </div>
+        </div>
+    </div>
 </section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        let timeLeft = 60;
+        let countdownInterval;
+
+        const inputs = document.querySelectorAll('.otp-input');
+        const resendBtn = document.getElementById('resendBtn');
+        const countdownSpan = document.getElementById('countdown');
+        const otpCodeInput = document.getElementById('otpCode');
+
+        // Di chuyển focus khi gõ số hoặc xoá
+        inputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                if (e.inputType !== "deleteContentBackward" && input.value.length === 1 && index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                }
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && input.value === '' && index > 0) {
+                    inputs[index - 1].focus();
+                }
+            });
+        });
+
+        // Khi nhấn nút xác minh
+        document.getElementById('verifyBtn').addEventListener('click', function (e) {
+            let code = '';
+            inputs.forEach(i => code += i.value);
+            otpCodeInput.value = code;
+        });
+
+        function updateCountdown() {
+            if (timeLeft > 0) {
+                timeLeft--;
+                countdownSpan.textContent = `Gửi lại sau ${timeLeft}s`;
+            } else {
+                clearInterval(countdownInterval);
+                resendBtn.disabled = false;
+                countdownSpan.textContent = '';
+            }
+        }
+
+        resendBtn.addEventListener('click', () => {
+            timeLeft = 60;
+            resendBtn.disabled = true;
+            countdownInterval = setInterval(updateCountdown, 1000);
+            // Bạn có thể thêm AJAX để gọi API gửi lại mã tại đây nếu muốn
+        });
+
+        // Bắt đầu đếm ngược ban đầu
+        resendBtn.disabled = true;
+        countdownInterval = setInterval(updateCountdown, 1000);
+    });
+</script>

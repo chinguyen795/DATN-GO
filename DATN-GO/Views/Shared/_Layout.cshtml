@@ -349,13 +349,13 @@
 						Đăng kí
 					</h1>
 					<div class="d-block justify-content-center">
-						<form class="d-block mx-5">
-							<input class="form-control mx-2 rounded-pill form-control-lg mb-2" type="text" id="emailHelpId"
+						<form class="d-block mx-5" asp-controller="UserAuthentication" asp-action="Register" method="post">
+							<input name="identifier" class="form-control mx-2 rounded-pill form-control-lg mb-2" type="text" id="emailHelpId"
 								   placeholder="Email / Số điện thoại" aria-label="">
 							<small id="emailHelpId" class="form-text text-muted mx-2 mb-2"> </small>
 
 							<div class="d-grid gap-2 col-6 mx-auto mb-2">
-								<button class="btn btn-danger rounded-pill" asp-controller="UserAuthentication" asp-action="AuthenticationCode" type="submit">Xác nhận</button>
+								<button class="btn btn-danger rounded-pill" type="submit">Xác nhận</button>
 							</div>
 							<div class="text-center mb-4">
 								<p>Bạn đã có tài khoản? <a href="#" data-bs-target="#exampleModalToggle" data-bs-toggle="modal" data-bs-dismiss="modal">Đăng nhập</a></p>
