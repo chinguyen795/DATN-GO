@@ -1,4 +1,8 @@
-﻿using System.Text.Json.Serialization;
+﻿using Microsoft.Extensions.Hosting;
+using System.Net;
+using System.Text.Json.Serialization;
+using Twilio.TwiML.Messaging;
+using Twilio.TwiML.Voice;
 
 namespace DATN_API.Models
 {
@@ -19,5 +23,29 @@ namespace DATN_API.Models
 
         [JsonIgnore]
         public virtual Roles? Role { get; set; }
+        [JsonIgnore]
+        public ICollection<Addresses>? Address { get; set; }
+        [JsonIgnore]
+        public ICollection<Messages>? SentMessages { get; set; }
+        [JsonIgnore]
+        public ICollection<Messages>? ReceivedMessages { get; set; }
+        [JsonIgnore]
+        public ICollection<Posts>? Posts { get; set; }
+        [JsonIgnore]
+        public ICollection<Decorates>? Decorates { get; set; }
+        [JsonIgnore]
+        public virtual Diners? Diner { get; set; }
+        [JsonIgnore]
+        public ICollection<Reports>? ReportsSent { get; set; }
+        [JsonIgnore]
+        public ICollection<ReportActions>? ReportActionsPerformed { get; set; }
+        [JsonIgnore]
+        public ICollection<Carts>? Carts { get; set; }
+        [JsonIgnore]
+        public ICollection<Orders>? Orders { get; set; }
+        [JsonIgnore]
+        public ICollection<Reviews>? Reviews { get; set; }
+
+
     }
 }

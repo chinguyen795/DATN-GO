@@ -1,0 +1,33 @@
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+
+namespace DATN_API.Models
+{
+    public class Reviews
+    {
+        [Key]
+        public int Id { get; set; }
+
+        [ForeignKey("User")]
+        public int UserId { get; set; }
+
+        [ForeignKey("Product")]
+        public int ProductId { get; set; }
+
+        [ForeignKey("Order")]
+        public int OrderId { get; set; }
+
+        public int Rating { get; set; }
+
+        public string CommentText { get; set; }
+
+        public DateTime CreateAt { get; set; }
+        [JsonIgnore]
+        public virtual Users? User { get; set; }
+        [JsonIgnore]
+        public virtual Products? Product { get; set; }
+        [JsonIgnore]
+        public virtual Orders? Order { get; set; }
+    }
+}
