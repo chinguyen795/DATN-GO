@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DATN_API.Migrations
 {
     /// <inheritdoc />
-    public partial class IntialCreate : Migration
+    public partial class adad : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
