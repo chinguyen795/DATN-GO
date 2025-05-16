@@ -55,16 +55,17 @@
             let timeLeft = 60; // Thời gian cooldown ban đầu (ví dụ: 60 giây)
             let countdownInterval;
 
-            const inputs = document.querySelectorAll('.otp-input');
+            const inputs = document.querySelectorAll('.otp-input'); // Các ô input nhỏ (1 ký tự)
             const resendBtn = document.getElementById('resendBtn');
             const countdownSpan = document.getElementById('countdown');
 
             const verifyOtpForm = document.getElementById('verifyOtpForm');
-            const otpCombinedCodeInput = document.getElementById('otpCombinedCode'); /
+            const otpCombinedCodeInput = document.getElementById('otpCombinedCode'); // Input ẩn để chứa mã OTP đã nối
 
             // Logic xử lý nhập liệu cho từng ô OTP
             inputs.forEach((input, index) => {
-                input.addEventListener('input', (e) => {
+                input.addEventListener('input', (e) => { // Dùng 'input' thay vì 'keyup' để bắt các trường hợp paste
+                    // Chỉ giữ lại ký tự số và giới hạn 1 ký tự
                     input.value = input.value.replace(/\D/g, '').slice(0, 1);
 
                     if (input.value.length === 1 && index < inputs.length - 1) {
@@ -83,28 +84,34 @@
             verifyOtpForm.addEventListener('submit', function (e) {
                 let otpCode = '';
                 inputs.forEach(input => {
-                    otpCode += input.value; 
+                    otpCode += input.value; // Nối các ký tự lại thành chuỗi OTP
                 });
 
+                console.log('OTP Code collected from inputs (JS):', otpCode); // DEBUG: Kiểm tra giá trị đã nối
 
-                if (otpCode.length !== inputs.length) { 
-                    e.preventDefault();
+                if (otpCode.length !== inputs.length) { // inputs.length là 6
+                    e.preventDefault(); // Ngăn form gửi đi
                     alert('Vui lòng nhập đầy đủ 6 chữ số mã OTP.');
                     return false;
                 }
 
+                // Gán mã OTP đã nối vào input ẩn có name="code"
                 otpCombinedCodeInput.value = otpCode;
+                console.log('Value assigned to hidden otpCombinedCodeInput (JS):', otpCombinedCodeInput.value); // DEBUG: Kiểm tra giá trị sau khi gán
             });
 
-
+           
             resendBtn.addEventListener('click', () => {
+                // Start countdown UI immediately
                 timeLeft = 60; // Reset thời gian
                 resendBtn.disabled = true;
                 if (countdownInterval) clearInterval(countdownInterval);
                 countdownInterval = setInterval(updateCountdown, 1000);
 
+                // Controller sẽ xử lý việc gửi lại mã thực tế
             });
 
+           
             countdownInterval = setInterval(updateCountdown, 1000);
 
             function updateCountdown() {

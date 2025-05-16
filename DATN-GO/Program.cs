@@ -34,11 +34,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // Đăng ký Services (Scoped để tránh memory leak)
 builder.Services.AddScoped<AuthenticationService>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<GoogleCloudStorageService>();
 
 // Đăng ký HttpClient cho các Service
 builder.Services.AddHttpClient<AuthenticationService>();
 builder.Services.AddHttpClient<UserService>();
-
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())

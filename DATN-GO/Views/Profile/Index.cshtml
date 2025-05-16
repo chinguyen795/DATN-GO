@@ -62,7 +62,7 @@
             <div class="row justify-content-center my-5">
                 <div class="col-lg-10 bg-white p-4 p-md-5 rounded shadow-sm border border-danger">
                     <h4 class="mb-4 pb-3 border-bottom text-danger">Thông Tin Cá Nhân</h4>
-                    <form asp-controller="Profile" asp-action="Update" method="post">
+                    <form asp-controller="Profile" asp-action="Update" method="post" enctype="multipart/form-data"> @* **THÊM enctype="multipart/form-data"** *@
                         @Html.AntiForgeryToken()
                         <input type="hidden" asp-for="Id" />
                         <input type="hidden" asp-for="Password" />
@@ -71,17 +71,15 @@
                         <input type="hidden" asp-for="Avatar" />
                         <input type="hidden" asp-for="RoleId" />
                         <input type="hidden" asp-for="CreatedAt" />
-                        <input type="hidden" asp-for="Status" />
-
+                        <input type="hidden" asp-for="Status" /> 
 
                         <div class="row align-items-center">
                             <div class="col-lg-4 text-center mb-4 mb-lg-0">
-                                <img src="@(string.IsNullOrEmpty(Model.Avatar) ? "/images/default_avatar.jpg" : Model.Avatar)" alt="Avatar" class="rounded-circle profile-avatar mb-2 border border-danger">
-                                <div>
-                                    <label class="btn btn-sm btn-outline-danger disabled">
-                                        <i class="bi bi-image me-1"></i> Chọn ảnh (không hỗ trợ)
+                                <img src="@(string.IsNullOrEmpty(Model.Avatar) ? "/images/default_avatar.jpg" : Model.Avatar)" alt="Avatar" class="rounded-circle profile-avatar mb-2 border border-danger" id="currentAvatar">                                <div>
+                                    <label class="btn btn-sm btn-outline-danger" for="profile-image">
+                                        <i class="bi bi-image me-1"></i> Chọn ảnh
                                     </label>
-                                    <input type="file" id="profile-image" accept="image/*" class="d-none" disabled>
+                                    <input type="file" id="profile-image" name="avatarFile" accept="image/*" class="d-none" onchange="previewImage(this);"> @* **Thêm name="avatarFile", bỏ disabled** *@
                                 </div>
                             </div>
                             <div class="col-lg-8">

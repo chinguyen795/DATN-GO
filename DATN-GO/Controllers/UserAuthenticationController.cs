@@ -103,12 +103,14 @@ namespace DATN_GO.Controllers
         [HttpPost("AuthenticationCode")]
         public async Task<IActionResult> AuthenticationCode(string identifier, string code)
         {
+            // Dòng này vẫn kiểm tra nếu identifier HOẶC code bị rỗng
+            // Nếu JavaScript hoạt động, 'code' sẽ không rỗng khi đến đây
             if (string.IsNullOrEmpty(identifier) || string.IsNullOrEmpty(code))
             {
                 TempData["ToastMessage"] = "❌ Thiếu thông tin hoặc mã OTP. Vui lòng thử lại!";
                 TempData["ToastType"] = "danger";
                 ViewBag.Identifier = identifier;
-                return View(); 
+                return View(); // Trả về lại view hiện tại để người dùng nhập lại
             }
 
             var (success, message) = await _AuthenticationService.VerifyCodeAsync(identifier, code);

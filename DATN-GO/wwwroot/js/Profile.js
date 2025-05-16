@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+﻿document.addEventListener('DOMContentLoaded', function() {
     // Handle Orders Tab Switching
     const orderTabs = document.querySelectorAll('[data-order-tab]');
     const orderContents = document.querySelectorAll('[data-order-content]');
@@ -56,6 +56,5 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Add the function to the window object so it can be called from HTML
     window.previewImage = previewImage;
 });
