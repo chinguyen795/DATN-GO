@@ -19,6 +19,7 @@ namespace DATN_API.Models
         public bool Gender { get; set; }
         public string CitizenIdentityCard { get; set; }
         public DateTime CreatedAt { get; set; }
+        public DateTime? DateOfBirth { get; set; }
 
 
         [JsonIgnore]

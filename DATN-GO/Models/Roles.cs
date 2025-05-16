@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using Twilio.TwiML.Messaging;
 
-namespace DATN_API.Models
+namespace DATN_GO.Models
 {
     public class Roles
     {

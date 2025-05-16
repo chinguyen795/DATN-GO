@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 using Twilio.TwiML.Messaging;
 using Twilio.TwiML.Voice;
 
-namespace DATN_API.Models
+namespace DATN_GO.Models
 {
     public class Users
     {
@@ -19,6 +19,7 @@ namespace DATN_API.Models
         public bool Gender { get; set; }
         public string CitizenIdentityCard { get; set; }
         public DateTime CreatedAt { get; set; }
+        public DateTime? DateOfBirth { get; set; }
 
 
         [JsonIgnore]

@@ -144,8 +144,8 @@ namespace DATN_API.Controllers
             // Tạo tài khoản mới
             var user = new Users
             {
-                Email = isPhone ? "" : identifier, // Gán chuỗi rỗng "" thay vì null
-                PhoneNumber = isPhone ? identifier : "", // Gán chuỗi rỗng "" thay vì null
+                Email = isPhone ? "" : identifier,
+                PhoneNumber = isPhone ? identifier : "",
                 Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
                 RoleId = 1,
                 Avatar = "",
@@ -153,7 +153,9 @@ namespace DATN_API.Controllers
                 Status = false,
                 Gender = false,
                 CitizenIdentityCard = "",
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.Now,
+                DateOfBirth = null
+
             };
 
             _context.Users.Add(user);
@@ -199,7 +201,7 @@ namespace DATN_API.Controllers
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.MobilePhone, user.PhoneNumber),
                 new Claim(ClaimTypes.Role, user.RoleId.ToString()),
-                new Claim("FullName", user.FullName) // Thêm claim FullName
+                new Claim("FullName", user.FullName)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
@@ -209,7 +211,7 @@ namespace DATN_API.Controllers
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddDays(7), // Thời gian hết hạn của token
+                expires: DateTime.Now.AddDays(7),
                 signingCredentials: creds
             );
 

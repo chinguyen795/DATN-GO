@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using Twilio.TwiML.Voice;
 using System.Text.Json.Serialization;
 
-namespace DATN_API.Models
+namespace DATN_GO.Models
 {
     public class ReportActions
     {

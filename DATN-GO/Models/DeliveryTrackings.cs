@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace DATN_API.Models
+namespace DATN_GO.Models
 {
     public class DeliveryTrackings
     {

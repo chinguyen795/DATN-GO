@@ -11,35 +11,19 @@
                         <i class="bi bi-shield-lock text-danger display-1"></i>
                         <h4 class="text-danger mt-3">Xác nhận mã OTP</h4>
                         <p class="text-muted">
-                            @if (!string.IsNullOrEmpty(ViewBag.VerificationMessage))
-                            {
-                                <span>@ViewBag.VerificationMessage</span>
-                            }
-                            else
-                            {
-                                <span>Mã xác nhận đã được gửi đến <strong class="text-danger">@identifier</strong></span>
-                            }
+                            <span>Mã xác nhận đã được gửi đến <strong class="text-danger">@identifier</strong></span>
                         </p>
                     </div>
 
-                    <!-- Form gửi mã xác minh -->
-                    <form method="post" asp-action="AuthenticationCode" asp-controller="UserAuthentication">
+                    <form method="post" asp-action="AuthenticationCode" asp-controller="UserAuthentication" id="verifyOtpForm">
                         <input type="hidden" name="identifier" value="@identifier" />
-                        <input type="hidden" id="otpCode" name="code" />
+                        <input type="hidden" id="otpCombinedCode" name="code" />
 
                         <div class="otp-inputs d-flex justify-content-center gap-2 gap-md-3 mb-4">
                             @for (int i = 1; i <= 6; i++)
                             {
                                 <input type="text" class="form-control text-center otp-input" maxlength="1" data-index="@i" />
                             }
-                        </div>
-
-                        <div class="text-center mb-4">
-                            <p class="text-muted mb-0">
-                                Không nhận được mã?
-                                <button type="button" class="btn btn-link text-danger p-0 border-0" id="resendBtn">Gửi lại</button>
-                            </p>
-                            <div id="countdown" class="text-muted small"></div>
                         </div>
 
                         <div class="d-grid">
@@ -49,64 +33,89 @@
                         </div>
                     </form>
 
+                    <div class="text-center mb-4 mt-3">
+                        <p class="text-muted mb-0">
+                            Không nhận được mã?
+                            <form method="post" asp-action="ResendAuthenticationCode" asp-controller="UserAuthentication" id="resendOtpForm">
+                                <input type="hidden" name="identifier" value="@identifier" />
+                                <button type="submit" class="btn btn-link text-danger p-0 border-0" id="resendBtn">Gửi lại</button>
+                            </form>
+                        </p>
+                        <div id="countdown" class="text-muted small"></div>
+                    </div>
+
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        let timeLeft = 60;
-        let countdownInterval;
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let timeLeft = 60; // Thời gian cooldown ban đầu (ví dụ: 60 giây)
+            let countdownInterval;
 
-        const inputs = document.querySelectorAll('.otp-input');
-        const resendBtn = document.getElementById('resendBtn');
-        const countdownSpan = document.getElementById('countdown');
-        const otpCodeInput = document.getElementById('otpCode');
+            const inputs = document.querySelectorAll('.otp-input');
+            const resendBtn = document.getElementById('resendBtn');
+            const countdownSpan = document.getElementById('countdown');
 
-        // Di chuyển focus khi gõ số hoặc xoá
-        inputs.forEach((input, index) => {
-            input.addEventListener('input', (e) => {
-                if (e.inputType !== "deleteContentBackward" && input.value.length === 1 && index < inputs.length - 1) {
-                    inputs[index + 1].focus();
-                }
+            const verifyOtpForm = document.getElementById('verifyOtpForm');
+            const otpCombinedCodeInput = document.getElementById('otpCombinedCode'); /
+
+            // Logic xử lý nhập liệu cho từng ô OTP
+            inputs.forEach((input, index) => {
+                input.addEventListener('input', (e) => {
+                    input.value = input.value.replace(/\D/g, '').slice(0, 1);
+
+                    if (input.value.length === 1 && index < inputs.length - 1) {
+                        inputs[index + 1].focus(); // Tự động chuyển focus
+                    }
+                });
+
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && input.value === '' && index > 0) {
+                        inputs[index - 1].focus(); // Quay lại ô trước
+                    }
+                });
             });
 
-            input.addEventListener('keydown', (e) => {
-                if (e.key === 'Backspace' && input.value === '' && index > 0) {
-                    inputs[index - 1].focus();
+            // Xử lý khi form xác nhận OTP được submit
+            verifyOtpForm.addEventListener('submit', function (e) {
+                let otpCode = '';
+                inputs.forEach(input => {
+                    otpCode += input.value; 
+                });
+
+
+                if (otpCode.length !== inputs.length) { 
+                    e.preventDefault();
+                    alert('Vui lòng nhập đầy đủ 6 chữ số mã OTP.');
+                    return false;
                 }
+
+                otpCombinedCodeInput.value = otpCode;
             });
-        });
 
-        // Khi nhấn nút xác minh
-        document.getElementById('verifyBtn').addEventListener('click', function (e) {
-            let code = '';
-            inputs.forEach(i => code += i.value);
-            otpCodeInput.value = code;
-        });
 
-        function updateCountdown() {
-            if (timeLeft > 0) {
-                timeLeft--;
-                countdownSpan.textContent = `Gửi lại sau ${timeLeft}s`;
-            } else {
-                clearInterval(countdownInterval);
-                resendBtn.disabled = false;
-                countdownSpan.textContent = '';
-            }
-        }
+            resendBtn.addEventListener('click', () => {
+                timeLeft = 60; // Reset thời gian
+                resendBtn.disabled = true;
+                if (countdownInterval) clearInterval(countdownInterval);
+                countdownInterval = setInterval(updateCountdown, 1000);
 
-        resendBtn.addEventListener('click', () => {
-            timeLeft = 60;
-            resendBtn.disabled = true;
+            });
+
             countdownInterval = setInterval(updateCountdown, 1000);
-            // Bạn có thể thêm AJAX để gọi API gửi lại mã tại đây nếu muốn
-        });
 
-        // Bắt đầu đếm ngược ban đầu
-        resendBtn.disabled = true;
-        countdownInterval = setInterval(updateCountdown, 1000);
-    });
-</script>
+            function updateCountdown() {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    countdownSpan.textContent = `Vui lòng chờ ${timeLeft} giây.`;
+                } else {
+                    clearInterval(countdownInterval);
+                    resendBtn.disabled = false;
+                    countdownSpan.textContent = ''; // Xóa thông báo đếm ngược
+                }
+            }
+        });
+    </script>
