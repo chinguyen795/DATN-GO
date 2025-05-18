@@ -74,8 +74,13 @@ namespace DATN_GO.Controllers
                 TempData["ToastType"] = "danger";
                 return View("Index", model);
             }
-
-            string? newAvatarUrl = currentUser.Avatar; // Keep existing avatar by default
+            if (model.DateOfBirth.HasValue && model.DateOfBirth.Value > DateTime.Today)
+            {
+                TempData["ToastMessage"] = "❌ Ngày sinh không được lớn hơn ngày hiện tại!";
+                TempData["ToastType"] = "danger";
+                return View("Index", model);
+            }
+            string? newAvatarUrl = currentUser.Avatar;
             if (avatarFile != null && avatarFile.Length > 0)
             {
                 newAvatarUrl = await _gcsService.UploadFileAsync(avatarFile, "avatars/");
@@ -84,7 +89,7 @@ namespace DATN_GO.Controllers
                     _logger.LogError($"Failed to upload new avatar for user {userId}.");
                     TempData["ToastMessage"] = "Tải ảnh đại diện thất bại. Vui lòng thử lại.";
                     TempData["ToastType"] = "danger";
-                    return View("Index", model); // Return view with image upload error
+                    return View("Index", model);
                 }
                 currentUser.Avatar = newAvatarUrl;
             }
@@ -95,10 +100,11 @@ namespace DATN_GO.Controllers
             currentUser.PhoneNumber = currentUser.PhoneNumber;
             currentUser.RoleId = currentUser.RoleId;
             currentUser.CreatedAt = currentUser.CreatedAt;
-            currentUser.Status = currentUser.Status; 
+            currentUser.Status = currentUser.Status;
+            currentUser.CitizenIdentityCard = currentUser.CitizenIdentityCard;
+
             currentUser.FullName = model.FullName;
             currentUser.Gender = model.Gender;
-            currentUser.CitizenIdentityCard = model.CitizenIdentityCard;
             currentUser.DateOfBirth = model.DateOfBirth;
 
 

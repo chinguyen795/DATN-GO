@@ -384,7 +384,7 @@
 			var isSuccess = toastType == "success";
 			<div class="toast @(isSuccess ? "" : "mt-3")" role="alert" aria-live="assertive" aria-atomic="true" id="autoToast">
 				<div class="toast-header @(isSuccess ? "bg-success" : "bg-danger") text-white">
-					<img src="@(isSuccess ? "../Icons/happy.gif" : "../Icons/sad.gif")"
+					<img src="@(isSuccess ? "/icons/happy.gif" : "/icons/sad.gif")"
 						 class="rounded me-2" alt="@(isSuccess ? "Success" : "Error")" width="20" height="20">
 					<strong class="me-auto">@((isSuccess) ? "Thành công" : "Lỗi")</strong>
 					<small>Vừa xong</small>

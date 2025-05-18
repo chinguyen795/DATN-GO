@@ -62,20 +62,11 @@
             <div class="row justify-content-center my-5">
                 <div class="col-lg-10 bg-white p-4 p-md-5 rounded shadow-sm border border-danger">
                     <h4 class="mb-4 pb-3 border-bottom text-danger">Thông Tin Cá Nhân</h4>
-                    <form asp-controller="Profile" asp-action="Update" method="post" enctype="multipart/form-data"> @* **THÊM enctype="multipart/form-data"** *@
+                    <form asp-controller="Profile" asp-action="Update" method="post" enctype="multipart/form-data">
                         @Html.AntiForgeryToken()
-                        <input type="hidden" asp-for="Id" />
-                        <input type="hidden" asp-for="Password" />
-                        <input type="hidden" asp-for="Email" />
-                        <input type="hidden" asp-for="PhoneNumber" />
-                        <input type="hidden" asp-for="Avatar" />
-                        <input type="hidden" asp-for="RoleId" />
-                        <input type="hidden" asp-for="CreatedAt" />
-                        <input type="hidden" asp-for="Status" /> 
-
                         <div class="row align-items-center">
                             <div class="col-lg-4 text-center mb-4 mb-lg-0">
-                                <img src="@(string.IsNullOrEmpty(Model.Avatar) ? "/images/default_avatar.jpg" : Model.Avatar)" alt="Avatar" class="rounded-circle profile-avatar mb-2 border border-danger" id="currentAvatar">                                <div>
+                                <img src="@(string.IsNullOrEmpty(Model.Avatar) ? "/images/avt-user.jpg" : Model.Avatar)" alt="Avatar" class="rounded-circle profile-avatar mb-2 border border-danger" id="currentAvatar">                                <div>
                                     <label class="btn btn-sm btn-outline-danger" for="profile-image">
                                         <i class="bi bi-image me-1"></i> Chọn ảnh
                                     </label>
@@ -90,7 +81,7 @@
                                     </div>
                                     <div class="col-12">
                                         <label class="form-label">Ngày sinh</label>
-                                        <input type="date" asp-for="DateOfBirth" class="form-control border-only-bottom" value="@(Model.DateOfBirth?.ToString("yyyy-MM-dd"))">
+                                        <input type="date" asp-for="DateOfBirth" class="form-control border-only-bottom" value="@(Model.DateOfBirth?.ToString("yyyy-MM-dd"))" max="@DateTime.Today.ToString("yyyy-MM-dd")">
                                     </div>
                                     <div class="col-12">
                                         <label class="form-label">Giới tính</label>
@@ -101,15 +92,24 @@
                                     </div>
                                     <div class="col-12">
                                         <label class="form-label">Số điện thoại</label>
+                                        <div class="d-flex align-items-center">
+
                                         <input type="tel" asp-for="PhoneNumber" class="form-control border-only-bottom" readonly>
+                                            <a href="./ChangeEmail.html"
+                                               class="text-nowrap text-decoration-none ms-2">
+                                                Thêm số điện thoại
+                                            </a>
+                                        </div>
                                     </div>
                                     <div class="col-12">
                                         <label class="form-label">Email</label>
-                                        <input type="email" asp-for="Email" class="form-control border-only-bottom" readonly>
-                                    </div>
-                                    <div class="col-12">
-                                        <label class="form-label">Căn cước công dân</label>
-                                        <input type="text" asp-for="CitizenIdentityCard" class="form-control border-only-bottom">
+                                        <div class="d-flex align-items-center">
+                                            <input type="email" asp-for="Email" class="form-control border-only-bottom" readonly>
+                                            <a href="./ChangeEmail.html"
+                                               class="text-nowrap text-decoration-none ms-2">
+                                                Đổi email
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="mt-4 pt-3 border-top">
