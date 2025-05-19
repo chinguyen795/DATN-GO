@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DATN_API.Migrations
 {
     /// <inheritdoc />
-    public partial class aasas : Migration
+    public partial class CreateDB : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -68,10 +68,10 @@ namespace DATN_API.Migrations
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Avatar = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Avatar = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Status = table.Column<bool>(type: "bit", nullable: false),
                     Gender = table.Column<bool>(type: "bit", nullable: false),
-                    CitizenIdentityCard = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CitizenIdentityCard = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },

@@ -1,109 +1,211 @@
-﻿<div class="container-fluid py-4">
+﻿@model DATN_GO.ViewModels.PostArticleViewModel
+
+@using Microsoft.AspNetCore.Http
+
+@{
+    Layout = "~/Areas/Seller/Views/Shared/_LayoutSeller.cshtml";
+    var userId = Context.Session.GetString("Id"); // Lấy ID người dùng từ Session
+    var currentUser = ViewBag.CurrentUser as DATN_GO.Models.Users;
+    var currentPost = ViewBag.CurrentUser as DATN_GO.Models.Posts;
+    var search = Context.Request.Query["search"];
+    var sortOrder = Context.Request.Query["sortOrder"];
+}
+
+<div class="container-fluid py-4">
     <!-- Create Post Card -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <h5 class="card-title mb-3">Tạo bài viết mới</h5>
-            <div class="d-flex align-items-start mb-3">
-                <img src="https://source.unsplash.com/random/50x50?portrait" class="rounded-circle me-2" alt="Người dùng" style="width: 50px; height: 50px;">
-                <div class="flex-grow-1">
-                    <textarea class="form-control" placeholder="Nội dung bài viết..." rows="3" style="resize: none;"></textarea>
-                </div>
-            </div>
+    <form asp-action="Create" method="post" enctype="multipart/form-data">
+        <!-- Create Post Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Tạo bài viết mới</h5>
 
-            <!-- Image Preview Container -->
-            <div id="imagePreview" class="mb-3 d-none">
-                <div class="position-relative">
-                    <img src="" alt="Preview" class="img-fluid rounded" style="max-height: 300px; width: 100%; object-fit: cover;">
-                    <button type="button" class="btn-close position-absolute top-0 end-0 m-2 bg-white rounded-circle"
-                            style="padding: 0.5rem;" onclick="removeImage()"></button>
-                </div>
-            </div>
+                <!-- User avatar and content -->
+                <div class="d-flex align-items-start mb-3">
+                    <img src="@currentUser?.Avatar" class="rounded-circle me-2" alt="Người dùng"
+                         style="width: 50px; height: 50px; object-fit: cover;" />
+                    <div class="flex-grow-1">
+                        <textarea asp-for="Post.Content" class="form-control" placeholder="Nội dung bài viết..." rows="3" style="resize: none;"></textarea>
+                        <span asp-validation-for="Post.Content" class="text-danger"></span>
 
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <label for="imageInput" class="btn btn-light mb-0">
-                        <i class="fas fa-image text-success"></i> Thêm ảnh
-                    </label>
-                    <input type="file" id="imageInput" accept="image/*" class="d-none" onchange="previewImage(this)">
-                </div>
-                <button class="btn btn-danger">Đăng bài</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Filters Section -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <div class="row g-3 align-items-center">
-                <div class="col-12 col-md-4">
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Tìm kiếm bài viết...">
-                        <button class="btn btn-danger" type="button">
-                            <i class="fas fa-search"></i>
-                        </button>
                     </div>
                 </div>
-                <div class="col-12 col-md-4">
-                    <select class="form-select">
-                        <option value="">Sắp xếp theo thời gian</option>
-                        <option value="newest">Mới nhất</option>
-                        <option value="oldest">Cũ nhất</option>
-                    </select>
+
+                <!-- File upload and Submit -->
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <label for="imageInput" class="btn btn-light mb-0">
+                            <i class="fas fa-image text-success"></i> Thêm ảnh
+                        </label>
+                        <input type="file" name="imageFile" id="imageInput" accept="image/*" class="d-none">
+                        <span id="fileNameDisplay" class="text-muted small fst-italic"></span>
+                    </div>
+                    <button type="submit" class="btn btn-danger">Đăng bài</button>
+                </div>
+                <div id="previewContainer" class="mt-3" style="display: none;">
+                    <img id="previewImage" src="#" alt="Xem trước ảnh" class="img-fluid rounded" style="max-height: 300px;" />
                 </div>
             </div>
         </div>
-    </div>
+    </form>
+
+    <!-- Filters Section -->
+    <form method="get" asp-action="PostArticle">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="row g-3 align-items-center">
+                    <div class="col-12 col-md-4">
+                        <div class="input-group">
+                            <input type="text" name="search" class="form-control" value="@search" placeholder="Tìm kiếm bài viết...">
+                            <button class="btn btn-danger" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <select name="sortOrder" class="form-select" onchange="this.form.submit()">
+                            <option value="">Sắp xếp theo thời gian</option>
+                            <option value="newest" selected="@(sortOrder == "newest")">Mới nhất</option>
+                            <option value="oldest" selected="@(sortOrder == "oldest")">Cũ nhất</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
 
     <!-- Articles List -->
     <div class="articles-list">
-        <!-- Sample Article Card -->
-        <div class="card shadow-sm mb-3">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div class="d-flex align-items-center">
-                        <img src="https://source.unsplash.com/random/40x40?portrait" class="rounded-circle me-2" alt="Author" style="width: 40px; height: 40px;">
-                        <div>
-                            <h6 class="mb-0">Tên người bán</h6>
-                            <small class="text-muted">2 giờ trước</small>
+        @foreach (var post in Model.PostList)
+        {
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex align-items-center">
+                            <img src="@post.User?.Avatar" class="rounded-circle me-2" alt="Author" style="width: 40px; height: 40px;" />
+                            <div>
+                                <h6 class="mb-0">@post.User?.FullName</h6>
+                                <small class="text-muted">@post.CreateAt.ToString("HH:mm dd/MM/yyyy")</small>
+                            </div>
                         </div>
-                    </div>
-                    <div class="btn-group">
-                        <button class="btn btn-sm btn-outline-primary" title="Chỉnh sửa">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger" title="Xóa">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-                <p class="card-text">Nội dung bài viết mẫu...</p>
-                <img src="https://source.unsplash.com/random/800x400" class="img-fluid rounded mb-3" alt="Article image">
-            </div>
-        </div>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                                    data-bs-target="#editModal_@post.Id" title="Chỉnh sửa">
+                                <i class="fas fa-edit"></i>
+                            </button>
 
-        <!-- Another Sample Article Card -->
-        <div class="card shadow-sm mb-3">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div class="d-flex align-items-center">
-                        <img src="https://source.unsplash.com/random/40x40?portrait" class="rounded-circle me-2" alt="Author" style="width: 40px; height: 40px;">
-                        <div>
-                            <h6 class="mb-0">Tên người bán khác</h6>
-                            <small class="text-muted">5 giờ trước</small>
+                            <button class="btn btn-sm btn-outline-danger" title="Xóa" data-bs-toggle="modal" data-bs-target="#deleteConfirmModal" onclick="setDeleteUrl(@post.Id)">
+                                <i class="fas fa-trash"></i>
+                            </button>
                         </div>
                     </div>
-                    <div class="btn-group">
-                        <button class="btn btn-sm btn-outline-primary" title="Chỉnh sửa">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger" title="Xóa">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                    <p class="card-text">@post.Content</p>
+                    @if (!string.IsNullOrEmpty(post.Image))
+                    {
+                        <img src="@post.Image" class="img-fluid rounded mb-3" alt="Article image" />
+                    }
+                </div>
+            </div>
+            <!-- Modal chỉnh sửa -->
+            <div class="modal fade" id="editModal_@post.Id" tabindex="-1" aria-labelledby="editModalLabel_@post.Id" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                            <input type="hidden" name="Id" value="@post.Id" />
+
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editModalLabel_@post.Id">Chỉnh sửa bài viết</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                            </div>
+
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label for="content_@post.Id" class="form-label">Nội dung</label>
+                                    <textarea name="Content" class="form-control" id="content_@post.Id" rows="3">@post.Content</textarea>
+                                </div>
+                                @if (!string.IsNullOrEmpty(post.Image))
+                                {
+                                    <div class="mb-3">
+                                        <label class="form-label">Ảnh hiện tại:</label><br />
+                                        <img src="@post.Image" alt="Current image" class="img-fluid rounded mb-2" style="max-height: 200px;" />
+                                    </div>
+                                }
+                                <div class="mb-3">
+                                    <label class="form-label">Chọn ảnh mới (nếu muốn thay):</label>
+                                    <input type="file" name="imageFile" class="form-control" accept="image/*" />
+                                </div>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
-                <p class="card-text">Nội dung của bài viết khác...</p>
-                <img src="https://source.unsplash.com/random/800x400" class="img-fluid rounded mb-3" alt="Article image">
+            </div>
+
+        }
+    </div>
+</div>
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">Xác nhận xóa</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Bạn có chắc chắn muốn xóa bài viết này không?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <form id="deleteForm" method="post">
+                    <button type="submit" class="btn btn-danger">Xóa</button>
+                </form>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    function previewImage(input) {
+        const previewContainer = document.getElementById("previewContainer");
+        const preview = document.getElementById("previewImage");
+        const fileNameDisplay = document.getElementById("fileNameDisplay");
+
+        if (!input || !input.files || input.files.length === 0) {
+            previewContainer.style.display = "none";
+            preview.src = "#";
+            fileNameDisplay.innerText = "";
+            return;
+        }
+
+        const file = input.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            preview.src = e.target.result;
+            previewContainer.style.display = "block";
+            fileNameDisplay.innerText = file.name;
+        };
+
+        reader.readAsDataURL(file);
+    }
+
+    function setDeleteUrl(postId) {
+        const form = document.getElementById("deleteForm");
+        form.action = `/Seller/PostArticle/Delete/${postId}`;
+    }
+
+    // Đảm bảo DOM đã load thì mới gắn sự kiện
+    document.addEventListener("DOMContentLoaded", function () {
+        const fileInput = document.getElementById("imageInput");
+        if (fileInput) {
+            fileInput.addEventListener("change", function () {
+                previewImage(this);
+            });
+        }
+    });
+</script>
+

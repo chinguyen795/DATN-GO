@@ -8,7 +8,13 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 // Đăng ký Session & HttpContext
-builder.Services.AddSession();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddControllersWithViews();
@@ -36,6 +42,7 @@ builder.Services.AddHttpClient("api", client =>
 {
     client.BaseAddress = new Uri("https://localhost:7096/"); // đúng cổng API
 });
+builder.Services.AddHttpContextAccessor();
 
 
 // Đăng ký HttpClient cho các Service
@@ -43,6 +50,7 @@ builder.Services.AddScoped<AddressService>();
 // Đăng ký Services (Scoped để tránh memory leak)
 builder.Services.AddScoped<AuthenticationService>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<PostService>();
 builder.Services.AddScoped<GoogleCloudStorageService>();
 
 // Đăng ký HttpClient cho các Service
@@ -55,14 +63,14 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
-
+app.UseRouting();
 // Kích hoạt Session
 app.UseSession();
 app.UseCookiePolicy();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-app.UseRouting();
+
 
 // Authentication Authorization
 app.UseAuthentication();

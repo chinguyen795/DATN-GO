@@ -15,8 +15,7 @@ namespace DATN_API.Models
         [MaxLength(50)]
         public string Content { get; set; }
 
-        [MaxLength(50)]
-        public string Image { get; set; }
+        public string? Image { get; set; }
 
         public DateTime CreateAt { get; set; }
         [JsonIgnore]

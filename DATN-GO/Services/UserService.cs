@@ -93,5 +93,6 @@ namespace DATN_GO.Service
             Console.WriteLine($"Error deleting user with ID {id}: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
             return false;
         }
+
     }
 }
