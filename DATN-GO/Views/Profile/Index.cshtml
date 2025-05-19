@@ -93,22 +93,38 @@
                                     <div class="col-12">
                                         <label class="form-label">Số điện thoại</label>
                                         <div class="d-flex align-items-center">
-
-                                        <input type="tel" asp-for="PhoneNumber" class="form-control border-only-bottom" readonly>
-                                            <a href="./ChangeEmail.html"
-                                               class="text-nowrap text-decoration-none ms-2">
-                                                Thêm số điện thoại
-                                            </a>
+                                            <input type="tel" asp-for="PhoneNumber" class="form-control border-only-bottom" readonly>
+                                            @if (string.IsNullOrEmpty(Model.PhoneNumber))
+                                            {
+                                                <a asp-controller="UserAuthentication" asp-action="AddPhoneNumber" class="text-nowrap text-decoration-none ms-2">
+                                                    Thêm số điện thoại
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a asp-controller="UserAuthentication" asp-action="ChangePhoneNumber" class="text-nowrap text-decoration-none ms-2">
+                                                    Đổi số điện thoại
+                                                </a>
+                                            }
                                         </div>
                                     </div>
+
                                     <div class="col-12">
                                         <label class="form-label">Email</label>
                                         <div class="d-flex align-items-center">
                                             <input type="email" asp-for="Email" class="form-control border-only-bottom" readonly>
-                                            <a href="./ChangeEmail.html"
-                                               class="text-nowrap text-decoration-none ms-2">
-                                                Đổi email
-                                            </a>
+                                            @if (string.IsNullOrEmpty(Model.Email))
+                                            {
+                                                <a asp-controller="UserAuthentication" asp-action="AddEmail" class="text-nowrap text-decoration-none ms-2">
+                                                    Thêm email
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a asp-controller="UserAuthentication" asp-action="ChangeEmail" class="text-nowrap text-decoration-none ms-2">
+                                                    Đổi email
+                                                </a>
+                                            }
                                         </div>
                                     </div>
                                 </div>
