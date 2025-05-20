@@ -23,21 +23,7 @@ namespace DATN_GO.Service
 			_baseUrl = configuration["ApiSettings:BaseUrl"];
 		}
 
-		// Loại bỏ phương thức CanSendOtp vì API đã quản lý việc này
-		// private bool CanSendOtp(string identifier)
-		// {
-		//     if (_otpSentTimes.ContainsKey(identifier))
-		//     {
-		//         var lastSentTime = _otpSentTimes[identifier];
-		//         if (DateTime.Now - lastSentTime < _otpCooldownTime)
-		//         {
-		//             return false;
-		//         }
-		//     }
-		//     return true;
-		// }
-
-		// Điều chỉnh phương thức SendVerificationCodeAsync
+		
 		public async Task<(bool Success, string Message)> SendVerificationCodeAsync(string identifier)
 		{
 			// API của bạn nhận một string input trực tiếp từ [FromBody]
@@ -124,7 +110,31 @@ namespace DATN_GO.Service
 			return JsonSerializer.Deserialize<LoginResult>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 		}
 
-		public class VerifyRequest
+        public async Task<(bool Success, string Message)> ChangePasswordAsync(string identifier, string currentPassword, string newPassword, string confirmNewPassword)
+        {
+            var payload = new ChangePasswordWithIdentifierRequest // <-- Sửa đổi ở đây
+            {
+                Identifier = identifier,
+                CurrentPassword = currentPassword,
+                NewPassword = newPassword,
+                ConfirmNewPassword = confirmNewPassword
+            };
+
+            var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+            var response = await _httpClient.PostAsync($"{_baseUrl}Authentication/ChangePasswordWithIdentifier", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return (true, await response.Content.ReadAsStringAsync());
+            }
+            else
+            {
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                return (false, errorMessage);
+            }
+        }
+
+        public class VerifyRequest
 		{
 			public string Identifier { get; set; }
 			public string Code { get; set; }
@@ -152,5 +162,13 @@ namespace DATN_GO.Service
 			public int Roles { get; set; }
 			public string Token { get; set; }
 		}
-	}
+
+        public class ChangePasswordWithIdentifierRequest
+        {
+            public string Identifier { get; set; }
+            public string CurrentPassword { get; set; }
+            public string NewPassword { get; set; }
+            public string ConfirmNewPassword { get; set; }
+        }
+    }
 }

@@ -1,7 +1,7 @@
 ﻿using DATN_GO.Service;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http; // Thêm namespace này cho HttpContext.Session
-using System.Text.RegularExpressions; // Đảm bảo đã có
+using Microsoft.AspNetCore.Http;
+using System.Text.RegularExpressions;
 
 namespace DATN_GO.Controllers
 {
@@ -16,7 +16,6 @@ namespace DATN_GO.Controllers
             _AuthenticationService = authenticationService;
         }
 
-        // --- Giữ nguyên các Actions Login, Register (POST), CreatePassword ---
 
         [HttpGet("Login")]
         public IActionResult Login()
@@ -27,7 +26,6 @@ namespace DATN_GO.Controllers
         [HttpPost("Login")]
         public async Task<IActionResult> Login(string identifier, string password)
         {
-            // Logic Login không thay đổi
             var loginResult = await _AuthenticationService.LoginAsync(identifier, password);
 
             if (loginResult != null)
@@ -36,6 +34,7 @@ namespace DATN_GO.Controllers
                 HttpContext.Session.SetString("Id", loginResult.Id.ToString());
                 HttpContext.Session.SetString("FullName", loginResult.FullName);
                 HttpContext.Session.SetString("Role", loginResult.Roles.ToString());
+                HttpContext.Session.SetString("Identifier", identifier);
 
                 TempData["ToastMessage"] = $"Chào mừng {loginResult.FullName}, bạn đã đăng nhập thành công!";
                 TempData["ToastType"] = "success";
@@ -93,7 +92,7 @@ namespace DATN_GO.Controllers
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                return RedirectToAction("Register"); // Hoặc trang lỗi phù hợp
+                return RedirectToAction("Register");
             }
             ViewBag.Identifier = identifier;
             return View();
@@ -103,14 +102,13 @@ namespace DATN_GO.Controllers
         [HttpPost("AuthenticationCode")]
         public async Task<IActionResult> AuthenticationCode(string identifier, string code)
         {
-            // Dòng này vẫn kiểm tra nếu identifier HOẶC code bị rỗng
-            // Nếu JavaScript hoạt động, 'code' sẽ không rỗng khi đến đây
+
             if (string.IsNullOrEmpty(identifier) || string.IsNullOrEmpty(code))
             {
                 TempData["ToastMessage"] = "❌ Thiếu thông tin hoặc mã OTP. Vui lòng thử lại!";
                 TempData["ToastType"] = "danger";
                 ViewBag.Identifier = identifier;
-                return View(); // Trả về lại view hiện tại để người dùng nhập lại
+                return View();
             }
 
             var (success, message) = await _AuthenticationService.VerifyCodeAsync(identifier, code);
@@ -126,7 +124,7 @@ namespace DATN_GO.Controllers
                 TempData["ToastMessage"] = $"❌ {message}";
                 TempData["ToastType"] = "danger";
                 ViewBag.Identifier = identifier;
-                return View(); // Trả về lại view hiện tại với thông báo lỗi
+                return View();
             }
         }
 
@@ -138,7 +136,7 @@ namespace DATN_GO.Controllers
             {
                 TempData["ToastMessage"] = "❌ Không tìm thấy thông tin định danh để gửi lại mã.";
                 TempData["ToastType"] = "danger";
-                return RedirectToAction("Register"); // Hoặc Login
+                return RedirectToAction("Register");
             }
 
             var (success, message) = await _AuthenticationService.SendVerificationCodeAsync(identifier);
@@ -198,6 +196,67 @@ namespace DATN_GO.Controllers
                 return View();
             }
         }
+
+
+        [HttpGet("ChangePassword")]
+        public IActionResult ChangePassword()
+        {
+            string? identifier = HttpContext.Session.GetString("Identifier");
+            ViewBag.Identifier = identifier;
+            return View();
+        }
+
+        [HttpPost("ChangePassword")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(string currentPassword, string newPassword, string confirmPassword)
+        {
+            string? identifier = HttpContext.Session.GetString("Identifier");
+
+            if (string.IsNullOrEmpty(identifier))
+            {
+                _logger.LogWarning("Identifier not found in session for ChangePassword. Redirecting to Login.");
+                TempData["ToastMessage"] = "Không tìm thấy thông tin tài khoản. Vui lòng đăng nhập lại.";
+                TempData["ToastType"] = "danger";
+                return RedirectToAction("Login");
+            }
+
+            if (string.IsNullOrEmpty(currentPassword) || string.IsNullOrEmpty(newPassword) || string.IsNullOrEmpty(confirmPassword))
+            {
+                TempData["ToastMessage"] = "Vui lòng nhập đầy đủ thông tin.";
+                TempData["ToastType"] = "danger";
+                ViewBag.Identifier = identifier; 
+                return View();
+            }
+
+            if (newPassword != confirmPassword)
+            {
+                TempData["ToastMessage"] = "Mật khẩu mới và mật khẩu xác nhận không khớp.";
+                TempData["ToastType"] = "danger";
+                ViewBag.Identifier = identifier; 
+                return View();
+            }
+
+            var (success, message) = await _AuthenticationService.ChangePasswordAsync(identifier, currentPassword, newPassword, confirmPassword);
+
+            if (success)
+            {
+                TempData["ToastMessage"] = message;
+                TempData["ToastType"] = "success";
+
+                HttpContext.Session.Clear();
+                TempData["ToastMessage"] = "Đổi mật khẩu thành công. Vui lòng đăng nhập lại.";
+                TempData["ToastType"] = "success";
+                return RedirectToAction("Index", "Home");
+            }
+            else
+            {
+                TempData["ToastMessage"] = message;
+                TempData["ToastType"] = "danger";
+                ViewBag.Identifier = identifier; 
+                return View();
+            }
+        }
+
 
         [HttpGet("ResetPassword")]
         public IActionResult ResetPassword(string identifier)

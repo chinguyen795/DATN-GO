@@ -243,6 +243,58 @@ namespace DATN_API.Controllers
             }
         }
 
+       
+        [HttpPost("ChangePasswordWithIdentifier")]
+        public async Task<IActionResult> ChangePasswordWithIdentifier([FromBody] ChangePasswordWithIdentifierRequest request)
+        {
+            if (request.NewPassword == null || request.ConfirmNewPassword == null || request.CurrentPassword == null || string.IsNullOrEmpty(request.Identifier))
+            {
+                return BadRequest("Vui lòng nhập đầy đủ thông tin.");
+            }
+
+            if (request.NewPassword != request.ConfirmNewPassword)
+            {
+                return BadRequest("Mật khẩu mới và mật khẩu xác nhận không khớp.");
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Identifier || u.PhoneNumber == request.Identifier);
+            if (user == null)
+            {
+                return NotFound("Không tìm thấy người dùng.");
+            }
+
+            if (!BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.Password))
+            {
+                return Unauthorized("Mật khẩu cũ không đúng.");
+            }
+
+            if (request.NewPassword.Length < 6)
+            {
+                return BadRequest("Mật khẩu mới phải có ít nhất 6 ký tự.");
+            }
+
+            try
+            {
+                user.Password = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+                await _context.SaveChangesAsync();
+                return Ok("Đổi mật khẩu thành công!");
+            }
+            catch (DbUpdateException ex)
+            {
+                Console.WriteLine($"Lỗi khi cập nhật mật khẩu: {ex.Message}");
+                return StatusCode(500, "Đã xảy ra lỗi khi đổi mật khẩu. Vui lòng thử lại sau.");
+            }
+        }
+
+
+        public class ChangePasswordWithIdentifierRequest
+        {
+            public string Identifier { get; set; } 
+            public string CurrentPassword { get; set; }
+            public string NewPassword { get; set; }
+            public string ConfirmNewPassword { get; set; }
+        }
+
         public class VerifyRequest
         {
             public string Identifier { get; set; }
