@@ -112,7 +112,7 @@ namespace DATN_GO.Service
 
         public async Task<(bool Success, string Message)> ChangePasswordAsync(string identifier, string currentPassword, string newPassword, string confirmNewPassword)
         {
-            var payload = new ChangePasswordWithIdentifierRequest // <-- Sửa đổi ở đây
+            var payload = new ChangePasswordWithIdentifierRequest
             {
                 Identifier = identifier,
                 CurrentPassword = currentPassword,
@@ -133,6 +133,46 @@ namespace DATN_GO.Service
                 return (false, errorMessage);
             }
         }
+
+        public async Task<(bool Success, string Message)> SendOtpToNewEmailAsync(string newEmail)
+        {
+            var content = new StringContent(JsonSerializer.Serialize(newEmail), Encoding.UTF8, "application/json");
+            var response = await _httpClient.PostAsync($"{_baseUrl}Authentication/SendOtpToNewEmail", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return (true, await response.Content.ReadAsStringAsync());
+            }
+            else
+            {
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                return (false, errorMessage);
+            }
+        }
+
+        public async Task<(bool Success, string Message)> ChangeEmailAsync(int userId, string newEmail, string otpCode)
+        {
+            var payload = new ChangeEmailRequest
+            {
+                UserId = userId, 
+                NewEmail = newEmail,
+                OtpCode = otpCode
+            };
+
+            var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+            var response = await _httpClient.PostAsync($"{_baseUrl}Authentication/ChangeEmail", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return (true, await response.Content.ReadAsStringAsync());
+            }
+            else
+            {
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                return (false, errorMessage);
+            }
+        }
+
 
         public class VerifyRequest
 		{
@@ -169,6 +209,13 @@ namespace DATN_GO.Service
             public string CurrentPassword { get; set; }
             public string NewPassword { get; set; }
             public string ConfirmNewPassword { get; set; }
+        }
+
+        public class ChangeEmailRequest
+        {
+            public int UserId { get; set; }
+            public string NewEmail { get; set; }
+            public string OtpCode { get; set; }
         }
     }
 }

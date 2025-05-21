@@ -257,18 +257,6 @@ namespace DATN_GO.Controllers
             }
         }
 
-
-        [HttpGet("ResetPassword")]
-        public IActionResult ResetPassword(string identifier)
-        {
-            if (string.IsNullOrEmpty(identifier))
-            {
-                return RedirectToAction("index", "Home");
-            }
-            ViewBag.Identifier = identifier;
-            return View();
-        }
-
         [HttpGet("Logout")]
         public IActionResult Logout()
         {
@@ -276,6 +264,100 @@ namespace DATN_GO.Controllers
             TempData["ToastMessage"] = "✅ Bạn đã đăng xuất thành công!";
             TempData["ToastType"] = "success";
             return RedirectToAction("Index", "Home");
+        }
+
+        [HttpGet("ChangeEmailPrompt")]
+        public IActionResult ChangeEmailPrompt()
+        {
+            if (HttpContext.Session.GetString("Id") == null)
+            {
+                TempData["ToastMessage"] = "Vui lòng đăng nhập để đổi email.";
+                TempData["ToastType"] = "warning";
+                return RedirectToAction("Login");
+            }
+            ViewBag.CurrentEmail = HttpContext.Session.GetString("Email");
+            return View();
+        }
+
+        [HttpPost("ChangeEmailPrompt")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangeEmailPrompt(string newEmail)
+        {
+            string? userIdString = HttpContext.Session.GetString("Id");
+            if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+            {
+                TempData["ToastMessage"] = "Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.";
+                TempData["ToastType"] = "danger";
+                return RedirectToAction("Login");
+            }
+
+            if (string.IsNullOrEmpty(newEmail))
+            {
+                TempData["ToastMessage"] = "Vui lòng nhập email mới.";
+                TempData["ToastType"] = "danger";
+                ViewBag.CurrentEmail = HttpContext.Session.GetString("Email");
+                return View();
+            }
+
+            var (success, message) = await _AuthenticationService.SendOtpToNewEmailAsync(newEmail);
+
+            if (success)
+            {
+                TempData["ToastMessage"] = message;
+                TempData["ToastType"] = "success";
+                return RedirectToAction("ChangeEmailVerifyOtp", new { newEmail = newEmail, userId = userId });
+            }
+            else
+            {
+                TempData["ToastMessage"] = $"❌ {message}";
+                TempData["ToastType"] = "danger";
+                ViewBag.CurrentEmail = HttpContext.Session.GetString("Email");
+                return View();
+            }
+        }
+
+        [HttpGet("ChangeEmailVerifyOtp")]
+        public IActionResult ChangeEmailVerifyOtp(string newEmail, int userId)
+        {
+            if (string.IsNullOrEmpty(newEmail) || userId == 0)
+            {
+                return RedirectToAction("ChangeEmailPrompt");
+            }
+            ViewBag.NewEmail = newEmail;
+            ViewBag.UserId = userId;
+            return View();
+        }
+
+        [HttpPost("ChangeEmailVerifyOtp")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangeEmailVerifyOtp(int userId, string newEmail, string otpCode)
+        {
+            if (userId == 0 || string.IsNullOrEmpty(newEmail) || string.IsNullOrEmpty(otpCode))
+            {
+                TempData["ToastMessage"] = "Vui lòng cung cấp đầy đủ thông tin.";
+                TempData["ToastType"] = "danger";
+                ViewBag.NewEmail = newEmail;
+                ViewBag.UserId = userId;
+                return View();
+            }
+
+            var (success, message) = await _AuthenticationService.ChangeEmailAsync(userId, newEmail, otpCode);
+
+            if (success)
+            {
+                TempData["ToastMessage"] = message;
+                TempData["ToastType"] = "success";
+
+                return RedirectToAction("Logout");
+            }
+            else
+            {
+                TempData["ToastMessage"] = $"❌ {message}";
+                TempData["ToastType"] = "danger";
+                ViewBag.NewEmail = newEmail;
+                ViewBag.UserId = userId;
+                return View();
+            }
         }
     }
 }

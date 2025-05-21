@@ -287,6 +287,91 @@ namespace DATN_API.Controllers
         }
 
 
+
+
+
+        [HttpPost("SendOtpToNewEmail")]
+        public async Task<IActionResult> SendOtpToNewEmail([FromBody] string newEmail)
+        {
+            try
+            {
+                var mailAddress = new MailAddress(newEmail);
+            }
+            catch
+            {
+                return BadRequest("Định dạng email mới không hợp lệ!");
+            }
+
+            if (_lastCodeSentTime.TryGetValue(newEmail, out DateTime lastSent) && (DateTime.UtcNow - lastSent) < _resendDelay)
+                return BadRequest($"Vui lòng chờ {(_resendDelay - (DateTime.UtcNow - lastSent)).Seconds} giây trước khi gửi lại mã.");
+
+            var code = new Random().Next(100000, 999999).ToString();
+            _verificationCodes[newEmail] = code;
+            _lastCodeSentTime[newEmail] = DateTime.UtcNow;
+
+            bool sent = SendEmail(newEmail, "Mã xác thực Email", $"Mã xác thực của bạn là: {code}");
+            return sent ? Ok("Mã xác thực đã được gửi đến email mới của bạn!") : BadRequest("Không thể gửi email!");
+        }
+        
+        [HttpPost("ChangeEmail")]
+        public async Task<IActionResult> ChangeEmail([FromBody] ChangeEmailRequest request)
+        {
+            if (string.IsNullOrEmpty(request.NewEmail) || string.IsNullOrEmpty(request.OtpCode) || request.UserId == 0)
+            {
+                return BadRequest("Vui lòng cung cấp đầy đủ ID người dùng, email mới và mã OTP.");
+            }
+
+            var user = await _context.Users.FindAsync(request.UserId);
+            if (user == null)
+            {
+                return NotFound("Không tìm thấy người dùng.");
+            }
+         
+            if (await _context.Users.AnyAsync(u => u.Email == request.NewEmail && u.Id != user.Id))
+            {
+                return BadRequest("Email mới đã được sử dụng bởi một tài khoản khác!");
+            }
+
+            if (!_verificationCodes.TryGetValue(request.NewEmail, out string storedCode) || storedCode != request.OtpCode)
+            {
+                return BadRequest("Mã OTP không đúng.");
+            }
+
+            if (_lastCodeSentTime.TryGetValue(request.NewEmail, out DateTime sentTime) && (DateTime.UtcNow - sentTime) > _codeExpiration)
+            {
+                _verificationCodes.Remove(request.NewEmail);
+                _lastCodeSentTime.Remove(request.NewEmail);
+                return BadRequest("Mã OTP đã hết hạn.");
+            }
+
+            try
+            {
+                
+                if (string.IsNullOrEmpty(user.Email))
+                {
+                    user.Email = request.NewEmail;
+                    await _context.SaveChangesAsync();
+                    _verificationCodes.Remove(request.NewEmail);
+                    _lastCodeSentTime.Remove(request.NewEmail);
+                    _verifiedAccounts.Remove(request.NewEmail);
+                    return Ok("Thêm email thành công!");
+                }
+                else // Tài khoản đã có email, tiến hành sửa
+                {
+                    user.Email = request.NewEmail;
+                    await _context.SaveChangesAsync();
+                    _verificationCodes.Remove(request.NewEmail);
+                    _lastCodeSentTime.Remove(request.NewEmail);
+                    _verifiedAccounts.Remove(request.NewEmail);
+                    return Ok("Đổi email thành công!");
+                }
+            }
+            catch (DbUpdateException ex)
+            {
+                Console.WriteLine($"Lỗi khi cập nhật email: {ex.Message}");
+                return StatusCode(500, "Đã xảy ra lỗi khi cập nhật email. Vui lòng thử lại sau.");
+            }
+        }
         public class ChangePasswordWithIdentifierRequest
         {
             public string Identifier { get; set; } 
@@ -312,6 +397,13 @@ namespace DATN_API.Controllers
         {
             public string Identifier { get; set; }
             public string Password { get; set; }
+        }
+
+        public class ChangeEmailRequest
+        {
+            public int UserId { get; set; }
+            public string NewEmail { get; set; }
+            public string OtpCode { get; set; }
         }
     }
 }
