@@ -1,8 +1,24 @@
-﻿@{
-    ViewData["Title"] = "Địa chỉ  Page";
+﻿@model List<DATN_GO.Models.Addresses>
+@{
+    ViewData["Title"] = "Địa chỉ Page";
 }
 
 <div class="container py-5">
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <!-- Header Section -->
     <div class="bg-danger text-white p-3 rounded-top d-flex align-items-center mb-4">
         <h5 class="mb-0">Địa chỉ của tôi</h5>
@@ -12,16 +28,16 @@
     <div class="row mb-4">
         <div class="col-md-6">
             <div class="input-group">
-                <input type="text" class="form-control border-only-bottom" placeholder="Tìm kiếm địa chỉ...">
+                <input type="text" id="searchInput" class="form-control border-only-bottom" placeholder="Tìm kiếm địa chỉ...">
                 <button class="btn btn-outline-danger" type="button">
                     <i class="bi bi-search"></i>
                 </button>
             </div>
         </div>
         <div class="col-md-6 d-flex justify-content-md-end mt-3 mt-md-0">
-            <button class="btn btn-danger">
+            <a asp-action="Create" class="btn btn-danger">
                 <i class="bi bi-plus-lg me-1"></i>Thêm địa chỉ mới
-            </button>
+            </a>
         </div>
     </div>
 
@@ -33,28 +49,119 @@
                     <th scope="col" class="text-center">#</th>
                     <th scope="col">Thông tin nhận hàng</th>
                     <th scope="col">Địa chỉ</th>
+                    <th scope="col">Trạng thái</th>
                     <th scope="col" class="text-center">Thao tác</th>
                 </tr>
             </thead>
             <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    int index = 1;
+                    foreach (var address in Model)
+                    {
+                        <tr class="address-row">
+                            <td class="text-center">@index</td>
+                            <td>
+                                <strong>@address.User?.FullName - @address.User?.PhoneNumber</strong>
+                            </td>
+                            <td>@address.Discription</td>
+                            <td>
+                                @if (address.Status == "Mặc định")
+                                {
+                                    <span class="badge bg-success">Mặc định</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Không mặc định</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex flex-column align-items-center gap-1">
+                                    <a asp-action="Edit" asp-route-id="@address.Id" class="btn btn-sm btn-outline-warning w-100">
+                                        <i class="bi bi-pencil-square"></i> Sửa
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger w-100"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteConfirmModal"
+                                            data-id="@address.Id">
+                                        <i class="bi bi-trash3"></i> Xoá
+                                    </button>
 
-                <tr>
-                    <td class="text-center">2</td>
-                    <td>
-                        <strong>Nguyễn Văn A</strong><br>
-                        <span class="text-muted">0987654321</span>
-                    </td>
-                    <td>456 Đường DEF, Phường UVW, Quận 2, TP. Hồ Chí Minh</td>
-                    <td class="text-center">
-                        <button class="btn btn-sm btn-outline-warning m-2">
-                            <i class="bi bi-pencil-square"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger">
-                            <i class="bi bi-trash3"></i>
-                        </button>
-                    </td>
-                </tr>
+
+                                    @if (address.Status != "Mặc định")
+                                    {
+                                        <form asp-action="SetDefault" asp-route-id="@address.Id" method="post" class="w-100">
+                                            <button type="submit" class="btn btn-sm btn-outline-primary w-100"
+                                                    onclick="return confirm('Đặt địa chỉ này làm mặc định?')">
+                                                <i class="bi bi-star"></i> Mặc định
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                        index++;
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5" class="text-center">Không có địa chỉ nào được tìm thấy.</td>
+                    </tr>
+                }
             </tbody>
+
         </table>
     </div>
+    <!-- Modal xác nhận xoá -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="deleteConfirmModalLabel">Xác nhận xoá</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    Bạn có chắc chắn muốn xoá địa chỉ này không?
+                </div>
+                <div class="modal-footer">
+                    <a href="#" class="btn btn-danger" id="confirmDeleteBtn">Xoá</a>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huỷ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 </div>
+
+<script>
+    function removeVietnameseTones(str) {
+        str = str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        str = str.replace(/đ/g, "d").replace(/Đ/g, "D");
+        return str;
+    }
+
+    document.getElementById('searchInput').addEventListener('input', function () {
+        const keyword = removeVietnameseTones(this.value.toLowerCase().trim());
+        const rows = document.querySelectorAll('.address-row');
+
+        rows.forEach(row => {
+            const rowText = removeVietnameseTones(row.innerText.toLowerCase());
+            row.style.display = rowText.includes(keyword) ? '' : 'none';
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const deleteModal = document.getElementById('deleteConfirmModal');
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+
+        deleteModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const addressId = button.getAttribute('data-id');
+            const deleteUrl = `/Address/Delete/${addressId}`;
+            confirmBtn.setAttribute('href', deleteUrl);
+        });
+    });
+</script>
+

@@ -1,5 +1,6 @@
 ﻿
 using DATN_GO.Service;
+using DATN_GO.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -30,7 +31,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+// Đăng ký HttpClient cho AddressService
+builder.Services.AddHttpClient("api", client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7096/"); // đúng cổng API
+});
 
+
+// Đăng ký HttpClient cho các Service
+builder.Services.AddScoped<AddressService>();
 // Đăng ký Services (Scoped để tránh memory leak)
 builder.Services.AddScoped<AuthenticationService>();
 builder.Services.AddScoped<UserService>();

@@ -2,6 +2,8 @@
 using DATN_API.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
+using static DATN_API.Controllers.CitiesController;
 
 namespace DATN_API.Controllers
 {
@@ -98,5 +100,80 @@ namespace DATN_API.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
+
+        [HttpPost("import-districts")]
+        public async Task<IActionResult> ImportDistrictsFromJson()
+        {
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "tree_mien_nam.json");
+
+            if (!System.IO.File.Exists(filePath))
+                return NotFound("File tree_mien_nam.json không tồn tại.");
+
+            var json = await System.IO.File.ReadAllTextAsync(filePath);
+
+            List<CityDto>? cityDtos;
+            try
+            {
+                cityDtos = JsonSerializer.Deserialize<List<CityDto>>(json);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Lỗi khi đọc JSON: {ex.Message}");
+            }
+
+            if (cityDtos == null || !cityDtos.Any())
+                return BadRequest("Dữ liệu JSON không hợp lệ hoặc rỗng.");
+
+            int count = 0;
+
+            foreach (var cityDto in cityDtos)
+            {
+                var city = await _context.Cities.FirstOrDefaultAsync(c => c.CityName == cityDto.CityName);
+                if (city == null)
+                    continue;
+
+                foreach (var districtDto in cityDto.Districts)
+                {
+                    // Tránh trùng tên quận trong cùng thành phố
+                    bool exists = await _context.Districts.AnyAsync(d =>
+                        d.DistrictName == districtDto.DistrictName &&
+                        d.CityId == city.Id);
+
+                    if (exists) continue;
+
+                    var district = new Districts
+                    {
+                        CityId = city.Id,
+                        DistrictName = districtDto.DistrictName
+                    };
+
+                    _context.Districts.Add(district);
+                    count++;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = $"Đã lưu {count} quận/huyện vào DB." });
+        }
+
+        public class CityDto
+        {
+            public string CityName { get; set; } = string.Empty;
+            public List<DistrictDto> Districts { get; set; } = new();
+        }
+
+        public class DistrictDto
+        {
+            public string DistrictName { get; set; } = string.Empty;
+            public List<WardDto> Wards { get; set; } = new();
+        }
+
+        public class WardDto
+        {
+            public string WardName { get; set; } = string.Empty;
+        }
+
+
     }
 }
