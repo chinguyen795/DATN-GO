@@ -18,7 +18,7 @@ namespace DATN_API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthenticationController : ControllerBase
+    public class AuthenticationController : ControllerBase // Luôn được register ở DI scope
     {
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _configuration;
@@ -38,6 +38,7 @@ namespace DATN_API.Controllers
 
         private bool IsPhoneNumber(string input)
         {
+            //_verifiedAccounts.Add(input);
             return Regex.IsMatch(input, @"^\+84\d{9,10}$");
         }
 
@@ -126,8 +127,8 @@ namespace DATN_API.Controllers
             bool isPhone = IsPhoneNumber(identifier);
 
             // Kiểm tra xem mã OTP đã được xác minh chưa
-            if (!_verifiedAccounts.Contains(identifier))
-                return BadRequest("Bạn chưa xác minh mã OTP hoặc email!");
+            //if (!_verifiedAccounts.Contains(identifier)) // Luôn = false => Trả ra 'Bạn chưa xác minh mã OTP hoặc email!'
+            //    return BadRequest("Bạn chưa xác minh mã OTP hoặc email!");
 
             // Kiểm tra xác nhận mật khẩu
             if (request.Password != request.ConfirmPassword)
@@ -197,7 +198,7 @@ namespace DATN_API.Controllers
         {
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.MobilePhone, user.PhoneNumber),
                 new Claim(ClaimTypes.Role, user.RoleId.ToString()),

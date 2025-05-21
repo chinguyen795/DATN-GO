@@ -1,67 +1,88 @@
 ﻿using Google.Cloud.Storage.V1;
-using Microsoft.Extensions.Configuration;
-using System.IO;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http; // Để làm việc với IFormFile
 
-namespace DATN_GO.Service
+public class GoogleCloudStorageService
 {
-    public class GoogleCloudStorageService
+    private readonly StorageClient _storageClient;
+    private readonly string _bucketName;
+    private readonly ILogger<GoogleCloudStorageService> _logger;
+    public async Task<string?> UploadFileAsync(IFormFile file, string folderName = "")
     {
-        private readonly StorageClient _storageClient;
-        private readonly string _bucketName;
-        private readonly ILogger<GoogleCloudStorageService> _logger; // Thêm logger
-
-        public GoogleCloudStorageService(IConfiguration configuration, ILogger<GoogleCloudStorageService> logger)
+        if (file == null || file.Length == 0)
         {
-            _logger = logger;
-            _bucketName = configuration["GoogleCloudStorage:BucketName"] ?? throw new ArgumentNullException("GoogleCloudStorage:BucketName not configured.");
-            string credentialsPath = configuration["GoogleCloudStorage:CredentialsPath"] ?? throw new ArgumentNullException("GoogleCloudStorage:CredentialsPath not configured.");
-
-            // Đặt biến môi trường cho Google Cloud Client Library
-            Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", Path.Combine(Directory.GetCurrentDirectory(), credentialsPath));
-
-            _storageClient = StorageClient.Create();
-            _logger.LogInformation("GoogleCloudStorageService initialized.");
+            _logger.LogWarning("⚠️ Attempted to upload null or empty file.");
+            return null;
         }
 
-        public async Task<string?> UploadFileAsync(IFormFile file, string folderName = "")
+        try
         {
-            if (file == null || file.Length == 0)
-            {
-                _logger.LogWarning("Attempted to upload a null or empty file.");
-                return null;
-            }
+            string fileExtension = Path.GetExtension(file.FileName);
+            string fileName = $"{folderName.TrimEnd('/')}/{Guid.NewGuid()}{fileExtension}";
 
-            try
-            {
-                string fileExtension = Path.GetExtension(file.FileName);
-                string fileName = $"{folderName}{Guid.NewGuid()}{fileExtension}";
+            using var stream = new MemoryStream();
+            await file.CopyToAsync(stream);
+            stream.Position = 0;
 
-                // Upload file
-                using (var stream = new MemoryStream())
-                {
-                    await file.CopyToAsync(stream);
-                    stream.Position = 0;
+            await _storageClient.UploadObjectAsync(
+                _bucketName,
+                fileName,
+                "application/octet-stream",
+                stream
+            );
 
-                    var gcsObject = await _storageClient.UploadObjectAsync(
-                        _bucketName,
-                        fileName,
-                        file.ContentType,
-                        stream
-                    );
+            string publicUrl = $"https://storage.googleapis.com/{_bucketName}/{fileName}";
+            _logger.LogInformation("✅ File uploaded to: {Url}", publicUrl);
+            return publicUrl;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "❌ Upload failed.");
+            return null;
+        }
+    }
+    public GoogleCloudStorageService(IConfiguration configuration, ILogger<GoogleCloudStorageService> logger)
+    {
+        _logger = logger;
 
-                  
-                    string publicUrl = $"https://storage.googleapis.com/{_bucketName}/{fileName}";
-                    _logger.LogInformation($"File uploaded successfully to: {publicUrl}");
-                    return publicUrl;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error uploading file to GCS: {ex.Message}");
-                return null;
-            }
+        _bucketName = configuration["GoogleCloudStorage:BucketName"]
+                      ?? throw new ArgumentNullException("GoogleCloudStorage:BucketName not configured.");
+
+        string credentialsPath = configuration["GoogleCloudStorage:CredentialsPath"]
+                                 ?? throw new ArgumentNullException("GoogleCloudStorage:CredentialsPath not configured.");
+
+        string fullPath = Path.Combine(Directory.GetCurrentDirectory(), credentialsPath);
+
+        if (!File.Exists(fullPath))
+        {
+            _logger.LogError("❌ Không tìm thấy file credentials tại: {Path}", fullPath);
+            throw new FileNotFoundException($"Không tìm thấy file credentials tại: {fullPath}");
+        }
+
+        Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", fullPath);
+        _storageClient = StorageClient.Create();
+
+        _logger.LogInformation("✅ GoogleCloudStorageService khởi tạo thành công với bucket: {Bucket} | credentials: {Path}", _bucketName, fullPath);
+    }
+
+
+
+
+
+
+    public async Task<bool> DeleteFileAsync(string url)
+    {
+        try
+        {
+            var uri = new Uri(url);
+            var objectName = uri.AbsolutePath.TrimStart('/').Replace($"{_bucketName}/", "");
+
+            await _storageClient.DeleteObjectAsync(_bucketName, objectName);
+            _logger.LogInformation("🗑️ Deleted file: {ObjectName}", objectName);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "❌ Error deleting object.");
+            return false;
         }
     }
 }

@@ -280,6 +280,11 @@ namespace DATN_API.Data
                 .HasForeignKey(od => od.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Diners>(builder =>
+            {
+                builder.Property(x => x.Avatar).HasColumnType("TEXT");
+                builder.Property(x => x.CoverPhoto).HasColumnType("TEXT");
+            });
         }
     }
 }

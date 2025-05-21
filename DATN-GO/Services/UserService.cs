@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using DATN_GO.Models;
+using System.Net.Http.Headers;
 
 namespace DATN_GO.Service
 {
@@ -13,11 +14,13 @@ namespace DATN_GO.Service
     {
         private readonly HttpClient _httpClient;
         private readonly string _baseUrl;
+        private readonly IHttpContextAccessor _contextAccessor;
 
-        public UserService(HttpClient httpClient, IConfiguration configuration)
+        public UserService(HttpClient httpClient, IConfiguration configuration, IHttpContextAccessor contextAccessor)
         {
             _httpClient = httpClient;
             _baseUrl = configuration["ApiSettings:BaseUrl"];
+            _contextAccessor = contextAccessor;
         }
 
         public async Task<List<Users>?> GetUsersAsync()
@@ -94,5 +97,14 @@ namespace DATN_GO.Service
             return false;
         }
 
+        public async Task<Users> GetProfile()
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _contextAccessor.GetToken());
+            var response = await _httpClient.GetAsync($"{_baseUrl}Users/Profile");
+            if (!response.IsSuccessStatusCode)
+                throw new Exception("Đã có lỗi xảy ra trong quá trình xử lý");
+            var content = await response.Content.ReadAsStringAsync();
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<Users>(content);
+        }
     }
 }
