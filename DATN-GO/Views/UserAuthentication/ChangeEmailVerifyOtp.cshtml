@@ -1,7 +1,10 @@
 ﻿@{
-    ViewData["Title"] = "AuthenticationCode Page";
-    var identifier = ViewBag.Identifier as string;
+    ViewData["Title"] = "Xác nhận mã OTP đổi Email";
+    // Lấy newEmail và UserId từ ViewBag đã được Controller truyền sang
+    var newEmail = ViewBag.NewEmail as string;
+    var userId = ViewBag.UserId;
 }
+
 <section class="py-5 bg-light min-vh-100 d-flex align-items-center">
     <div class="container">
         <div class="row justify-content-center">
@@ -9,15 +12,18 @@
                 <div class="bg-white p-4 p-md-5 rounded shadow-sm">
                     <div class="text-center mb-4">
                         <i class="bi bi-shield-lock text-danger display-1"></i>
-                        <h4 class="text-danger mt-3">Xác nhận mã OTP</h4>
+                        <h4 class="text-danger mt-3">Xác nhận mã OTP để đổi Email</h4>
                         <p class="text-muted">
-                            <span>Mã xác nhận đã được gửi đến <strong class="text-danger">@identifier</strong></span>
+                            <span>Mã xác nhận đã được gửi đến địa chỉ email mới: <strong class="text-danger">@newEmail</strong></span>
                         </p>
                     </div>
 
-                    <form method="post" asp-action="AuthenticationCode" asp-controller="UserAuthentication" id="verifyOtpForm">
-                        <input type="hidden" name="identifier" value="@identifier" />
-                        <input type="hidden" id="otpCombinedCode" name="code" />
+                    <form method="post" asp-action="ChangeEmailVerifyOtp" asp-controller="UserAuthentication" id="verifyOtpForm">
+                        @Html.AntiForgeryToken() @* Thêm Anti-Forgery Token cho bảo mật *@
+
+                        <input type="hidden" name="userId" value="@userId" /> @* Thêm trường ẩn cho UserId *@
+                        <input type="hidden" name="newEmail" value="@newEmail" /> @* Thêm trường ẩn cho NewEmail *@
+                        <input type="hidden" id="otpCombinedCode" name="otpCode" /> @* Đổi name thành otpCode *@
 
                         <div class="otp-inputs d-flex justify-content-center gap-2 gap-md-3 mb-4">
                             @for (int i = 1; i <= 6; i++)
@@ -28,7 +34,7 @@
 
                         <div class="d-grid">
                             <button class="btn btn-danger" type="submit" id="verifyBtn">
-                                <i class="bi bi-check-circle me-2"></i>Xác nhận
+                                <i class="bi bi-check-circle me-2"></i>Xác nhận và đổi Email
                             </button>
                         </div>
                     </form>
@@ -36,8 +42,9 @@
                     <div class="text-center mb-4 mt-3">
                         <p class="text-muted mb-0">
                             Không nhận được mã?
-                            <form method="post" asp-action="ResendAuthenticationCode" asp-controller="UserAuthentication" id="resendOtpForm">
-                                <input type="hidden" name="identifier" value="@identifier" />
+                            <form method="post" asp-action="SendOtpToNewEmail" asp-controller="UserAuthentication" id="resendOtpForm">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="newEmail" value="@newEmail" />
                                 <button type="submit" class="btn btn-link text-danger p-0 border-0" id="resendBtn">Gửi lại</button>
                             </form>
                         </p>
@@ -55,15 +62,15 @@
             let timeLeft = 60;
             let countdownInterval;
 
-            const inputs = document.querySelectorAll('.otp-input'); // Các ô input nhỏ (1 ký tự)
+            const inputs = document.querySelectorAll('.otp-input');
             const resendBtn = document.getElementById('resendBtn');
             const countdownSpan = document.getElementById('countdown');
 
             const verifyOtpForm = document.getElementById('verifyOtpForm');
-            const otpCombinedCodeInput = document.getElementById('otpCombinedCode'); // Input ẩn để chứa mã OTP đã nối
+            const otpCombinedCodeInput = document.getElementById('otpCombinedCode');
 
             inputs.forEach((input, index) => {
-                input.addEventListener('input', (e) => { // Dùng 'input' thay vì 'keyup' để bắt các trường hợp paste
+                input.addEventListener('input', (e) => {
                     input.value = input.value.replace(/\D/g, '').slice(0, 1);
 
                     if (input.value.length === 1 && index < inputs.length - 1) {
@@ -78,7 +85,6 @@
                 });
             });
 
-            // Xử lý khi form xác nhận OTP được submit
             verifyOtpForm.addEventListener('submit', function (e) {
                 let otpCode = '';
                 inputs.forEach(input => {
@@ -97,26 +103,24 @@
                 console.log('Value assigned to hidden otpCombinedCodeInput (JS):', otpCombinedCodeInput.value); // DEBUG: Kiểm tra giá trị sau khi gán
             });
 
-           
-            resendBtn.addEventListener('click', () => {
+           document.getElementById('resendOtpForm').addEventListener('submit', function () {
                 timeLeft = 60; // Reset thời gian
                 resendBtn.disabled = true;
                 if (countdownInterval) clearInterval(countdownInterval);
                 countdownInterval = setInterval(updateCountdown, 1000);
-
             });
 
-           
+
             countdownInterval = setInterval(updateCountdown, 1000);
 
             function updateCountdown() {
                 if (timeLeft > 0) {
                     timeLeft--;
-                    countdownSpan.textContent = `Vui lòng chờ ${timeLeft} giây.`;
+                    countdownSpan.textContent = `Vui lòng chờ ${timeLeft} giây để gửi lại.`;
                 } else {
                     clearInterval(countdownInterval);
                     resendBtn.disabled = false;
-                    countdownSpan.textContent = ''; // Xóa thông báo đếm ngược
+                    countdownSpan.textContent = 'Bạn có thể gửi lại mã.'; // Xóa thông báo đếm ngược và hiển thị sẵn sàng
                 }
             }
         });

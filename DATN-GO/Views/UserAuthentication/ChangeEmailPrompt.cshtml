@@ -1,0 +1,47 @@
+﻿
+@{
+    ViewData["Title"] = "Chỉnh sửa Email";
+}
+
+<div class="container py-5 my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="bg-white p-4 p-md-5 rounded shadow-sm">
+                <h4 class="text-danger text-center mb-4">Chỉnh sửa Email</h4>
+
+                @if (!string.IsNullOrEmpty(ViewBag.CurrentEmail))
+                {
+                    <div class="alert alert-info text-center" role="alert">
+                        Email hiện tại của bạn: <strong>@ViewBag.CurrentEmail</strong>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-warning text-center" role="alert">
+                        Bạn chưa có email. Vui lòng thêm email mới.
+                    </div>
+                }
+
+                <form asp-action="ChangeEmailPrompt" asp-controller="UserAuthentication" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-4">
+                        <label for="newEmail" class="form-label">Email mới</label>
+                        <div class="input-group">
+                            <input type="email" class="form-control border-only-bottom" id="newEmail" name="newEmail" placeholder="Nhập email mới của bạn" required>
+                        </div>
+                        @if (TempData["ToastMessage"] != null && TempData["ToastType"] != null && TempData["ToastType"].ToString() == "danger")
+                        {
+                            <div class="text-danger mt-2">@TempData["ToastMessage"]</div>
+                        }
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-check-circle me-1"></i>Gửi mã xác nhận
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

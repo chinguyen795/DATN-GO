@@ -35,6 +35,7 @@ namespace DATN_GO.Controllers
                 HttpContext.Session.SetString("FullName", loginResult.FullName);
                 HttpContext.Session.SetString("Role", loginResult.Roles.ToString());
                 HttpContext.Session.SetString("Identifier", identifier);
+                HttpContext.Session.SetString("Email", loginResult.Email ?? string.Empty);
 
                 TempData["ToastMessage"] = $"Chào mừng {loginResult.FullName}, bạn đã đăng nhập thành công!";
                 TempData["ToastType"] = "success";
@@ -256,13 +257,22 @@ namespace DATN_GO.Controllers
                 return View();
             }
         }
-
         [HttpGet("Logout")]
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
-            TempData["ToastMessage"] = "✅ Bạn đã đăng xuất thành công!";
-            TempData["ToastType"] = "success";
+
+            if (TempData["ChangeEmailSuccessMessage"] is string changeEmailMessage)
+            {
+                TempData["ToastMessage"] = "Đã đổi thông tin email thành công. Vui lòng đăng nhập lại.";
+                TempData["ToastType"] = TempData["ChangeEmailSuccessType"];
+            }
+            else
+            {
+                TempData["ToastMessage"] = "✅ Bạn đã đăng xuất thành công!";
+                TempData["ToastType"] = "success";
+            }
+
             return RedirectToAction("Index", "Home");
         }
 
@@ -345,8 +355,8 @@ namespace DATN_GO.Controllers
 
             if (success)
             {
-                TempData["ToastMessage"] = message;
-                TempData["ToastType"] = "success";
+                TempData["ChangeEmailSuccessMessage"] = message;
+                TempData["ChangeEmailSuccessType"] = "success";
 
                 return RedirectToAction("Logout");
             }

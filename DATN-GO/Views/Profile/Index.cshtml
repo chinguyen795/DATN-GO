@@ -115,13 +115,13 @@
                                             <input type="email" asp-for="Email" class="form-control border-only-bottom" readonly>
                                             @if (string.IsNullOrEmpty(Model.Email))
                                             {
-                                                <a asp-controller="UserAuthentication" asp-action="AddEmail" class="text-nowrap text-decoration-none ms-2">
+                                                <a asp-controller="UserAuthentication" asp-action="ChangeEmailPrompt" class="text-nowrap text-decoration-none ms-2">
                                                     Thêm email
                                                 </a>
                                             }
                                             else
                                             {
-                                                <a asp-controller="UserAuthentication" asp-action="ChangeEmail" class="text-nowrap text-decoration-none ms-2">
+                                                <a asp-controller="UserAuthentication" asp-action="ChangeEmailPrompt" class="text-nowrap text-decoration-none ms-2">
                                                     Đổi email
                                                 </a>
                                             }
