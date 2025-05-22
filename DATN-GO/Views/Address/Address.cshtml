@@ -57,7 +57,7 @@
                 @if (Model != null && Model.Any())
                 {
                     int index = 1;
-                    foreach (var address in Model)
+                    @foreach (var address in Model.OrderByDescending(a => a.Status == "Mặc định"))
                     {
                         <tr class="address-row">
                             <td class="text-center">@index</td>
@@ -90,12 +90,12 @@
 
                                     @if (address.Status != "Mặc định")
                                     {
-                                        <form asp-action="SetDefault" asp-route-id="@address.Id" method="post" class="w-100">
-                                            <button type="submit" class="btn btn-sm btn-outline-primary w-100"
-                                                    onclick="return confirm('Đặt địa chỉ này làm mặc định?')">
-                                                <i class="bi bi-star"></i> Mặc định
-                                            </button>
-                                        </form>
+                                        <button type="button" class="btn btn-sm btn-outline-primary w-100"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#confirmSetDefaultModal"
+                                                data-id="@address.Id">
+                                            <i class="bi bi-bookmark-heart"></i> Mặc định
+                                        </button>
                                     }
                                 </div>
                             </td>
@@ -135,6 +135,28 @@
 
 </div>
 
+<!-- Modal xác nhận đặt mặc định -->
+<div class="modal fade" id="confirmSetDefaultModal" tabindex="-1" aria-labelledby="confirmSetDefaultModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="confirmSetDefaultModalLabel">Xác nhận đặt làm mặc định</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                Bạn có chắc chắn muốn đặt địa chỉ này làm <strong>mặc định</strong> không?
+            </div>
+            <div class="modal-footer">
+                <form id="setDefaultForm" method="post">
+                    <button type="submit" class="btn btn-primary">Có, đặt làm mặc định</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huỷ</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <script>
     function removeVietnameseTones(str) {
         str = str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -161,6 +183,17 @@
             const addressId = button.getAttribute('data-id');
             const deleteUrl = `/Address/Delete/${addressId}`;
             confirmBtn.setAttribute('href', deleteUrl);
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const defaultModal = document.getElementById('confirmSetDefaultModal');
+        const defaultForm = document.getElementById('setDefaultForm');
+
+        defaultModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const addressId = button.getAttribute('data-id');
+            defaultForm.setAttribute('action', `/Address/SetDefault/${addressId}`);
         });
     });
 </script>

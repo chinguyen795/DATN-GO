@@ -15,6 +15,15 @@
             @TempData["Success"]
         </div>
     }
+    @if (ViewBag.ShowDefaultModal == true)
+    {
+        <script>
+            window.addEventListener('DOMContentLoaded', function () {
+                var modal = new bootstrap.Modal(document.getElementById('defaultConfirmModalEdit'));
+                modal.show();
+            });
+        </script>
+    }
 
     <div class="row justify-content-center">
         <div class="col-lg-8">
@@ -25,17 +34,21 @@
 
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label class="form-label">Người dùng</label>
-                                <select asp-for="UserId" class="form-control" asp-items="ViewBag.Users">
-                                    <option value="">-- Chọn người dùng --</option>
-                                </select>
+                                <label class="form-label">Tên người dùng</label>
+                                <input type="text" class="form-control" name="DisplayName" value="@ViewBag.CurrentUserName" />
+                            </div>
+                            <input type="hidden" asp-for="UserId" />
+                            <div class="col-md-6">
+                                <label class="form-label">Số điện thoại</label>
+                                <input type="text" class="form-control" name="PhoneNumber" value="@ViewBag.CurrentUserPhone" />
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Trạng thái</label>
+                                <label asp-for="Status" class="form-label">Trạng thái</label>
                                 <select asp-for="Status" class="form-control">
                                     <option value="Mặc định">Mặc định</option>
                                     <option value="Không mặc định">Không mặc định</option>
                                 </select>
+                                <span asp-validation-for="Status" class="text-danger"></span>
                             </div>
                         </div>
 
@@ -96,12 +109,41 @@
     </div>
 </div>
 
+
+@* Modal xác nhận  *@
+<div class="modal fade" id="defaultConfirmModalEdit" tabindex="-1" aria-labelledby="defaultConfirmModalLabelEdit" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="defaultConfirmModalLabelEdit">Xác nhận cập nhật mặc định</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                Người dùng đã có địa chỉ mặc định: <br />
+                <strong>@ViewBag.ExistingDefault</strong><br /><br />
+                Bạn có muốn thay thế bằng địa chỉ này không?
+            </div>
+            <div class="modal-footer">
+                <form method="post" asp-action="ConfirmReplaceDefaultEdit">
+                    <input type="hidden" name="confirm" value="true" />
+                    <button type="submit" class="btn btn-primary">Có, thay thế</button>
+                </form>
+                <form method="post" asp-action="ConfirmReplaceDefaultEdit">
+                    <input type="hidden" name="confirm" value="false" />
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Không</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
 <!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
 
 <script>
-    const apiBase = "https://localhost:7096";
     mapboxgl.accessToken = 'pk.eyJ1IjoiaG9hbmdraGFuZzE2MDIiLCJhIjoiY21hYXViNTcyMDdwODJrc2N1bmVwY3h6eiJ9.MgDmLsya34LTrqNPE7WiLw';
 
     let map;
@@ -156,94 +198,86 @@
             .addTo(map);
     }
 
-    function loadCities(selectedId) {
-        fetch(`${apiBase}/api/cities`)
-            .then(res => res.json())
-            .then(data => {
-                data.forEach(city => {
-                    const selected = city.id == selectedId ? "selected" : "";
-                    $('#city').append(`<option value="${city.id}" ${selected}>${city.cityName}</option>`);
-                });
-            });
-    }
-
-    function loadDistricts(cityId, selectedId) {
-        fetch(`${apiBase}/api/districts/city/${cityId}`)
-            .then(res => res.json())
-            .then(data => {
-                resetDropdown('#district', '-- Chọn huyện --');
-                data.forEach(d => {
-                    const selected = d.id == selectedId ? "selected" : "";
-                    $('#district').append(`<option value="${d.id}" ${selected}>${d.districtName}</option>`);
-                });
-            });
-    }
-
-    function loadWards(districtId, selectedId) {
-        fetch(`${apiBase}/api/wards/district/${districtId}`)
-            .then(res => res.json())
-            .then(data => {
-                resetDropdown('#ward', '-- Chọn xã --');
-                data.forEach(w => {
-                    const selected = w.id == selectedId ? "selected" : "";
-                    $('#ward').append(`<option value="${w.id}" ${selected}>${w.wardName}</option>`);
-                });
-            });
-    }
-
-    $('#city').on('change', function () {
-        const cityId = $(this).val();
-        resetDropdown('#district', '-- Chọn huyện --');
-        resetDropdown('#ward', '-- Chọn xã --');
-        if (!cityId) return;
-        loadDistricts(cityId);
-    });
-
-    $('#district').on('change', function () {
-        const districtId = $(this).val();
-        resetDropdown('#ward', '-- Chọn xã --');
-        if (!districtId) return;
-        loadWards(districtId);
-    });
-
-    $('#ward').on('change', function () {
-        const wardName = $('#ward option:selected').text();
-        const districtName = $('#district option:selected').text();
-        const cityName = $('#city option:selected').text();
-        const fullAddress = `${wardName}, ${districtName}, ${cityName}`;
-
-        $('#Discription').val(fullAddress);
-        getCoordinatesFromAddress(fullAddress);
-    });
-
     $(document).ready(function () {
-        const cityId = @Html.Raw(ViewBag.CityId ?? "null");
-        const districtId = @Html.Raw(ViewBag.DistrictId ?? "null");
-        const wardId = @Html.Raw(ViewBag.WardId ?? "null");
+        const discription = $('#Discription').val() || "";
+        const parts = discription.split(',').map(s => s.trim());
 
-        loadCities(cityId);
-        if (cityId && cityId !== "null") {
-            loadDistricts(cityId, districtId);
-        }
-        if (districtId && districtId !== "null") {
-            loadWards(districtId, wardId);
-        }
+        const selectedWard = parts[0];
+        const selectedDistrict = parts[1];
+        const selectedCity = parts[2];
 
-        // Load map nếu có sẵn lat/lon
+        // Load JSON từ file
+        $.getJSON("/data/locations.json", function (data) {
+            data.forEach(city => {
+                const isSelected = city.CityName === selectedCity ? "selected" : "";
+                $('#city').append(`<option value="${city.CityName}" ${isSelected}>${city.CityName}</option>`);
+            });
+
+            const city = data.find(c => c.CityName === selectedCity);
+            if (city && city.Districts) {
+                city.Districts.forEach(d => {
+                    const isSelected = d.DistrictName === selectedDistrict ? "selected" : "";
+                    $('#district').append(`<option value="${d.DistrictName}" ${isSelected}>${d.DistrictName}</option>`);
+                });
+
+                const district = city.Districts.find(d => d.DistrictName === selectedDistrict);
+                if (district && district.Wards) {
+                    district.Wards.forEach(w => {
+                        const isSelected = w.WardName === selectedWard ? "selected" : "";
+                        $('#ward').append(`<option value="${w.WardName}" ${isSelected}>${w.WardName}</option>`);
+                    });
+                }
+            }
+        });
+
+        $('#city').on('change', function () {
+            const selectedCity = $(this).val();
+            resetDropdown('#district', '-- Chọn huyện --');
+            resetDropdown('#ward', '-- Chọn xã --');
+
+            $.getJSON("/data/locations.json", function (data) {
+                const city = data.find(c => c.CityName === selectedCity);
+                if (city?.Districts) {
+                    city.Districts.forEach(d => {
+                        $('#district').append(`<option value="${d.DistrictName}">${d.DistrictName}</option>`);
+                    });
+                }
+            });
+        });
+
+        $('#district').on('change', function () {
+            const selectedCity = $('#city').val();
+            const selectedDistrict = $(this).val();
+            resetDropdown('#ward', '-- Chọn xã --');
+
+            $.getJSON("/data/locations.json", function (data) {
+                const city = data.find(c => c.CityName === selectedCity);
+                const district = city?.Districts.find(d => d.DistrictName === selectedDistrict);
+
+                if (district?.Wards) {
+                    district.Wards.forEach(w => {
+                        $('#ward').append(`<option value="${w.WardName}">${w.WardName}</option>`);
+                    });
+                }
+            });
+        });
+
+        $('#ward').on('change', function () {
+            const ward = $('#ward').val();
+            const district = $('#district').val();
+            const city = $('#city').val();
+
+            const full = `${ward}, ${district}, ${city}`;
+            $('#Discription').val(full);
+            getCoordinatesFromAddress(full);
+        });
+
+        // Load bản đồ
         const lat = $('#Latitude').val();
         const lon = $('#Longitude').val();
         if (lat && lon) {
             updateMap(lat, lon);
         }
-
-        // Ẩn thông báo sau 3 giây
-        const successBox = $('#successMessage');
-        if (successBox.length) {
-            setTimeout(function () {
-                successBox.fadeOut('slow', function () {
-                    $(this).remove();
-                });
-            }, 3000);
-        }
     });
 </script>
+

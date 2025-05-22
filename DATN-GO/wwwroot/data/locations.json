@@ -13021,5 +13021,587 @@
         ]
       }
     ]
+  },
+  {
+    "CityName": "Lạng Sơn",
+    "Districts": [
+      {
+        "DistrictName": "Thành phố Lạng Sơn",
+        "Wards": [
+          {
+            "WardName": "Phường Chi Lăng"
+          },
+          {
+            "WardName": "Phường Đông Kinh"
+          },
+          {
+            "WardName": "Phường Hoàng Văn Thụ"
+          },
+          {
+            "WardName": "Phường Tam Thanh"
+          },
+          {
+            "WardName": "Phường Vĩnh Trại"
+          },
+          {
+            "WardName": "Xã Hoàng Đồng"
+          },
+          {
+            "WardName": "Xã Mai Pha"
+          },
+          {
+            "WardName": "Xã Quảng Lạc"
+          }
+        ]
+      },
+      {
+        "DistrictName": "Huyện Bắc Sơn",
+        "Wards": [
+          {
+            "WardName": "Thị trấn Bắc Sơn"
+          },
+          {
+            "WardName": "Xã Bắc Quỳnh"
+          },
+          {
+            "WardName": "Xã Chiến Thắng"
+          },
+          {
+            "WardName": "Xã Chiêu Vũ"
+          },
+          {
+            "WardName": "Xã Đồng Ý"
+          },
+          {
+            "WardName": "Xã Hưng Vũ"
+          },
+          {
+            "WardName": "Xã Long Đống"
+          },
+          {
+            "WardName": "Xã Nhất Hòa"
+          },
+          {
+            "WardName": "Xã Nhất Tiến"
+          },
+          {
+            "WardName": "Xã Tân Hương"
+          },
+          {
+            "WardName": "Xã Tân Lập"
+          },
+          {
+            "WardName": "Xã Tân Thành"
+          },
+          {
+            "WardName": "Xã Tân Tri"
+          },
+          {
+            "WardName": "Xã Trấn Yên"
+          },
+          {
+            "WardName": "Xã Vạn Thủy"
+          },
+          {
+            "WardName": "Xã Vũ Lăng"
+          },
+          {
+            "WardName": "Xã Vũ Lễ"
+          },
+          {
+            "WardName": "Xã Vũ Sơn"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "CityName": "Lào Cai",
+    "Districts": [
+      {
+        "DistrictName": "Thành phố Lào Cai",
+        "Wards": [
+          {
+            "WardName": "Phường Bắc Cường"
+          },
+          {
+            "WardName": "Phường Bắc Lệnh"
+          },
+          {
+            "WardName": "Phường Bình Minh"
+          },
+          {
+            "WardName": "Phường Cốc Lếu"
+          },
+          {
+            "WardName": "Phường Duyên Hải"
+          },
+          {
+            "WardName": "Phường Kim Tân"
+          },
+          {
+            "WardName": "Phường Lào Cai"
+          },
+          {
+            "WardName": "Phường Nam Cường"
+          },
+          {
+            "WardName": "Phường Pom Hán"
+          },
+          {
+            "WardName": "Phường Xuân Tăng"
+          },
+          {
+            "WardName": "Xã Cam Đường"
+          },
+          {
+            "WardName": "Xã Cốc San"
+          },
+          {
+            "WardName": "Xã Đồng Tuyển"
+          },
+          {
+            "WardName": "Xã Hợp Thành"
+          },
+          {
+            "WardName": "Xã Tả Phời"
+          },
+          {
+            "WardName": "Xã Thống Nhất"
+          },
+          {
+            "WardName": "Xã Vạn Hòa"
+          }
+        ]
+      },
+      {
+        "DistrictName": "Thị xã Sa Pa",
+        "Wards": [
+          {
+            "WardName": "Phường Cầu Mây"
+          },
+          {
+            "WardName": "Phường Hàm Rồng"
+          },
+          {
+            "WardName": "Phường Ô Quý Hồ"
+          },
+          {
+            "WardName": "Phường Phan Si Păng"
+          },
+          {
+            "WardName": "Phường Sa Pa"
+          },
+          {
+            "WardName": "Phường Sa Pả"
+          },
+          {
+            "WardName": "Xã Bản Hồ"
+          },
+          {
+            "WardName": "Xã Hoàng Liên"
+          },
+          {
+            "WardName": "Xã Liên Minh"
+          },
+          {
+            "WardName": "Xã Mường Bo"
+          },
+          {
+            "WardName": "Xã Mường Hoa"
+          },
+          {
+            "WardName": "Xã Ngũ Chỉ Sơn"
+          },
+          {
+            "WardName": "Xã Tả Phìn"
+          },
+          {
+            "WardName": "Xã Tả Van"
+          },
+          {
+            "WardName": "Xã Thanh Bình"
+          },
+          {
+            "WardName": "Xã Trung Chải"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "CityName": "Long An",
+    "Districts": [
+      {
+        "DistrictName": "Thành phố Tân An",
+        "Wards": [
+          {
+            "WardName": "Phường 1"
+          },
+          {
+            "WardName": "Phường 2"
+          },
+          {
+            "WardName": "Phường 3"
+          },
+          {
+            "WardName": "Phường 4"
+          },
+          {
+            "WardName": "Phường 5"
+          },
+          {
+            "WardName": "Phường 6"
+          },
+          {
+            "WardName": "Phường 7"
+          },
+          {
+            "WardName": "Phường Khánh Hậu"
+          },
+          {
+            "WardName": "Phường Tân Khánh"
+          },
+          {
+            "WardName": "Xã An Vĩnh Ngãi"
+          },
+          {
+            "WardName": "Xã Bình Tâm"
+          },
+          {
+            "WardName": "Xã Hướng Thọ Phú"
+          },
+          {
+            "WardName": "Xã Lợi Bình Nhơn"
+          },
+          {
+            "WardName": "Xã Nhơn Thạnh Trung"
+          }
+        ]
+      },
+      {
+        "DistrictName": "Thị xã Kiến Tường",
+        "Wards": [
+          {
+            "WardName": "Phường 1"
+          },
+          {
+            "WardName": "Phường 2"
+          },
+          {
+            "WardName": "Phường 3"
+          },
+          {
+            "WardName": "Phường 4"
+          },
+          {
+            "WardName": "Phường 5"
+          },
+          {
+            "WardName": "Xã Bình Hiệp"
+          },
+          {
+            "WardName": "Xã Bình Tân"
+          },
+          {
+            "WardName": "Xã Thạnh Hưng"
+          }
+        ]
+      },
+      {
+        "DistrictName": "Huyện Bến Lức",
+        "Wards": [
+          {
+            "WardName": "Thị trấn Bến Lức"
+          },
+          {
+            "WardName": "Xã An Thạnh"
+          },
+          {
+            "WardName": "Xã Bình Đức"
+          },
+          {
+            "WardName": "Xã Long Hiệp"
+          },
+          {
+            "WardName": "Xã Lương Bình"
+          },
+          {
+            "WardName": "Xã Lương Hòa"
+          },
+          {
+            "WardName": "Xã Mỹ Yên"
+          },
+          {
+            "WardName": "Xã Nhựt Chánh"
+          },
+          {
+            "WardName": "Xã Phước Lợi"
+          },
+          {
+            "WardName": "Xã Tân Bửu"
+          },
+          {
+            "WardName": "Xã Tân Hòa"
+          },
+          {
+            "WardName": "Xã Thạnh Đức"
+          },
+          {
+            "WardName": "Xã Thạnh Hòa"
+          },
+          {
+            "WardName": "Xã Thạnh Lợi"
+          },
+          {
+            "WardName": "Xã Thanh Phú"
+          }
+        ]
+      },
+      {
+        "DistrictName": "Huyện Cần Đước",
+        "Wards": [
+          {
+            "WardName": "Thị trấn Cần Đước"
+          },
+          {
+            "WardName": "Xã Long Cang"
+          },
+          {
+            "WardName": "Xã Long Định"
+          },
+          {
+            "WardName": "Xã Long Hòa"
+          },
+          {
+            "WardName": "Xã Long Hựu Đông"
+          },
+          {
+            "WardName": "Xã Long Hựu Tây"
+          },
+          {
+            "WardName": "Xã Long Khê"
+          },
+          {
+            "WardName": "Xã Long Sơn"
+          },
+          {
+            "WardName": "Xã Long Trạch"
+          },
+          {
+            "WardName": "Xã Mỹ Lệ"
+          },
+          {
+            "WardName": "Xã Phước Đông"
+          },
+          {
+            "WardName": "Xã Phước Tuy"
+          },
+          {
+            "WardName": "Xã Phước Vân"
+          },
+          {
+            "WardName": "Xã Tân Ân"
+          },
+          {
+            "WardName": "Xã Tân Chánh"
+          },
+          {
+            "WardName": "Xã Tân Lân"
+          },
+          {
+            "WardName": "Xã Tân Trạch"
+          }
+        ]
+      },
+      {
+        "DistrictName": "Huyện Cần Giuộc",
+        "Wards": [
+          {
+            "WardName": "Thị trấn Cần Giuộc"
+          },
+          {
+            "WardName": "Xã Đông Thạnh"
+          },
+          {
+            "WardName": "Xã Long An"
+          },
+          {
+            "WardName": "Xã Long Hậu"
+          },
+          {
+            "WardName": "Xã Long Phụng"
+          },
+          {
+            "WardName": "Xã Long Thượng"
+          },
+          {
+            "WardName": "Xã Mỹ Lộc"
+          },
+          {
+            "WardName": "Xã Phước Hậu"
+          },
+          {
+            "WardName": "Xã Phước Lại"
+          },
+          {
+            "WardName": "Xã Phước Lâm"
+          },
+          {
+            "WardName": "Xã Phước Lý"
+          },
+          {
+            "WardName": "Xã Phước Vĩnh Đông"
+          },
+          {
+            "WardName": "Xã Phước Vĩnh Tây"
+          },
+          {
+            "WardName": "Xã Tân Tập"
+          },
+          {
+            "WardName": "Xã Thuận Thành"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "CityName": "Nam Định",
+    "Districts": [
+      {
+        "DistrictName": "Thành phố Nam Định",
+        "Wards": [
+          {
+            "WardName": "Phường Cửa Bắc"
+          },
+          {
+            "WardName": "Phường Cửa Nam"
+          },
+          {
+            "WardName": "Phường Hưng Lộc"
+          },
+          {
+            "WardName": "Phường Lộc Hạ"
+          },
+          {
+            "WardName": "Phường Lộc Hòa"
+          },
+          {
+            "WardName": "Phường Lộc Vượng"
+          },
+          {
+            "WardName": "Phường Nam Phong"
+          },
+          {
+            "WardName": "Phường Nam Vân"
+          },
+          {
+            "WardName": "Phường Năng Tĩnh"
+          },
+          {
+            "WardName": "Phường Mỹ Xá"
+          },
+          {
+            "WardName": "Phường Quang Trung"
+          },
+          {
+            "WardName": "Phường Trần Hưng Đạo"
+          },
+          {
+            "WardName": "Phường Trường Thi"
+          },
+          {
+            "WardName": "Phường Vị Xuyên"
+          },
+          {
+            "WardName": "Xã Mỹ Hà"
+          },
+          {
+            "WardName": "Xã Mỹ Lộc"
+          },
+          {
+            "WardName": "Xã Mỹ Phúc"
+          },
+          {
+            "WardName": "Xã Mỹ Tân"
+          },
+          {
+            "WardName": "Xã Mỹ Thắng"
+          },
+          {
+            "WardName": "Xã Mỹ Thuận"
+          },
+          {
+            "WardName": "Xã Mỹ Trung"
+          }
+        ]
+      },
+      {
+        "DistrictName": "Huyện Giao Thủy",
+        "Wards": [
+          {
+            "WardName": "Thị trấn Giao Thủy"
+          },
+          {
+            "WardName": "Thị trấn Quất Lâm"
+          },
+          {
+            "WardName": "Xã Bạch Long"
+          },
+          {
+            "WardName": "Xã Bình Hòa"
+          },
+          {
+            "WardName": "Xã Giao An"
+          },
+          {
+            "WardName": "Xã Giao Châu"
+          },
+          {
+            "WardName": "Xã Giao Hà"
+          },
+          {
+            "WardName": "Xã Giao Hải"
+          },
+          {
+            "WardName": "Xã Giao Hương"
+          },
+          {
+            "WardName": "Xã Giao Lạc"
+          },
+          {
+            "WardName": "Xã Giao Long"
+          },
+          {
+            "WardName": "Xã Giao Nhân"
+          },
+          {
+            "WardName": "Xã Giao Phong"
+          },
+          {
+            "WardName": "Xã Giao Tân"
+          },
+          {
+            "WardName": "Xã Giao Thanh"
+          },
+          {
+            "WardName": "Xã Giao Thịnh"
+          },
+          {
+            "WardName": "Xã Giao Tiến"
+          },
+          {
+            "WardName": "Xã Giao Xuân"
+          },
+          {
+            "WardName": "Xã Giao Yến"
+          },
+          {
+            "WardName": "Xã Hồng Thuận"
+          }
+        ]
+      }
+    ]
   }
 ]
