@@ -39,10 +39,6 @@
                             </div>
                             <input type="hidden" asp-for="UserId" />
                             <div class="col-md-6">
-                                <label class="form-label">Số điện thoại</label>
-                                <input type="text" class="form-control" name="PhoneNumber" value="@ViewBag.CurrentUserPhone" />
-                            </div>
-                            <div class="col-md-6">
                                 <label asp-for="Status" class="form-label">Trạng thái</label>
                                 <select asp-for="Status" class="form-control">
                                     <option value="Mặc định">Mặc định</option>
@@ -80,12 +76,12 @@
 
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label class="form-label">Vĩ độ</label>
-                                <input asp-for="Latitude" class="form-control" />
+                                <input type="hidden" asp-for="Latitude" class="form-control" />
+                                <span asp-validation-for="Latitude" class="text-danger"></span>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Kinh độ</label>
-                                <input asp-for="Longitude" class="form-control" />
+                                <input type="hidden" asp-for="Longitude" class="form-control" />
+                                <span asp-validation-for="Longitude" class="text-danger"></span>
                             </div>
                         </div>
 

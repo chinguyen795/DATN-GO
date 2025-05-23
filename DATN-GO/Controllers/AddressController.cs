@@ -127,30 +127,16 @@ namespace DATN_GO.Controllers
                 return View(model);
             }
 
-            if (string.IsNullOrWhiteSpace(phoneNumber))
-            {
-                TempData["ToastMessage"] = "Số điện thoại không được để trống.";
-                TempData["ToastType"] = "warning";
-                return View(model);
-            }
-
-            if (!phoneNumber.All(char.IsDigit) || phoneNumber.Length != 10)
-            {
-                TempData["ToastMessage"] = "Số điện thoại phải đúng 10 chữ số.";
-                TempData["ToastType"] = "warning";
-                return View(model);
-            }
-
             if (string.IsNullOrWhiteSpace(model.Discription))
             {
-                TempData["ToastMessage"] = "Vui lòng chọn địa chỉ trên bản đồ.";
+                TempData["ToastMessage"] = "Vui lòng chọn địa chỉ trên bản đồ";
                 TempData["ToastType"] = "warning";
                 return View(model);
             }
 
             if (model.Latitude == 0 || model.Longitude == 0)
             {
-                TempData["ToastMessage"] = "Vui lòng chọn vị trí trên bản đồ.";
+                TempData["ToastMessage"] = "Vui lòng chọn vị trí trên bản đồ";
                 TempData["ToastType"] = "warning";
                 return View(model);
             }
@@ -160,7 +146,7 @@ namespace DATN_GO.Controllers
             var user = users.FirstOrDefault(u => u.Id == model.UserId);
             if (user == null)
             {
-                TempData["ToastMessage"] = "Không tìm thấy người dùng.";
+                TempData["ToastMessage"] = "Không tìm thấy người dùng";
                 TempData["ToastType"] = "danger";
                 return RedirectToAction("Address");
             }
@@ -170,7 +156,7 @@ namespace DATN_GO.Controllers
 
             if (userAddresses.Count >= 5)
             {
-                TempData["ToastMessage"] = "Bạn chỉ có thể thêm tối đa 5 địa chỉ.";
+                TempData["ToastMessage"] = "Bạn chỉ có thể thêm tối đa 5 địa chỉ";
                 TempData["ToastType"] = "warning";
                 return RedirectToAction("Create");
             }
@@ -196,7 +182,7 @@ namespace DATN_GO.Controllers
                 var updateRes = await _httpClient.PutAsJsonAsync($"api/users/{user.Id}", user);
                 if (!updateRes.IsSuccessStatusCode)
                 {
-                    TempData["ToastMessage"] = "Cập nhật thông tin người dùng thất bại.";
+                    TempData["ToastMessage"] = "Cập nhật thông tin người dùng thất bại";
                     TempData["ToastType"] = "danger";
                     return View(model);
                 }
@@ -222,7 +208,7 @@ namespace DATN_GO.Controllers
                 return RedirectToAction("Address");
             }
 
-            TempData["ToastMessage"] = "Đã có lỗi khi lưu địa chỉ.";
+            TempData["ToastMessage"] = "Đã có lỗi khi lưu địa chỉ";
             TempData["ToastType"] = "danger";
             return View(model);
         }
@@ -457,7 +443,7 @@ namespace DATN_GO.Controllers
             // 👉 Bắt lỗi tên trống
             if (string.IsNullOrWhiteSpace(displayName))
             {
-                TempData["ToastMessage"] = "Tên người nhận không được để trống.";
+                TempData["ToastMessage"] = "Tên người nhận không được để trống";
                 TempData["ToastType"] = "warning";
                 return View(model);
             }
@@ -465,23 +451,7 @@ namespace DATN_GO.Controllers
             // 👉 Bắt lỗi tên chứa ký tự đặc biệt hoặc số
             if (!System.Text.RegularExpressions.Regex.IsMatch(displayName, @"^[\p{L}\p{M}\s]+$"))
             {
-                TempData["ToastMessage"] = "Tên người nhận không được chứa số hoặc ký tự đặc biệt.";
-                TempData["ToastType"] = "warning";
-                return View(model);
-            }
-
-            // 👉 Bắt lỗi số điện thoại trống
-            if (string.IsNullOrWhiteSpace(phoneNumber))
-            {
-                TempData["ToastMessage"] = "Số điện thoại không được để trống.";
-                TempData["ToastType"] = "warning";
-                return View(model);
-            }
-
-            // 👉 Bắt lỗi số điện thoại không đúng định dạng 10 số
-            if (!phoneNumber.All(char.IsDigit) || phoneNumber.Length != 10)
-            {
-                TempData["ToastMessage"] = "Số điện thoại phải gồm đúng 10 chữ số.";
+                TempData["ToastMessage"] = "Tên người nhận không được chứa số hoặc ký tự đặc biệt";
                 TempData["ToastType"] = "warning";
                 return View(model);
             }
@@ -511,7 +481,7 @@ namespace DATN_GO.Controllers
                     var updateRes = await _httpClient.PutAsJsonAsync($"api/users/{user.Id}", user);
                     if (!updateRes.IsSuccessStatusCode)
                     {
-                        TempData["ToastMessage"] = "Cập nhật thông tin người dùng thất bại.";
+                        TempData["ToastMessage"] = "Cập nhật thông tin người dùng thất bại";
                         TempData["ToastType"] = "danger";
                         return View(model);
                     }
@@ -525,7 +495,7 @@ namespace DATN_GO.Controllers
                 var hasDefault = allAddresses.Any(a => a.UserId == model.UserId && a.Id != model.Id && a.Status == "Mặc định");
                 if (!hasDefault)
                 {
-                    TempData["ToastMessage"] = "Phải có ít nhất 1 địa chỉ mặc định.";
+                    TempData["ToastMessage"] = "Phải có ít nhất 1 địa chỉ mặc định";
                     TempData["ToastType"] = "warning";
                     return View(model);
                 }
@@ -555,11 +525,6 @@ namespace DATN_GO.Controllers
             TempData["ToastType"] = "danger";
             return View(model);
         }
-
-
-
-
-
 
 
         [HttpPost]

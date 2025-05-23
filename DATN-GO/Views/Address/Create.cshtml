@@ -35,13 +35,9 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label">Tên người dùng</label>
-                                <input type="text" class="form-control" name="DisplayName" value="@ViewBag.CurrentUserName" />
+                                <input type="text" class="form-control" readonly name="DisplayName" value="@ViewBag.CurrentUserName" />
                             </div>
                             <input type="hidden" asp-for="UserId" />
-                            <div class="col-md-6">
-                                <label class="form-label">Số điện thoại</label>
-                                <input type="text" class="form-control" name="PhoneNumber" value="@ViewBag.CurrentUserPhone" />
-                            </div>
                             <div class="col-md-6">
                                 <label asp-for="Status" class="form-label">Trạng thái</label>
                                 <select asp-for="Status" class="form-control">
@@ -81,13 +77,11 @@
 
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label asp-for="Latitude" class="form-label">Vĩ độ</label>
-                                <input asp-for="Latitude" class="form-control" />
+                                <input type="hidden" asp-for="Latitude" class="form-control" />
                                 <span asp-validation-for="Latitude" class="text-danger"></span>
                             </div>
                             <div class="col-md-6">
-                                <label asp-for="Longitude" class="form-label">Kinh độ</label>
-                                <input asp-for="Longitude" class="form-control" />
+                                <input type="hidden" asp-for="Longitude" class="form-control" />
                                 <span asp-validation-for="Longitude" class="text-danger"></span>
                             </div>
                         </div>
@@ -147,118 +141,118 @@
 <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
 
 <script>
-    mapboxgl.accessToken = 'pk.eyJ1IjoiaG9hbmdraGFuZzE2MDIiLCJhIjoiY21hYXViNTcyMDdwODJrc2N1bmVwY3h6eiJ9.MgDmLsya34LTrqNPE7WiLw';
+        mapboxgl.accessToken = 'pk.eyJ1IjoiaG9hbmdraGFuZzE2MDIiLCJhIjoiY21hYXViNTcyMDdwODJrc2N1bmVwY3h6eiJ9.MgDmLsya34LTrqNPE7WiLw';
 
-    let map;
-    let marker;
+        let map;
+        let marker;
 
-    function resetDropdown(selector, placeholder) {
-        $(selector).html(`<option value="">${placeholder}</option>`);
-    }
-
-    function getCoordinatesFromAddress(address) {
-        const encoded = encodeURIComponent(address);
-        const url = `https://nominatim.openstreetmap.org/search?q=${encoded}&format=json`;
-
-        fetch(url)
-            .then(res => res.json())
-            .then(data => {
-                if (data.length > 0) {
-                    const lat = data[0].lat;
-                    const lon = data[0].lon;
-                    $('#Latitude').val(lat);
-                    $('#Longitude').val(lon);
-                    updateMap(lat, lon);
-                } else {
-                    alert("Không tìm thấy tọa độ.");
-                }
-            });
-    }
-
-    function updateMap(lat, lon) {
-        const lng = parseFloat(lon);
-        const latitude = parseFloat(lat);
-
-        if (!map) {
-            map = new mapboxgl.Map({
-                container: 'map',
-                style: 'mapbox://styles/mapbox/streets-v12',
-                center: [lng, latitude],
-                zoom: 15,
-                pitch: 60,
-                bearing: -45,
-                antialias: true
-            });
-            map.addControl(new mapboxgl.NavigationControl());
-        } else {
-            map.flyTo({ center: [lng, latitude], essential: true });
+        function resetDropdown(selector, placeholder) {
+            $(selector).html(`<option value="">${placeholder}</option>`);
         }
 
-        if (marker) marker.remove();
+        function getCoordinatesFromAddress(address) {
+            const encoded = encodeURIComponent(address);
+            const url = `https://nominatim.openstreetmap.org/search?q=${encoded}&format=json`;
 
-        marker = new mapboxgl.Marker({ color: 'red' })
-            .setLngLat([lng, latitude])
-            .addTo(map);
-    }
+            fetch(url)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        const lat = data[0].lat;
+                        const lon = data[0].lon;
+                        $('#Latitude').val(lat);
+                        $('#Longitude').val(lon);
+                        updateMap(lat, lon);
+                    } else {
+                        alert("Không tìm thấy tọa độ.");
+                    }
+                });
+        }
 
-    $(document).ready(function () {
-        // Load JSON từ file
+        function updateMap(lat, lon) {
+            const lng = parseFloat(lon);
+            const latitude = parseFloat(lat);
+
+            if (!map) {
+                map = new mapboxgl.Map({
+                    container: 'map',
+                    style: 'mapbox://styles/mapbox/streets-v12',
+                    center: [lng, latitude],
+                    zoom: 15,
+                    pitch: 60,
+                    bearing: -45,
+                    antialias: true
+                });
+                map.addControl(new mapboxgl.NavigationControl());
+            } else {
+                map.flyTo({ center: [lng, latitude], essential: true });
+            }
+
+            if (marker) marker.remove();
+
+            marker = new mapboxgl.Marker({ color: 'red' })
+                .setLngLat([lng, latitude])
+                .addTo(map);
+        }
+
+        $(document).ready(function () {
+            // Load JSON từ file
         $.getJSON("/data/locations.json", function (data) {
-            // Load tỉnh/thành phố
-            data.forEach(city => {
-                $('#city').append(`<option value="${city.CityName}">${city.CityName}</option>`);
-            });
+                // Load tỉnh/thành phố
+                data.forEach(city => {
+                    $('#city').append(`<option value="${city.CityName}">${city.CityName}</option>`);
+                });
 
-            // Khi chọn tỉnh → load huyện
-            $('#city').on('change', function () {
-                const selectedCity = $(this).val();
-                const city = data.find(c => c.CityName === selectedCity);
+                // Khi chọn tỉnh → load huyện
+                $('#city').on('change', function () {
+                    const selectedCity = $(this).val();
+                    const city = data.find(c => c.CityName === selectedCity);
 
-                resetDropdown('#district', '-- Chọn huyện --');
-                resetDropdown('#ward', '-- Chọn xã --');
+                    resetDropdown('#district', '-- Chọn huyện --');
+                    resetDropdown('#ward', '-- Chọn xã --');
 
-                if (city?.Districts) {
-                    city.Districts.forEach(d => {
-                        $('#district').append(`<option value="${d.DistrictName}">${d.DistrictName}</option>`);
-                    });
-                }
-            });
+                    if (city?.Districts) {
+                        city.Districts.forEach(d => {
+                            $('#district').append(`<option value="${d.DistrictName}">${d.DistrictName}</option>`);
+                        });
+                    }
+                });
 
-            // Khi chọn huyện → load xã
-            $('#district').on('change', function () {
-                const selectedCity = $('#city').val();
-                const selectedDistrict = $(this).val();
-                const city = data.find(c => c.CityName === selectedCity);
-                const district = city?.Districts.find(d => d.DistrictName === selectedDistrict);
+                // Khi chọn huyện → load xã
+                $('#district').on('change', function () {
+                    const selectedCity = $('#city').val();
+                    const selectedDistrict = $(this).val();
+                    const city = data.find(c => c.CityName === selectedCity);
+                    const district = city?.Districts.find(d => d.DistrictName === selectedDistrict);
 
-                resetDropdown('#ward', '-- Chọn xã --');
+                    resetDropdown('#ward', '-- Chọn xã --');
 
-                if (district?.Wards) {
-                    district.Wards.forEach(w => {
-                        $('#ward').append(`<option value="${w.WardName}">${w.WardName}</option>`);
-                    });
-                }
-            });
+                    if (district?.Wards) {
+                        district.Wards.forEach(w => {
+                            $('#ward').append(`<option value="${w.WardName}">${w.WardName}</option>`);
+                        });
+                    }
+                });
 
-            // Khi chọn xã → tự động ghép địa chỉ và lấy tọa độ
-            $('#ward').on('change', function () {
-                const ward = $('#ward').val();
-                const district = $('#district').val();
-                const city = $('#city').val();
+                // Khi chọn xã → tự động ghép địa chỉ và lấy tọa độ
+                $('#ward').on('change', function () {
+                    const ward = $('#ward').val();
+                    const district = $('#district').val();
+                    const city = $('#city').val();
 
-                const full = `${ward}, ${district}, ${city}`;
-                $('#Discription').val(full);
-                getCoordinatesFromAddress(full);
+                    const full = `${ward}, ${district}, ${city}`;
+                    $('#Discription').val(full);
+                    getCoordinatesFromAddress(full);
+                });
             });
         });
-    });
 
     // Loading
-    document.querySelector('form').addEventListener('submit', function () {
-        document.getElementById('submitBtn').disabled = true;
-        document.getElementById('loadingSpinner').classList.remove('d-none');
-        document.getElementById('btnText').textContent = " Đang lưu...";
-    });
+        document.querySelector('form').addEventListener('submit', function () {
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('loadingSpinner').classList.remove('d-none');
+            document.getElementById('btnText').textContent = " Đang lưu...";
+        });
 </script>
 
 

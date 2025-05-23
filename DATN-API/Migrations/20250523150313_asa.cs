@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DATN_API.Migrations
 {
     /// <inheritdoc />
-    public partial class CreateDB : Migration
+    public partial class asa : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -141,9 +141,13 @@ namespace DATN_API.Migrations
                     DinerAddress = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Longitude = table.Column<float>(type: "real", nullable: false),
                     Latitude = table.Column<float>(type: "real", nullable: false),
-                    Avatar = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Avatar = table.Column<string>(type: "TEXT", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    CoverPhoto = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    CoverPhoto = table.Column<string>(type: "TEXT", nullable: false),
+                    OpenHouse = table.Column<int>(type: "int", nullable: false),
+                    OpenMinute = table.Column<int>(type: "int", nullable: false),
+                    CloseHouse = table.Column<int>(type: "int", nullable: false),
+                    CloseMinute = table.Column<int>(type: "int", nullable: false),
                     CreateAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -193,7 +197,7 @@ namespace DATN_API.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: false),
                     Content = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Image = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Image = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreateAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>

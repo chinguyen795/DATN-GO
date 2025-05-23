@@ -47,15 +47,16 @@ namespace DATN_GO.Areas.Seller.Controllers
                     posts = posts.Where(p => p.Content != null && p.Content.Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
                 }
 
-                // Sắp xếp theo thời gian
+                //viết code sắp xếp bài viết từ nếu chọn oldest thì bài viết sẽ từ cũ nhất tới mới nhất
                 if (sortOrder == "oldest")
                 {
                     posts = posts.OrderBy(p => p.CreateAt).ToList();
                 }
-                else
+                else if (sortOrder == "newest")
                 {
                     posts = posts.OrderByDescending(p => p.CreateAt).ToList();
                 }
+
                 foreach (var post in posts)
                 {
                     post.User = user;
@@ -65,7 +66,7 @@ namespace DATN_GO.Areas.Seller.Controllers
                 {
                     CurrentUser = user,
                     Post = new Posts(),
-                    PostList = posts.OrderByDescending(p => p.CreateAt).ToList()
+                    PostList = posts
                 };
 
                 ViewBag.CurrentUser = user;

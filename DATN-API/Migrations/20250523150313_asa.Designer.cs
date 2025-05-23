@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DATN_API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250519091119_nuw")]
-    partial class nuw
+    [Migration("20250523150313_asa")]
+    partial class asa
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -218,13 +218,17 @@ namespace DATN_API.Migrations
 
                     b.Property<string>("Avatar")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("CloseHouse")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CloseMinute")
+                        .HasColumnType("int");
 
                     b.Property<string>("CoverPhoto")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreateAt")
                         .HasColumnType("datetime2");
@@ -244,6 +248,12 @@ namespace DATN_API.Migrations
 
                     b.Property<float>("Longitude")
                         .HasColumnType("real");
+
+                    b.Property<int>("OpenHouse")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OpenMinute")
+                        .HasColumnType("int");
 
                     b.Property<string>("Status")
                         .IsRequired()
