@@ -101,7 +101,9 @@
                     <p class="card-text">@post.Content</p>
                     @if (!string.IsNullOrEmpty(post.Image))
                     {
-                        <img src="@post.Image" class="img-fluid rounded mb-3" alt="Article image" />
+                        <div class="text-center">
+                            <img src="@post.Image" class="img-fluid rounded mb-3 img-article" alt="Article image" />
+                        </div>
                     }
                 </div>
             </div>
@@ -147,7 +149,6 @@
         }
     </div>
 </div>
-<!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -168,44 +169,4 @@
     </div>
 </div>
 
-<script>
-    function previewImage(input) {
-        const previewContainer = document.getElementById("previewContainer");
-        const preview = document.getElementById("previewImage");
-        const fileNameDisplay = document.getElementById("fileNameDisplay");
-
-        if (!input || !input.files || input.files.length === 0) {
-            previewContainer.style.display = "none";
-            preview.src = "#";
-            fileNameDisplay.innerText = "";
-            return;
-        }
-
-        const file = input.files[0];
-        const reader = new FileReader();
-
-        reader.onload = function (e) {
-            preview.src = e.target.result;
-            previewContainer.style.display = "block";
-            fileNameDisplay.innerText = file.name;
-        };
-
-        reader.readAsDataURL(file);
-    }
-
-    function setDeleteUrl(postId) {
-        const form = document.getElementById("deleteForm");
-        form.action = `/Seller/PostArticle/Delete/${postId}`;
-    }
-
-    // Đảm bảo DOM đã load thì mới gắn sự kiện
-    document.addEventListener("DOMContentLoaded", function () {
-        const fileInput = document.getElementById("imageInput");
-        if (fileInput) {
-            fileInput.addEventListener("change", function () {
-                previewImage(this);
-            });
-        }
-    });
-</script>
 
