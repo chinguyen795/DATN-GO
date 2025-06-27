@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace DATN_GO.Models
@@ -26,5 +27,16 @@ namespace DATN_GO.Models
         [JsonIgnore]
         public ICollection<Orders>? Orders { get; set; }
 
+        [ForeignKey("Category")]
+        public int? CategoryId { get; set; }
+        [JsonIgnore]
+        public virtual Categories? Category { get; set; }
+
+        [ForeignKey("Store")]
+        public int? StoreId { get; set; }
+        [JsonIgnore]
+        public virtual Stores? Store { get; set; }
+
+        public int Quantity { get; set; }
     }
 }

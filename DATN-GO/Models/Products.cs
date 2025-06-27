@@ -12,39 +12,48 @@ namespace DATN_GO.Models
         [ForeignKey("Category")]
         public int CategoryId { get; set; }
 
-        [ForeignKey("Diner")]
-        public int DinerId { get; set; }
+        [ForeignKey("Store")]
+        public int StoreId { get; set; }
 
         [MaxLength(50)]
-        public string ProductName { get; set; }
-
-        public decimal Price { get; set; }
-
-        public string Discription { get; set; }
+        [MinLength(2, ErrorMessage = "Tên phải từ 2 đến 50 kí tự.")]
+        public string Name { get; set; }
 
         [MaxLength(50)]
-        public string MainImage { get; set; }
+        public string? Brand { get; set; }
+
+        public int? Weight { get; set; }
+
+        public string? Slug { get; set; }
+
+        public string? Description { get; set; }
 
         [MaxLength(50)]
-        public string Status { get; set; }
+        public string? MainImage { get; set; }
+
+        [MaxLength(50)]
+        public string? Status { get; set; }
 
         public int Quantity { get; set; }
-
         public int Views { get; set; }
-
+        public float? Rating { get; set; }
         public DateTime CreateAt { get; set; }
+        public DateTime UpdateAt { get; set; }
+        public decimal? CostPrice { get; set; }
+        public string? PackageSize { get; set; }
+        public string? PlaceOfOrigin { get; set; }
+        [MaxLength(50)]
+        public string? Hashtag { get; set; }
         [JsonIgnore]
         public virtual Categories? Category { get; set; }
         [JsonIgnore]
-        public virtual Diners? Diner { get; set; }
+        public virtual Stores? Store { get; set; }
         [JsonIgnore]
-        public ICollection<Options>? Options { get; set; }
+        public ICollection<Variants>? Variants { get; set; }
         [JsonIgnore]
-        public ICollection<ProductSkus>? ProductSkus { get; set; }
+        public ICollection<Prices>? Prices { get; set; }
         [JsonIgnore]
-        public ICollection<SkusValues>? SkusValues { get; set; }
-        [JsonIgnore]
-        public ICollection<OptionValues>? OptionValues { get; set; }
+        public ICollection<ProductImages>? ProductImages { get; set; }
         [JsonIgnore]
         public ICollection<ProductVouchers>? ProductVouchers { get; set; }
         [JsonIgnore]

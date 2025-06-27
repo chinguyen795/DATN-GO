@@ -9,15 +9,15 @@ namespace DATN_GO.Models
         [Key]
         public int Id { get; set; }
 
-        [ForeignKey("Diner")]
-        public int DinerId { get; set; }
+        [ForeignKey("Store")]
+        public int StoreId { get; set; }
 
         public decimal Price { get; set; }
 
         [MaxLength(50)]
         public string MethodName { get; set; }
         [JsonIgnore]
-        public virtual Diners? Diner { get; set; }
+        public virtual Stores? store { get; set; }
         [JsonIgnore]
         public ICollection<Orders>? Orders { get; set; }
 

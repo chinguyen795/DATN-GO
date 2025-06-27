@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace DATN_GO.Models
 {
-    public class ProductSkus
+    public class Variants
     {
         [Key]
         public int Id { get; set; }
@@ -13,12 +13,11 @@ namespace DATN_GO.Models
         public int ProductId { get; set; }
 
         [MaxLength(50)]
-        public string Sku { get; set; }
+        public string VariantName { get; set; }
 
-        public decimal Price { get; set; }
-        [JsonIgnore]
-        public virtual Products? Product { get; set; }
-        [JsonIgnore]
-        public ICollection<SkusValues>? SkusValues { get; set; }
+        [MaxLength(50)]
+        public string Type { get; set; }
+
+        public virtual Products Product { get; set; }
     }
 }

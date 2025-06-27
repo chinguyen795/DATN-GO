@@ -8,8 +8,7 @@ namespace DATN_GO.Models
     {
         [Key]
         public int Id { get; set; }
-
-        [Required]
+        [MaxLength(50)]
         public string CityName { get; set; }
 
         // 1-1 với Address

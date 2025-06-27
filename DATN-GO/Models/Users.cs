@@ -3,25 +3,58 @@ using System.Net;
 using System.Text.Json.Serialization;
 using Twilio.TwiML.Messaging;
 using Twilio.TwiML.Voice;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DATN_GO.Models
 {
+    public enum UserStatus
+    {
+        [Display(Name = "Hoạt động")]
+        Active,
+        [Display(Name = "Ngừng hoạt động")]
+        Inactive
+    }
+
+    public enum GenderType
+    {
+        [Display(Name = "Nam")]
+        Male,
+        [Display(Name = "Nữ")]
+        Female,
+        [Display(Name = "Khác")]
+        Other
+    }
+
     public class Users
     {
         public int Id { get; set; }
         public int RoleId { get; set; }
+        [Required]
+        [EmailAddress(ErrorMessage = "Email không đúng định dạng.")]
+        [MaxLength(50)]
         public string Email { get; set; }
+        [Required]
+        [MinLength(7, ErrorMessage = "Mật khẩu phải từ 7 ký tự trở lên.")]
+        [MaxLength(50)]
         public string Password { get; set; }
+        [Required]
+        [MinLength(2, ErrorMessage = "Tên phải từ 2 ký tự trở lên.")]
+        [MaxLength(50)]
         public string FullName { get; set; }
-        public string PhoneNumber { get; set; }
+        
+        [MaxLength(13)]
+        [RegularExpression(@"^(0|\+84)(3[2-9]|5[6|8|9]|7[0|6-9]|8[1-5]|9[0-9])[0-9]{7}$", ErrorMessage = "Số điện thoại không đúng định dạng Việt Nam.")]
+        public required string Phone { get; set; }
+        [MaxLength]
         public string? Avatar { get; set; }
-        public bool Status { get; set; }
-        public bool Gender { get; set; }
+        public UserStatus Status { get; set; }
+        public GenderType Gender { get; set; }
+        [MaxLength(12)]
         public string? CitizenIdentityCard { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime? DateOfBirth { get; set; }
-
-
+        public DateTime CreateAt { get; set; }
+        public DateTime UpdateAt { get; set; }
+        public DateTime? BirthDay { get; set; }
         [JsonIgnore]
         public virtual Roles? Role { get; set; }
         [JsonIgnore]
@@ -35,18 +68,12 @@ namespace DATN_GO.Models
         [JsonIgnore]
         public ICollection<Decorates>? Decorates { get; set; }
         [JsonIgnore]
-        public virtual Diners? Diner { get; set; }
-        [JsonIgnore]
-        public ICollection<Reports>? ReportsSent { get; set; }
-        [JsonIgnore]
-        public ICollection<ReportActions>? ReportActionsPerformed { get; set; }
+        public virtual Stores? Store { get; set; }
         [JsonIgnore]
         public ICollection<Carts>? Carts { get; set; }
         [JsonIgnore]
         public ICollection<Orders>? Orders { get; set; }
         [JsonIgnore]
         public ICollection<Reviews>? Reviews { get; set; }
-
-
     }
 }
