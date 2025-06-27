@@ -4,6 +4,22 @@ using System.Text.Json.Serialization;
 
 namespace DATN_API.Models
 {
+    public enum VoucherStatus
+    {
+        [Display(Name = "Còn hạn")]
+        Valid,
+        [Display(Name = "Hết hạn")]
+        Expired
+    }
+
+    public enum VoucherType
+    {
+        [Display(Name = "Mã của sàn")]
+        Platform,
+        [Display(Name = "Mã của shop")]
+        Shop
+    }
+
     public class Vouchers
     {
         [Key]
@@ -11,8 +27,7 @@ namespace DATN_API.Models
 
         public decimal Reduce { get; set; }
 
-        [MaxLength(50)]
-        public string Type { get; set; }
+        public VoucherType Type { get; set; }
 
         public decimal MinOrder { get; set; }
 
@@ -20,8 +35,7 @@ namespace DATN_API.Models
 
         public DateTime EndDate { get; set; }
 
-        [MaxLength(50)]
-        public string Status { get; set; }
+        public VoucherStatus Status { get; set; }
         [JsonIgnore]
         public ICollection<ProductVouchers>? ProductVouchers { get; set; }
         [JsonIgnore]
@@ -37,6 +51,7 @@ namespace DATN_API.Models
         [JsonIgnore]
         public virtual Stores? Store { get; set; }
 
+        [Range(1, int.MaxValue, ErrorMessage = "Số lượng phải từ 1 trở lên")]
         public int Quantity { get; set; }
     }
 }

@@ -18,7 +18,7 @@ namespace DATN_API.Models
         public int VariantCompositionId { get; set; }
         [JsonIgnore]
         public virtual VariantComposition? VariantComposition { get; set; }
-
+        [Range(1000, double.MaxValue, ErrorMessage = "Giá phải từ 1.000")] 
         public decimal Price { get; set; }
 
         [JsonIgnore]

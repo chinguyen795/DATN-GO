@@ -23,7 +23,7 @@ namespace DATN_API.Models
         [MaxLength]
         [MinLength(5, ErrorMessage = "Nội dung phải từ 5 ký tự trở lên.")]
         public string Content { get; set; }
-
+        [MaxLength]
         public string? Image { get; set; }
 
         public PostStatus Status { get; set; }

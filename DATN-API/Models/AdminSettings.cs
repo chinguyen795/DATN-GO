@@ -18,5 +18,9 @@ namespace DATN_API.Models
         public ICollection<Policies>? Policies { get; set; }
         [JsonIgnore]
         public ICollection<Decorates>? Decorates { get; set; }
+
+        public string? Theme { get; set; }
+        public string? Logo { get; set; }
+        public DateTime? UpdateAt { get; set; }
     }
 }
