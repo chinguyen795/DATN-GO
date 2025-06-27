@@ -1,7 +1,7 @@
 ﻿using DATN_API.Data;
 using DATN_API.Models;
+using DATN_API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace DATN_API.Controllers
 {
@@ -9,90 +9,56 @@ namespace DATN_API.Controllers
     [ApiController]
     public class RolesController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IRolesService _service;
 
-        public RolesController(ApplicationDbContext context)
+        public RolesController(IRolesService service)
         {
-            _context = context;
+            _service = service;
         }
 
-        // GET: api/Roles
+        // GET: api/roles
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Roles>>> GetRoles()
+        public async Task<IActionResult> GetAll()
         {
-            return await _context.Roles.ToListAsync();
+            var roles = await _service.GetAllAsync();
+            return Ok(roles);
         }
 
-        // GET: api/Roles/id
+        // GET: api/roles/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Roles>> GetRole(int id)
+        public async Task<IActionResult> GetById(int id)
         {
-            var role = await _context.Roles.FindAsync(id);
-            if (role == null)
-            {
-                return NotFound();
-            }
-            return role;
+            var role = await _service.GetByIdAsync(id);
+            if (role == null) return NotFound();
+            return Ok(role);
         }
 
-        // POST: api/Roles
+        // POST: api/roles
         [HttpPost]
-        public async Task<ActionResult<Roles>> PostRole(Roles role)
+        public async Task<IActionResult> Create([FromBody] Roles model)
         {
-            _context.Roles.Add(role);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetRole), new { id = role.Id }, role);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            var created = await _service.CreateAsync(model);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
-        // PUT: api/Roles/5
+        // PUT: api/roles/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutRole(int id, Roles role)
+        public async Task<IActionResult> Update(int id, [FromBody] Roles model)
         {
-            if (id != role.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(role).State = EntityState.Modified;
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!RoleExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
+            if (!await _service.UpdateAsync(id, model))
+                return BadRequest("ID không khớp hoặc không tìm thấy role");
             return NoContent();
         }
 
-        // DELETE: api/Roles/5
+        // DELETE: api/roles/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteRole(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var role = await _context.Roles.FindAsync(id);
-            if (role == null)
-            {
+            if (!await _service.DeleteAsync(id))
                 return NotFound();
-            }
-
-            _context.Roles.Remove(role);
-            await _context.SaveChangesAsync();
-
             return NoContent();
-        }
-
-        private bool RoleExists(int id)
-        {
-            return _context.Roles.Any(e => e.Id == id);
         }
     }
-
 }

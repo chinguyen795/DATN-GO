@@ -1,5 +1,6 @@
 ﻿using DATN_API.Data;
 using DATN_API.Models;
+using DATN_API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,83 +11,55 @@ namespace DATN_API.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IUsersService _service;
 
-        public UsersController(ApplicationDbContext context)
+        public UsersController(IUsersService service)
         {
-            _context = context;
+            _service = service;
         }
 
-        // GET: api/Users
+        // GET: api/users
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Users>>> GetUsers()
+        public async Task<IActionResult> GetAll()
         {
-            return await _context.Users.ToListAsync();
+            var users = await _service.GetAllAsync();
+            return Ok(users);
         }
 
-        // GET: api/Users/id
+        // GET: api/users/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Users>> Getuser(int id)
+        public async Task<IActionResult> GetById(int id)
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
-            {
-                return NotFound();
-            }
-            return user;
+            var user = await _service.GetByIdAsync(id);
+            if (user == null) return NotFound();
+            return Ok(user);
         }
 
-        // POST: api/Users
+        // POST: api/users
         [HttpPost]
-        public async Task<ActionResult<Users>> Postuser(Users user)
+        public async Task<IActionResult> Create([FromBody] Users model)
         {
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(Getuser), new { id = user.Id }, user);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            var created = await _service.CreateAsync(model);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
-        // PUT: api/Users/id
+        // PUT: api/users/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Putuser(int id, Users user)
+        public async Task<IActionResult> Update(int id, [FromBody] Users model)
         {
-            if (id != user.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(user).State = EntityState.Modified;
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!userExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
+            if (!await _service.UpdateAsync(id, model))
+                return BadRequest("ID không khớp hoặc không tìm thấy user");
             return NoContent();
         }
 
-        // DELETE: api/Users/5
+        // DELETE: api/users/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Deleteuser(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
-            {
+            if (!await _service.DeleteAsync(id))
                 return NotFound();
-            }
-
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
-
             return NoContent();
         }
 
@@ -96,15 +69,10 @@ namespace DATN_API.Controllers
         {
             if (!Int32.TryParse(HttpContext?.User?.Identity?.Name, out var uId))
                 return Unauthorized("Không tìm thấy thông tin người dùng");
-            var user = await _context.Users.FindAsync(uId);
+            var user = await _service.GetByIdAsync(uId);
             if (user == null)
                 return NotFound("Không tìm thấy người dùng");
             return Ok(user);
-        }
-
-        private bool userExists(int id)
-        {
-            return _context.Users.Any(e => e.Id == id);
         }
     }
 

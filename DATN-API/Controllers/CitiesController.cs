@@ -25,7 +25,6 @@ namespace DATN_API.Controllers
             var cities = await _context.Cities
                 .Include(c => c.Districts)
                 .ToListAsync();
-
             return Ok(cities);
         }
 
@@ -36,10 +35,8 @@ namespace DATN_API.Controllers
             var city = await _context.Cities
                 .Include(c => c.Districts)
                 .FirstOrDefaultAsync(c => c.Id == id);
-
             if (city == null)
                 return NotFound();
-
             return Ok(city);
         }
 
@@ -49,10 +46,8 @@ namespace DATN_API.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-
             _context.Cities.Add(model);
             await _context.SaveChangesAsync();
-
             return CreatedAtAction(nameof(GetById), new { id = model.Id }, model);
         }
 
@@ -62,13 +57,10 @@ namespace DATN_API.Controllers
         {
             if (id != model.Id)
                 return BadRequest("ID không khớp");
-
             var city = await _context.Cities.FindAsync(id);
             if (city == null)
                 return NotFound();
-
             city.CityName = model.CityName;
-
             await _context.SaveChangesAsync();
             return NoContent();
         }
@@ -80,82 +72,83 @@ namespace DATN_API.Controllers
             var city = await _context.Cities.FindAsync(id);
             if (city == null)
                 return NotFound();
-
             _context.Cities.Remove(city);
             await _context.SaveChangesAsync();
             return NoContent();
         }
 
-        // API để lấy tỉnh/thành phố từ Mapbox và lưu vào DB
-        [HttpPost("import-cities")]
-        public async Task<IActionResult> ImportCitiesFromJson()
-        {
-            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "tree_mien_nam.json");
+        // // API để lấy tỉnh/thành phố từ Mapbox và lưu vào DB
+        // [HttpPost("import-cities")]
+        // public async Task<IActionResult> ImportCitiesFromJson()
+        // {
+        //     var filePath = Path.Combine(Directory.GetCurrentDirectory(), "tree_mien_nam.json");
 
-            if (!System.IO.File.Exists(filePath))
-                return NotFound("File tree_mien_nam.json không tồn tại.");
+        //     if (!System.IO.File.Exists(filePath))
+        //         return NotFound("File tree_mien_nam.json không tồn tại.");
 
-            var json = await System.IO.File.ReadAllTextAsync(filePath);
+        //     var json = await System.IO.File.ReadAllTextAsync(filePath);
 
-            List<CityDto>? cityDtos;
-            try
-            {
-                cityDtos = JsonSerializer.Deserialize<List<CityDto>>(json);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest($"Lỗi khi đọc JSON: {ex.Message}");
-            }
+        //     List<CityDto>? cityDtos;
+        //     try
+        //     {
+        //         cityDtos = JsonSerializer.Deserialize<List<CityDto>>(json);
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         return BadRequest($"Lỗi khi đọc JSON: {ex.Message}");
+        //     }
 
-            if (cityDtos == null || !cityDtos.Any())
-                return BadRequest("Dữ liệu JSON rỗng hoặc không hợp lệ.");
+        //     if (cityDtos == null || !cityDtos.Any())
+        //         return BadRequest("Dữ liệu JSON rỗng hoặc không hợp lệ.");
 
-            // 👉 Lấy danh sách tất cả userId hiện có trong hệ thống
-            var userIds = await _context.Users.Select(u => u.Id).ToListAsync();
-            if (!userIds.Any())
-                return BadRequest("Không có user nào trong hệ thống để gán.");
+        //     // 👉 Lấy danh sách tất cả userId hiện có trong hệ thống
+        //     var userIds = await _context.Users.Select(u => u.Id).ToListAsync();
+        //     if (!userIds.Any())
+        //         return BadRequest("Không có user nào trong hệ thống để gán.");
 
-            var random = new Random();
-            int count = 0;
+        //     var random = new Random();
+        //     int count = 0;
 
-            foreach (var dto in cityDtos)
-            {
-                if (_context.Cities.Any(c => c.CityName == dto.CityName))
-                    continue;
+        //     foreach (var dto in cityDtos)
+        //     {
+        //         if (_context.Cities.Any(c => c.CityName == dto.CityName))
+        //             continue;
 
-                // 👉 Chọn ngẫu nhiên một UserId
-                int randomUserId = userIds[random.Next(userIds.Count)];
+        //         // 👉 Chọn ngẫu nhiên một UserId
+        //         int randomUserId = userIds[random.Next(userIds.Count)];
 
-                var address = new Addresses
-                {
-                    UserId = randomUserId,
-                    Longitude = 0,
-                    Latitude = 0,
-                    Discription = $"Tự động tạo cho {dto.CityName}",
-                    Status = "Active"
-                };
+        //         var address = new Addresses
+        //         {
+        //             UserId = randomUserId,
+        //             Longitude = 0,
+        //             Latitude = 0,
+        //             Name = $"Địa chỉ {dto.CityName}",
+        //             Phone = "0000000000",
+        //             Description = $"Tự động tạo cho {dto.CityName}",
+        //             Status = AddressStatus.Default
+        //         };
 
-                _context.Addresses.Add(address);
-                await _context.SaveChangesAsync(); // để lấy được address.Id
+        //         _context.Addresses.Add(address);
+        //         await _context.SaveChangesAsync(); // để lấy được address.Id
 
-                var city = new Cities
-                {
-                    CityName = dto.CityName,
-                    Id = address.Id
-                };
+        //         var city = new Cities
+        //         {
+        //             CityName = dto.CityName,
+        //             Id = address.Id
+        //         };
 
-                _context.Cities.Add(city);
-                count++;
-            }
+        //         _context.Cities.Add(city);
+        //         count++;
+        //     }
 
-            // ❗Tuỳ logic bạn muốn — giữ lại đoạn này nếu bạn vẫn muốn xóa các địa chỉ vừa tạo
-            var autoAddresses = await _context.Addresses
-                .Where(a => a.Discription.StartsWith("Tự động tạo cho"))
-                .ToListAsync();
+        //     // ❗Tuỳ logic bạn muốn — giữ lại đoạn này nếu bạn vẫn muốn xóa các địa chỉ vừa tạo
+        //     var autoAddresses = await _context.Addresses
+        //         .Where(a => a.Description.StartsWith("Tự động tạo cho"))
+        //         .ToListAsync();
 
 
-            return Ok(new { message = $"Đã lưu {count} tỉnh/thành phố vào hệ thống." });
-        }
+        //     return Ok(new { message = $"Đã lưu {count} tỉnh/thành phố vào hệ thống." });
+        // }
         public class CityDto
         {
             public string CityName { get; set; } = string.Empty;

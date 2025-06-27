@@ -4,6 +4,14 @@ using System.Text.Json.Serialization;
 
 namespace DATN_API.Models
 {
+    public enum MessageStatus
+    {
+        [Display(Name = "Chưa nhận")]
+        NotReceived,
+        [Display(Name = "Đã nhận")]
+        Received
+    }
+
     public class Messages
     {
         [Key]
@@ -15,14 +23,22 @@ namespace DATN_API.Models
         [Required]
         public int ReceiverId { get; set; }
 
-        public string Text { get; set; }
+        [Required]
+        public string? Text { get; set; }
 
-        public DateTime Timestamp { get; set; }
+        public MessageStatus Status { get; set; }
+
+        public DateTime Timestamp { get; set; } = DateTime.Now;
+
         [JsonIgnore]
         [ForeignKey("SenderId")]
         public virtual Users? Sender { get; set; }
+
         [JsonIgnore]
         [ForeignKey("ReceiverId")]
         public virtual Users? Receiver { get; set; }
+
+        [JsonIgnore]
+        public ICollection<MessageMedias>? MessageMedias { get; set; }
     }
 }

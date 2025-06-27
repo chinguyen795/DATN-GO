@@ -80,8 +80,8 @@ namespace DATN_API.Controllers
 
             cart.ProductId = model.ProductId;
             cart.Quantity = model.Quantity;
-            cart.CreateAt = model.CreateAt;
             cart.UserId = model.UserId;
+            // Không cập nhật CreateAt khi update, giữ nguyên thời điểm tạo
 
             await _context.SaveChangesAsync();
             return NoContent();

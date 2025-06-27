@@ -30,8 +30,10 @@ namespace DATN_API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Discription")
-                        .IsRequired()
+                    b.Property<DateTime>("CreateAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<float>("Latitude")
@@ -40,10 +42,21 @@ namespace DATN_API.Migrations
                     b.Property<float>("Longitude")
                         .HasColumnType("real");
 
-                    b.Property<string>("Status")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasMaxLength(13)
+                        .HasColumnType("nvarchar(13)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdateAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -53,6 +66,24 @@ namespace DATN_API.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Addresses");
+                });
+
+            modelBuilder.Entity("DATN_API.Models.AdminSettings", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AdminSettings");
                 });
 
             modelBuilder.Entity("DATN_API.Models.Carts", b =>
@@ -92,15 +123,32 @@ namespace DATN_API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("CategoryName")
+                    b.Property<DateTime>("CreateAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Hashtag")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Image")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdateAt")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -114,7 +162,8 @@ namespace DATN_API.Migrations
 
                     b.Property<string>("CityName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 
@@ -128,6 +177,9 @@ namespace DATN_API.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AdminSettingId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Image")
                         .IsRequired()
@@ -143,6 +195,8 @@ namespace DATN_API.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AdminSettingId");
 
                     b.HasIndex("UserId");
 
@@ -205,69 +259,6 @@ namespace DATN_API.Migrations
                     b.ToTable("DeliveryTrackings");
                 });
 
-            modelBuilder.Entity("DATN_API.Models.Diners", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Avatar")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("CloseHouse")
-                        .HasColumnType("int");
-
-                    b.Property<int>("CloseMinute")
-                        .HasColumnType("int");
-
-                    b.Property<string>("CoverPhoto")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreateAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DinerAddress")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("DinerName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<float>("Latitude")
-                        .HasColumnType("real");
-
-                    b.Property<float>("Longitude")
-                        .HasColumnType("real");
-
-                    b.Property<int>("OpenHouse")
-                        .HasColumnType("int");
-
-                    b.Property<int>("OpenMinute")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("Diners");
-                });
-
             modelBuilder.Entity("DATN_API.Models.Districts", b =>
                 {
                     b.Property<int>("Id")
@@ -291,6 +282,50 @@ namespace DATN_API.Migrations
                     b.ToTable("Districts");
                 });
 
+            modelBuilder.Entity("DATN_API.Models.FollowStores", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("StoreId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StoreId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("FollowStores");
+                });
+
+            modelBuilder.Entity("DATN_API.Models.MessageMedias", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Media")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("MessageId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MessageId");
+
+                    b.ToTable("MessageMedias");
+                });
+
             modelBuilder.Entity("DATN_API.Models.Messages", b =>
                 {
                     b.Property<int>("Id")
@@ -303,6 +338,9 @@ namespace DATN_API.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("SenderId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.Property<string>("Text")
@@ -321,57 +359,6 @@ namespace DATN_API.Migrations
                     b.ToTable("Messages");
                 });
 
-            modelBuilder.Entity("DATN_API.Models.OptionValues", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("OptionId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ValueName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OptionId");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("OptionValues");
-                });
-
-            modelBuilder.Entity("DATN_API.Models.Options", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("OptionName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("Options");
-                });
-
             modelBuilder.Entity("DATN_API.Models.OrderDetails", b =>
                 {
                     b.Property<int>("Id")
@@ -386,6 +373,9 @@ namespace DATN_API.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int?>("PricesId")
+                        .HasColumnType("int");
+
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
@@ -395,6 +385,8 @@ namespace DATN_API.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("OrderId");
+
+                    b.HasIndex("PricesId");
 
                     b.HasIndex("ProductId");
 
@@ -408,6 +400,9 @@ namespace DATN_API.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AddressesId")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("DeliveryFee")
                         .HasColumnType("decimal(18,2)");
@@ -456,6 +451,8 @@ namespace DATN_API.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AddressesId");
+
                     b.HasIndex("ShippingMethodId");
 
                     b.HasIndex("ShippingMethodsId");
@@ -469,6 +466,24 @@ namespace DATN_API.Migrations
                     b.ToTable("Orders");
                 });
 
+            modelBuilder.Entity("DATN_API.Models.Policies", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AdminSettingId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AdminSettingId");
+
+                    b.ToTable("Policies");
+                });
+
             modelBuilder.Entity("DATN_API.Models.Posts", b =>
                 {
                     b.Property<int>("Id")
@@ -479,14 +494,19 @@ namespace DATN_API.Migrations
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreateAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Image")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdateAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -498,7 +518,7 @@ namespace DATN_API.Migrations
                     b.ToTable("Posts");
                 });
 
-            modelBuilder.Entity("DATN_API.Models.ProductSkus", b =>
+            modelBuilder.Entity("DATN_API.Models.Prices", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -512,27 +532,108 @@ namespace DATN_API.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Sku")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<int>("VariantCompositionId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProductSkus");
+                    b.HasIndex("VariantCompositionId");
+
+                    b.ToTable("Prices");
+                });
+
+            modelBuilder.Entity("DATN_API.Models.ProductImages", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Media")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductVariantId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ProductVariantsId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("ProductVariantId");
+
+                    b.HasIndex("ProductVariantsId");
+
+                    b.ToTable("ProductImages");
+                });
+
+            modelBuilder.Entity("DATN_API.Models.ProductVariants", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("CostPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PackageSize")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Weight")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductVariants");
                 });
 
             modelBuilder.Entity("DATN_API.Models.ProductVouchers", b =>
                 {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("PriceReduce")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
                     b.Property<int>("VoucherId")
                         .HasColumnType("int");
 
-                    b.HasKey("ProductId", "VoucherId");
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
 
                     b.HasIndex("VoucherId");
 
@@ -547,53 +648,76 @@ namespace DATN_API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Brand")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
+
+                    b.Property<decimal?>("CostPrice")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("CreateAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("DinerId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Discription")
-                        .IsRequired()
+                    b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Hashtag")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<string>("MainImage")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<string>("PackageSize")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ProductName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<string>("PlaceOfOrigin")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
+                    b.Property<float?>("Rating")
+                        .HasColumnType("real");
+
+                    b.Property<string>("Slug")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Status")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<int>("StoreId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdateAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("Views")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Weight")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
 
-                    b.HasIndex("DinerId");
+                    b.HasIndex("StoreId");
 
                     b.ToTable("Products");
                 });
 
-            modelBuilder.Entity("DATN_API.Models.ReportActions", b =>
+            modelBuilder.Entity("DATN_API.Models.RatingStores", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -601,18 +725,13 @@ namespace DATN_API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Action")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime>("CreateAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Notes")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
 
-                    b.Property<int>("ReportId")
+                    b.Property<int>("StoreId")
                         .HasColumnType("int");
 
                     b.Property<int>("UserId")
@@ -620,14 +739,14 @@ namespace DATN_API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ReportId");
+                    b.HasIndex("StoreId");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ReportActions");
+                    b.ToTable("RatingStores");
                 });
 
-            modelBuilder.Entity("DATN_API.Models.Reports", b =>
+            modelBuilder.Entity("DATN_API.Models.ReviewMedias", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -635,32 +754,17 @@ namespace DATN_API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("Media")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("DinerId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Reanson")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("UserId")
+                    b.Property<int>("ReviewId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DinerId");
+                    b.HasIndex("ReviewId");
 
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Reports");
+                    b.ToTable("ReviewMedias");
                 });
 
             modelBuilder.Entity("DATN_API.Models.Reviews", b =>
@@ -678,7 +782,7 @@ namespace DATN_API.Migrations
                     b.Property<DateTime>("CreateAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("OrderId")
+                    b.Property<int?>("OrdersId")
                         .HasColumnType("int");
 
                     b.Property<int>("ProductId")
@@ -687,12 +791,15 @@ namespace DATN_API.Migrations
                     b.Property<int>("Rating")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("UpdateAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OrderId");
+                    b.HasIndex("OrdersId");
 
                     b.HasIndex("ProductId");
 
@@ -729,9 +836,6 @@ namespace DATN_API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("DinerId")
-                        .HasColumnType("int");
-
                     b.Property<string>("MethodName")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -740,36 +844,76 @@ namespace DATN_API.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int>("StoreId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("DinerId");
+                    b.HasIndex("StoreId");
 
                     b.ToTable("ShippingMethods");
                 });
 
-            modelBuilder.Entity("DATN_API.Models.SkusValues", b =>
+            modelBuilder.Entity("DATN_API.Models.Stores", b =>
                 {
-                    b.Property<int>("ValueId")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<int>("SkuId")
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Avatar")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Bank")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("BankAccount")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("CoverPhoto")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreateAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<float>("Latitude")
+                        .HasColumnType("real");
+
+                    b.Property<float>("Longitude")
+                        .HasColumnType("real");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<float>("Rating")
+                        .HasColumnType("real");
+
+                    b.Property<string>("Slug")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<int>("ProductId")
+                    b.Property<DateTime>("UpdateAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<int>("OptionId")
-                        .HasColumnType("int");
+                    b.HasKey("Id");
 
-                    b.HasKey("ValueId", "SkuId", "ProductId", "OptionId");
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
-                    b.HasIndex("OptionId");
-
-                    b.HasIndex("ProductId");
-
-                    b.HasIndex("SkuId");
-
-                    b.ToTable("SkusValues");
+                    b.ToTable("Stores");
                 });
 
             modelBuilder.Entity("DATN_API.Models.Users", b =>
@@ -783,45 +927,150 @@ namespace DATN_API.Migrations
                     b.Property<string>("Avatar")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CitizenIdentityCard")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime?>("BirthDay")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("DateOfBirth")
+                    b.Property<string>("CitizenIdentityCard")
+                        .HasMaxLength(12)
+                        .HasColumnType("nvarchar(12)");
+
+                    b.Property<DateTime>("CreateAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
-                    b.Property<bool>("Gender")
-                        .HasColumnType("bit");
+                    b.Property<int>("Gender")
+                        .HasColumnType("int");
 
                     b.Property<string>("Password")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("PhoneNumber")
+                    b.Property<string>("Phone")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(13)
+                        .HasColumnType("nvarchar(13)");
 
                     b.Property<int>("RoleId")
                         .HasColumnType("int");
 
-                    b.Property<bool>("Status")
-                        .HasColumnType("bit");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdateAt")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
                     b.HasIndex("RoleId");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("DATN_API.Models.VariantComposition", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("ProductVariantId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ProductVariantsId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("VariantId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("VariantValueId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductVariantId");
+
+                    b.HasIndex("ProductVariantsId");
+
+                    b.HasIndex("VariantId");
+
+                    b.HasIndex("VariantValueId");
+
+                    b.ToTable("VariantCompositions");
+                });
+
+            modelBuilder.Entity("DATN_API.Models.VariantValues", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Image")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ValueName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("VariantId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("colorHex")
+                        .HasMaxLength(7)
+                        .HasColumnType("nvarchar(7)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VariantId");
+
+                    b.ToTable("VariantValues");
+                });
+
+            modelBuilder.Entity("DATN_API.Models.Variants", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("VariantName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("Variants");
                 });
 
             modelBuilder.Entity("DATN_API.Models.Vouchers", b =>
@@ -832,11 +1081,17 @@ namespace DATN_API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("CategoryId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("MinOrder")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("Reduce")
                         .HasColumnType("decimal(18,2)");
@@ -849,12 +1104,19 @@ namespace DATN_API.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<int?>("StoreId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("StoreId");
 
                     b.ToTable("Vouchers");
                 });
@@ -893,6 +1155,17 @@ namespace DATN_API.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("DATN_API.Models.AdminSettings", b =>
+                {
+                    b.HasOne("DATN_API.Models.Users", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("DATN_API.Models.Carts", b =>
                 {
                     b.HasOne("DATN_API.Models.Products", "Product")
@@ -925,11 +1198,17 @@ namespace DATN_API.Migrations
 
             modelBuilder.Entity("DATN_API.Models.Decorates", b =>
                 {
+                    b.HasOne("DATN_API.Models.AdminSettings", "AdminSetting")
+                        .WithMany("Decorates")
+                        .HasForeignKey("AdminSettingId");
+
                     b.HasOne("DATN_API.Models.Users", "User")
                         .WithMany("Decorates")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("AdminSetting");
 
                     b.Navigation("User");
                 });
@@ -945,17 +1224,6 @@ namespace DATN_API.Migrations
                     b.Navigation("Order");
                 });
 
-            modelBuilder.Entity("DATN_API.Models.Diners", b =>
-                {
-                    b.HasOne("DATN_API.Models.Users", "User")
-                        .WithOne("Diner")
-                        .HasForeignKey("DATN_API.Models.Diners", "UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("DATN_API.Models.Districts", b =>
                 {
                     b.HasOne("DATN_API.Models.Cities", "City")
@@ -965,6 +1233,36 @@ namespace DATN_API.Migrations
                         .IsRequired();
 
                     b.Navigation("City");
+                });
+
+            modelBuilder.Entity("DATN_API.Models.FollowStores", b =>
+                {
+                    b.HasOne("DATN_API.Models.Stores", "Store")
+                        .WithMany()
+                        .HasForeignKey("StoreId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DATN_API.Models.Users", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Store");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("DATN_API.Models.MessageMedias", b =>
+                {
+                    b.HasOne("DATN_API.Models.Messages", "Message")
+                        .WithMany("MessageMedias")
+                        .HasForeignKey("MessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Message");
                 });
 
             modelBuilder.Entity("DATN_API.Models.Messages", b =>
@@ -986,36 +1284,6 @@ namespace DATN_API.Migrations
                     b.Navigation("Sender");
                 });
 
-            modelBuilder.Entity("DATN_API.Models.OptionValues", b =>
-                {
-                    b.HasOne("DATN_API.Models.Options", "Option")
-                        .WithMany("OptionValues")
-                        .HasForeignKey("OptionId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("DATN_API.Models.Products", "Product")
-                        .WithMany("OptionValues")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Option");
-
-                    b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("DATN_API.Models.Options", b =>
-                {
-                    b.HasOne("DATN_API.Models.Products", "Product")
-                        .WithMany("Options")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-                });
-
             modelBuilder.Entity("DATN_API.Models.OrderDetails", b =>
                 {
                     b.HasOne("DATN_API.Models.Orders", "Order")
@@ -1023,6 +1291,10 @@ namespace DATN_API.Migrations
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("DATN_API.Models.Prices", null)
+                        .WithMany("OrderDetails")
+                        .HasForeignKey("PricesId");
 
                     b.HasOne("DATN_API.Models.Products", "Product")
                         .WithMany("OrderDetails")
@@ -1037,6 +1309,10 @@ namespace DATN_API.Migrations
 
             modelBuilder.Entity("DATN_API.Models.Orders", b =>
                 {
+                    b.HasOne("DATN_API.Models.Addresses", null)
+                        .WithMany("Orders")
+                        .HasForeignKey("AddressesId");
+
                     b.HasOne("DATN_API.Models.ShippingMethods", "ShippingMethod")
                         .WithMany()
                         .HasForeignKey("ShippingMethodId")
@@ -1069,6 +1345,17 @@ namespace DATN_API.Migrations
                     b.Navigation("Voucher");
                 });
 
+            modelBuilder.Entity("DATN_API.Models.Policies", b =>
+                {
+                    b.HasOne("DATN_API.Models.AdminSettings", "AdminSetting")
+                        .WithMany("Policies")
+                        .HasForeignKey("AdminSettingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AdminSetting");
+                });
+
             modelBuilder.Entity("DATN_API.Models.Posts", b =>
                 {
                     b.HasOne("DATN_API.Models.Users", "User")
@@ -1080,12 +1367,54 @@ namespace DATN_API.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("DATN_API.Models.ProductSkus", b =>
+            modelBuilder.Entity("DATN_API.Models.Prices", b =>
                 {
                     b.HasOne("DATN_API.Models.Products", "Product")
-                        .WithMany("ProductSkus")
+                        .WithMany("Prices")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DATN_API.Models.VariantComposition", "VariantComposition")
+                        .WithMany()
+                        .HasForeignKey("VariantCompositionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("VariantComposition");
+                });
+
+            modelBuilder.Entity("DATN_API.Models.ProductImages", b =>
+                {
+                    b.HasOne("DATN_API.Models.Products", "Product")
+                        .WithMany("ProductImages")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DATN_API.Models.Variants", "ProductVariant")
+                        .WithMany()
+                        .HasForeignKey("ProductVariantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DATN_API.Models.ProductVariants", null)
+                        .WithMany("ProductImages")
+                        .HasForeignKey("ProductVariantsId");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("ProductVariant");
+                });
+
+            modelBuilder.Entity("DATN_API.Models.ProductVariants", b =>
+                {
+                    b.HasOne("DATN_API.Models.Products", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Product");
@@ -1118,62 +1447,52 @@ namespace DATN_API.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("DATN_API.Models.Diners", "Diner")
+                    b.HasOne("DATN_API.Models.Stores", "Store")
                         .WithMany("Products")
-                        .HasForeignKey("DinerId")
+                        .HasForeignKey("StoreId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Category");
 
-                    b.Navigation("Diner");
+                    b.Navigation("Store");
                 });
 
-            modelBuilder.Entity("DATN_API.Models.ReportActions", b =>
+            modelBuilder.Entity("DATN_API.Models.RatingStores", b =>
                 {
-                    b.HasOne("DATN_API.Models.Reports", "Report")
-                        .WithMany("Actions")
-                        .HasForeignKey("ReportId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                    b.HasOne("DATN_API.Models.Stores", "Store")
+                        .WithMany()
+                        .HasForeignKey("StoreId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("DATN_API.Models.Users", "User")
-                        .WithMany("ReportActionsPerformed")
+                        .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Report");
+                    b.Navigation("Store");
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("DATN_API.Models.Reports", b =>
+            modelBuilder.Entity("DATN_API.Models.ReviewMedias", b =>
                 {
-                    b.HasOne("DATN_API.Models.Diners", "Diner")
-                        .WithMany("ReportsReceived")
-                        .HasForeignKey("DinerId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                    b.HasOne("DATN_API.Models.Reviews", "Review")
+                        .WithMany()
+                        .HasForeignKey("ReviewId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("DATN_API.Models.Users", "User")
-                        .WithMany("ReportsSent")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Diner");
-
-                    b.Navigation("User");
+                    b.Navigation("Review");
                 });
 
             modelBuilder.Entity("DATN_API.Models.Reviews", b =>
                 {
-                    b.HasOne("DATN_API.Models.Orders", "Order")
+                    b.HasOne("DATN_API.Models.Orders", null)
                         .WithMany("Reviews")
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .HasForeignKey("OrdersId");
 
                     b.HasOne("DATN_API.Models.Products", "Product")
                         .WithMany("Reviews")
@@ -1186,8 +1505,6 @@ namespace DATN_API.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("Order");
 
                     b.Navigation("Product");
 
@@ -1196,48 +1513,24 @@ namespace DATN_API.Migrations
 
             modelBuilder.Entity("DATN_API.Models.ShippingMethods", b =>
                 {
-                    b.HasOne("DATN_API.Models.Diners", "Diner")
+                    b.HasOne("DATN_API.Models.Stores", "store")
                         .WithMany("ShippingMethods")
-                        .HasForeignKey("DinerId")
+                        .HasForeignKey("StoreId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("store");
+                });
+
+            modelBuilder.Entity("DATN_API.Models.Stores", b =>
+                {
+                    b.HasOne("DATN_API.Models.Users", "User")
+                        .WithOne("Store")
+                        .HasForeignKey("DATN_API.Models.Stores", "UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Diner");
-                });
-
-            modelBuilder.Entity("DATN_API.Models.SkusValues", b =>
-                {
-                    b.HasOne("DATN_API.Models.Options", "Option")
-                        .WithMany("SkusValues")
-                        .HasForeignKey("OptionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("DATN_API.Models.Products", "Product")
-                        .WithMany("SkusValues")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("DATN_API.Models.ProductSkus", "ProductSku")
-                        .WithMany("SkusValues")
-                        .HasForeignKey("SkuId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("DATN_API.Models.OptionValues", "OptionValue")
-                        .WithMany("SkusValues")
-                        .HasForeignKey("ValueId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Option");
-
-                    b.Navigation("OptionValue");
-
-                    b.Navigation("Product");
-
-                    b.Navigation("ProductSku");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("DATN_API.Models.Users", b =>
@@ -1249,6 +1542,71 @@ namespace DATN_API.Migrations
                         .IsRequired();
 
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("DATN_API.Models.VariantComposition", b =>
+                {
+                    b.HasOne("DATN_API.Models.Products", "ProductVariant")
+                        .WithMany()
+                        .HasForeignKey("ProductVariantId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("DATN_API.Models.ProductVariants", null)
+                        .WithMany("VariantCompositions")
+                        .HasForeignKey("ProductVariantsId");
+
+                    b.HasOne("DATN_API.Models.Variants", "Variant")
+                        .WithMany()
+                        .HasForeignKey("VariantId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("DATN_API.Models.VariantValues", "VariantValue")
+                        .WithMany()
+                        .HasForeignKey("VariantValueId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ProductVariant");
+
+                    b.Navigation("Variant");
+
+                    b.Navigation("VariantValue");
+                });
+
+            modelBuilder.Entity("DATN_API.Models.VariantValues", b =>
+                {
+                    b.HasOne("DATN_API.Models.Variants", "Variant")
+                        .WithMany()
+                        .HasForeignKey("VariantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Variant");
+                });
+
+            modelBuilder.Entity("DATN_API.Models.Variants", b =>
+                {
+                    b.HasOne("DATN_API.Models.Products", "Product")
+                        .WithMany("Variants")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("DATN_API.Models.Vouchers", b =>
+                {
+                    b.HasOne("DATN_API.Models.Categories", "Category")
+                        .WithMany("Vouchers")
+                        .HasForeignKey("CategoryId");
+
+                    b.HasOne("DATN_API.Models.Stores", "Store")
+                        .WithMany()
+                        .HasForeignKey("StoreId");
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Store");
                 });
 
             modelBuilder.Entity("DATN_API.Models.Wards", b =>
@@ -1265,11 +1623,22 @@ namespace DATN_API.Migrations
             modelBuilder.Entity("DATN_API.Models.Addresses", b =>
                 {
                     b.Navigation("City");
+
+                    b.Navigation("Orders");
+                });
+
+            modelBuilder.Entity("DATN_API.Models.AdminSettings", b =>
+                {
+                    b.Navigation("Decorates");
+
+                    b.Navigation("Policies");
                 });
 
             modelBuilder.Entity("DATN_API.Models.Categories", b =>
                 {
                     b.Navigation("Products");
+
+                    b.Navigation("Vouchers");
                 });
 
             modelBuilder.Entity("DATN_API.Models.Cities", b =>
@@ -1277,30 +1646,14 @@ namespace DATN_API.Migrations
                     b.Navigation("Districts");
                 });
 
-            modelBuilder.Entity("DATN_API.Models.Diners", b =>
-                {
-                    b.Navigation("Products");
-
-                    b.Navigation("ReportsReceived");
-
-                    b.Navigation("ShippingMethods");
-                });
-
             modelBuilder.Entity("DATN_API.Models.Districts", b =>
                 {
                     b.Navigation("Wards");
                 });
 
-            modelBuilder.Entity("DATN_API.Models.OptionValues", b =>
+            modelBuilder.Entity("DATN_API.Models.Messages", b =>
                 {
-                    b.Navigation("SkusValues");
-                });
-
-            modelBuilder.Entity("DATN_API.Models.Options", b =>
-                {
-                    b.Navigation("OptionValues");
-
-                    b.Navigation("SkusValues");
+                    b.Navigation("MessageMedias");
                 });
 
             modelBuilder.Entity("DATN_API.Models.Orders", b =>
@@ -1312,33 +1665,33 @@ namespace DATN_API.Migrations
                     b.Navigation("Reviews");
                 });
 
-            modelBuilder.Entity("DATN_API.Models.ProductSkus", b =>
+            modelBuilder.Entity("DATN_API.Models.Prices", b =>
                 {
-                    b.Navigation("SkusValues");
+                    b.Navigation("OrderDetails");
+                });
+
+            modelBuilder.Entity("DATN_API.Models.ProductVariants", b =>
+                {
+                    b.Navigation("ProductImages");
+
+                    b.Navigation("VariantCompositions");
                 });
 
             modelBuilder.Entity("DATN_API.Models.Products", b =>
                 {
                     b.Navigation("Carts");
 
-                    b.Navigation("OptionValues");
-
-                    b.Navigation("Options");
-
                     b.Navigation("OrderDetails");
 
-                    b.Navigation("ProductSkus");
+                    b.Navigation("Prices");
+
+                    b.Navigation("ProductImages");
 
                     b.Navigation("ProductVouchers");
 
                     b.Navigation("Reviews");
 
-                    b.Navigation("SkusValues");
-                });
-
-            modelBuilder.Entity("DATN_API.Models.Reports", b =>
-                {
-                    b.Navigation("Actions");
+                    b.Navigation("Variants");
                 });
 
             modelBuilder.Entity("DATN_API.Models.Roles", b =>
@@ -1351,6 +1704,13 @@ namespace DATN_API.Migrations
                     b.Navigation("Orders");
                 });
 
+            modelBuilder.Entity("DATN_API.Models.Stores", b =>
+                {
+                    b.Navigation("Products");
+
+                    b.Navigation("ShippingMethods");
+                });
+
             modelBuilder.Entity("DATN_API.Models.Users", b =>
                 {
                     b.Navigation("Address");
@@ -1359,21 +1719,17 @@ namespace DATN_API.Migrations
 
                     b.Navigation("Decorates");
 
-                    b.Navigation("Diner");
-
                     b.Navigation("Orders");
 
                     b.Navigation("Posts");
 
                     b.Navigation("ReceivedMessages");
 
-                    b.Navigation("ReportActionsPerformed");
-
-                    b.Navigation("ReportsSent");
-
                     b.Navigation("Reviews");
 
                     b.Navigation("SentMessages");
+
+                    b.Navigation("Store");
                 });
 
             modelBuilder.Entity("DATN_API.Models.Vouchers", b =>

@@ -54,24 +54,8 @@ namespace DATN_API.Controllers
 
         // PUT: api/addresses/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] Addresses model)
-        {
-            if (id != model.Id)
-                return BadRequest("ID không khớp");
 
-            var address = await _context.Addresses.FindAsync(id);
-            if (address == null)
-                return NotFound();
 
-            address.Longitude = model.Longitude;
-            address.Latitude = model.Latitude;
-            address.Discription = model.Discription;
-            address.Status = model.Status;
-            address.UserId = model.UserId;
-
-            await _context.SaveChangesAsync();
-            return NoContent();
-        }
 
         // DELETE: api/addresses/5
         [HttpDelete("{id}")]

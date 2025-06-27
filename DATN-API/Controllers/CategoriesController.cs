@@ -1,7 +1,7 @@
 ﻿using DATN_API.Data;
 using DATN_API.Models;
+using DATN_API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace DATN_API.Controllers
 {
@@ -9,20 +9,18 @@ namespace DATN_API.Controllers
     [Route("api/[controller]")]
     public class CategoriesController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ICategoriesService _service;
 
-        public CategoriesController(ApplicationDbContext context)
+        public CategoriesController(ICategoriesService service)
         {
-            _context = context;
+            _service = service;
         }
 
         // GET: api/categories
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var categories = await _context.Categories
-                .Include(c => c.Products)
-                .ToListAsync();
+            var categories = await _service.GetAllAsync();
 
             return Ok(categories);
         }
@@ -31,9 +29,7 @@ namespace DATN_API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var category = await _context.Categories
-                .Include(c => c.Products)
-                .FirstOrDefaultAsync(c => c.Id == id);
+            var category = await _service.GetByIdAsync(id);
 
             if (category == null)
                 return NotFound();
@@ -48,27 +44,18 @@ namespace DATN_API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            _context.Categories.Add(model);
-            await _context.SaveChangesAsync();
+            var created = await _service.CreateAsync(model);
 
-            return CreatedAtAction(nameof(GetById), new { id = model.Id }, model);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
         // PUT: api/categories/5
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] Categories model)
         {
-            if (id != model.Id)
-                return BadRequest("ID không khớp");
+            if (!await _service.UpdateAsync(id, model))
+                return BadRequest("ID không khớp hoặc không tìm thấy category");
 
-            var category = await _context.Categories.FindAsync(id);
-            if (category == null)
-                return NotFound();
-
-            category.CategoryName = model.CategoryName;
-            category.Type = model.Type;
-
-            await _context.SaveChangesAsync();
             return NoContent();
         }
 
@@ -76,12 +63,9 @@ namespace DATN_API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var category = await _context.Categories.FindAsync(id);
-            if (category == null)
+            if (!await _service.DeleteAsync(id))
                 return NotFound();
 
-            _context.Categories.Remove(category);
-            await _context.SaveChangesAsync();
             return NoContent();
         }
     }

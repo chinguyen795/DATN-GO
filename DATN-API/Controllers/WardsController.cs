@@ -1,29 +1,26 @@
-﻿using DATN_API.Data;
-using DATN_API.Models;
+﻿using DATN_API.Models;
+using DATN_API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace DATN_API.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
+    [ApiController]
     public class WardsController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IWardsService _service;
 
-        public WardsController(ApplicationDbContext context)
+        public WardsController(IWardsService service)
         {
-            _context = context;
+            _service = service;
         }
 
         // GET: api/wards
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var wards = await _context.Wards
-                .Include(w => w.District)
-                .ToListAsync();
-
+            var wards = await _service.GetAllAsync();
             return Ok(wards);
         }
 
@@ -31,12 +28,8 @@ namespace DATN_API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var ward = await _context.Wards
-                .Include(w => w.District)
-                .FirstOrDefaultAsync(w => w.Id == id);
-
+            var ward = await _service.GetByIdAsync(id);
             if (ward == null) return NotFound();
-
             return Ok(ward);
         }
 
@@ -44,10 +37,7 @@ namespace DATN_API.Controllers
         [HttpGet("district/{districtId}")]
         public async Task<IActionResult> GetByDistrictId(int districtId)
         {
-            var wards = await _context.Wards
-                .Where(w => w.DistrictId == districtId)
-                .ToListAsync();
-
+            var wards = await _service.GetByDistrictIdAsync(districtId);
             return Ok(wards);
         }
 
@@ -57,27 +47,16 @@ namespace DATN_API.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-
-            _context.Wards.Add(model);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetById), new { id = model.Id }, model);
+            var created = await _service.CreateAsync(model);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
         // PUT: api/wards/5
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] Wards model)
         {
-            if (id != model.Id)
-                return BadRequest("ID không khớp");
-
-            var ward = await _context.Wards.FindAsync(id);
-            if (ward == null) return NotFound();
-
-            ward.DistrictId = model.DistrictId;
-            ward.WardName = model.WardName;
-
-            await _context.SaveChangesAsync();
+            if (!await _service.UpdateAsync(id, model))
+                return BadRequest("ID không khớp hoặc không tìm thấy ward");
             return NoContent();
         }
 
@@ -85,92 +64,9 @@ namespace DATN_API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var ward = await _context.Wards.FindAsync(id);
-            if (ward == null) return NotFound();
-
-            _context.Wards.Remove(ward);
-            await _context.SaveChangesAsync();
-
+            if (!await _service.DeleteAsync(id))
+                return NotFound();
             return NoContent();
         }
-
-        [HttpPost("import-wards")]
-        public async Task<IActionResult> ImportWardsFromJson()
-        {
-            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "tree_mien_nam.json");
-
-            if (!System.IO.File.Exists(filePath))
-                return NotFound("File tree_mien_nam.json không tồn tại.");
-
-            var json = await System.IO.File.ReadAllTextAsync(filePath);
-
-            List<CityDto>? cityDtos;
-            try
-            {
-                cityDtos = System.Text.Json.JsonSerializer.Deserialize<List<CityDto>>(json);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest($"Lỗi khi đọc JSON: {ex.Message}");
-            }
-
-            if (cityDtos == null || !cityDtos.Any())
-                return BadRequest("Dữ liệu JSON rỗng hoặc không hợp lệ.");
-
-            int count = 0;
-
-            foreach (var cityDto in cityDtos)
-            {
-                var city = await _context.Cities.FirstOrDefaultAsync(c => c.CityName == cityDto.CityName);
-                if (city == null) continue;
-
-                foreach (var districtDto in cityDto.Districts)
-                {
-                    var district = await _context.Districts
-                        .FirstOrDefaultAsync(d => d.DistrictName == districtDto.DistrictName && d.CityId == city.Id);
-                    if (district == null) continue;
-
-                    foreach (var wardDto in districtDto.Wards)
-                    {
-                        bool exists = await _context.Wards.AnyAsync(w =>
-                            w.WardName == wardDto.WardName && w.DistrictId == district.Id);
-
-                        if (exists) continue;
-
-                        var ward = new Wards
-                        {
-                            DistrictId = district.Id,
-                            WardName = wardDto.WardName
-                        };
-
-                        _context.Wards.Add(ward);
-                        count++;
-                    }
-                }
-            }
-
-            await _context.SaveChangesAsync();
-
-            return Ok(new { message = $"Đã lưu {count} phường/xã vào DB." });
-        }
-
-        public class CityDto
-        {
-            public string CityName { get; set; } = string.Empty;
-            public List<DistrictDto> Districts { get; set; } = new();
-        }
-
-        public class DistrictDto
-        {
-            public string DistrictName { get; set; } = string.Empty;
-            public List<WardDto> Wards { get; set; } = new();
-        }
-
-        public class WardDto
-        {
-            public string WardName { get; set; } = string.Empty;
-        }
-
-
     }
 }

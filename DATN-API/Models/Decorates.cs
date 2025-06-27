@@ -19,5 +19,10 @@ namespace DATN_API.Models
         public string Image { get; set; }
         [JsonIgnore]
         public virtual Users? User { get; set; }
+
+        [ForeignKey("AdminSetting")]
+        public int? AdminSettingId { get; set; }
+        [JsonIgnore]
+        public virtual AdminSettings? AdminSetting { get; set; }
     }
 }
