@@ -1,10 +1,10 @@
 using DATN_API.Data;
 using DATN_API.Models;
-using DATN_API.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
+using DATN_API.Interfaces;
 
 namespace DATN_API.Services
 {

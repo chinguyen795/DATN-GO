@@ -2,7 +2,7 @@ using DATN_API.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace DATN_API.Services.Interfaces
+namespace DATN_API.Interfaces
 {
     public interface IRatingStoresService
     {

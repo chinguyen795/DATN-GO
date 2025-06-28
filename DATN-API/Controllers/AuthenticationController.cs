@@ -1,4 +1,4 @@
-﻿/*using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Net.Mail;
 using System.Net;
@@ -12,7 +12,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using BCrypt.Net; // Đảm bảo bạn đã cài đặt package này
+using BCrypt.Net;
 
 namespace DATN_API.Controllers
 {
@@ -36,7 +36,7 @@ namespace DATN_API.Controllers
             _configuration = configuration;
         }
 
-        private bool IsPhoneNumber(string input)
+        private bool IsPhone(string input)
         {
             //_verifiedAccounts.Add(input);
             return Regex.IsMatch(input, @"^\+84\d{9,10}$");
@@ -45,14 +45,14 @@ namespace DATN_API.Controllers
         [HttpPost("SendVerificationCode")]
         public async Task<IActionResult> SendVerificationCode([FromBody] string input)
         {
-            bool isPhone = IsPhoneNumber(input);
+            bool isPhone = IsPhone(input);
 
             if (_lastCodeSentTime.TryGetValue(input, out DateTime lastSent) && (DateTime.UtcNow - lastSent) < _resendDelay)
                 return BadRequest($"Vui lòng chờ {(_resendDelay - (DateTime.UtcNow - lastSent)).Seconds} giây trước khi gửi lại mã.");
 
             if (isPhone)
             {
-                if (await _context.Users.AnyAsync(u => u.PhoneNumber == input))
+                if (await _context.Users.AnyAsync(u => u.Phone == input))
                     return BadRequest("Số điện thoại đã được đăng ký!");
 
                 var code = new Random().Next(100000, 999999).ToString();
@@ -64,7 +64,7 @@ namespace DATN_API.Controllers
                     TwilioClient.Init(_configuration["Twilio:AccountSID"], _configuration["Twilio:AuthToken"]);
                     await MessageResource.CreateAsync(
                         body: $"Mã xác thực của bạn là: {code}",
-                        from: new Twilio.Types.PhoneNumber(_configuration["Twilio:PhoneNumber"]),
+                        from: new Twilio.Types.PhoneNumber(_configuration["Twilio:Phone"]),
                         to: new Twilio.Types.PhoneNumber(input)
                     );
                     return Ok("Mã OTP đã được gửi!");
@@ -124,7 +124,7 @@ namespace DATN_API.Controllers
         public async Task<IActionResult> Register(RegisterRequest request)
         {
             string identifier = request.Identifier;
-            bool isPhone = IsPhoneNumber(identifier);
+            bool isPhone = IsPhone(identifier);
 
             // Kiểm tra xem mã OTP đã được xác minh chưa
             //if (!_verifiedAccounts.Contains(identifier)) // Luôn = false => Trả ra 'Bạn chưa xác minh mã OTP hoặc email!'
@@ -136,7 +136,7 @@ namespace DATN_API.Controllers
 
             // Kiểm tra trùng tài khoản
             bool accountExists = isPhone
-                ? await _context.Users.AnyAsync(u => u.PhoneNumber == identifier)
+                ? await _context.Users.AnyAsync(u => u.Phone == identifier)
                 : await _context.Users.AnyAsync(u => u.Email == identifier);
 
             if (accountExists)
@@ -146,17 +146,14 @@ namespace DATN_API.Controllers
             var user = new Users
             {
                 Email = isPhone ? "" : identifier,
-                PhoneNumber = isPhone ? identifier : "",
+                Phone = isPhone ? identifier : "",
                 Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
                 RoleId = 1,
-                Avatar = "",
                 FullName = "Người dùng",
-                Status = false,
-                Gender = false,
+                Status = UserStatus.Active,
+                Gender = GenderType.Other,
                 CitizenIdentityCard = "",
-                CreatedAt = DateTime.Now,
-                DateOfBirth = null
-
+                CreateAt = DateTime.Now,
             };
 
             _context.Users.Add(user);
@@ -169,7 +166,7 @@ namespace DATN_API.Controllers
         [HttpPost("Login")]
         public async Task<IActionResult> Login(LoginRequest request)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Identifier || u.PhoneNumber == request.Identifier);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Identifier || u.Phone == request.Identifier);
 
             if (user == null)
             {
@@ -187,7 +184,7 @@ namespace DATN_API.Controllers
             {
                 Id = user.Id,
                 Email = user.Email,
-                PhoneNumber = user.PhoneNumber,
+                Phone = user.Phone,
                 FullName = user.FullName,
                 Roles = user.RoleId,
                 Token = token
@@ -200,7 +197,7 @@ namespace DATN_API.Controllers
             {
                 new Claim(ClaimTypes.Name, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.MobilePhone, user.PhoneNumber),
+                new Claim(ClaimTypes.MobilePhone, user.Phone),
                 new Claim(ClaimTypes.Role, user.RoleId.ToString()),
                 new Claim("FullName", user.FullName)
             };
@@ -244,7 +241,7 @@ namespace DATN_API.Controllers
             }
         }
 
-       
+
         [HttpPost("ChangePasswordWithIdentifier")]
         public async Task<IActionResult> ChangePasswordWithIdentifier([FromBody] ChangePasswordWithIdentifierRequest request)
         {
@@ -258,7 +255,7 @@ namespace DATN_API.Controllers
                 return BadRequest("Mật khẩu mới và mật khẩu xác nhận không khớp.");
             }
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Identifier || u.PhoneNumber == request.Identifier);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Identifier || u.Phone == request.Identifier);
             if (user == null)
             {
                 return NotFound("Không tìm thấy người dùng.");
@@ -313,7 +310,7 @@ namespace DATN_API.Controllers
             bool sent = SendEmail(newEmail, "Mã xác thực Email", $"Mã xác thực của bạn là: {code}");
             return sent ? Ok("Mã xác thực đã được gửi đến email mới của bạn!") : BadRequest("Không thể gửi email!");
         }
-        
+
         [HttpPost("ChangeEmail")]
         public async Task<IActionResult> ChangeEmail([FromBody] ChangeEmailRequest request)
         {
@@ -327,7 +324,7 @@ namespace DATN_API.Controllers
             {
                 return NotFound("Không tìm thấy người dùng.");
             }
-         
+
             if (await _context.Users.AnyAsync(u => u.Email == request.NewEmail && u.Id != user.Id))
             {
                 return BadRequest("Email mới đã được sử dụng bởi một tài khoản khác!");
@@ -347,7 +344,7 @@ namespace DATN_API.Controllers
 
             try
             {
-                
+
                 if (string.IsNullOrEmpty(user.Email))
                 {
                     user.Email = request.NewEmail;
@@ -375,7 +372,7 @@ namespace DATN_API.Controllers
         }
         public class ChangePasswordWithIdentifierRequest
         {
-            public string Identifier { get; set; } 
+            public string Identifier { get; set; }
             public string CurrentPassword { get; set; }
             public string NewPassword { get; set; }
             public string ConfirmNewPassword { get; set; }
@@ -407,4 +404,4 @@ namespace DATN_API.Controllers
             public string OtpCode { get; set; }
         }
     }
-}*/
+}

@@ -4,6 +4,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using DATN_API.Services.Interfaces;
+using DATN_API.Services;
+using DATN_API.Interfaces;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +32,32 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
         };
     });
+
+builder.Services.AddScoped<IRolesService, RolesService>();
+builder.Services.AddScoped<IVouchersService, VouchersService>();
+builder.Services.AddScoped<ICategoriesService, CategoriesService>();
+builder.Services.AddScoped<IMessageMediasService, MessageMediasService>();
+builder.Services.AddScoped<IFollowStoresService, FollowStoresService>();
+builder.Services.AddScoped<IDeliveryTrackingsService, DeliveryTrackingsService>();
+builder.Services.AddScoped<IDecoratesService, DecoratesService>();
+builder.Services.AddScoped<ICitiesService, CitiesService>();
+builder.Services.AddScoped<IProductImagesService, ProductImagesService>();
+builder.Services.AddScoped<IPricesService, PricesService>();
+builder.Services.AddScoped<IOrdersService, OrdersService>();
+builder.Services.AddScoped<IReviewsService, ReviewsService>();
+builder.Services.AddScoped<IReviewMediasService, ReviewMediasService>();
+builder.Services.AddScoped<IRatingStoresService, RatingStoresService>();
+builder.Services.AddScoped<IProductVouchersService, ProductVouchersService>();
+builder.Services.AddScoped<IProductVariantsService, ProductVariantsService>();
+builder.Services.AddScoped<IProductsService, ProductsService>();
+builder.Services.AddScoped<IStoresService, StoresService>();
+builder.Services.AddScoped<IShippingMethodsService, ShippingMethodsService>();
+builder.Services.AddScoped<IWardsService, WardsService>();
+builder.Services.AddScoped<IVariantValuesService, VariantValuesService>();
+builder.Services.AddScoped<IVariantsService, VariantsService>();
+builder.Services.AddScoped<IUsersService, UsersService>();
+
+
 
 builder.Services.AddAuthorization();
 
