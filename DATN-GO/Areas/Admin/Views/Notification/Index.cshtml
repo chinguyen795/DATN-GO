@@ -1,0 +1,323 @@
+﻿<div class="page-wrapper">
+
+    <!-- Header -->
+    <header class="main-header" id="header">
+        <nav class="navbar navbar-expand-lg navbar-light" id="navbar">
+            <!-- Sidebar toggle button -->
+            <button id="sidebar-toggler" class="sidebar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+            </button>
+
+            <span class="page-title">Thông báo</span>
+
+            <div class="navbar-right ">
+                <ul class="nav navbar-nav">
+                    <!-- User Account -->
+                    <li class="dropdown user-menu">
+                        <button class="dropdown-toggle nav-link" data-toggle="dropdown">
+                            <img src="images/user/user-xs-01.jpg" alt="User Profile" width="32" height="32"
+                                 style="object-fit: cover;" loading="lazy">
+                            <span class="d-none d-lg-inline-block">Meo Meo</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-right">
+                            <li>
+                                <a class="dropdown-link-item" href="user-profile.html">
+                                    <i class="mdi mdi-account-outline"></i>
+                                    <span class="nav-text">Hồ Sơ</span>
+                                </a>
+                            </li>
+                            <li class="dropdown-footer">
+                                <a class="dropdown-link-item" href="sign-in.html">
+                                    <i class="mdi mdi-logout"></i> Đăng Xuất
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <!-- ====================================
+    ——— CONTENT WRAPPER
+    ===================================== -->
+    <div class="content-wrapper">
+        <div class="content">
+            <div class="container">
+                <div class="row mb-5">
+                    <div class="col">
+                        <!-- Tabs -->
+                        <ul class="nav nav-pills mb-4 fs-5" id="pills-tab2" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active d-flex align-items-center" id="pills-system-tab" data-toggle="pill"
+                                   href="#nav-system" role="tab" aria-controls="nav-system"
+                                   aria-selected="true">
+                                    <i class="bi bi-gear-fill me-2"></i>
+                                    Từ hệ thống
+
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link d-flex align-items-center" id="nav-report-tab" data-toggle="pill" href="#nav-report"
+                                   role="tab" aria-controls="nav-report" aria-selected="false">
+                                    <i class="bi bi-flag-fill me-2"></i>
+                                    Báo cáo người dùng
+
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link d-flex align-items-center" id="nav-approve-tab" data-toggle="pill"
+                                   href="#nav-approve" role="tab" aria-controls="nav-approve"
+                                   aria-selected="false">
+                                    <i class="bi bi-check-circle-fill me-2"></i>
+                                    Duyệt sản phẩm
+
+                                </a>
+                            </li>
+                        </ul>
+
+                        <!-- Tab Content -->
+                        <div class="tab-content mt-5" id="nav-tabContent">
+                            <!-- Admin Tab -->
+                            <div class="tab-pane fade show active" id="nav-system" role="tabpanel"
+                                 aria-labelledby="pills-system-tab">
+                                <div class="list-group">
+                                    <div class="notification-item card border shadow-sm mb-3">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h6 class="card-title text-danger mb-0">
+                                                    <i class="bi bi-exclamation-circle-fill me-2"></i>
+                                                    Cập nhật hệ thống v2.1.0
+                                                </h6>
+                                                <small class="text-muted">2 giờ trước</small>
+                                            </div>
+                                            <p class="card-text mb-2">Hệ thống đã được cập nhật với các tính năng mới và sửa lỗi</p>
+                                            <a href="#" class="text-decoration-none">
+                                                <small class="text-danger d-flex align-items-center">
+                                                    Xem chi tiết
+                                                    <i class="bi bi-arrow-right ms-1"></i>
+                                                </small>
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <div class="notification-item card border shadow-sm mb-3">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h6 class="card-title text-danger mb-0">
+                                                    <i class="bi bi-info-circle-fill me-2"></i>
+                                                    Thông báo bảo trì hệ thống
+                                                </h6>
+                                                <small class="text-muted">1 tuần trước</small>
+                                            </div>
+                                            <p class="card-text mb-2">
+                                                Hệ thống sẽ bảo trì vào ngày 10/06/2025 từ
+                                                23:00 - 03:00
+                                            </p>
+                                            <a href="#" class="text-decoration-none">
+                                                <small class="text-danger d-flex align-items-center">
+                                                    Xem chi tiết
+                                                    <i class="bi bi-arrow-right ms-1"></i>
+                                                </small>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Orders Tab -->
+                            <div class="tab-pane fade" id="nav-report" role="tabpanel"
+                                 aria-labelledby="nav-report-tab">
+                                <div class="list-group">
+                                    <div class="notification-item card border shadow-sm mb-3">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h6 class="card-title text-danger mb-0">
+                                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                                    Báo cáo spam từ người dùng
+                                                </h6>
+                                                <small class="text-muted">1 giờ trước</small>
+                                            </div>
+                                            <p class="card-text mb-2">Người dùng báo cáo shop "ABC Store" có hành vi spam</p>
+                                            <a href="#" class="text-decoration-none">
+                                                <small class="text-danger d-flex align-items-center">
+                                                    Xem chi tiết báo cáo
+                                                    <i class="bi bi-arrow-right ms-1"></i>
+                                                </small>
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <div class="notification-item card border shadow-sm mb-3">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h6 class="card-title text-danger mb-0">
+                                                    <i class="bi bi-flag-fill me-2"></i>
+                                                    Báo cáo sản phẩm giả
+                                                </h6>
+                                                <small class="text-muted">3 giờ trước</small>
+                                            </div>
+                                            <p class="card-text mb-2">Người dùng báo cáo sản phẩm "iPhone 15" nghi vấn hàng giả</p>
+                                            <a href="#" class="text-decoration-none">
+                                                <small class="text-danger d-flex align-items-center">
+                                                    Kiểm tra sản phẩm
+                                                    <i class="bi bi-arrow-right ms-1"></i>
+                                                </small>
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <div class="notification-item card border shadow-sm mb-3">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h6 class="card-title text-danger mb-0">
+                                                    <i class="bi bi-person-x-fill me-2"></i>
+                                                    Báo cáo hành vi không phù hợp
+                                                </h6>
+                                                <small class="text-muted">5 giờ trước</small>
+                                            </div>
+                                            <p class="card-text mb-2">Người dùng báo cáo shop có thái độ không phù hợp trong chat</p>
+                                            <a href="#" class="text-decoration-none">
+                                                <small class="text-danger d-flex align-items-center">
+                                                    Xem lịch sử chat
+                                                    <i class="bi bi-arrow-right ms-1"></i>
+                                                </small>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Products Tab -->
+                            <div class="tab-pane fade" id="nav-approve" role="tabpanel"
+                                 aria-labelledby="nav-approve-tab">
+                                <div class="list-group">
+                                    <div class="notification-item card border shadow-sm mb-3">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h6 class="card-title text-danger mb-0">
+                                                    <i class="bi bi-clock-fill me-2"></i>
+                                                    Sản phẩm chờ duyệt
+                                                </h6>
+                                                <small class="text-muted">30 phút trước</small>
+                                            </div>
+                                            <p class="card-text mb-2">Sản phẩm "Áo thun nam" từ shop "Fashion Store" đang chờ duyệt</p>
+                                            <a href="#" class="text-decoration-none">
+                                                <small class="text-danger d-flex align-items-center">
+                                                    Duyệt sản phẩm
+                                                    <i class="bi bi-arrow-right ms-1"></i>
+                                                </small>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Card Offcanvas -->
+<div class="card card-offcanvas" id="contact-off">
+    <div class="card-header">
+        <h2>Contacts</h2>
+        <a href="#" class="btn btn-primary btn-pill px-4">Add New</a>
+    </div>
+    <div class="card-body">
+        <div class="mb-4">
+            <input type="text" class="form-control form-control-lg form-control-secondary rounded-0"
+                   placeholder="Search contacts...">
+        </div>
+
+        <div class="media media-sm">
+            <div class="media-sm-wrapper">
+                <a href="user-profile.html">
+                    <img src="images/user/user-sm-01.jpg" alt="User Image">
+                    <span class="active bg-primary"></span>
+                </a>
+            </div>
+            <div class="media-body">
+                <a href="user-profile.html">
+                    <span class="title">Selena Wagner</span>
+                    <span class="discribe">Designer</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="media media-sm">
+            <div class="media-sm-wrapper">
+                <a href="user-profile.html">
+                    <img src="images/user/user-sm-02.jpg" alt="User Image">
+                    <span class="active bg-primary"></span>
+                </a>
+            </div>
+            <div class="media-body">
+                <a href="user-profile.html">
+                    <span class="title">Walter Reuter</span>
+                    <span>Developer</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="media media-sm">
+            <div class="media-sm-wrapper">
+                <a href="user-profile.html">
+                    <img src="images/user/user-sm-03.jpg" alt="User Image">
+                </a>
+            </div>
+            <div class="media-body">
+                <a href="user-profile.html">
+                    <span class="title">Larissa Gebhardt</span>
+                    <span>Cyber Punk</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="media media-sm">
+            <div class="media-sm-wrapper">
+                <a href="user-profile.html">
+                    <img src="images/user/user-sm-04.jpg" alt="User Image">
+                </a>
+            </div>
+            <div class="media-body">
+                <a href="user-profile.html">
+                    <span class="title">Albrecht Straub</span>
+                    <span>Photographer</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="media media-sm">
+            <div class="media-sm-wrapper">
+                <a href="user-profile.html">
+                    <img src="images/user/user-sm-05.jpg" alt="User Image">
+                    <span class="active bg-danger"></span>
+                </a>
+            </div>
+            <div class="media-body">
+                <a href="user-profile.html">
+                    <span class="title">Leopold Ebert</span>
+                    <span>Fashion Designer</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="media media-sm">
+            <div class="media-sm-wrapper">
+                <a href="user-profile.html">
+                    <img src="images/user/user-sm-06.jpg" alt="User Image">
+                    <span class="active bg-primary"></span>
+                </a>
+            </div>
+            <div class="media-body">
+                <a href="user-profile.html">
+                    <span class="title">Selena Wagner</span>
+                    <span>Photographer</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

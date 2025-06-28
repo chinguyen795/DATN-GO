@@ -27,7 +27,7 @@ namespace DATN_GO.Controllers
             public int CityId { get; set; }
         }
 
-        public AddressController(AddressService service, IHttpClientFactory factory)
+       /* public AddressController(AddressService service, IHttpClientFactory factory)
         {
             _service = service;
             _httpClient = factory.CreateClient("api");
@@ -565,7 +565,7 @@ namespace DATN_GO.Controllers
                 : "Đã cập nhật địa chỉ ở chế độ không mặc định.";
 
             return RedirectToAction("Address");
-        }
+        }*/
 
 
 

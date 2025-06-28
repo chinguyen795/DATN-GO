@@ -1,98 +1,157 @@
-﻿<div class="container mt-5 pt-5">
-    <h2 class="text-center mb-4">Trang trí sàn</h2>
-
-    <form method="post" enctype="multipart/form-data">
-        <!-- Image Grid Section -->
-        <section class="mb-5">
-            <h4 class="mb-3">Ảnh slide show</h4>
-            <div class="row g-4">
-                <!-- Top Row -->
-                <div class="col-md-4">
-                    <div class="banner-upload position-relative border border-2 rounded h-100 shadow-sm hover-shadow">
-                        <label for="bannerInput1" class="w-100 h-100 m-0 d-block cursor-pointer" style="min-height: 250px;">
-                            <div class="upload-prompt position-absolute top-50 start-50 translate-middle text-center w-100">
-                                <i class="bi bi-image text-muted fs-1"></i>
-                                <p class="text-muted mb-0 small">Click to upload banner</p>
-                            </div>
-                            <img class="preview-image w-100 h-100 object-fit-cover position-absolute top-0 start-0" style="display: none;">
-                        </label>
-                        <input type="file" name="banner1" id="bannerInput1" accept="image/*" class="d-none">
-                    </div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="banner-upload position-relative border border-2 rounded h-100 shadow-sm hover-shadow">
-                        <label for="bannerInput2" class="w-100 h-100 m-0 d-block cursor-pointer" style="min-height: 250px;">
-                            <div class="upload-prompt position-absolute top-50 start-50 translate-middle text-center w-100">
-                                <i class="bi bi-image text-muted fs-1"></i>
-                                <p class="text-muted mb-0 small">Click to upload banner</p>
-                            </div>
-                            <img class="preview-image w-100 h-100 object-fit-cover position-absolute top-0 start-0" style="display: none;">
-                        </label>
-                        <input type="file" name="banner2" id="bannerInput2" accept="image/*" class="d-none">
-                    </div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="banner-upload position-relative border border-2 rounded h-100 shadow-sm hover-shadow">
-                        <label for="bannerInput3" class="w-100 h-100 m-0 d-block cursor-pointer" style="min-height: 250px;">
-                            <div class="upload-prompt position-absolute top-50 start-50 translate-middle text-center w-100">
-                                <i class="bi bi-image text-muted fs-1"></i>
-                                <p class="text-muted mb-0 small">Click to upload banner</p>
-                            </div>
-                            <img class="preview-image w-100 h-100 object-fit-cover position-absolute top-0 start-0" style="display: none;">
-                        </label>
-                        <input type="file" name="banner3" id="bannerInput3" accept="image/*" class="d-none">
-                    </div>
-                </div>
-
-                <!-- Bottom Row -->
-                <div class="col-md-4">
-                    <div class="banner-upload position-relative border border-2 rounded h-100 shadow-sm hover-shadow">
-                        <label for="bannerInput4" class="w-100 h-100 m-0 d-block cursor-pointer" style="min-height: 250px;">
-                            <div class="upload-prompt position-absolute top-50 start-50 translate-middle text-center w-100">
-                                <i class="bi bi-image text-muted fs-1"></i>
-                                <p class="text-muted mb-0 small">Click to upload banner</p>
-                            </div>
-                            <img class="preview-image w-100 h-100 object-fit-cover position-absolute top-0 start-0" style="display: none;">
-                        </label>
-                        <input type="file" name="banner4" id="bannerInput4" accept="image/*" class="d-none">
-                    </div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="banner-upload position-relative border border-2 rounded h-100 shadow-sm hover-shadow">
-                        <label for="bannerInput5" class="w-100 h-100 m-0 d-block cursor-pointer" style="min-height: 250px;">
-                            <div class="upload-prompt position-absolute top-50 start-50 translate-middle text-center w-100">
-                                <i class="bi bi-image text-muted fs-1"></i>
-                                <p class="text-muted mb-0 small">Click to upload banner</p>
-                            </div>
-                            <img class="preview-image w-100 h-100 object-fit-cover position-absolute top-0 start-0" style="display: none;">
-                        </label>
-                        <input type="file" name="banner5" id="bannerInput5" accept="image/*" class="d-none">
-                    </div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="banner-upload position-relative border border-2 rounded h-100 shadow-sm hover-shadow">
-                        <label for="bannerInput6" class="w-100 h-100 m-0 d-block cursor-pointer" style="min-height: 250px;">
-                            <div class="upload-prompt position-absolute top-50 start-50 translate-middle text-center w-100">
-                                <i class="bi bi-image text-muted fs-1"></i>
-                                <p class="text-muted mb-0 small">Click to upload banner</p>
-                            </div>
-                            <img class="preview-image w-100 h-100 object-fit-cover position-absolute top-0 start-0" style="display: none;">
-                        </label>
-                        <input type="file" name="banner6" id="bannerInput6" accept="image/*" class="d-none">
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Save Changes Button -->
-        <div class="text-center mb-5">
-            <button type="submit" class="btn btn-danger px-4 py-2">
-                <i class="bi bi-save me-2"></i>Save Changes
+﻿<link href="/css/DecoredStyle.css" rel="stylesheet" />
+<div class="page-wrapper">
+    <header class="main-header" id="header">
+        <nav class="navbar navbar-expand-lg navbar-light" id="navbar">
+            <button id="sidebar-toggler" class="sidebar-toggle">
+                <span class="sr-only">Toggle navigation</span>
             </button>
+            <span class="page-title">Trang trí sàn</span>
+            <div class="navbar-right">
+                <ul class="nav navbar-nav">
+                    <li class="dropdown user-menu">
+                        <button class="dropdown-toggle nav-link"
+                                data-toggle="dropdown">
+                            <img src="images/user/user-xs-01.jpg"
+                                 class="user-image rounded-circle"
+                                 alt="User Image" />
+                            <span class="d-none d-lg-inline-block">John Doe</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-right">
+                            <li>
+                                <a class="dropdown-link-item" href="user-profile.html">
+                                    <i class="mdi mdi-account-outline"></i>
+                                    <span class="nav-text">My Profile</span>
+                                </a>
+                            </li>
+                            <li class="dropdown-footer">
+                                <a class="dropdown-link-item" href="sign-in.html">
+                                    <i class="mdi mdi-logout"></i> Log Out
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <div class="content-wrapper">
+        <div class="content">
+            <main>
+                <div class="container-fluid">
+                    <form method="post" enctype="multipart/form-data">
+                        <section class="mb-4">
+                            <h4 class="text-danger">Bố cục trang trí</h4>
+                            <div class="row align-items-stretch"
+                                 style="min-height: 380px">
+                                <div class="col-md-5 d-flex flex-column">
+                                    <div class="preview-box flex-grow-1"
+                                         id="slideShowPreview">
+                                        <span>Slide Show</span>
+                                    </div>
+                                    <button type="button"
+                                            class="btn btn-danger mt-2"
+                                            data-type="slideshow">
+                                        <i class="bi bi-plus-circle"></i> Thêm ảnh slide show
+                                    </button>
+                                </div>
+                                <div class="col-md-5 d-flex flex-column">
+                                    <div class="preview-box flex-grow-1" id="videoPreview">
+                                        <span>Video</span>
+                                    </div>
+                                    <button type="button"
+                                            class="btn btn-danger mt-2"
+                                            data-type="video">
+                                        <i class="bi bi-plus-circle"></i> Chọn video
+                                    </button>
+                                </div>
+                                <div class="col-md-2 d-flex flex-column justify-content-between">
+                                    <div class="d-flex flex-column h-100">
+                                        <div class="preview-box flex-grow-1 decorate-item"
+                                             id="decoratePreview1">
+                                            <span>Ảnh 1</span>
+                                        </div>
+                                        <button type="button"
+                                                class="btn btn-outline-danger btn-sm mt-2"
+                                                data-type="decorate"
+                                                data-target="1">
+                                            <i class="bi bi-pencil-square"></i> Sửa ảnh 1
+                                        </button>
+                                    </div>
+                                    <div class="d-flex flex-column h-100 mt-3">
+                                        <div class="preview-box flex-grow-1 decorate-item"
+                                             id="decoratePreview2">
+                                            <span>Ảnh 2</span>
+                                        </div>
+                                        <button type="button"
+                                                class="btn btn-outline-danger btn-sm mt-2"
+                                                data-type="decorate"
+                                                data-target="2">
+                                            <i class="bi bi-pencil-square"></i> Sửa ảnh 2
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        <div class="text-center my-4">
+                            <button type="submit"
+                                    class="btn btn-success px-5 py-2 fs-5">
+                                <i class="bi bi-save me-2"></i>Lưu thay đổi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </main>
         </div>
-    </form>
+    </div>
+
+    <footer class="footer mt-auto">
+        <div class="copyright bg-white">
+            <p>&copy; <span id="copy-year"></span> Copyright Mono Dashboard</p>
+        </div>
+    </footer>
 </div>
+
+
+<div class="modal fade" id="uploadModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploadModalLabel">Tải lên</h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="modalUploadForm">
+                    <input type="hidden" id="uploadType" />
+                    <input type="hidden" id="uploadTarget" />
+                    <div class="mb-3" id="modalTopicGroup">
+                        <label for="modalTopic" class="form-label">Chủ đề</label><input type="text" class="form-control" id="modalTopic" />
+                    </div>
+                    <div class="mb-3" id="modalDescriptionGroup">
+                        <label for="modalDescription" class="form-label">Miêu tả</label><textarea class="form-control"
+                                                                                                  id="modalDescription"
+                                                                                                  rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="modalFile" class="form-label" id="modalFileLabel">Chọn tệp</label><input type="file" class="form-control" id="modalFile" />
+                        <div id="modalPreview" class="mt-2 text-center"></div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Hủy
+                </button>
+                <button type="button" class="btn btn-primary" id="modalSaveBtn">
+                    Lưu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/js/decorscript.js"></script>

@@ -75,7 +75,7 @@ section {
 
 body {
   margin: 0;
-  font-family: "Karla", sans-serif;
+  font-family: Arial, Helvetica, sans-serif !important;
   font-size: 0.9375rem;
   font-weight: 400;
   line-height: 1.5;

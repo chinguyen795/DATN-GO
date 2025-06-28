@@ -1,4 +1,4 @@
-﻿using DATN_GO.Models;
+﻿/*using DATN_GO.Models;
 using DATN_GO.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
@@ -101,3 +101,4 @@ namespace DATN_GO.Areas.Seller.Controllers
         public string Data { get; set; }
     }
 }
+*/

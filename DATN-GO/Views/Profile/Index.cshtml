@@ -7,7 +7,7 @@
     <div class="row">
         <div class="col-lg-3 col-xl-2 d-none d-lg-block sidebar bg-white border-end">
             <div class="position-sticky" style="top: 1rem;">
-                <div class="p-3 border-bottom">
+              @*   <div class="p-3 border-bottom">
                     <div class="d-flex align-items-center mb-3">
                         <img src="@(string.IsNullOrEmpty(Model.Avatar) ? "/images/default_avatar.jpg" : Model.Avatar)" alt="Profile" class="rounded-circle me-2" style="width: 45px; height: 45px;">
                         <div>
@@ -15,7 +15,7 @@
                             <small class="text-muted">@(string.IsNullOrEmpty(Model.Email) ? Model.PhoneNumber : Model.Email)</small>
                         </div>
                     </div>
-                </div>
+                </div> *@
 
                 <ul class="nav flex-column p-3">
                     <li class="nav-item mb-2">
@@ -79,10 +79,10 @@
                                         <label class="form-label">Họ và tên</label>
                                         <input type="text" asp-for="FullName" class="form-control border-only-bottom">
                                     </div>
-                                    <div class="col-12">
+                                  @*   <div class="col-12">
                                         <label class="form-label">Ngày sinh</label>
                                         <input type="date" asp-for="DateOfBirth" class="form-control border-only-bottom" value="@(Model.DateOfBirth?.ToString("yyyy-MM-dd"))" max="@DateTime.Today.ToString("yyyy-MM-dd")">
-                                    </div>
+                                    </div> *@
                                     <div class="col-12">
                                         <label class="form-label">Giới tính</label>
                                         <select asp-for="Gender" class="form-select border-only-bottom">
@@ -90,24 +90,24 @@
                                             <option value="false">Nữ</option>
                                         </select>
                                     </div>
-                                    <div class="col-12">
-                                        <label class="form-label">Số điện thoại</label>
-                                        <div class="d-flex align-items-center">
-                                            <input type="tel" asp-for="PhoneNumber" class="form-control border-only-bottom" readonly>
-                                            @if (string.IsNullOrEmpty(Model.PhoneNumber))
-                                            {
-                                                <a asp-controller="UserAuthentication" asp-action="AddPhoneNumber" class="text-nowrap text-decoration-none ms-2">
-                                                    Thêm số điện thoại
-                                                </a>
-                                            }
-                                            else
-                                            {
-                                                <a asp-controller="UserAuthentication" asp-action="ChangePhoneNumber" class="text-nowrap text-decoration-none ms-2">
-                                                    Đổi số điện thoại
-                                                </a>
-                                            }
-                                        </div>
-                                    </div>
+                                    @* <div class="col-12"> *@
+                                    @*     <label class="form-label">Số điện thoại</label> *@
+                                    @*     <div class="d-flex align-items-center"> *@
+                                    @*         <input type="tel" asp-for="PhoneNumber" class="form-control border-only-bottom" readonly> *@
+                                    @*         @if (string.IsNullOrEmpty(Model.PhoneNumber)) *@
+                                    @*         { *@
+                                    @*             <a asp-controller="UserAuthentication" asp-action="AddPhoneNumber" class="text-nowrap text-decoration-none ms-2"> *@
+                                    @*                 Thêm số điện thoại *@
+                                    @*             </a> *@
+                                    @*         } *@
+                                    @*         else *@
+                                    @*         { *@
+                                    @*             <a asp-controller="UserAuthentication" asp-action="ChangePhoneNumber" class="text-nowrap text-decoration-none ms-2"> *@
+                                    @*                 Đổi số điện thoại *@
+                                    @*             </a> *@
+                                    @*         } *@
+                                    @*     </div> *@
+                                    @* </div> *@
 
                                     <div class="col-12">
                                         <label class="form-label">Email</label>

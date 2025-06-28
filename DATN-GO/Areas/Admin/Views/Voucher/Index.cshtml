@@ -1,0 +1,834 @@
+﻿<link rel="stylesheet" href="~/css/Voucher.css" />
+<div class="page-wrapper">
+
+    <!-- Header -->
+    <header class="main-header" id="header">
+        <nav class="navbar navbar-expand-lg navbar-light" id="navbar">
+            <!-- Sidebar toggle button -->
+            <button id="sidebar-toggler" class="sidebar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+            </button>
+
+            <span class="page-title">Mã Giảm Giá</span>
+
+            <div class="navbar-right ">
+                <ul class="nav navbar-nav">
+                    <!-- User Account -->
+                    <li class="dropdown user-menu">
+                        <button class="dropdown-toggle nav-link" data-toggle="dropdown">
+                            <img src="images/user/user-xs-01.jpg" alt="User Profile" width="32" height="32"
+                                 style="object-fit: cover;" loading="lazy">
+                            <span class="d-none d-lg-inline-block">Meo Meo</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-right">
+                            <li>
+                                <a class="dropdown-link-item" href="user-profile.html">
+                                    <i class="mdi mdi-account-outline"></i>
+                                    <span class="nav-text">Hồ Sơ</span>
+                                </a>
+                            </li>
+                            <li class="dropdown-footer">
+                                <a class="dropdown-link-item" href="sign-in.html">
+                                    <i class="mdi mdi-logout"></i> Đăng Xuất
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <!-- ====================================
+    ——— CONTENT WRAPPER
+    ===================================== -->
+    <div class="content-wrapper">
+        <div class="content">
+            <div class="container">
+                <!-- Statistics Cards -->
+                <div class="row mb-4 statistics-cards">
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white h-100">
+                            <div class="card-body text-center d-flex flex-column justify-content-center">
+                                <h3 id="totalVouchers">0</h3>
+                                <p class="mb-0 fs-6">Tổng Voucher</p>
+                                <small class="opacity-75">Tất cả voucher trong hệ thống</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white h-100">
+                            <div class="card-body text-center d-flex flex-column justify-content-center">
+                                <h3 id="activeVouchers">0</h3>
+                                <p class="mb-0 fs-6">Đang Hoạt Động</p>
+                                <small class="opacity-75">Có thể sử dụng ngay</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-warning text-white h-100">
+                            <div class="card-body text-center d-flex flex-column justify-content-center">
+                                <h3 id="expiringVouchers">0</h3>
+                                <p class="mb-0 fs-6">Sắp Hết Hạn</p>
+                                <small class="opacity-75">Trong vòng 7 ngày</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-danger text-white h-100">
+                            <div class="card-body text-center d-flex flex-column justify-content-center">
+                                <h3 id="expiredVouchers">0</h3>
+                                <p class="mb-0 fs-6">Đã Hết Hạn</p>
+                                <small class="opacity-75">Không thể sử dụng</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Card -->
+                <div class="card card-default">
+                    <div class="card-header d-flex justify-content-center align-items-center">
+                        <h2 class="text-danger mb-0">Danh Sách Voucher</h2>
+                    </div>
+                    <div class="card-body">
+
+                        <!-- Controls -->
+                        <div class="controls-section">
+                            <div class="d-flex flex-column flex-md-row gap-3 align-items-md-center justify-content-between">
+                                <div class="d-flex gap-3 flex-wrap">
+                                    <div class="search-container" style="min-width: 300px;">
+                                        <i class="bi bi-search"></i>
+                                        <input type="text" id="searchInput" class="form-control"
+                                               placeholder="Tìm kiếm theo tên, mã voucher...">
+                                    </div>
+                                    <div style="min-width: 200px;">
+                                        <select id="statusFilter" class="form-select">
+                                            <option value="all">🔍 Tất cả trạng thái</option>
+                                            <option value="active">✅ Đang hoạt động</option>
+                                            <option value="inactive">⏸️ Tạm dừng</option>
+                                            <option value="expired">❌ Đã hết hạn</option>
+                                        </select>
+                                    </div>
+                                    <div style="min-width: 200px;">
+                                        <select id="sortSelect" class="form-select">
+                                            <option value="newest">📅 Mới nhất</option>
+                                            <option value="oldest">📅 Cũ nhất</option>
+                                            <option value="value-desc">💰 Giá trị giảm dần</option>
+                                            <option value="value-asc">💰 Giá trị tăng dần</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <button class="btn btn-danger btn-lg px-4" data-toggle="modal"
+                                        data-target="#addVoucherModal">
+                                    <i class="bi bi-plus-lg me-2"></i>Thêm Voucher Mới
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Voucher List -->
+                        <div class="voucher-list-container">
+                            <div id="voucherList" class="row g-4">
+                                <!-- Vouchers will be rendered here -->
+                            </div>
+
+                            <!-- Empty State -->
+                            <div id="emptyState" class="text-center" style="display: none;">
+                                <div class="mb-4">
+                                    <i class="bi bi-ticket-perforated text-primary"></i>
+                                </div>
+                                <h4 class="text-dark mb-3">🎫 Chưa có voucher nào</h4>
+                                <p class="text-muted mb-4">
+                                    Hãy tạo voucher đầu tiên để bắt đầu chương trình khuyến
+                                    mãi của bạn!
+                                </p>
+                                <div class="d-flex justify-content-center gap-3">
+                                    <button class="btn btn-danger btn-lg px-4" data-toggle="modal"
+                                            data-target="#addVoucherModal">
+                                        <i class="bi bi-plus-lg me-2"></i>
+                                        Tạo Voucher Đầu Tiên
+                                    </button>
+                                    <button class="btn btn-outline-secondary btn-lg px-4">
+                                        <i class="bi bi-question-circle me-2"></i>
+                                        Hướng Dẫn
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Voucher Modal -->
+<div class="modal fade" id="addVoucherModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    <span id="modalTitle">Thêm Voucher Mới</span>
+                </h5>
+                <button type="button" class="close btn-close-white" data-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="voucherForm">
+                    <input type="hidden" id="voucherId">
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Tên Voucher *</label>
+                                <input type="text" id="voucherName" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Mã Voucher *</label>
+                                <input type="text" id="voucherCode" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Loại Giảm Giá *</label>
+                                <select id="discountType" class="form-select" required>
+                                    <option value="">Chọn loại giảm giá</option>
+                                    <option value="percentage">Phần trăm (%)</option>
+                                    <option value="fixed">Số tiền cố định (VNĐ)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Giá Trị Giảm *</label>
+                                <div class="input-group">
+                                    <input type="number" id="discountValue" class="form-control" required
+                                           min="1">
+                                    <span class="input-group-text" id="discountUnit">%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Trạng Thái *</label>
+                                <select id="voucherStatus" class="form-select" required>
+                                    <option value="active">Hoạt động</option>
+                                    <option value="inactive">Tạm dừng</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Đơn Hàng Tối Thiểu</label>
+                                <div class="input-group">
+                                    <input type="number" id="minOrder" class="form-control" min="0">
+                                    <span class="input-group-text">VNĐ</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Số Lượng *</label>
+                                <input type="number" id="quantity" class="form-control" required min="1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Ngày Bắt Đầu *</label>
+                                <input type="date" id="startDate" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Ngày Kết Thúc *</label>
+                                <input type="date" id="endDate" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Mô Tả</label>
+                        <textarea id="description" class="form-control" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light border" data-dismiss="modal" style="background-color: #6c757d; color: white;">Hủy</button>
+                <button type="button" class="btn btn-danger" id="saveVoucherBtn">
+                    <i class="bi bi-check-lg me-2"></i>
+                    Lưu Voucher
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Xác Nhận Xóa
+                </h5>
+                <button type="button" class="close btn-close-white" data-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa voucher này không?</p>
+                <p class="text-muted">Hành động này không thể hoàn tác.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                    <i class="bi bi-trash me-2"></i>
+                    Xóa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Card Offcanvas -->
+<div class="card card-offcanvas" id="contact-off">
+    <div class="card-header">
+        <h2>Contacts</h2>
+        <a href="#" class="btn btn-primary btn-pill px-4">Add New</a>
+    </div>
+    <div class="card-body">
+        <div class="mb-4">
+            <input type="text" class="form-control form-control-lg form-control-secondary rounded-0"
+                   placeholder="Search contacts...">
+        </div>
+
+        <div class="media media-sm">
+            <div class="media-sm-wrapper">
+                <a href="user-profile.html">
+                    <img src="images/user/user-sm-01.jpg" alt="User Image">
+                    <span class="active bg-primary"></span>
+                </a>
+            </div>
+            <div class="media-body">
+                <a href="user-profile.html">
+                    <span class="title">Selena Wagner</span>
+                    <span class="discribe">Designer</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="media media-sm">
+            <div class="media-sm-wrapper">
+                <a href="user-profile.html">
+                    <img src="images/user/user-sm-02.jpg" alt="User Image">
+                    <span class="active bg-primary"></span>
+                </a>
+            </div>
+            <div class="media-body">
+                <a href="user-profile.html">
+                    <span class="title">Walter Reuter</span>
+                    <span>Developer</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="media media-sm">
+            <div class="media-sm-wrapper">
+                <a href="user-profile.html">
+                    <img src="images/user/user-sm-03.jpg" alt="User Image">
+                </a>
+            </div>
+            <div class="media-body">
+                <a href="user-profile.html">
+                    <span class="title">Larissa Gebhardt</span>
+                    <span>Cyber Punk</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="media media-sm">
+            <div class="media-sm-wrapper">
+                <a href="user-profile.html">
+                    <img src="images/user/user-sm-04.jpg" alt="User Image">
+                </a>
+            </div>
+            <div class="media-body">
+                <a href="user-profile.html">
+                    <span class="title">Albrecht Straub</span>
+                    <span>Photographer</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="media media-sm">
+            <div class="media-sm-wrapper">
+                <a href="user-profile.html">
+                    <img src="images/user/user-sm-05.jpg" alt="User Image">
+                    <span class="active bg-danger"></span>
+                </a>
+            </div>
+            <div class="media-body">
+                <a href="user-profile.html">
+                    <span class="title">Leopold Ebert</span>
+                    <span>Fashion Designer</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="media media-sm">
+            <div class="media-sm-wrapper">
+                <a href="user-profile.html">
+                    <img src="images/user/user-sm-06.jpg" alt="User Image">
+                    <span class="active bg-primary"></span>
+                </a>
+            </div>
+            <div class="media-body">
+                <a href="user-profile.html">
+                    <span class="title">Selena Wagner</span>
+                    <span>Photographer</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    class VoucherManager {
+        constructor() {
+            this.vouchers = JSON.parse(localStorage.getItem('vouchers')) || [];
+            this.currentEditId = null;
+            this.currentDeleteId = null;
+
+            this.initializeEventListeners();
+            this.renderVouchers();
+            this.updateStatistics();
+
+            // Set default dates
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('startDate').value = today;
+
+            const nextMonth = new Date();
+            nextMonth.setMonth(nextMonth.getMonth() + 1);
+            document.getElementById('endDate').value = nextMonth.toISOString().split('T')[0];
+        }
+
+        initializeEventListeners() {
+            // Discount type change
+            document.getElementById('discountType').addEventListener('change', (e) => {
+                const unit = document.getElementById('discountUnit');
+                const valueInput = document.getElementById('discountValue');
+
+                if (e.target.value === 'percentage') {
+                    unit.textContent = '%';
+                    valueInput.max = '100';
+                    valueInput.placeholder = 'Ví dụ: 20';
+                } else if (e.target.value === 'fixed') {
+                    unit.textContent = 'VNĐ';
+                    valueInput.removeAttribute('max');
+                    valueInput.placeholder = 'Ví dụ: 50000';
+                }
+            });
+
+            // Save voucher
+            document.getElementById('saveVoucherBtn').addEventListener('click', () => {
+                this.saveVoucher();
+            });
+
+            // Search
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                this.searchVouchers(e.target.value);
+            });
+
+            // Status filter
+            document.getElementById('statusFilter').addEventListener('change', (e) => {
+                this.filterByStatus(e.target.value);
+            });
+
+            // Sort
+            document.getElementById('sortSelect').addEventListener('change', (e) => {
+                this.sortVouchers(e.target.value);
+            });
+
+            // Delete confirmation
+            document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+                this.deleteVoucher();
+            });
+
+            // Modal reset
+            $('#addVoucherModal').on('hidden.bs.modal', () => {
+                this.resetForm();
+            });
+        }
+
+        generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        saveVoucher() {
+            const form = document.getElementById('voucherForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const voucherData = {
+                id: this.currentEditId || this.generateId(),
+                name: document.getElementById('voucherName').value,
+                code: document.getElementById('voucherCode').value.toUpperCase(),
+                discountType: document.getElementById('discountType').value,
+                discountValue: parseFloat(document.getElementById('discountValue').value),
+                minOrder: parseFloat(document.getElementById('minOrder').value) || 0,
+                quantity: parseInt(document.getElementById('quantity').value),
+                startDate: document.getElementById('startDate').value,
+                endDate: document.getElementById('endDate').value,
+                status: document.getElementById('voucherStatus').value,
+                description: document.getElementById('description').value,
+                createdAt: this.currentEditId ? this.vouchers.find(v => v.id === this.currentEditId).createdAt : new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+
+            // Validate dates
+            if (new Date(voucherData.startDate) >= new Date(voucherData.endDate)) {
+                this.showToast('Ngày kết thúc phải sau ngày bắt đầu!', 'error');
+                return;
+            }
+
+            // Check duplicate code
+            const existingVoucher = this.vouchers.find(v => v.code === voucherData.code && v.id !== voucherData.id);
+            if (existingVoucher) {
+                this.showToast('Mã voucher đã tồn tại!', 'error');
+                return;
+            }
+
+            if (this.currentEditId) {
+                // Update existing voucher
+                const index = this.vouchers.findIndex(v => v.id === this.currentEditId);
+                this.vouchers[index] = voucherData;
+            } else {
+                // Add new voucher
+                this.vouchers.push(voucherData);
+            }
+
+            this.saveToStorage();
+            this.renderVouchers();
+            this.updateStatistics();
+
+            // Close modal
+            $('#addVoucherModal').modal('hide');
+
+            // Show success message
+            this.showToast(this.currentEditId ? 'Cập nhật voucher thành công!' : 'Thêm voucher thành công!', 'success');
+        }
+
+        editVoucher(id) {
+            const voucher = this.vouchers.find(v => v.id === id);
+            if (!voucher) return;
+
+            this.currentEditId = id;
+
+            // Fill form
+            document.getElementById('voucherId').value = voucher.id;
+            document.getElementById('voucherName').value = voucher.name;
+            document.getElementById('voucherCode').value = voucher.code;
+            document.getElementById('discountType').value = voucher.discountType;
+            document.getElementById('discountValue').value = voucher.discountValue;
+            document.getElementById('minOrder').value = voucher.minOrder;
+            document.getElementById('quantity').value = voucher.quantity;
+            document.getElementById('startDate').value = voucher.startDate;
+            document.getElementById('endDate').value = voucher.endDate;
+            document.getElementById('voucherStatus').value = voucher.status || 'active';
+            document.getElementById('description').value = voucher.description || '';
+
+            // Update discount unit
+            const unit = document.getElementById('discountUnit');
+            unit.textContent = voucher.discountType === 'percentage' ? '%' : 'VNĐ';
+
+            // Update modal title
+            document.getElementById('modalTitle').textContent = 'Chỉnh Sửa Voucher';
+
+            // Show modal
+            $('#addVoucherModal').modal('show');
+        }
+
+        confirmDelete(id) {
+            this.currentDeleteId = id;
+            $('#deleteModal').modal('show');
+        }
+
+        deleteVoucher() {
+            if (!this.currentDeleteId) return;
+
+            this.vouchers = this.vouchers.filter(v => v.id !== this.currentDeleteId);
+            this.saveToStorage();
+            this.renderVouchers();
+            this.updateStatistics();
+
+            // Close modal
+            $('#deleteModal').modal('hide');
+
+            this.showToast('Xóa voucher thành công!', 'success');
+            this.currentDeleteId = null;
+        }
+
+        resetForm() {
+            document.getElementById('voucherForm').reset();
+            document.getElementById('modalTitle').textContent = 'Thêm Voucher Mới';
+            document.getElementById('discountUnit').textContent = '%';
+            document.getElementById('voucherStatus').value = 'active';
+            this.currentEditId = null;
+
+            // Reset default dates
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('startDate').value = today;
+
+            const nextMonth = new Date();
+            nextMonth.setMonth(nextMonth.getMonth() + 1);
+            document.getElementById('endDate').value = nextMonth.toISOString().split('T')[0];
+        }
+
+        getVoucherStatus(voucher) {
+            // Check manual status first
+            if (voucher.status === 'inactive') return 'inactive';
+
+            const now = new Date();
+            const startDate = new Date(voucher.startDate);
+            const endDate = new Date(voucher.endDate);
+
+            if (now < startDate) return 'upcoming';
+            if (now > endDate) return 'expired';
+            if (voucher.quantity <= 0) return 'exhausted';
+
+            // Check if expiring soon (within 7 days)
+            const daysUntilExpiry = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
+            if (daysUntilExpiry <= 7) return 'expiring';
+
+            return 'active';
+        }
+
+        formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+            }).format(amount);
+        }
+
+        formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('vi-VN');
+        }
+
+        renderVouchers(vouchersToRender = this.vouchers) {
+            const container = document.getElementById('voucherList');
+            const emptyState = document.getElementById('emptyState');
+
+            if (vouchersToRender.length === 0) {
+                container.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+
+            container.innerHTML = vouchersToRender.map(voucher => {
+                const status = this.getVoucherStatus(voucher);
+                const statusConfig = {
+                    active: { class: 'bg-success', text: 'Đang hoạt động', icon: 'bi-check-circle' },
+                    inactive: { class: 'bg-secondary', text: 'Tạm dừng', icon: 'bi-pause-circle' },
+                    upcoming: { class: 'bg-info', text: 'Sắp diễn ra', icon: 'bi-clock' },
+                    expired: { class: 'bg-danger', text: 'Đã hết hạn', icon: 'bi-x-circle' },
+                    exhausted: { class: 'bg-warning', text: 'Đã hết', icon: 'bi-exclamation-triangle' },
+                    expiring: { class: 'bg-warning', text: 'Sắp hết hạn', icon: 'bi-exclamation-triangle' }
+                };
+
+                const statusInfo = statusConfig[status];
+                const discountText = voucher.discountType === 'percentage'
+                    ? `${voucher.discountValue}%`
+                    : this.formatCurrency(voucher.discountValue);
+
+                return `
+                    <div class="col-12 col-md-6">
+                        <div class="card shadow-sm hover-shadow-lg transition-all">
+                            <div class="card-body p-0">
+                                <div class="d-flex">
+                                    <div class="voucher-icon">
+                                        <i class="bi bi-ticket-perforated-fill"></i>
+                                    </div>
+                                    <div class="p-3 flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                <h5 class="card-title mb-1">${voucher.name}</h5>
+                                                <p class="card-text text-muted mb-0">Mã: ${voucher.code}</p>
+                                            </div>
+                                            <div class="voucher-action d-flex gap-2">
+                                                <button class="btn btn-outline-warning btn-sm rounded-circle"
+                                                        onclick="voucherManager.editVoucher('${voucher.id}')"
+                                                        title="Chỉnh sửa">
+                                                    <i class="bi-pencil"></i>
+                                                </button>
+                                                <button class="btn btn-outline-danger btn-sm rounded-circle"
+                                                        onclick="voucherManager.confirmDelete('${voucher.id}')"
+                                                        title="Xóa">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-2">
+                                            <span class="badge ${voucher.discountType === 'percentage' ? 'badge-percentage' : 'badge-fixed'} text-white">
+                                                <i class="bi ${voucher.discountType === 'percentage' ? 'bi-percent' : 'bi-currency-dollar'} me-1"></i>
+                                                Giảm ${discountText}
+                                            </span>
+                                        </div>
+
+                                        ${voucher.minOrder > 0 ? `
+                                            <p class="text-muted small mb-2">Đơn tối thiểu: ${this.formatCurrency(voucher.minOrder)}</p>
+                                        ` : ''}
+
+                                        <div class="d-flex flex-column gap-1">
+                                            <small class="text-success">
+                                                <i class="bi bi-calendar2-check me-1"></i>
+                                                Bắt đầu: ${this.formatDate(voucher.startDate)}
+                                            </small>
+                                            <small class="text-danger">
+                                                <i class="bi bi-calendar2-x me-1"></i>
+                                                Hết hạn: ${this.formatDate(voucher.endDate)}
+                                            </small>
+                                        </div>
+                                        <div class="mt-2 d-flex justify-content-between align-items-center">
+                                            <span class="badge ${statusInfo.class} text-white">
+                                                <i class="${statusInfo.icon} me-1"></i>
+                                                ${statusInfo.text}
+                                            </span>
+                                            <span class="badge bg-info text-white">
+                                                <i class="bi bi-box-seam me-1"></i>
+                                                Còn lại: ${voucher.quantity}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        searchVouchers(query) {
+            if (!query.trim()) {
+                this.renderVouchers();
+                return;
+            }
+
+            const filtered = this.vouchers.filter(voucher =>
+                voucher.name.toLowerCase().includes(query.toLowerCase()) ||
+                voucher.code.toLowerCase().includes(query.toLowerCase()) ||
+                (voucher.description && voucher.description.toLowerCase().includes(query.toLowerCase()))
+            );
+
+            this.renderVouchers(filtered);
+        }
+
+        filterByStatus(status) {
+            if (status === 'all') {
+                this.renderVouchers();
+                return;
+            }
+
+            const filtered = this.vouchers.filter(voucher => {
+                const voucherStatus = this.getVoucherStatus(voucher);
+                return voucherStatus === status;
+            });
+
+            this.renderVouchers(filtered);
+        }
+
+        sortVouchers(sortBy) {
+            let sorted = [...this.vouchers];
+
+            switch (sortBy) {
+                case 'newest':
+                    sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                    break;
+                case 'oldest':
+                    sorted.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+                    break;
+                case 'value-desc':
+                    sorted.sort((a, b) => b.discountValue - a.discountValue);
+                    break;
+                case 'value-asc':
+                    sorted.sort((a, b) => a.discountValue - b.discountValue);
+                    break;
+            }
+
+            this.renderVouchers(sorted);
+        }
+
+        updateStatistics() {
+            const now = new Date();
+
+            const stats = this.vouchers.reduce((acc, voucher) => {
+                const status = this.getVoucherStatus(voucher);
+
+                acc.total++;
+
+                switch (status) {
+                    case 'active':
+                        acc.active++;
+                        break;
+                    case 'expiring':
+                        acc.expiring++;
+                        break;
+                    case 'expired':
+                    case 'exhausted':
+                    case 'inactive':
+                        acc.expired++;
+                        break;
+                }
+
+                return acc;
+            }, { total: 0, active: 0, expiring: 0, expired: 0 });
+
+            document.getElementById('totalVouchers').textContent = stats.total;
+            document.getElementById('activeVouchers').textContent = stats.active;
+            document.getElementById('expiringVouchers').textContent = stats.expiring;
+            document.getElementById('expiredVouchers').textContent = stats.expired;
+        }
+
+        saveToStorage() {
+            localStorage.setItem('vouchers', JSON.stringify(this.vouchers));
+        }
+
+        showToast(message, type = 'info') {
+            // Simple toast implementation
+            const toast = document.createElement('div');
+            toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
+            toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            toast.innerHTML = `
+                <i class="bi ${type === 'success' ? 'bi-check-circle' : 'bi-exclamation-circle'} me-2"></i>
+                ${message}
+                <button type="button" class="close" onclick="this.parentElement.remove()"></button>
+            `;
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.remove();
+                }
+            }, 5000);
+        }
+    }
+
+    // Initialize the voucher manager
+    let voucherManager;
+    document.addEventListener('DOMContentLoaded', () => {
+        voucherManager = new VoucherManager();
+    });
+</script>

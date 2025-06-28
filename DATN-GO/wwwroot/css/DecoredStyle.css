@@ -1,0 +1,33 @@
+﻿body {
+}
+ 
+/* Đảm bảo nội dung chính không bị sidebar che lấp */
+.page-wrapper {
+    padding-top: 60px; /* Bằng chiều cao của header */
+}
+
+.preview-box {
+    position: relative;
+    border: 2px dashed #ccc;
+    border-radius: 0.375rem;
+    background-color: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    overflow: hidden;
+    width: 100%;
+}
+
+    .preview-box img,
+    .preview-box video {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: cover;
+    }
+
+.decorate-item {
+    height: 140px;
+}
+
+ 

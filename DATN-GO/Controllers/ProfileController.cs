@@ -74,12 +74,12 @@ namespace DATN_GO.Controllers
                 TempData["ToastType"] = "danger";
                 return View("Index", model);
             }
-            if (model.DateOfBirth.HasValue && model.DateOfBirth.Value > DateTime.Today)
+          /*  if (model.DateOfBirth.HasValue && model.DateOfBirth.Value > DateTime.Today)
             {
                 TempData["ToastMessage"] = "❌ Ngày sinh không được lớn hơn ngày hiện tại!";
                 TempData["ToastType"] = "danger";
                 return View("Index", model);
-            }
+            }*/
             string? newAvatarUrl = currentUser.Avatar;
             if (avatarFile != null && avatarFile.Length > 0)
             {
@@ -95,7 +95,7 @@ namespace DATN_GO.Controllers
             }
 
           
-            currentUser.Password = currentUser.Password; 
+           /* currentUser.Password = currentUser.Password; 
             currentUser.Email = currentUser.Email;
             currentUser.PhoneNumber = currentUser.PhoneNumber;
             currentUser.RoleId = currentUser.RoleId;
@@ -105,7 +105,7 @@ namespace DATN_GO.Controllers
 
             currentUser.FullName = model.FullName;
             currentUser.Gender = model.Gender;
-            currentUser.DateOfBirth = model.DateOfBirth;
+            currentUser.DateOfBirth = model.DateOfBirth;*/
 
 
             var success = await _userService.UpdateUserAsync(currentUser.Id, currentUser);

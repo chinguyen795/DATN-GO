@@ -1,0 +1,205 @@
+﻿<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+     
+ <link rel="stylesheet" href="~/css/category.css" />  
+    
+
+</head>
+<div class="page-wrapper">
+
+    <!-- Header -->
+    <header class="main-header" id="header">
+        <nav class="navbar navbar-expand-lg navbar-light" id="navbar">
+            <!-- Sidebar toggle button -->
+            <button id="sidebar-toggler" class="sidebar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+            </button>
+
+            <span class="page-title">Danh Mục</span>
+
+            <div class="navbar-right ">
+                <ul class="nav navbar-nav">
+                    <!-- User Account -->
+                    <li class="dropdown user-menu">
+                        <button class="dropdown-toggle nav-link" data-toggle="dropdown">
+                            <img src="images/user/user-xs-01.jpg" alt="User Profile" width="32" height="32"
+                                 style="object-fit: cover;" loading="lazy">
+                            <span class="d-none d-lg-inline-block">Meo Meo</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-right">
+                            <li>
+                                <a class="dropdown-link-item" href="user-profile.html">
+                                    <i class="mdi mdi-account-outline"></i>
+                                    <span class="nav-text">Hồ Sơ</span>
+                                </a>
+                            </li>
+                            <li class="dropdown-footer">
+                                <a class="dropdown-link-item" href="sign-in.html">
+                                    <i class="mdi mdi-logout"></i> Đăng Xuất
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <!-- ====================================
+    ——— CONTENT WRAPPER
+    ===================================== -->
+    <div class="content-wrapper">
+        <div class="content">
+            <div class="container">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="search-add-section">
+                        <div class="search-container">
+                            <input type="text" id="searchInput" placeholder="Search..." class="form-control">
+                        </div>
+                        <button class="btn-add" data-toggle="modal" data-target="#addCategoryModal">
+                            <i class="bi bi-plus-lg"></i>
+                            THÊM DANH MỤC
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Categories Table -->
+                <div class="categories-table">
+                    <div class="table-responsive">
+                        <table class="table" id="categoriesTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>HÌNH ẢNH</th>
+                                    <th>TÊN DANH MỤC</th>
+                                    <th>LOẠI DANH MỤC</th>
+                                    <th>MÔ TẢ</th>
+                                    <th>NGÀY TẠO</th>
+                                    <th>NGÀY CẬP NHẬT</th>
+                                    <th>TRẠNG THÁI</th>
+                                    <th>HIỂN THỊ</th>
+                                    <th>THAO TÁC</th>
+                                </tr>
+                            </thead>
+                            <tbody id="categoriesTableBody">
+                                <!-- Categories will be rendered here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination-container">
+                    <div class="pagination">
+                        <button id="prevBtn" disabled>Previous</button>
+                        <button class="active">1</button>
+                        <button>2</button>
+                        <button id="nextBtn">Next</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Category Modal -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    <span id="modalTitle">Thêm Danh Mục Mới</span>
+                </h5>
+                <button type="button" class="close btn-close-white" data-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="categoryForm">
+                    <input type="hidden" id="categoryId">
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Tên Danh Mục *</label>
+                                <input type="text" id="categoryName" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Loại Danh Mục *</label>
+                                <select id="categoryType" class="form-select" required>
+                                    <option value="">Chọn loại danh mục</option>
+                                    <option value="Thức ăn">Thức ăn</option>
+                                    <option value="Đồ uống">Đồ uống</option>
+                                    <option value="Thời trang">Thời trang</option>
+                                    <option value="Điện tử">Điện tử</option>
+                                    <option value="Gia dụng">Gia dụng</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Mô Tả</label>
+                        <textarea id="categoryDescription" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Hình Ảnh</label>
+                                <input type="file" id="categoryImage" class="form-control" accept="image/*">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Trạng Thái *</label>
+                                <select id="categoryStatus" class="form-select" required>
+                                    <option value="active">Hoạt động</option>
+                                    <option value="inactive">Tạm dừng</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light border" data-dismiss="modal" style="background-color: #6c757d; color: white;">Hủy</button>
+                <button type="button" class="btn btn-danger" id="saveCategoryBtn">
+                    <i class="bi bi-check-lg me-2"></i>
+                    Lưu Danh Mục
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="close btn-close-white"></i>
+                    Xác Nhận Xóa
+                </h5>
+                <button type="button" class="close btn-close-white" data-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa danh mục này không?</p>
+                <p class="text-muted">Hành động này không thể hoàn tác.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light border" data-dismiss="modal" style="background-color: #6c757d; color: white;">Hủy</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                    <i class="bi bi-trash me-2"></i>
+                    Xóa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</html>

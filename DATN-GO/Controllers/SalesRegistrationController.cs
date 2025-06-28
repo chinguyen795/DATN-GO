@@ -1,4 +1,4 @@
-﻿using DATN_GO.Areas.Seller.Controllers;
+﻿/*using DATN_GO.Areas.Seller.Controllers;
 using DATN_GO.Models;
 using DATN_GO.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -34,3 +34,4 @@ namespace DATN_GO.Controllers
         }
     }
 }
+*/

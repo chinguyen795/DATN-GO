@@ -1,81 +1,255 @@
-﻿
-<div class="container-fluid mt-5 pt-5">
-    <div class="card">
-        <div class="card-header bg-danger text-white">
-            <h4 class="mb-0">Quản lý người dùng</h4>
-        </div>
-        <div class="card-body">
-            <!-- Search and Filter Section -->
-            <div class="row mb-4">
-                <div class="col-md-6">
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Tìm kiếm người dùng...">
-                        <button class="btn btn-danger" type="button">
-                            <i class="bi bi-search"></i>
+﻿<div class="page-wrapper">
+    <header class="main-header" id="header">
+        <nav class="navbar navbar-expand-lg navbar-light" id="navbar">
+            <button id="sidebar-toggler" class="sidebar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+            </button>
+
+            <span class="page-title">Quản lý Người dùng</span>
+            <div class="navbar-right">
+                <ul class="nav navbar-nav">
+                    <li class="dropdown user-menu">
+                        <button class="dropdown-toggle nav-link"
+                                data-bs-toggle="dropdown">
+                            <img src="images/user/user-xs-01.jpg"
+                                 alt="User Profile"
+                                 width="32"
+                                 height="32"
+                                 style="object-fit: cover"
+                                 loading="lazy" />
+                            <span class="d-none d-lg-inline-block">Meo Meo</span>
                         </button>
+                        <ul class="dropdown-menu dropdown-menu-right">
+                            <li>
+                                <a class="dropdown-link-item" href="user-profile.html">
+                                    <i class="mdi mdi-account-outline"></i>
+                                    <span class="nav-text">Hồ Sơ</span>
+                                </a>
+                            </li>
+                            <li class="dropdown-footer">
+                                <a class="dropdown-link-item" href="sign-in.html">
+                                    <i class="mdi mdi-logout"></i> Đăng Xuất
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <div class="content-wrapper">
+        <div class="content">
+            <div class="card card-default">
+                <div class="card-header">
+                    <h2 class="text-danger">Danh sách Người dùng</h2>
+                </div>
+                <div class="card-body">
+                    <table id="productsTable"
+                           class="table table-hover table-product"
+                           style="width: 100%">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Ảnh</th>
+                                <th>Tên người dùng</th>
+                                <th>Email</th>
+                                <th>SĐT</th>
+                                <th>Địa chỉ</th>
+                                <th>Giới tính</th>
+                                <th>Trạng thái</th>
+                                <th>Ngày tạo</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>101</td>
+                                <td class="py-0">
+                                    <img src="images/user/user-xs-01.jpg"
+                                         alt="User Image"
+                                         style="width: 50px; height: 50px; object-fit: cover" />
+                                </td>
+                                <td>Nguyễn Văn A</td>
+                                <td>nguyenvana@example.com</td>
+                                <td>0912345678</td>
+                                <td>123 Đường ABC, Quận 1, TP.HCM</td>
+                                <td>Nam</td>
+                                <td>
+                                    <span class="badge badge-success">Hoạt động</span>
+                                </td>
+                                <td>2025-06-01</td>
+                                <td>
+                                    <button class="btn btn-info btn-sm"
+                                            title="Xem chi tiết"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#exampleModallarge">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>102</td>
+                                <td class="py-0">
+                                    <img src="images/user/user-xs-02.jpg"
+                                         alt="User Image"
+                                         style="width: 50px; height: 50px; object-fit: cover" />
+                                </td>
+                                <td>Trần Thị B</td>
+                                <td>tranthib@example.com</td>
+                                <td>0987654321</td>
+                                <td>456 Đường XYZ, Quận Bình Thủy, TP.Cần Thơ</td>
+                                <td>Nữ</td>
+                                <td>
+                                    <span class="badge badge-danger">Bị khóa</span>
+                                </td>
+                                <td>2025-05-20</td>
+                                <td>
+                                    <button class="btn btn-info btn-sm"
+                                            title="Xem chi tiết"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#exampleModallarge">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>103</td>
+                                <td class="py-0">
+                                    <img src="images/user/user-xs-03.jpg"
+                                         alt="User Image"
+                                         style="width: 50px; height: 50px; object-fit: cover" />
+                                </td>
+                                <td>Lê Văn C</td>
+                                <td>levanc@example.com</td>
+                                <td>0901234567</td>
+                                <td>789 Đường KLM, Quận 3, TP.HCM</td>
+                                <td>Nam</td>
+                                <td>
+                                    <span class="badge badge-success">Hoạt động</span>
+                                </td>
+                                <td>2025-04-10</td>
+                                <td>
+                                    <button class="btn btn-info btn-sm"
+                                            title="Xem chi tiết"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#exampleModallarge">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    </div>
+
+<div class="modal fade"
+     id="exampleModallarge"
+     tabindex="-1"
+     role="dialog"
+     aria-labelledby="exampleModalLarge"
+     aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLarge">
+                    Chi tiết người dùng
+                </h5>
+                <button type="button"
+                        class="close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-xl-4">
+                        <p class="text-dark font-weight-medium pt-4 mb-2">ID:</p>
+                        <p><span id="detail-userId">Loading...</span></p>
+                    </div>
+                    <div class="col-xl-4">
+                        <p class="text-dark font-weight-medium pt-4 mb-2">
+                            Tên người dùng:
+                        </p>
+                        <p><span id="detail-userName">Loading...</span></p>
+                    </div>
+                    <div class="col-xl-4">
+                        <p class="text-dark font-weight-medium pt-4 mb-2">Email:</p>
+                        <p><span id="detail-userEmail">Loading...</span></p>
+                    </div>
+                    <div class="col-xl-4">
+                        <p class="text-dark font-weight-medium pt-4 mb-2">SĐT:</p>
+                        <p><span id="detail-userPhone">Loading...</span></p>
+                    </div>
+                    <div class="col-xl-4">
+                        <p class="text-dark font-weight-medium pt-4 mb-2">Địa chỉ:</p>
+                        <p><span id="detail-userAddress">Loading...</span></p>
+                    </div>
+                    <div class="col-xl-4">
+                        <p class="text-dark font-weight-medium pt-4 mb-2">Giới tính:</p>
+                        <p><span id="detail-userGender">Loading...</span></p>
+                    </div>
+                    <div class="col-xl-4">
+                        <p class="text-dark font-weight-medium pt-4 mb-2">
+                            Trạng thái:
+                        </p>
+                        <p><span id="detail-userStatus">Loading...</span></p>
+                    </div>
+                    <div class="col-xl-4">
+                        <p class="text-dark font-weight-medium pt-4 mb-2">Ngày tạo:</p>
+                        <p><span id="detail-userCreatedAt">Loading...</span></p>
                     </div>
                 </div>
-                <div class="col-md-6 text-md-end">
-                    <select class="form-select w-auto d-inline-block">
-                        <option value="" selected>Sắp xếp theo</option>
-                        <option value="newest">Mới nhất</option>
-                        <option value="oldest">Cũ nhất</option>
-                        <option value="asc">Tên A-Z</option>
-                        <option value="desc">Tên Z-A</option>
-                    </select>
-                </div>
             </div>
-
-            <!-- Users Table -->
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead class="table-danger">
-                        <tr>
-                            <th>ID</th>
-                            <th>Ảnh</th>
-                            <th>Tên người dùng</th>
-                            <th>Email</th>
-                            <th>Số điện thoại</th>
-                            <th>Địa chỉ</th>
-                            <th>Trạng thái</th>
-                            <th>Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>1</td>
-                            <td><img src="https://via.placeholder.com/40" class="rounded-circle" alt="User"></td>
-                            <td>Nguyễn Văn A</td>
-                            <td>nguyenvana@email.com</td>
-                            <td>0123456789</td>
-                            <td>Hà Nội</td>
-                            <td><span class="badge bg-success">Hoạt động</span></td>
-                            <td>
-                                <button class="btn btn-danger btn-sm">
-                                    <i class="bi bi-trash me-2">Dừng hoạt động</i>
-                                </button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>2</td>
-                            <td><img src="https://via.placeholder.com/40" class="rounded-circle" alt="User"></td>
-                            <td>Trần Thị B</td>
-                            <td>tranthib@email.com</td>
-                            <td>0987654321</td>
-                            <td>TP. Hồ Chí Minh</td>
-                            <td><span class="badge bg-secondary">Không hoạt động</span></td>
-                            <td>
-                                <button class="btn btn-danger btn-sm">
-                                    <i class="bi bi-trash me-2">Dừng hoạt động</i>
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-danger btn-pill"
+                        data-bs-dismiss="modal">
+                    Đóng
+                </button>
             </div>
+        </div>
+    </div>
+</div>
 
-            <!-- Pagination -->
-
+<div class="modal fade"
+     id="exampleModal"
+     tabindex="-1"
+     role="dialog"
+     aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger">
+                <h5 class="modal-title text-white" id="exampleModalLabel">
+                    Thông báo xóa
+                </h5>
+                <button type="button"
+                        class="close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Bạn có chắc chắn muốn xóa không? Hành động này sẽ không thể hoàn
+                tác.
+            </div>
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-light btn-pill"
+                        data-bs-dismiss="modal">
+                    Close
+                </button>
+                <button type="button" class="btn btn-danger btn-pill">Xóa</button>
+            </div>
         </div>
     </div>
 </div>

@@ -1,0 +1,192 @@
+﻿.content-wrapper {
+    padding: 1rem 0;
+}
+
+.container {
+    max-width: 100%;
+    padding: 0 1.5rem;
+}
+
+.card.card-default {
+    min-height: 70vh;
+}
+
+.card-body {
+    padding: 2rem;
+}
+
+.statistics-cards {
+    margin-bottom: 2rem;
+}
+
+    .statistics-cards .card {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .statistics-cards .card-body {
+        padding: 1.5rem;
+    }
+
+    .statistics-cards h3 {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+
+.controls-section {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+#emptyState {
+    padding: 4rem 2rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    margin: 2rem 0;
+}
+
+    #emptyState i {
+        font-size: 5rem !important;
+        margin-bottom: 1.5rem;
+        opacity: 0.6;
+    }
+
+    #emptyState h4 {
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+    }
+
+    #emptyState p {
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+
+.voucher-list-container {
+    min-height: 400px;
+}
+
+.card.hover-shadow-lg {
+    transition: all 0.3s ease;
+}
+
+    .card.hover-shadow-lg:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 1rem 3rem rgba(0, 0, 0, .175) !important;
+    }
+
+.form-select,
+.form-control {
+    border-radius: 4px;
+    height: 38px;
+    font-size: 0.9rem;
+    border: 1px solid #ced4da;
+}
+
+.search-input {
+    padding: 6px 12px;
+}
+
+    .search-input:focus {
+        border-color: #ced4da;
+        box-shadow: none;
+        outline: none;
+    }
+
+.transition-all {
+    transition: all 0.3s ease;
+}
+
+.card .btn-outline-warning,
+.card .btn-outline-danger {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.card .btn-outline-warning {
+    margin-right: 6px;
+}
+
+    .card .btn-outline-warning:hover,
+    .card .btn-outline-danger:hover {
+        transform: scale(1.1);
+    }
+
+.badge {
+    padding: 0.5rem 0.75rem;
+    font-weight: 500;
+}
+
+    .badge i {
+        font-size: 0.875rem;
+    }
+
+.card-title {
+    font-weight: 600;
+    font-size: 1.25rem;
+}
+
+.text-muted {
+    font-size: 0.9rem;
+}
+
+small {
+    font-size: 0.85rem;
+}
+
+    small i {
+        font-size: 0.875rem;
+    }
+
+.voucher-icon {
+    width: 120px;
+    background: linear-gradient(135deg, #dc3545, #e74c3c);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2.5rem;
+}
+
+.badge-percentage {
+    background: linear-gradient(135deg, #28a745, #20c997);
+}
+
+.badge-fixed {
+    background: linear-gradient(135deg, #007bff, #6610f2);
+}
+
+.search-container {
+    position: relative;
+}
+
+    .search-container .bi-search {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+    }
+
+    .search-container input {
+        padding-left: 40px;
+    }
+
+.modal-footer .btn-secondary {
+    background-color: #6c757d !important;
+    border-color: #6c757d !important;
+    color: white !important;
+}
+
+    .modal-footer .btn-secondary:hover {
+        background-color: #5a6268 !important;
+        border-color: #545b62 !important;
+    }

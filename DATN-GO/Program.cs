@@ -52,7 +52,7 @@ builder.Services.AddScoped<AuthenticationService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<PostService>();
 builder.Services.AddScoped<GoogleCloudStorageService>();
-builder.Services.AddScoped<DinerService>();
+/*builder.Services.AddScoped<DinerService>();*/
 builder.Services.AddScoped<VoucherService>();
 
 
