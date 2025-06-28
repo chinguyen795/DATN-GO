@@ -3,200 +3,331 @@
 @inject DinerService service;
 @inject UserService userService;
 @{
-    ViewData["Title"] = "Home Page";
-    var diner = await service.Get();
-    var profile = await userService.GetProfile();
+    Layout = "~/Areas/Seller/Views/Shared/_LayoutSeller.cshtml";
 }
 
-@if (diner != null)
-{
-    <div class="container-fluid p-0">
-        <!-- Store Information Card -->
-        <div class="store-header position-relative mb-4">
-            <!-- Cover Image Upload -->
-            <div class="cover-upload rounded-top d-flex flex-column align-items-center justify-content-center position-relative" onclick="document.getElementById('coverInput').click()">
-                <div id="coverPreview" class="w-100 h-100 position-relative d-flex align-items-center justify-content-center">
-                    <img src="@diner.CoverPhoto" class="preview-image rounded-top w-100 h-100 @(string.IsNullOrEmpty(diner.CoverPhoto) || diner.CoverPhoto == "no" ? "d-none" : "")" alt="Cover preview">
-                    @if (string.IsNullOrEmpty(diner.CoverPhoto) || diner.CoverPhoto == "no")
-                    {
-                        <div class="upload-prompt position-absolute top-50 start-50 translate-middle text-center">
-                            <i class="bi bi-image text-muted fs-1"></i>
-                            <p class="text-muted mb-0">Click để tải ảnh bìa</p>
-                        </div>
-                    }
-                </div>
-                <input type="file" id="coverInput" accept="image/*" class="d-none" onchange="dinerPreviewImage(this, 'coverPreview')">
-            </div>
+<div class="page-wrapper">
 
-            <!-- Store Info Overlay -->
-            <div class="store-info-overlay position-relative mx-auto px-0 py-2 ">
-                <div class="container">
-                    <!-- Avatar Upload -->
-                    <div class="d-flex justify-content-center mb-5">
-                        <div class="avatar-upload position-relative rounded-circle border border-3 border-white bg-light d-flex flex-column align-items-center justify-content-center" onclick="document.getElementById('avatarInput').click()">
-                            <div id="avatarPreview" class="w-100 h-100 position-relative">
-                                <img src="@diner.Avatar" class="preview-image rounded-circle w-100 h-100 @(string.IsNullOrEmpty(diner.Avatar) || diner.Avatar == "no"? "d-none" : "")" alt="Avatar preview">
-                                @if (string.IsNullOrEmpty(diner.Avatar) || diner.Avatar == "no")
-                                {
-                                    <div class="upload-prompt position-absolute top-50 start-50 translate-middle text-center w-100">
-                                        <i class="bi bi-person text-muted fs-1"></i>
-                                        <p class="text-muted mb-0 small">Click để tải avatar</p>
-                                    </div>
-                                }
-                            </div>
-                            <input type="file" id="avatarInput" accept="image/*" class="d-none" onchange="dinerPreviewImage(this, 'avatarPreview', true)">
-                        </div>
-                    </div>
+    <!-- Header -->
+    <header class="main-header" id="header">
+        <nav class="navbar navbar-expand-lg navbar-light" id="navbar">
+            <!-- Sidebar toggle button -->
+            <button id="sidebar-toggler" class="sidebar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+            </button>
 
-                    <!-- Store Info -->
-                    <div class="bg-white shadow-sm rounded-3 mt-5 p-4">
-                        <div class="row">
-                            <div class="col-md-8">
-                                <div class="d-flex justify-content-start align-items-center mb-3">
-                                    <h2 class="mb-0">@diner.DinerName</h2>
-                                    <button class="btn btn-outline-danger mx-2 text-nowrap" data-bs-toggle="modal" data-bs-target="#editStoreModal">
-                                        <i class="bi bi-pencil me-2"></i>Chỉnh sửa thông tin
-                                    </button>
-                                </div>
-                                <div class="store-info">
-                                    <p class="text-secondary mb-2">
-                                        <i class="bi bi-geo-alt me-2"></i>
-                                        @diner.DinerAddress
-                                    </p>
-                                    <p class="text-secondary mb-2">
-                                        <i class="bi bi-telephone me-2"></i>
-                                        @profile?.PhoneNumber
-                                    </p>
-                                    <p class="text-secondary mb-2">
-                                        <i class="bi bi-envelope me-2"></i>
-                                        @profile?.Email
-                                    </p>
-                                    <p class="text-secondary mb-2">
-                                        <i class="bi bi-clock me-2"></i>
-                                        Open Hours: @($"{diner.OpenHouse}:{diner.OpenMinute}".FormatTime()) -  @($"{diner.CloseHouse}:{diner.CloseMinute}".FormatTime())
-                                    </p>
-                                </div>
-                                <a class="btn btn-info text-white text-nowrap">
-                                    <i class="bi bi-tv m-2"></i>Xem cửa hàng
+            <span class="page-title">TRANG CHỦ</span>
+
+            <div class="navbar-right ">
+                <ul class="nav navbar-nav">
+                    <li class="custom-dropdown">
+                        <a asp-area="Seller" asp-controller="Notification" asp-action="Notification" class="notify-toggler custom-dropdown-toggler">
+                            <i class="mdi mdi-bell-outline icon"></i>
+                        </a>
+                    </li>
+                    <!-- User Account -->
+                    <li class="dropdown user-menu">
+                        <button class="dropdown-toggle nav-link" data-toggle="dropdown">
+                            <img src="images/avt-user.jpg" alt="User Profile" width="32" height="32"
+                                 style="object-fit: cover;" loading="lazy">
+                            <span class="d-none d-lg-inline-block">Meo Meo</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-right">
+                            <li>
+                                <a class="dropdown-link-item" href="user-profile.html">
+                                    <i class="mdi mdi-account-outline"></i>
+                                    <span class="nav-text">Hồ Sơ</span>
                                 </a>
+                            </li>
+                            <li class="dropdown-footer">
+                                <a class="dropdown-link-item" href="sign-in.html">
+                                    <i class="mdi mdi-logout"></i> Đăng Xuất
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+
+    </header>
+
+    <!-- ====================================
+    ——— CONTENT WRAPPER
+    ===================================== -->
+    <div class="content-wrapper">
+        <div class="content">
+            <!-- Card Profile -->
+            <div class="card card-default card-profile">
+                <!-- Ảnh bìa -->
+                <div class="card-header-bg" id="coverImage"
+                     style="background-image:url('@Url.Content("~/images/logo.png")'); background-size: cover; background-position: center; height: 250px;">
+                </div>
+
+
+                <div class="card-body card-profile-body">
+                    <!-- Ảnh đại diện -->
+                    <div class="profile-avata">
+                        <img class="rounded-circle" src="~/images/avt-user.jpg" alt="User Profile"
+                             id="profileImage" width="120" height="120"
+                             style="object-fit: cover; border: 4px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <span class="h5 d-block mt-3 mb-2">Bear Store</span>
+                        <span class="d-block">nguyenchinguyen@gmail.com</span>
+
+                        <!-- Các nút để thay đổi ảnh đại diện và ảnh bìa -->
+                        <input type="file" id="profilePicInput" class="d-none"
+                               onchange="changeProfileImage(event)">
+                        <button onclick="document.getElementById('profilePicInput').click()"
+                                class="btn btn-danger btn-sm mt-2" style="text-transform: capitalize;">
+                            Đổi ảnh đại diện
+                        </button>
+
+                        <input type="file" id="coverPicInput" class="d-none" onchange="changeCoverImage(event)">
+                        <button onclick="document.getElementById('coverPicInput').click()"
+                                class="btn btn-danger btn-sm mt-2" style="text-transform: capitalize;">
+                            Đổi ảnh nền
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xl-3 col-md-6">
+                    <div class="card card-default">
+                        <div class="d-flex p-5">
+                            <div class="icon-md bg-secondary rounded-circle mr-3">
+                                <i class="mdi mdi-account-multiple-outline"></i>
                             </div>
-                            <div class="col-md-4">
-                                <div class="card border-0 bg-light">
-                                    <div class="card-body">
-                                        <h5 class="card-title">Quick Stats</h5>
-                                        <div class="d-flex justify-content-between mb-2">
-                                            <span>Rating</span>
-                                            <span class="text-danger">
-                                                4.5 <i class="bi bi-star-fill"></i>
-                                            </span>
-                                        </div>
-                                        <div class="d-flex justify-content-between mb-2">
-                                            <span>Total Orders</span>
-                                            <span class="text-danger">1,234</span>
-                                        </div>
-                                        <div class="d-flex justify-content-between">
-                                            <span>Products</span>
-                                            <span class="text-danger">56</span>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div class="text-left">
+                                <span class="h2 d-block">890</span>
+                                <p>Người theo dõi</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card card-default">
+                        <div class="d-flex p-5">
+                            <div class="icon-md bg-success rounded-circle mr-3">
+                                <i class="mdi mdi-table-edit"></i>
+                            </div>
+                            <div class="text-left">
+                                <span class="h2 d-block">350</span>
+                                <p>Đơn hàng</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card card-default">
+                        <div class="d-flex p-5">
+                            <div class="icon-md bg-primary rounded-circle mr-3">
+                                <i class="mdi mdi-toolbox"></i>
+                            </div>
+                            <div class="text-left">
+                                <span class="h2 d-block">1360</span>
+                                <p>Sản phẩm</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card card-default">
+                        <div class="d-flex p-5">
+                            <div class="icon-md bg-info rounded-circle mr-3">
+                                <i class="mdi mdi-star"></i>
+                            </div>
+                            <div class="text-left">
+                                <span class="h2 d-block">3.6</span>
+                                <p>Đánh giá</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-   
-}
-else
-{
-    <button class="btn btn-outline-danger mx-2 text-nowrap d-none" id="open-modal-create" data-bs-toggle="modal" data-bs-target="#editStoreModal">
-        <i class="bi bi-pencil me-2"></i>Chỉnh sửa thông tin
-    </button>
-
-    @section Scripts {
-        <script>
-            $('#open-modal-create').trigger('click');
-        </script>
-    }
-}
-
-<!-- Edit Store Modal -->
-<div class="modal fade" id="editStoreModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="storeInfoForm" method="post">
-                <div class="modal-header">
-                    <h5 class="modal-title">Thông tin cửa hàng</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" class="d-none" name="id" value="@diner?.Id" />
-                    <div class="mb-3">
-                        <label class="form-label">Tên cửa hàng</label>
-                        <input type="text" class="form-control" name="dinerName" value="@diner?.DinerName">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Địa chỉ</label>
-                        <input type="text" class="form-control" name="dinerAddress" value="@diner?.DinerAddress">
-                    </div>
-                     <div class="mb-3">
-                        <label class="form-label">Số điện thoại</label>
-                        <input type="tel" class="form-control" name="phoneNumber" value="@profile?.PhoneNumber">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <input type="email" class="form-control" name="email" value="@profile?.Email">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Toạ độ</label>
-                        <div class="row">
-                            <div class="col-6">
-                                <input class="form-control" name="Latitude" value="@diner?.Latitude" type="number" placeholder="Tọa độ Lat" />
+            <div class="row">
+                <div class="col-lg-6">
+                    <!-- Thông tin cơ bản -->
+                    <div class="card card-default"
+                         style="display: flex; flex-direction: column; min-height: 400px;">
+                        <div class="card-header d-flex align-items-center">
+                            <h2>Thông tin cơ bản</h2>
+                            <div class="profile-button">
+                                <button class="btn btn-danger btn-pill" data-toggle="modal"
+                                        data-target="#editBasicInfoModal" style="text-transform: capitalize;">
+                                    Sửa thông tin
+                                </button>
                             </div>
-                            <div class="col-6">
-                                <input class="form-control" name="Longitude" value="@diner?.Longitude" type="number" placeholder="Tọa độ Long" />
+                        </div>
+                        <div class="card-body slim-scroll">
+                            <div class="contact-info px-1 my-0">
+                                <p class="text-dark font-weight-medium pt-4 mb-2">Người đại diện</p>
+                                <p>Nguyễn Văn A</p>
+                                <p class="text-dark font-weight-medium pt-4 mb-2">Địa chỉ Email</p>
+                                <p>jack@gmail.com</p>
+                                <p class="text-dark font-weight-medium pt-4 mb-2">Số điện thoại</p>
+                                <p>0953926411</p>
+                                <p class="text-dark font-weight-medium pt-4 mb-2">Ngày tạo</p>
+                                <p>15/02/2021</p>
+                                <p class="text-dark font-weight-medium pt-4 mb-2">Địa chỉ</p>
+                                <p>Phường Bến Thành, Quận 1, Thành phố Hồ Chí Minh</p>
                             </div>
                         </div>
                     </div>
-                    <div class="row mb-3">
-                        <div class="col-6">
-                            <label class="form-label">Giờ mở cửa</label>
-                            <input type="time" class="form-control" name="openTime" value="@(diner != null ? $"{diner.OpenHouse}:{diner.OpenMinute}".FormatTime() : "08:00" )">
+                </div>
+
+                <div class="col-lg-6">
+                    <!-- Thông tin thanh toán -->
+                    <div class="card card-default"
+                         style="display: flex; flex-direction: column; min-height: 400px;">
+                        <div class="card-header d-flex align-items-center">
+                            <h2>Thông tin thanh toán</h2>
+                            <div class="profile-button">
+                                <button class="btn btn-danger btn-pill" data-toggle="modal"
+                                        data-target="#editPaymentInfoModal" style="text-transform: capitalize;">
+                                    Sửa thông tin
+                                </button>
+                            </div>
                         </div>
-                        <div class="col-6">
-                            <label class="form-label">Giờ đóng cửa</label>
-                            <input type="time" class="form-control" name="closeTime" value="@(diner != null ? $"{diner.CloseHouse}:{diner.CloseMinute}".FormatTime() : "22:00" )">
+                        <div class="card-body slim-scroll">
+                            <div class="payment-info px-1 my-0">
+                                <p class="text-dark font-weight-medium pt-4 mb-2">Ngân hàng</p>
+                                <p>BIDV - Ngân hàng TMCP Đầu tư và Phát triển Việt Nam</p>
+
+                                <p class="text-dark font-weight-medium pt-4 mb-2">Tên tài khoản</p>
+                                <p>Nguyễn Văn A</p>
+
+                                <p class="text-dark font-weight-medium pt-4 mb-2">Số thẻ</p>
+                                <p>9704123456789012</p>
+                            </div>
                         </div>
                     </div>
+
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
-                </div>
-            </form>
+            </div>
+
         </div>
     </div>
 </div>
-@section Scripts2 {
-    <script>
-        function dinerPreviewImage(input, previewId, isAvatar) {
-            const preview = document.getElementById(previewId);
-            const previewImg = preview.querySelector('.preview-image');
-            const uploadPrompt = preview.querySelector('.upload-prompt');
 
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
 
-                reader.onload = function (e) {
-                    // Hiển thị ảnh preview ngay
-                    previewImg.src = e.target.result;
-                    previewImg.classList.remove('d-none');
-                    if (uploadPrompt) {
-                        uploadPrompt.classList.add('d-none');
-                    }
+<!-- Modal sửa thông tin cơ bản -->
+<div class="modal fade" id="editBasicInfoModal" tabindex="-1" role="dialog"
+     aria-labelledby="editBasicInfoModalTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger">
+                <h5 class="modal-title text-white" id="exampleModalLabel">Sửa Thông Tin Cá Nhân</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="basicInfoForm">
+                    <div class="form-group">
+                        <label for="repName">Người đại diện</label>
+                        <input type="text" class="form-control" id="repName" value="Nguyễn Văn A">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Địa chỉ Email</label>
+                        <input type="email" class="form-control" id="email" value="jack@gmail.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Số điện thoại</label>
+                        <input type="text" class="form-control" id="phone" value="0953926411">
+                    </div>
+                    <div class="form-group">
+                        <label for="address">Địa chỉ</label>
+                        <input type="text" class="form-control" id="address"
+                               value="Phường Bến Thành, Quận 1, Thành phố Hồ Chí Minh">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light btn-pill" data-dismiss="modal" style="text-transform: capitalize;">Đóng</button>
+                <button type="button" class="btn btn-danger btn-pill " onclick="submitBasicInfo()" style="text-transform: capitalize;">
+                    Lưu thay
+                    đổi
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal sửa thông tin ngân hàng -->
+<div class="modal fade" id="editPaymentInfoModal" tabindex="-1" role="dialog"
+     aria-labelledby="editPaymentInfoModalTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header bg-danger">
+                <h5 class="modal-title text-white" id="exampleModalLabel">Sửa Thông Tin Thanh Toán</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <form id="paymentInfoForm">
+                    <div class="form-group">
+                        <label for="bank">Ngân hàng</label>
+                        <select class="form-control" id="bank">
+                            <option value="BIDV" selected>
+                                BIDV - Ngân hàng TMCP Đầu tư và Phát triển Việt Nam
+                            </option>
+                            <option value="Vietcombank">Vietcombank - Ngân hàng TMCP Ngoại thương Việt Nam</option>
+                            <option value="Agribank">
+                                Agribank - Ngân hàng Nông nghiệp và Phát triển Nông thôn Việt
+                                Nam
+                            </option>
+                            <option value="VietinBank">VietinBank - Ngân hàng TMCP Công Thương Việt Nam</option>
+                            <option value="Techcombank">Techcombank - Ngân hàng TMCP Kỹ Thương Việt Nam</option>
+                            <option value="ACB">ACB - Ngân hàng TMCP Á Châu</option>
+                            <option value="MBBank">MB Bank - Ngân hàng TMCP Quân đội</option>
+                            <option value="TPBank">TPBank - Ngân hàng TMCP Tiên Phong</option>
+                            <option value="VPBank">VPBank - Ngân hàng TMCP Việt Nam Thịnh Vượng</option>
+                            <option value="SacomBank">Sacombank - Ngân hàng TMCP Sài Gòn Thương Tín</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="accountName">Tên tài khoản</label>
+                        <input type="text" class="form-control" id="accountName" value="Nguyễn Văn A">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cardNumber">Số thẻ</label>
+                        <input type="text" class="form-control" id="cardNumber" value="9704123456789012">
+                    </div>
+
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light btn-pill" data-dismiss="modal" style="text-transform: capitalize;">Đóng</button>
+                <button type="button" class="btn btn-danger btn-pill" style="text-transform: capitalize;">Lưu thay đổi</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<script>
+    // Thay đổi ảnh đại diện
+    function changeProfileImage(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                // Cập nhật ảnh đại diện
+                document.getElementById('profileImage').src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
 
                     // Gửi base64 kèm loại ảnh lên server
                     const model = {

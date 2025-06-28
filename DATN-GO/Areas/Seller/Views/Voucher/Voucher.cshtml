@@ -1,98 +1,778 @@
-﻿<div class="container-fluid py-4">
-    <!-- Add Voucher Button -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="mb-0">Danh Sách Voucher</h4>
-        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#addVoucherModal">
-            <i class="bi-plus-lg me-2"></i>Thêm Voucher Mới
-        </button>
-    </div>
+﻿@{
+    Layout = "~/Areas/Seller/Views/Shared/_LayoutSeller.cshtml";
+}
+<!-- Custom Voucher Styles -->
+<style>
+    .card.hover-shadow-lg {
+        transition: all 0.3s ease;
+    }
 
-    <!-- Filter Section -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <h5 class="card-title mb-3">Bộ Lọc</h5>
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label">Thời Gian Bổ Sung</label>
-                    <input type="date" class="form-control">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Giá Giảm</label>
-                    <input type="number" class="form-control" placeholder="Nhập số tiền">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Sắp xếp theo</label>
-                    <select class="form-select">
-                        <option value="">Chọn sắp xếp</option>
-                        <option value="newest">Mới nhất</option>
-                        <option value="oldest">Cũ nhất</option>
-                    </select>
-                </div>
-                <div class="col-md-3 d-flex align-items-end">
-                    <button class="btn btn-danger w-100">Tìm Kiếm</button>
-                </div>
+        .card.hover-shadow-lg:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 1rem 3rem rgba(0, 0, 0, .175) !important;
+        }
+
+    /* Search and Sort styles */
+    .form-select,
+    .form-control {
+        border-radius: 4px;
+        height: 38px;
+        font-size: 0.9rem;
+        border: 1px solid #ced4da;
+    }
+
+    .search-input {
+        padding: 6px 12px;
+    }
+
+        .search-input:focus {
+            border-color: #ced4da;
+            box-shadow: none;
+            outline: none;
+        }
+
+    /* Rest of the existing styles */
+    .transition-all {
+        transition: all 0.3s ease;
+    }
+
+    .card .btn-outline-warning,
+    .card .btn-outline-danger {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+    .card .btn-outline-warning {
+        margin-right: 6px;
+    }
+
+        .card .btn-outline-warning:hover,
+        .card .btn-outline-danger:hover {
+            transform: scale(1.1);
+        }
+
+    .badge {
+        padding: 0.5rem 0.75rem;
+        font-weight: 500;
+    }
+
+        .badge i {
+            font-size: 0.875rem;
+        }
+
+    .card-title {
+        font-weight: 600;
+        font-size: 1.25rem;
+    }
+
+    .text-muted {
+        font-size: 0.9rem;
+    }
+
+    small {
+        font-size: 0.85rem;
+    }
+
+        small i {
+            font-size: 0.875rem;
+        }
+
+    /* Form Styles */
+    .form-label {
+        font-size: 16px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 8px;
+        transition: color 0.3s ease;
+    }
+
+    .input-group {
+        margin-bottom: 5px;
+        transition: all 0.3s ease;
+    }
+
+    .input-group-text {
+        background-color: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-right: none;
+        border-radius: 10px 0 0 10px;
+        color: #dc3545;
+        transition: all 0.3s ease;
+    }
+
+    .form-control {
+        border-radius: 0 10px 10px 0;
+        border: 1px solid #e9ecef;
+        font-size: 15px;
+        padding: 12px 15px;
+        transition: all 0.3s ease;
+    }
+
+        .form-control:focus {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
+
+            .form-control:focus + .input-group-text {
+                border-color: #dc3545;
+                background-color: #fff5f5;
+            }
+
+    /* Đảm bảo input-group trong modal add voucher đều, icon và input thẳng hàng như AddVoucher.html */
+    #addVoucherModal .input-group {
+        width: 100%;
+        flex-wrap: nowrap;
+        background: #f8f9fa;
+        border-radius: 15px;
+        border: 1px solid #e9ecef;
+        align-items: stretch;
+        margin-bottom: 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    #addVoucherModal .input-group-text {
+        border: none;
+        background: transparent;
+        min-width: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 12px 0 18px;
+        border-radius: 15px 0 0 15px !important;
+        position: relative;
+    }
+
+        #addVoucherModal .input-group-text:after {
+            content: '';
+            display: block;
+            position: absolute;
+            right: 0;
+            top: 10px;
+            height: 28px;
+            width: 1.5px;
+            background: #e0e3e7;
+            border-radius: 2px;
+        }
+
+        #addVoucherModal .input-group-text i {
+            font-size: 1.35rem;
+            color: #ff4d5d;
+            margin: 0;
+        }
+
+    #addVoucherModal .form-control {
+        border: none;
+        border-radius: 0 15px 15px 0 !important;
+        background: transparent;
+        box-shadow: none;
+        height: 48px;
+        padding-left: 14px;
+        font-size: 1.08rem;
+    }
+
+    #addVoucherModal .input-group .form-control:focus {
+        box-shadow: none;
+        background: #fff;
+    }
+
+    #addVoucherModal .input-group > .form-control {
+        width: 1%;
+        flex: 1 1 auto;
+    }
+
+
+    /* Helper Text */
+    .form-text {
+        color: #6c757d;
+        font-size: 13px;
+        margin-top: 5px;
+        opacity: 0.8;
+    }
+
+    /* Style: Đảm bảo input-group trong modal edit voucher giống modal add voucher */
+    #editVoucherModal .input-group {
+        width: 100%;
+        flex-wrap: nowrap;
+        background: #f8f9fa;
+        border-radius: 15px;
+        border: 1px solid #e9ecef;
+        align-items: stretch;
+        margin-bottom: 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    #editVoucherModal .input-group-text {
+        border: none;
+        background: transparent;
+        min-width: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 12px 0 18px;
+        border-radius: 15px 0 0 15px !important;
+        position: relative;
+    }
+
+        #editVoucherModal .input-group-text:after {
+            content: '';
+            display: block;
+            position: absolute;
+            right: 0;
+            top: 10px;
+            height: 28px;
+            width: 1.5px;
+            background: #e0e3e7;
+            border-radius: 2px;
+        }
+
+        #editVoucherModal .input-group-text i {
+            font-size: 1.35rem;
+            color: #ff4d5d;
+            margin: 0;
+        }
+
+    #editVoucherModal .form-control {
+        border: none;
+        border-radius: 0 15px 15px 0 !important;
+        background: transparent;
+        box-shadow: none;
+        height: 48px;
+        padding-left: 14px;
+        font-size: 1.08rem;
+    }
+
+    #editVoucherModal .input-group .form-control:focus {
+        box-shadow: none;
+        background: #fff;
+    }
+
+    #editVoucherModal .input-group > .form-control {
+        width: 1%;
+        flex: 1 1 auto;
+    }
+</style>
+<div class="page-wrapper">
+
+    <!-- Header -->
+    <header class="main-header" id="header">
+        <nav class="navbar navbar-expand-lg navbar-light" id="navbar">
+            <!-- Sidebar toggle button -->
+            <button id="sidebar-toggler" class="sidebar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+            </button>
+
+            <span class="page-title">MÃ GIẢM GIÁ</span>
+
+            <div class="navbar-right ">
+
+                <ul class="nav navbar-nav">
+                    <li class="custom-dropdown">
+                        <a class="notify-toggler custom-dropdown-toggler" href="Notification.html">
+                            <i class="mdi mdi-bell-outline icon"></i>
+
+                    </li>
+                    <!-- User Account -->
+                    <li class="dropdown user-menu">
+                        <button class="dropdown-toggle nav-link" data-toggle="dropdown">
+                            <img src="~/images/avt-user.jpg" alt="User Profile" width="32" height="32"
+                                 style="object-fit: cover;" loading="lazy">
+                            <span class="d-none d-lg-inline-block">Meo Meo</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-right">
+                            <li>
+                                <a class="dropdown-link-item" href="user-profile.html">
+                                    <i class="mdi mdi-account-outline"></i>
+                                    <span class="nav-text">Hồ Sơ</span>
+                                </a>
+                            </li>
+                            <li class="dropdown-footer">
+                                <a class="dropdown-link-item" href="sign-in.html">
+                                    <i class="mdi mdi-logout"></i> Đăng Xuất
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
             </div>
-        </div>
-    </div>
+        </nav>
 
-    <!-- Vouchers Section -->
-    <div class="row g-4">
-        <!-- Voucher Item 1 -->
-        <div class="col-12 col-md-6">
-            <div class="voucher-item">
-                <div class="border rounded p-3 d-flex align-items-center justify-content-between bg-light" style="min-width: 320px;">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="text-danger" style="font-size: 2rem;">
-                            <i class="bi-ticket-perforated-fill"></i>
+
+    </header>
+
+    <!-- ====================================
+    ——— CONTENT WRAPPER
+    ===================================== -->
+    <div class="content-wrapper">
+        <div class="content">
+            <!-- For Components documentaion -->
+            <div class="card card-default">
+                <div class="card-header">
+                    <h2>Danh sách giảm giá</h2>
+                    <div class="btn-group">
+                        <button class="btn btn-danger btn-add-voucher" data-bs-toggle="modal"
+                                data-bs-target="#addVoucherModal" style="text-transform: capitalize;">
+                            <i class="mdi mdi-plus"></i> Thêm voucher
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Search + Filter -->
+                    <div class="d-flex flex-column flex-md-row gap-3 mb-4 align-items-md-center justify-content-between">
+                        <div style="width: 300px;">
+                            <input type="search" class="form-control search-input"
+                                   placeholder="Tìm kiếm voucher..." aria-label="Tìm kiếm">
                         </div>
-                        <div>
-                            <h6 class="mb-1">Giảm 20K</h6>
-                            <p class="text-muted small mb-0">Đơn tối thiểu 150K</p>
-                            <small class="text-danger">Hết hạn: 30/04/2025</small>
-                            <div class="mt-1">
-                                <span class="badge bg-success">Còn lại: 50</span>
+                        <div style="width: 200px;">
+                            <select class="form-select w-100">
+                                <option selected>Sắp xếp theo</option>
+                                <option value="newest">Mới nhất</option>
+                                <option value="oldest">Cũ nhất</option>
+                                <option value="value-desc">Giá trị giảm dần</option>
+                                <option value="value-asc">Giá trị tăng dần</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Voucher Items -->
+                    <div class="row g-4">
+                        <!-- Item 1 -->
+                        <div class="col-12 col-md-6">
+                            <div class="card shadow-sm hover-shadow-lg transition-all">
+                                <div class="card-body p-0">
+                                    <div class="d-flex">
+                                        <!-- Left part with icon -->
+                                        <div class="bg-danger text-white p-4 d-flex align-items-center justify-content-center"
+                                             style="width: 120px;">
+                                            <i class="bi-ticket-perforated-fill" style="font-size: 2.5rem;"></i>
+                                        </div>
+                                        <!-- Right part with content -->
+                                        <div class="p-3 flex-grow-1">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div>
+                                                    <h5 class="card-title mb-1">Giảm 20K</h5>
+                                                    <p class="card-text text-muted mb-0">Đơn tối thiểu 150K</p>
+                                                </div>
+                                                <div class="voucher-action d-flex gap-2">
+                                                    <button type="button"
+                                                            class="btn btn-outline-warning btn-sm rounded-circle btn-edit-voucher"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#editVoucherModal" data-id="1"
+                                                            data-discount="20000" data-minorder="150000"
+                                                            data-quantity="50" data-start="2025-01-01"
+                                                            data-end="2025-04-30" title="Chỉnh sửa">
+                                                        <i class="bi-pencil"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-danger btn-sm rounded-circle"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#deleteConfirmModal" data-id="1"
+                                                            title="Xóa">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex flex-column gap-1">
+                                                <small class="text-success">
+                                                    <i class="bi bi-calendar2-check me-1"></i>
+                                                    Bắt đầu: 01/01/2025
+                                                </small>
+                                                <small class="text-danger">
+                                                    <i class="bi bi-calendar2-x me-1"></i>
+                                                    Hết hạn: 30/04/2025
+                                                </small>
+                                            </div>
+                                            <div class="mt-2">
+                                                <span class="badge bg-success text-white">
+                                                    <i class="bi bi-box-seam me-1"></i>
+                                                    Còn lại: 50
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Item 2 -->
+                        <div class="col-12 col-md-6">
+                            <div class="card shadow-sm hover-shadow-lg transition-all">
+                                <div class="card-body p-0">
+                                    <div class="d-flex">
+                                        <!-- Left part with icon -->
+                                        <div class="bg-danger text-white p-4 d-flex align-items-center justify-content-center"
+                                             style="width: 120px;">
+                                            <i class="bi-ticket-perforated-fill" style="font-size: 2.5rem;"></i>
+                                        </div>
+                                        <!-- Right part with content -->
+                                        <div class="p-3 flex-grow-1">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div>
+                                                    <h5 class="card-title mb-1">Giảm 50K</h5>
+                                                    <p class="card-text text-muted mb-0">Đơn tối thiểu 300K</p>
+                                                </div>
+                                                <div class="voucher-action d-flex gap-2">
+                                                    <button type="button"
+                                                            class="btn btn-outline-warning btn-sm rounded-circle btn-edit-voucher"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#editVoucherModal" data-id="2"
+                                                            data-discount="50000" data-minorder="300000"
+                                                            data-quantity="10" data-start="2025-02-01"
+                                                            data-end="2025-04-30" title="Chỉnh sửa">
+                                                        <i class="bi-pencil"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-danger btn-sm rounded-circle"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#deleteConfirmModal" data-id="2"
+                                                            title="Xóa">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex flex-column gap-1">
+                                                <small class="text-success">
+                                                    <i class="bi bi-calendar2-check me-1"></i>
+                                                    Bắt đầu: 01/02/2025
+                                                </small>
+                                                <small class="text-danger">
+                                                    <i class="bi bi-calendar2-x me-1"></i>
+                                                    Hết hạn: 30/04/2025
+                                                </small>
+                                            </div>
+                                            <div class="mt-2">
+                                                <span class="badge bg-warning text-white">
+                                                    <i class="bi bi-box-seam me-1"></i>
+                                                    Còn lại: 10
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editVoucherModal">
-                            <i class="bi-pencil"></i>
-                        </button>
-                        <button class="btn btn-outline-danger btn-sm">
-                            <i class="bi-trash"></i>
-                        </button>
-                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Voucher Item 2 -->
-        <div class="col-12 col-md-6">
-            <div class="voucher-item">
-                <div class="border rounded p-3 d-flex align-items-center justify-content-between bg-light" style="min-width: 320px;">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="text-danger" style="font-size: 2rem;">
-                            <i class="bi-ticket-perforated-fill"></i>
+        </div>
+    </div>
+</div>
+<!-- Modal thêm voucher -->
+<div class="modal fade" id="addVoucherModal" tabindex="-1" aria-labelledby="addVoucherModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger">
+                <h5 class="modal-title text-white" id="exampleModalLabel">Thêm Voucher</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="voucherForm">
+                    <!-- Mức Giảm Giá -->
+                    <div class="mb-4">
+                        <label class="form-label" for="discountAmount">
+                            Mức Giảm Giá (VNĐ)
+                            <i class="bi bi-question-circle text-muted" data-bs-toggle="tooltip"
+                               title="Số tiền sẽ được giảm trừ từ tổng giá trị đơn hàng"></i>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-cash-coin"></i>
+                            </span>
+                            <input type="number" class="form-control" id="discountAmount"
+                                   placeholder="Nhập số tiền giảm" required min="1000">
                         </div>
-                        <div>
-                            <h6 class="mb-1">Giảm 50K</h6>
-                            <p class="text-muted small mb-0">Đơn tối thiểu 300K</p>
-                            <small class="text-danger">Hết hạn: 30/04/2025</small>
-                            <div class="mt-1">
-                                <span class="badge bg-warning">Còn lại: 10</span>
+                    </div>
+
+                    <!-- Đơn Hàng Tối Thiểu -->
+                    <div class="mb-4">
+                        <label class="form-label" for="minOrder">
+                            Đơn Hàng Tối Thiểu (VNĐ)
+                            <i class="bi bi-question-circle text-muted" data-bs-toggle="tooltip"
+                               title="Giá trị đơn hàng tối thiểu để áp dụng voucher"></i>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-bag-check"></i>
+                            </span>
+                            <input type="number" class="form-control" id="minOrder"
+                                   placeholder="Nhập giá trị đơn tối thiểu" required min="0">
+                        </div>
+                    </div>
+
+                    <!-- Số Lượng -->
+                    <div class="mb-4">
+                        <label class="form-label" for="quantity">
+                            Số Lượng
+                            <i class="bi bi-question-circle text-muted" data-bs-toggle="tooltip"
+                               title="Số lượng voucher có thể sử dụng"></i>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-list-ol"></i>
+                            </span>
+                            <input type="number" class="form-control" id="quantity"
+                                   placeholder="Nhập số lượng voucher" required min="1">
+                        </div>
+                    </div>
+
+                    <!-- Thời Gian -->
+                    <div class="row">
+                        <!-- Ngày Bắt Đầu -->
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label" for="startDate">
+                                Ngày Bắt Đầu
+                                <i class="bi bi-question-circle text-muted" data-bs-toggle="tooltip"
+                                   title="Ngày voucher bắt đầu có hiệu lực"></i>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-calendar-event"></i>
+                                </span>
+                                <input type="date" class="form-control" id="startDate" required>
+                            </div>
+                        </div>
+
+                        <!-- Ngày Hết Hạn -->
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label" for="endDate">
+                                Ngày Hết Hạn
+                                <i class="bi bi-question-circle text-muted" data-bs-toggle="tooltip"
+                                   title="Ngày voucher hết hiệu lực"></i>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-calendar-x"></i>
+                                </span>
+                                <input type="date" class="form-control" id="endDate" required>
                             </div>
                         </div>
                     </div>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editVoucherModal">
-                            <i class="bi-pencil"></i>
+
+                    <!-- Buttons -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light btn-pill"
+                                data-bs-dismiss="modal" style="text-transform: capitalize;">
+                            Đóng
                         </button>
-                        <button class="btn btn-outline-danger btn-sm">
-                            <i class="bi-trash"></i>
+                        <button type="button" class="btn btn-danger btn-pill" onclick="submitProductEdit()" style="text-transform: capitalize;">
+                            Thêm Voucher
                         </button>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
+<!-- Modal chỉnh sửa voucher -->
+<div class="modal fade" id="editVoucherModal" tabindex="-1" aria-labelledby="editVoucherModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger">
+                <h5 class="modal-title text-white" id="exampleModalLabel">Sửa Voucher</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editVoucherForm">
+                    <!-- Mức Giảm Giá -->
+                    <div class="mb-4">
+                        <label class="form-label" for="editDiscountAmount">
+                            Mức Giảm Giá (VNĐ)
+                            <i class="bi bi-question-circle text-muted" data-bs-toggle="tooltip"
+                               title="Số tiền sẽ được giảm trừ từ tổng giá trị đơn hàng"></i>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-cash-coin"></i>
+                            </span>
+                            <input type="number" class="form-control" id="editDiscountAmount"
+                                   placeholder="Nhập số tiền giảm" required min="1000">
+                        </div>
+                    </div>
+
+                    <!-- Đơn Hàng Tối Thiểu -->
+                    <div class="mb-4">
+                        <label class="form-label" for="editMinOrder">
+                            Đơn Hàng Tối Thiểu (VNĐ)
+                            <i class="bi bi-question-circle text-muted" data-bs-toggle="tooltip"
+                               title="Giá trị đơn hàng tối thiểu để áp dụng voucher"></i>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-bag-check"></i>
+                            </span>
+                            <input type="number" class="form-control" id="editMinOrder"
+                                   placeholder="Nhập giá trị đơn tối thiểu" required min="0">
+                        </div>
+                    </div>
+
+                    <!-- Số Lượng -->
+                    <div class="mb-4">
+                        <label class="form-label" for="editQuantity">
+                            Số Lượng
+                            <i class="bi bi-question-circle text-muted" data-bs-toggle="tooltip"
+                               title="Số lượng voucher có thể sử dụng"></i>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-list-ol"></i>
+                            </span>
+                            <input type="number" class="form-control" id="editQuantity"
+                                   placeholder="Nhập số lượng voucher" required min="1">
+                        </div>
+                    </div>
+
+                    <!-- Thời Gian -->
+                    <div class="row">
+                        <!-- Ngày Bắt Đầu -->
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label" for="editStartDate">
+                                Ngày Bắt Đầu
+                                <i class="bi bi-question-circle text-muted" data-bs-toggle="tooltip"
+                                   title="Ngày voucher bắt đầu có hiệu lực"></i>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-calendar-event"></i>
+                                </span>
+                                <input type="date" class="form-control" id="editStartDate" required>
+                            </div>
+                        </div>
+
+                        <!-- Ngày Hết Hạn -->
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label" for="editEndDate">
+                                Ngày Hết Hạn
+                                <i class="bi bi-question-circle text-muted" data-bs-toggle="tooltip"
+                                   title="Ngày voucher hết hiệu lực"></i>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-calendar-x"></i>
+                                </span>
+                                <input type="date" class="form-control" id="editEndDate" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light btn-pill"
+                                data-bs-dismiss="modal" style="text-transform: capitalize;">
+                            Đóng
+                        </button>
+                        <button type="button" class="btn btn-danger btn-pill" onclick="submitProductEdit()" style="text-transform: capitalize;">
+                            Lưu Thay Đổi
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal xóa -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1"
+     aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger">
+                <h5 class="modal-title text-white" id="exampleModalLabel">Thông Báo Xóa</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Bạn có chắc chắn muốn xóa không? Hành động này sẽ không thể hoàn tác.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light btn-pill"
+                        data-bs-dismiss="modal" style="text-transform: capitalize;">
+                    Đóng
+                </button>
+                <button type="button" class="btn btn-danger btn-pill" onclick="submitProductEdit()" style="text-transform: capitalize;">
+                    Xóa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Modal edit voucher logic
+        const editVoucherForm = document.getElementById('editVoucherForm');
+        const editStartDate = document.getElementById('editStartDate');
+        const editEndDate = document.getElementById('editEndDate');
+        if (editStartDate && editEndDate) {
+            // Set min date for start date as today
+            const today = new Date().toISOString().split('T')[0];
+            editStartDate.setAttribute('min', today);
+            editStartDate.addEventListener('change', function () {
+                editEndDate.setAttribute('min', this.value);
+                if (editEndDate.value && editEndDate.value < this.value) {
+                    editEndDate.value = this.value;
+                }
+            });
+        }
+        if (editVoucherForm) {
+            editVoucherForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+                // Add your form submission logic here
+                alert('Voucher đã được cập nhật thành công!');
+                const editModal = bootstrap.Modal.getInstance(document.getElementById('editVoucherModal'));
+                if (editModal) editModal.hide();
+            });
+        }
+        // Gán dữ liệu vào modal khi nhấn nút edit
+        const editButtons = document.querySelectorAll('.btn-edit-voucher');
+        editButtons.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.getElementById('editDiscountAmount').value = btn.getAttribute('data-discount') || '';
+                document.getElementById('editMinOrder').value = btn.getAttribute('data-minorder') || '';
+                document.getElementById('editQuantity').value = btn.getAttribute('data-quantity') || '';
+                document.getElementById('editStartDate').value = btn.getAttribute('data-start') || '';
+                document.getElementById('editEndDate').value = btn.getAttribute('data-end') || '';
+            });
+        });
+    });
+</script>
+
+<!-- JS: Delete Logic -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+
+        // Delete confirmation logic
+        let voucherId = null;
+        const deleteModal = document.getElementById('deleteConfirmModal');
+        if (deleteModal) {
+            deleteModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                voucherId = button.getAttribute('data-id');
+            });
+        }
+
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        if (confirmDeleteBtn) {
+            confirmDeleteBtn.addEventListener('click', function () {
+                console.log('Xoá voucher ID:', voucherId);
+                alert('Đã xoá voucher thành công!');
+                const modal = bootstrap.Modal.getInstance(deleteModal);
+                if (modal) modal.hide();
+            });
+        }
+    });
+</script>

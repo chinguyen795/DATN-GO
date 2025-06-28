@@ -12,7 +12,7 @@
                         <img src="@(string.IsNullOrEmpty(Model.Avatar) ? "/images/default_avatar.jpg" : Model.Avatar)" alt="Profile" class="rounded-circle me-2" style="width: 45px; height: 45px;">
                         <div>
                             <h6 class="mb-0">@Model.FullName</h6>
-                            <small class="text-muted">@(string.IsNullOrEmpty(Model.Email) ? Model.PhoneNumber : Model.Email)</small>
+                            <small class="text-muted">@(string.IsNullOrEmpty(Model.Email) ? Model.Phone : Model.Email)</small>
                         </div>
                     </div>
                 </div> *@

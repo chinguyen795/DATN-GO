@@ -1,226 +1,801 @@
-﻿<div class="container-fluid">
-    <div class="row">
-        <!-- Orders Management Section -->
-        <div class="col-lg-8 p-4">
-            <div class="card shadow">
-                <div class="card-header bg-white">
-                    <h4 class="mb-0">Quản Lý Đơn Hàng</h4>
-                </div>
-                <div class="card-body">
-                    <!-- Order Status Tabs -->
-                    <!-- Order Status Tabs -->
-                    <ul class="nav nav-tabs mb-4">
-                        <li class="nav-item">
-                            <a class="nav-link active text-dark" href="#">Tất cả</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-warning" href="#">Chờ xử lý</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-info" href="#">Chờ lấy hàng</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-success" href="#">Đang giao</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-primary" href="#">Đã hoàn thành</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-danger" href="#">Đã hủy</a>
-                        </li>
-                    </ul>
+﻿@{
+    Layout = "~/Areas/Seller/Views/Shared/_LayoutSeller.cshtml";
+}
+<style>
+    /* Giảm kích thước chữ tiêu đề tab và padding để các tab nằm trên 1 hàng, không wrap chữ trong tab */
+    .nav-pills .nav-link {
+        font-size: 0.75rem;
+        padding: 0.1rem 0.3rem;
+        margin: 0 0.02rem;
+        white-space: normal;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.15em;
+        min-width: unset;
+    }
 
-                    <!-- Search and Filter Section -->
-                    <div class="row mb-4">
-                        <div class="col-md-6 mb-3 mb-md-0">
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="orderSearch" placeholder="Tìm kiếm theo mã đơn hàng...">
-                                <button class="btn btn-danger" type="button" id="searchBtn">
-                                    <i class="bi bi-search"></i>
+        /* Giảm kích thước icon trong tab */
+        .nav-pills .nav-link i {
+            font-size: 1em;
+        }
+
+    /* Cho phép các tab tự động xuống dòng nếu không đủ chỗ, không có thanh cuộn ngang */
+    #orderTabs {
+        flex-wrap: wrap;
+        gap: 0.02rem !important;
+        overflow-x: unset;
+    }
+
+    /* Giảm kích thước chữ và padding của bảng để các tr cùng nằm trên 1 hàng */
+    .table th,
+    .table td {
+        font-size: 0.8rem;
+        padding-top: 0.1rem;
+        padding-bottom: 0.1rem;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    /* Badge và button nhỏ lại trong bảng */
+    .table .badge,
+    .table .btn {
+        font-size: 0.75rem;
+        padding: 0.2em 0.7em;
+        line-height: 1.1;
+    }
+
+    /* Đảm bảo các badge không bị xuống dòng */
+    .table .badge {
+        white-space: nowrap;
+    }
+
+    /* Nếu cần, giảm margin/padding của ul.nav */
+    .nav-pills.mb-3 {
+        margin-bottom: 0.2rem !important;
+    }
+</style>
+<div class="page-wrapper">
+
+    <!-- Header -->
+    <header class="main-header" id="header">
+        <nav class="navbar navbar-expand-lg navbar-light" id="navbar">
+            <!-- Sidebar toggle button -->
+            <button id="sidebar-toggler" class="sidebar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+            </button>
+
+            <span class="page-title">ĐƠN HÀNG</span>
+
+            <div class="navbar-right ">
+
+                <ul class="nav navbar-nav">
+                    <li class="custom-dropdown">
+                        <a asp-area="Seller" asp-controller="Notification" asp-action="Notification" class="notify-toggler custom-dropdown-toggler">
+                            <i class="mdi mdi-bell-outline icon"></i>
+                        </a>
+                    </li>
+                    <!-- User Account -->
+                    <li class="dropdown user-menu">
+                        <button class="dropdown-toggle nav-link" data-toggle="dropdown">
+                            <img src="~/images/avt-user.jpg" alt="User Profile" width="32" height="32"
+                                 style="object-fit: cover;" loading="lazy">
+                            <span class="d-none d-lg-inline-block">Meo Meo</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-right">
+                            <li>
+                                <a class="dropdown-link-item" href="user-profile.html">
+                                    <i class="mdi mdi-account-outline"></i>
+                                    <span class="nav-text">Hồ Sơ</span>
+                                </a>
+                            </li>
+                            <li class="dropdown-footer">
+                                <a class="dropdown-link-item" href="sign-in.html">
+                                    <i class="mdi mdi-logout"></i> Đăng Xuất
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+
+    </header>
+
+    <!-- ====================================
+    ——— CONTENT WRAPPER
+    ===================================== -->
+    <div class="content-wrapper">
+        <main class="py-5">
+            <div class="container-fluid">
+                <div class="modal fade" id="rejectOrderModal" tabindex="-1"
+                     aria-labelledby="rejectOrderModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content rounded-3 shadow-lg">
+                            <div class="modal-header text-danger border-bottom border-danger">
+                                <h5 class="modal-title text-danger fw-bold" id="rejectOrderModalLabel">
+                                    Xác nhận
+                                    từ chối đơn
+                                    hàng
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body p-4">
+                                <form>
+                                    <div class="mb-3">
+                                        <label for="rejectReason" class="form-label fw-semibold">
+                                            Lý do từ
+                                            chối
+                                        </label>
+                                        <textarea class="form-control" id="rejectReason" rows="3"
+                                                  placeholder="Nhập lý do từ chối đơn hàng..." required></textarea>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer justify-content-between p-3 border-top border-light">
+                                <button type="button" class="btn btn-light rounded-pill px-4"
+                                        data-bs-dismiss="modal">
+                                    Đóng
+                                </button>
+                                <button type="button" class="btn btn-danger rounded-pill px-4"
+                                        id="confirmReject">
+                                    Xác nhận từ
+                                    chối
                                 </button>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <select class="form-select" id="orderSort">
-                                <option value="">Sắp xếp theo thời gian</option>
-                                <option value="newest">Mới nhất</option>
-                                <option value="oldest">Cũ nhất</option>
-                            </select>
-                        </div>
                     </div>
-                    <!-- Tab Contents -->
-                    <div class="tab-content" id="orderTabsContent">
-                        <!-- Pending Orders -->
-                        <div class="tab-pane fade show active" id="pending" role="tabpanel">
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Mã Đơn</th>
-                                            <th>Khách Hàng</th>
-                                            <th>Số Lượng</th>
-                                            <th>Tổng Tiền</th>
-                                            <th>Ngày Đặt</th>
-                                            <th>Thao Tác</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>#12345</td>
-                                            <td>Nguyễn Văn A</td>
-                                            <td>2 món</td>
-                                            <td>1.050.000đ</td>
-                                            <td>19/04/2025</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-success">Xác Nhận</button>
-                                                <button class="btn btn-sm btn-danger">Từ Chối</button>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                </div>
+                <div class="modal fade" id="orderDetailsModal" tabindex="-1"
+                     aria-labelledby="orderDetailsModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content rounded-3 shadow-lg">
+                            <div class="modal-header text-white border-bottom border-danger">
+                                <h5 class="modal-title fw-bold text-danger" id="orderDetailsModalLabel">
+                                    Chi tiết
+                                    đơn hàng
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
                             </div>
-                        </div>
-
-                        <!-- Completed Orders -->
-                        <div class="tab-pane fade" id="completed" role="tabpanel">
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Mã Đơn</th>
-                                            <th>Khách Hàng</th>
-                                            <th>Số Lượng</th>
-                                            <th>Tổng Tiền</th>
-                                            <th>Ngày Đặt</th>
-                                            <th>Trạng Thái</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>#12344</td>
-                                            <td>Trần Thị B</td>
-                                            <td>3 món</td>
-                                            <td>1.750.000đ</td>
-                                            <td>18/04/2025</td>
-                                            <td><span class="badge bg-success">Hoàn Thành</span></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                            <div class="modal-body p-4">
+                                <div class="row mb-4 gx-4">
+                                    <div class="col-md-6 border-end pe-4">
+                                        <p class="mb-2">
+                                            <strong>Mã đơn:</strong> <span id="modalOrderId"
+                                                                           class="text-danger fw-bold"></span>
+                                        </p>
+                                        <p class="mb-2">
+                                            <strong>Khách hàng:</strong> <span id="modalCustomerName" class="text-danger fw-bold"></span>
+                                        </p>
+                                        <p class="mb-0">
+                                            <strong>Ngày đặt:</strong> <span id="modalOrderDate"
+                                                                             class="text-danger fw-bold"></span>
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6 ps-4">
+                                        <p class="mb-2">
+                                            <strong>Số lượng:</strong> <span id="modalQuantity"
+                                                                             class="text-danger fw-bold"></span>
+                                        </p>
+                                        <p class="mb-2">
+                                            <strong>Tổng tiền:</strong> <span id="modalTotalAmount"
+                                                                              class="text-danger fw-bold"></span>
+                                        </p>
+                                        <p class="mb-0">
+                                            <strong>Trạng thái:</strong> <span id="modalStatus"
+                                                                               class="badge bg-danger text-white rounded-pill px-3 py-2"></span>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="table-responsive border rounded-3 p-2 bg-white">
+                                    <table class="table table-hover mb-0">
+                                        <thead class="bg-light">
+                                            <tr>
+                                                <th scope="col">Sản phẩm</th>
+                                                <th scope="col">Số lượng</th>
+                                                <th scope="col">Đơn giá</th>
+                                                <th scope="col">Thành tiền</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="modalOrderItems">
+                                            <tr class="bg-light">
+                                                <td>Sản phẩm A</td>
+                                                <td>1</td>
+                                                <td>500.000đ</td>
+                                                <td>500.000đ</td>
+                                            </tr>
+                                            <tr class="bg-light">
+                                                <td>Sản phẩm B</td>
+                                                <td>1</td>
+                                                <td>550.000đ</td>
+                                                <td>550.000đ</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                        </div>
-
-                        <!-- Cancelled Orders -->
-                        <div class="tab-pane fade" id="cancelled" role="tabpanel">
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Mã Đơn</th>
-                                            <th>Khách Hàng</th>
-                                            <th>Số Lượng</th>
-                                            <th>Tổng Tiền</th>
-                                            <th>Ngày Đặt</th>
-                                            <th>Lý Do Hủy</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>#12343</td>
-                                            <td>Lê Văn C</td>
-                                            <td>1 món</td>
-                                            <td>580.000đ</td>
-                                            <td>17/04/2025</td>
-                                            <td>Khách hàng hủy đơn</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                            <div class="modal-footer justify-content-between p-3 border-top border-light">
+                                <button type="button" class="btn btn-light rounded-pill px-4"
+                                        data-bs-dismiss="modal">
+                                    Đóng
+                                </button>
+                                <button type="button" class="btn btn-success rounded-pill px-4"
+                                        id="btnUpdateStatus">
+                                    Cập nhật
+                                    trạng
+                                    thái
+                                </button>
                             </div>
                         </div>
                     </div>
+                </div>
+                <div class="row g-4">
+                    <div class="col-lg-8">
+                        <div class="card shadow-lg rounded-4">
+                            <div class="card-header bg-white p-4 border-bottom-0">
+                                <h4 class="mb-0 fw-bold">Quản Lý Đơn Hàng</h4>
+                            </div>
+                            <div class="card-body pt-0">
+                                <ul class="nav nav-pills mb-3 px-2" id="orderTabs" role="tablist"
+                                    style="gap: 0.5rem;">
+                                    <li class="nav-item flex-fill text-center" role="presentation">
+                                        <a class="nav-link active fw-bold py-2 px-2 text-black"
+                                           id="allOrdersTab" data-bs-toggle="pill" href="#allOrders" role="tab"
+                                           aria-controls="allOrders" aria-selected="false">
+                                            <i class="mdi mdi-format-list-bulleted"></i>
+                                            TẤT CẢ
+                                        </a>
+                                    </li>
+                                    <li class="nav-item flex-fill text-center" role="presentation">
+                                        <a class="nav-link fw-bold text-black py-2 px-2" id="pendingTab"
+                                           data-bs-toggle="pill" href="#pendingOrders" role="tab"
+                                           aria-controls="pendingOrders" aria-selected="false">
+                                            <i class="mdi mdi-clock-outline"></i>
+                                            CHỜ XỬ LÝ
+                                        </a>
+                                    </li>
+                                    <li class="nav-item flex-fill text-center" role="presentation">
+                                        <a class="nav-link fw-bold text-black py-2 px-2" id="readyTab"
+                                           data-bs-toggle="pill" href="#readyOrders" role="tab"
+                                           aria-controls="readyOrders" aria-selected="false">
+                                            <i class="mdi mdi-package-variant"></i>
+                                            CHỜ LẤY HÀNG
+                                        </a>
+                                    </li>
+                                    <li class="nav-item flex-fill text-center" role="presentation">
+                                        <a class="nav-link fw-bold text-black py-2 px-2" id="shippingTab"
+                                           data-bs-toggle="pill" href="#shippingOrders" role="tab"
+                                           aria-controls="shippingOrders" aria-selected="false">
+                                            <i class="mdi mdi-truck-delivery"></i>
+                                            ĐANG GIAO
+                                        </a>
+                                    </li>
+                                    <li class="nav-item flex-fill text-center" role="presentation">
+                                        <a class="nav-link fw-bold text-black py-2 px-2" id="completedTab"
+                                           data-bs-toggle="pill" href="#completedOrders" role="tab"
+                                           aria-controls="completedOrders" aria-selected="false">
+                                            <i class="mdi mdi-check-circle-outline"></i>
+                                            ĐÃ HOÀN THÀNH
+                                        </a>
+                                    </li>
+                                    <li class="nav-item flex-fill text-center" role="presentation">
+                                        <a class="nav-link fw-bold text-black py-2 px-2" id="cancelledTab"
+                                           data-bs-toggle="pill" href="#cancelledOrders" role="tab"
+                                           aria-controls="cancelledOrders" aria-selected="false">
+                                            <i class="mdi mdi-close-circle-outline"></i>
+                                            ĐÃ HỦY
+                                        </a>
+                                    </li>
+                                </ul>
+                                <div class="tab-content pt-3" id="orderTabsContent">
+                                    <div class="tab-pane fade show active" id="allOrders" role="tabpanel"
+                                         aria-labelledby="allOrdersTab">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover align-middle mb-0">
+                                                <thead class="bg-danger text-white">
+                                                    <tr>
+                                                        <th scope="col" class="fw-bold text-white">Mã Đơn</th>
+                                                        <th scope="col" class="fw-bold text-white">Khách Hàng</th>
+                                                        <th scope="col" class="fw-bold text-white">Số Lượng</th>
+                                                        <th scope="col" class="fw-bold text-white">Tổng Tiền</th>
+                                                        <th scope="col" class="fw-bold text-white">Ngày Đặt</th>
+                                                        <th scope="col" class="fw-bold text-white">Trạng Thái</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="allOrdersTable">
+                                                    <tr data-bs-toggle="modal"
+                                                        data-bs-target="#orderDetailsModal">
+                                                        <td>#12345</td>
+                                                        <td>Nguyễn Văn A</td>
+                                                        <td>2 món</td>
+                                                        <td class="fw-semibold">1.050.000đ</td>
+                                                        <td>19/04/2025</td>
+                                                        <td>
+                                                            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">
+                                                                Chờ
+                                                                xử lý
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr data-bs-toggle="modal"
+                                                        data-bs-target="#orderDetailsModal">
+                                                        <td>#12346</td>
+                                                        <td>Trần Thị B</td>
+                                                        <td>3 món</td>
+                                                        <td class="fw-semibold">1.500.000đ</td>
+                                                        <td>20/04/2025</td>
+                                                        <td>
+                                                            <span class="badge bg-info text-white px-3 py-2 rounded-pill">
+                                                                Chờ
+                                                                lấy hàng
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <div class="tab-pane fade" id="pendingOrders" role="tabpanel"
+                                         aria-labelledby="pendingTab">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover align-middle mb-0">
+                                                <thead class="bg-danger text-white">
+                                                    <tr>
+                                                        <th scope="col" class="fw-bold text-white">Mã Đơn</th>
+                                                        <th scope="col" class="fw-bold text-white">
+                                                            Khách Hàng
+                                                        </th>
+                                                        <th scope="col" class="fw-bold text-white">
+                                                            Số Lượng
+                                                        </th>
+                                                        <th scope="col" class="fw-bold text-white">
+                                                            Tổng Tiền
+                                                        </th>
+                                                        <th scope="col" class="fw-bold text-white">
+                                                            Ngày Đặt
+                                                        </th>
+                                                        <th scope="col" class="fw-bold text-white">
+                                                            Thao Tác
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr data-bs-toggle="modal"
+                                                        data-bs-target="#orderDetailsModal">
+                                                        <td>#12345</td>
+                                                        <td>Nguyễn Văn A</td>
+                                                        <td>2 món</td>
+                                                        <td class="fw-semibold">1.050.000đ</td>
+                                                        <td>19/04/2025</td>
+                                                        <td>
+                                                            <button class="btn btn-sm btn-success rounded-pill me-2">
+                                                                Xác
+                                                                Nhận
+                                                            </button>
+                                                            <button class="btn btn-sm btn-danger rounded-pill"
+                                                                    data-bs-toggle="modal"
+                                                                    data-bs-target="#rejectOrderModal">
+                                                                Từ
+                                                                Chối
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <div class="tab-pane fade" id="readyOrders" role="tabpanel"
+                                         aria-labelledby="readyTab">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover align-middle mb-0">
+                                                <thead class="bg-danger text-white">
+                                                    <tr>
+                                                        <th scope="col" class="fw-bold text-white">Mã Đơn</th>
+                                                        <th scope="col" class="fw-bold text-white">
+                                                            Khách Hàng
+                                                        </th>
+                                                        <th scope="col" class="fw-bold text-white">Số Lượng</th>
+                                                        <th scope="col" class="fw-bold text-white">
+                                                            Tổng Tiền
+                                                        </th>
+                                                        <th scope="col" class="fw-bold text-white">Ngày Đặt</th>
+                                                        <th scope="col" class="fw-bold text-white">
+                                                            Trạng Thái
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr data-bs-toggle="modal"
+                                                        data-bs-target="#orderDetailsModal">
+                                                        <td>#12346</td>
+                                                        <td>Trần Thị B</td>
+                                                        <td>3 món</td>
+                                                        <td class="fw-semibold">1.500.000đ</td>
+                                                        <td>20/04/2025</td>
+                                                        <td>
+                                                            <span class="badge bg-info text-white px-3 py-2 rounded-pill">
+                                                                Chờ
+                                                                lấy hàng
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <div class="tab-pane fade" id="shippingOrders" role="tabpanel"
+                                         aria-labelledby="shippingTab">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover align-middle mb-0">
+                                                <thead class="bg-danger text-white">
+                                                    <tr>
+                                                        <th scope="col" class="fw-bold text-white">Mã Đơn</th>
+                                                        <th scope="col" class="fw-bold text-white">
+                                                            Khách Hàng
+                                                        </th>
+                                                        <th scope="col" class="fw-bold text-white">Số Lượng</th>
+                                                        <th scope="col" class="fw-bold text-white">
+                                                            Tổng Tiền
+                                                        </th>
+                                                        <th scope="col" class="fw-bold text-white">Ngày Đặt</th>
+                                                        <th scope="col" class="fw-bold text-white">
+                                                            Trạng Thái
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr data-bs-toggle="modal"
+                                                        data-bs-target="#orderDetailsModal">
+                                                        <td>#12347</td>
+                                                        <td>Lê Thị C</td>
+                                                        <td>5 món</td>
+                                                        <td class="fw-semibold">2.500.000đ</td>
+                                                        <td>21/04/2025</td>
+                                                        <td>
+                                                            <span class="badge bg-success text-white px-3 py-2 rounded-pill">
+                                                                Đang
+                                                                giao
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <div class="tab-pane fade" id="completedOrders" role="tabpanel"
+                                         aria-labelledby="completedTab">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover align-middle mb-0">
+                                                <thead class="bg-danger text-white">
+                                                    <tr>
+                                                        <th scope="col" class="fw-bold text-white">Mã Đơn</th>
+                                                        <th scope="col" class="fw-bold text-white">
+                                                            Khách Hàng
+                                                        </th>
+                                                        <th scope="col" class="fw-bold text-white">Số Lượng</th>
+                                                        <th scope="col" class="fw-bold text-white">
+                                                            Tổng Tiền
+                                                        </th>
+                                                        <th scope="col" class="fw-bold text-white">Ngày Đặt</th>
+                                                        <th scope="col" class="fw-bold text-white">
+                                                            Trạng Thái
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr data-bs-toggle="modal"
+                                                        data-bs-target="#orderDetailsModal">
+                                                        <td>#12344</td>
+                                                        <td>Trần Thị D</td>
+                                                        <td>2 món</td>
+                                                        <td class="fw-semibold">1.200.000đ</td>
+                                                        <td>18/04/2025</td>
+                                                        <td>
+                                                            <span class="badge bg-primary text-white px-3 py-2 rounded-pill">
+                                                                Hoàn
+                                                                Thành
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <div class="tab-pane fade" id="cancelledOrders" role="tabpanel"
+                                         aria-labelledby="cancelledTab">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover align-middle mb-0">
+                                                <thead class="bg-danger text-white">
+                                                    <tr>
+                                                        <th scope="col" class="fw-bold text-white">Mã Đơn</th>
+                                                        <th scope="col" class="fw-bold text-white">
+                                                            Khách Hàng
+                                                        </th>
+                                                        <th scope="col" class="fw-bold text-white">Số Lượng</th>
+                                                        <th scope="col" class="fw-bold text-white">
+                                                            Tổng Tiền
+                                                        </th>
+                                                        <th scope="col" class="fw-bold text-white">Ngày Đặt</th>
+                                                        <th scope="col" class="fw-bold text-white">
+                                                            Lý Do Hủy
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>#12343</td>
+                                                        <td>Lê Văn E</td>
+                                                        <td>1 món</td>
+                                                        <td class="fw-semibold">580.000đ</td>
+                                                        <td>17/04/2025</td>
+                                                        <td>
+                                                            <span class="badge bg-danger text-white px-3 py-2 rounded-pill">
+                                                                Khách
+                                                                hàng hủy đơn
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="card shadow-lg h-100 rounded-4">
+                            <div class="card-header bg-white p-4 border-bottom-0">
+                                <h4 class="mb-0 fw-bold">Phân Tích Doanh Số</h4>
+                            </div>
+                            <div class="card-body d-flex flex-column p-4">
+                                <div class="mb-5">
+                                    <label class="form-label small fw-semibold text-muted">Thời Gian</label>
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <div class="input-group input-group-sm rounded-pill overflow-hidden shadow-sm d-flex align-items-center">
+                                                <span class="input-group-text bg-danger text-white border-0 px-3 d-flex align-items-center">Từ</span>
+                                                <input type="datetime-local"
+                                                       class="form-control border-0 form-control-sm py-0"
+                                                       style="height: 31px;" id="startDate" />
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="input-group input-group-sm rounded-pill overflow-hidden shadow-sm d-flex align-items-center">
+                                                <span class="input-group-text bg-danger text-white border-0 px-3 d-flex align-items-center">Đến</span>
+                                                <input type="datetime-local"
+                                                       class="form-control border-0 form-control-sm py-0"
+                                                       style="height: 31px;" id="endDate" />
+                                            </div>
+                                        </div>
+                                        <div class="col-12 mt-3">
+                                            <div class="dropdown">
+                                                <button class="btn btn-outline-danger rounded-pill dropdown-toggle w-100 text-start"
+                                                        type="button" id="quickDateSelectButton"
+                                                        data-bs-toggle="dropdown" aria-expanded="false" style="text-transform: capitalize;">
+                                                    Chọn nhanh
+                                                </button>
+                                                <ul class="dropdown-menu w-100"
+                                                    aria-labelledby="quickDateSelectButton">
+                                                    <li>
+                                                        <a class="dropdown-item" href="#" data-value="today">
+                                                            Hôm
+                                                            Nay
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item" href="#"
+                                                           data-value="yesterday">Hôm Qua</a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item" href="#"
+                                                           data-value="thisWeek">Tuần Này</a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item" href="#"
+                                                           data-value="lastWeek">Tuần Trước</a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item" href="#"
+                                                           data-value="thisMonth">Tháng Này</a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item" href="#"
+                                                           data-value="lastMonth">Tháng Trước</a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <div class="row g-4 flex-grow-1" style="row-gap: 1rem;">
+                                    <div class="col-md-6">
+                                        <div class="card bg-danger text-white h-100 rounded-3 shadow-sm">
+                                            <div class="d-flex flex-column justify-content-between align-items-center h-100 p-4">
+                                                <div class="bg-white rounded-circle mb-3 d-flex justify-content-center align-items-center"
+                                                     style="width: 56px; height: 56px;">
+                                                    <i class="bi bi-cart-check text-danger fs-3"></i>
+                                                </div>
+                                                <div class="text-center">
+                                                    <h3 class="display-6 fw-bold mb-1">28</h3>
+                                                    <p class="mb-2 fw-light">Tổng Đơn hàng</p>
+                                                    <div class="progress bg-white"
+                                                         style="height: 8px; border-radius: 5px;">
+                                                        <div class="progress-bar bg-white" role="progressbar"
+                                                             style="width: 60%;" aria-valuenow="60"
+                                                             aria-valuemin="0" aria-valuemax="100"></div>
+                                                    </div>
+                                                    <small class="mt-2 d-block fw-light">
+                                                        +12% so với kỳ
+                                                        trước
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="card bg-warning text-white h-100 rounded-3 shadow-sm">
+                                            <div class="d-flex flex-column justify-content-between align-items-center h-100 p-4">
+                                                <div class="bg-white rounded-circle mb-3 d-flex justify-content-center align-items-center"
+                                                     style="width: 56px; height: 56px;">
+                                                    <i class="bi bi-hourglass-split text-warning fs-3"></i>
+                                                </div>
+                                                <div class="text-center">
+                                                    <h3 class="display-6 fw-bold mb-1">45</h3>
+                                                    <p class="mb-2 fw-light">Chờ xử lý Hàng</p>
+                                                    <div class="progress bg-white"
+                                                         style="height: 8px; border-radius: 5px;">
+                                                        <div class="progress-bar bg-white" role="progressbar"
+                                                             style="width: 45%;" aria-valuenow="45"
+                                                             aria-valuemin="0" aria-valuemax="100"></div>
+                                                    </div>
+                                                    <small class="mt-2 d-block fw-light">
+                                                        +5% so với kỳ
+                                                        trước
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="card bg-success text-white h-100 rounded-3 shadow-sm">
+                                            <div class="d-flex flex-column justify-content-between align-items-center h-100 p-4">
+                                                <div class="bg-white rounded-circle mb-3 d-flex justify-content-center align-items-center"
+                                                     style="width: 56px; height: 56px;">
+                                                    <i class="bi bi-truck text-success fs-3"></i>
+                                                </div>
+                                                <div class="text-center">
+                                                    <h3 class="display-6 fw-bold mb-1">1.567</h3>
+                                                    <p class="mb-2 fw-light">Đang giao hàng</p>
+                                                    <div class="progress bg-white"
+                                                         style="height: 8px; border-radius: 5px;">
+                                                        <div class="progress-bar bg-white" role="progressbar"
+                                                             style="width: 75%;" aria-valuenow="75"
+                                                             aria-valuemin="0" aria-valuemax="100"></div>
+                                                    </div>
+                                                    <small class="mt-2 d-block fw-light">
+                                                        +8% so với kỳ
+                                                        trước
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="card bg-primary text-white h-100 rounded-3 shadow-sm">
+                                            <div class="d-flex flex-column justify-content-between align-items-center h-100 p-4">
+                                                <div class="bg-white rounded-circle mb-3 d-flex justify-content-center align-items-center"
+                                                     style="width: 56px; height: 56px;">
+                                                    <i class="bi bi-check-circle text-primary fs-3"></i>
+                                                </div>
+                                                <div class="text-center">
+                                                    <h3 class="display-6 fw-bold mb-1">200</h3>
+                                                    <p class="mb-2 fw-light">Đã hoàn thành</p>
+                                                    <div class="progress bg-white"
+                                                         style="height: 8px; border-radius: 5px;">
+                                                        <div class="progress-bar bg-white" role="progressbar"
+                                                             style="width: 85%;" aria-valuenow="85"
+                                                             aria-valuemin="0" aria-valuemax="100"></div>
+                                                    </div>
+                                                    <small class="mt-2 d-block fw-light">
+                                                        +0,5% so với kỳ
+                                                        trước
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
-        </div>
-
-        <!-- Sales Analysis Section -->
-        <div class="col-lg-4 p-4">
-            <div class="card shadow">
-                <div class="card-header bg-white">
-                    <h4 class="mb-0">Phân Tích Doanh Số</h4>
-                </div>
-                <div class="card-body">
-                    <!-- Time Filter -->
-                    <div class="mb-4">
-                        <label class="form-label">Thời Gian</label>
-                        <div class="row g-2">
-                            <div class="col-6">
-                                <div class="input-group">
-                                    <span class="input-group-text bg-danger text-white">Từ</span>
-                                    <input type="text" class="form-control date-picker" id="startDate"
-                                           placeholder="DD/MM/YYYY">
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="input-group">
-                                    <span class="input-group-text bg-danger text-white">Đến</span>
-                                    <input type="text" class="form-control date-picker" id="endDate"
-                                           placeholder="DD/MM/YYYY">
-                                </div>
-                            </div>
-                            <div class="col-12">
-                                <select class="form-select" id="quickDateSelect">
-                                    <option value="">Chọn nhanh</option>
-                                    <option value="today">Hôm Nay</option>
-                                    <option value="yesterday">Hôm Qua</option>
-                                    <option value="thisWeek">Tuần Này</option>
-                                    <option value="lastWeek">Tuần Trước</option>
-                                    <option value="thisMonth">Tháng Này</option>
-                                    <option value="lastMonth">Tháng Trước</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Stats Cards -->
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <div class="card bg-danger text-white">
-                                <div class="card-body">
-                                    <h6 class="card-title">Tổng Doanh Thu</h6>
-                                    <h3 class="card-text">28.750.000đ</h3>
-                                    <small>+12% so với kỳ trước</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card bg-danger text-white">
-                                <div class="card-body">
-                                    <h6 class="card-title">Đơn Hàng</h6>
-                                    <h3 class="card-text">45</h3>
-                                    <small>+5% so với kỳ trước</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card bg-danger text-white">
-                                <div class="card-body">
-                                    <h6 class="card-title">Lượt Xem</h6>
-                                    <h3 class="card-text">1.567</h3>
-                                    <small>+8% so với kỳ trước</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card bg-danger text-white">
-                                <div class="card-body">
-                                    <h6 class="card-title">Tỷ Lệ Chuyển Đổi</h6>
-                                    <h3 class="card-text">2,87%</h3>
-                                    <small>+0,5% so với kỳ trước</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        </main>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Lưu trữ các class text color gốc của các tab
+        const originalColors = {};
+        document.querySelectorAll('#orderTabs .nav-link').forEach(tab => {
+            // Lưu lại màu text gốc của mỗi tab
+            originalColors[tab.id] = Array.from(tab.classList).find(cls => cls.startsWith('text-'));
+        });
+
+        // Xử lý khi tab được click
+        document.querySelectorAll('#orderTabs .nav-link').forEach(tab => {
+            tab.addEventListener('shown.bs.tab', function () {
+                // Restore màu text gốc cho tất cả các tab và xóa background
+                document.querySelectorAll('#orderTabs .nav-link').forEach(t => {
+                    t.classList.remove('bg-danger', 'text-white');
+                    if (originalColors[t.id]) {
+                        t.classList.add(originalColors[t.id]);
+                    }
+                });            // Thêm nền đỏ nhạt và chữ trắng cho tab active
+                this.classList.remove(originalColors[this.id]);
+                this.classList.add('bg-danger', 'bg-opacity-25', 'text-white');
+            });
+        });
+
+        // Áp dụng style cho tab active mặc định khi trang load
+        const activeTab = document.querySelector('#orderTabs .nav-link.active'); if (activeTab) {
+            activeTab.classList.remove(originalColors[activeTab.id]);
+            activeTab.classList.add('bg-danger', 'bg-opacity-25', 'text-white');
+        }
+    });
+</script>
+
+<!-- Tab handling script -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Xử lý chuyển tab cho các đơn hàng
+        const triggerTabList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tab"]'));
+        triggerTabList.forEach(function (triggerEl) {
+            triggerEl.addEventListener('click', function (event) {
+                event.preventDefault();
+
+                // Remove active class from all tabs
+                triggerTabList.forEach(t => {
+                    t.classList.remove('active');
+                    t.setAttribute('aria-selected', 'false');
+                });
+
+                // Add active class to clicked tab
+                this.classList.add('active');
+                this.setAttribute('aria-selected', 'true');
+
+                // Show corresponding content
+                const tabTarget = document.querySelector(this.getAttribute('data-bs-target'));
+                const tabContents = document.querySelectorAll('.tab-pane');
+                tabContents.forEach(content => {
+                    content.classList.remove('show', 'active');
+                });
+                if (tabTarget) {
+                    tabTarget.classList.add('show', 'active');
+                }
+            });
+        });
+
+        // Activate first tab by default if none is active
+        const activeTab = document.querySelector('.nav-link.active');
+        if (!activeTab && triggerTabList.length > 0) {
+            triggerTabList[0].click();
+        }
+    });
+</script>

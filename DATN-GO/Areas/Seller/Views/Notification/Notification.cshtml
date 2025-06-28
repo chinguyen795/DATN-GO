@@ -1,0 +1,236 @@
+﻿@{
+    Layout = "~/Areas/Seller/Views/Shared/_LayoutSeller.cshtml";
+}
+<div class="page-wrapper">
+
+    <!-- Header -->
+    <header class="main-header" id="header">
+        <nav class="navbar navbar-expand-lg navbar-light" id="navbar">
+            <!-- Sidebar toggle button -->
+            <button id="sidebar-toggler" class="sidebar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+            </button>
+
+            <span class="page-title">THÔNG BÁO</span>
+
+            <div class="navbar-right ">
+
+                <ul class="nav navbar-nav">
+                    <li class="custom-dropdown">
+                        <a asp-area="Seller" asp-controller="Notification" asp-action="Notification" class="notify-toggler custom-dropdown-toggler">
+                            <i class="mdi mdi-bell-outline icon"></i>
+                        </a>
+                    </li>
+                    <!-- User Account -->
+                    <li class="dropdown user-menu">
+                        <button class="dropdown-toggle nav-link" data-toggle="dropdown">
+                            <img src="~/images/avt-user.jpg" alt="User Profile" width="32" height="32"
+                                 style="object-fit: cover;" loading="lazy">
+                            <span class="d-none d-lg-inline-block">Meo Meo</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-right">
+                            <li>
+                                <a class="dropdown-link-item" href="user-profile.html">
+                                    <i class="mdi mdi-account-outline"></i>
+                                    <span class="nav-text">Hồ Sơ</span>
+                                </a>
+                            </li>
+                            <li class="dropdown-footer">
+                                <a class="dropdown-link-item" href="sign-in.html">
+                                    <i class="mdi mdi-logout"></i> Đăng Xuất
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+
+    </header>
+
+    <!-- ====================================
+    ——— CONTENT WRAPPER
+    ===================================== -->
+    <div class="content-wrapper">
+        <div class="content">
+            <div class="container">
+                <div class="row mb-5">
+                    <div class="col">
+                        <!-- Tabs -->
+                        <ul class="nav nav-pills mb-4 fs-5" id="pills-tab2" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="pills-home-tab" data-toggle="pill"
+                                   href="#nav-tabs-home2" role="tab" aria-controls="nav-tabs-home2"
+                                   aria-selected="true" style="text-transform: capitalize;">
+                                    <i class="bi bi-shield-fill me-1"></i>
+                                    Từ Admin
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="nav-profile-tab" data-toggle="pill" href="#nav-profile2"
+                                   role="tab" aria-controls="nav-profile2" aria-selected="false" style="text-transform: capitalize;">
+                                    <i class="bi bi-cart-fill me-1"></i>
+                                    Đơn Hàng
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="nav-products-tab" data-toggle="pill"
+                                   href="#nav-products2" role="tab" aria-controls="nav-products2"
+                                   aria-selected="false" style="text-transform: capitalize;">
+                                    <i class="bi bi-box-fill me-1"></i>
+                                    Sản Phẩm
+                                </a>
+                            </li>
+                        </ul>
+
+                        <!-- Tab Content -->
+                        <div class="tab-content mt-5" id="nav-tabContent">
+                            <!-- Admin Tab -->
+                            <div class="tab-pane fade show active" id="nav-tabs-home2" role="tabpanel"
+                                 aria-labelledby="pills-home-tab">
+                                <div class="list-group">
+                                    <div class="notification-item card border shadow-sm mb-3">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h6 class="card-title text-danger mb-0">
+                                                    <i class="bi bi-exclamation-circle-fill me-2"></i>
+                                                    Cập nhật chính sách bán hàng
+                                                </h6>
+                                                <small class="text-muted">3 ngày trước</small>
+                                            </div>
+                                            <p class="card-text mb-2">
+                                                Chính sách bán hàng mới sẽ được áp dụng từ
+                                                ngày 15/06/2025
+                                            </p>
+                                            <a href="#" class="text-decoration-none">
+                                                <small class="text-danger d-flex align-items-center">
+                                                    Xem chi tiết
+                                                    <i class="bi bi-arrow-right ms-1"></i>
+                                                </small>
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <div class="notification-item card border shadow-sm mb-3">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h6 class="card-title text-danger mb-0">
+                                                    <i class="bi bi-info-circle-fill me-2"></i>
+                                                    Thông báo bảo trì hệ thống
+                                                </h6>
+                                                <small class="text-muted">1 tuần trước</small>
+                                            </div>
+                                            <p class="card-text mb-2">
+                                                Hệ thống sẽ bảo trì vào ngày 10/06/2025 từ
+                                                23:00 - 03:00
+                                            </p>
+                                            <a href="#" class="text-decoration-none">
+                                                <small class="text-danger d-flex align-items-center">
+                                                    Xem chi tiết
+                                                    <i class="bi bi-arrow-right ms-1"></i>
+                                                </small>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Orders Tab -->
+                            <div class="tab-pane fade" id="nav-profile2" role="tabpanel"
+                                 aria-labelledby="nav-profile-tab">
+                                <div class="list-group">
+                                    <div class="notification-item card border shadow-sm mb-3">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h6 class="card-title text-danger mb-0">
+                                                    <i class="bi bi-bag-check-fill me-2"></i>
+                                                    Đơn hàng mới #123456
+                                                </h6>
+                                                <small class="text-muted">2 giờ trước</small>
+                                            </div>
+                                            <p class="card-text mb-2">Bạn có đơn hàng mới cần xử lý</p>
+                                            <a href="#" class="text-decoration-none">
+                                                <small class="text-danger d-flex align-items-center">
+                                                    Xem chi tiết đơn hàng
+                                                    <i class="bi bi-arrow-right ms-1"></i>
+                                                </small>
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <div class="notification-item card border shadow-sm mb-3">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h6 class="card-title text-danger mb-0">
+                                                    <i class="bi bi-star-fill me-2"></i>
+                                                    Đánh giá mới
+                                                </h6>
+                                                <small class="text-muted">1 ngày trước</small>
+                                            </div>
+                                            <p class="card-text mb-2">
+                                                Khách hàng vừa đánh giá đơn hàng #123455
+                                            </p>
+                                            <a href="#" class="text-decoration-none">
+                                                <small class="text-danger d-flex align-items-center">
+                                                    Xem đánh giá
+                                                    <i class="bi bi-arrow-right ms-1"></i>
+                                                </small>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Products Tab -->
+                            <div class="tab-pane fade" id="nav-products2" role="tabpanel"
+                                 aria-labelledby="nav-products-tab">
+                                <div class="list-group">
+                                    <div class="notification-item card border shadow-sm mb-3">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h6 class="card-title text-danger mb-0">
+                                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                                    Sản phẩm hết hàng
+                                                </h6>
+                                                <small class="text-muted">1 ngày trước</small>
+                                            </div>
+                                            <p class="card-text mb-2">Sản phẩm "Bánh mì gà" đã hết hàng</p>
+                                            <a href="#" class="text-decoration-none">
+                                                <small class="text-danger d-flex align-items-center">
+                                                    Cập nhật số lượng
+                                                    <i class="bi bi-arrow-right ms-1"></i>
+                                                </small>
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <div class="notification-item card border shadow-sm mb-3">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h6 class="card-title text-danger mb-0">
+                                                    <i class="bi bi-check-circle-fill me-2"></i>
+                                                    Duyệt sản phẩm
+                                                </h6>
+                                                <small class="text-muted">2 ngày trước</small>
+                                            </div>
+                                            <p class="card-text mb-2">Sản phẩm "Cà phê sữa" đã được duyệt</p>
+                                            <a href="#" class="text-decoration-none">
+                                                <small class="text-danger d-flex align-items-center">
+                                                    Xem chi tiết
+                                                    <i class="bi bi-arrow-right ms-1"></i>
+                                                </small>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            </main>
+        </div>
+    </div>
+</div>

@@ -4,16 +4,16 @@ namespace DATN_GO.Areas.Seller.Controllers
 {
     [Area("Seller")]
 
-    public class FoodController : Controller
+    public class ProductController : Controller
     {
-        public IActionResult Food()
+        public IActionResult Product()
+        {
+            return View();
+        }
+        public IActionResult CreateProduct()
         {
             return View();
         }
 
-        public IActionResult CreateFood()
-        {
-            return View();
-        }
     }
 }

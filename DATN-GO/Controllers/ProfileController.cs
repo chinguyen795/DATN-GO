@@ -97,9 +97,9 @@ namespace DATN_GO.Controllers
           
            /* currentUser.Password = currentUser.Password; 
             currentUser.Email = currentUser.Email;
-            currentUser.PhoneNumber = currentUser.PhoneNumber;
+            currentUser.Phone = currentUser.Phone;
             currentUser.RoleId = currentUser.RoleId;
-            currentUser.CreatedAt = currentUser.CreatedAt;
+            currentUser.CreateAt = currentUser.CreateAt;
             currentUser.Status = currentUser.Status;
             currentUser.CitizenIdentityCard = currentUser.CitizenIdentityCard;
 

@@ -1,0 +1,259 @@
+﻿@model DATN_GO.Models.Addresses
+@{
+    ViewData["Title"] = "Thêm địa chỉ mới";
+}
+
+
+<!-- Mapbox CSS -->
+<link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+
+
+<div class="container py-4">
+    <h3 class="text-center mb-4">@ViewData["Title"]</h3>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success text-center fade show" id="successMessage" role="alert">
+            @TempData["Success"]
+        </div>
+    }
+    @if (ViewBag.ShowDefaultModal == true)
+    {
+        <script>
+            window.addEventListener('DOMContentLoaded', function () {
+                var modal = new bootstrap.Modal(document.getElementById('defaultConfirmModalEdit'));
+                modal.show();
+            });
+        </script>
+    }
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Tên người dùng</label>
+                                <input type="text" class="form-control" readonly name="DisplayName" value="@ViewBag.CurrentUserName" />
+                            </div>
+                            <input type="hidden" asp-for="UserId" />
+                            <div class="col-md-6">
+                                <label asp-for="Status" class="form-label">Trạng thái</label>
+                                <select asp-for="Status" class="form-control">
+                                    <option value="Mặc định">Mặc định</option>
+                                    <option value="Không mặc định">Không mặc định</option>
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Tỉnh / Thành phố</label>
+                                <select id="city" class="form-control">
+                                    <option value="">-- Chọn tỉnh --</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Quận / Huyện</label>
+                                <select id="district" class="form-control">
+                                    <option value="">-- Chọn huyện --</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Phường / Xã</label>
+                                <select id="ward" class="form-control">
+                                    <option value="">-- Chọn xã --</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">Địa chỉ</label>
+                            <input asp-for="Description" class="form-control" readonly />
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <input type="hidden" asp-for="Latitude" class="form-control" />
+                                <span asp-validation-for="Latitude" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <input type="hidden" asp-for="Longitude" class="form-control" />
+                                <span asp-validation-for="Longitude" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Address" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Quay về danh sách
+                            </a>
+
+                            <button id="submitBtn" type="submit" class="btn btn-primary">
+                                <span class="spinner-border spinner-border-sm d-none" id="loadingSpinner" role="status" aria-hidden="true"></span>
+                                <span id="btnText"><i class="bi bi-save"></i> Lưu địa chỉ</span>
+                            </button>
+
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+
+            <!-- Map container -->
+            <div id="map" style="height: 400px;" class="mt-4 rounded border shadow-sm"></div>
+        </div>
+    </div>
+</div>
+@* Modal xác nhận  *@
+<div class="modal fade" id="defaultConfirmModal" tabindex="-1" aria-labelledby="defaultConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-dark">
+                <h5 class="modal-title" id="defaultConfirmModalLabel">Xác nhận địa chỉ mặc định</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                Người dùng đã có địa chỉ mặc định: <br />
+                <strong>@ViewBag.ExistingDefault</strong> <br /><br />
+                Bạn có muốn thay thế bằng địa chỉ mới không?
+            </div>
+            <div class="modal-footer">
+                <form method="post" asp-action="ConfirmReplaceDefault">
+                    <input type="hidden" name="confirm" value="true" />
+                    <button type="submit" class="btn btn-primary">Có, thay thế</button>
+                </form>
+
+                <form method="post" asp-action="ConfirmReplaceDefault">
+                    <input type="hidden" name="confirm" value="false" />
+                    <button type="submit" class="btn btn-secondary">Không</button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+
+<script>
+        mapboxgl.accessToken = 'pk.eyJ1IjoiaG9hbmdraGFuZzE2MDIiLCJhIjoiY21hYXViNTcyMDdwODJrc2N1bmVwY3h6eiJ9.MgDmLsya34LTrqNPE7WiLw';
+
+        let map;
+        let marker;
+
+        function resetDropdown(selector, placeholder) {
+            $(selector).html(`<option value="">${placeholder}</option>`);
+        }
+
+        function getCoordinatesFromAddress(address) {
+            const encoded = encodeURIComponent(address);
+            const url = `https://nominatim.openstreetmap.org/search?q=${encoded}&format=json`;
+
+            fetch(url)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        const lat = data[0].lat;
+                        const lon = data[0].lon;
+                        $('#Latitude').val(lat);
+                        $('#Longitude').val(lon);
+                        updateMap(lat, lon);
+                    } else {
+                        alert("Không tìm thấy tọa độ.");
+                    }
+                });
+        }
+
+        function updateMap(lat, lon) {
+            const lng = parseFloat(lon);
+            const latitude = parseFloat(lat);
+
+            if (!map) {
+                map = new mapboxgl.Map({
+                    container: 'map',
+                    style: 'mapbox://styles/mapbox/streets-v12',
+                    center: [lng, latitude],
+                    zoom: 15,
+                    pitch: 60,
+                    bearing: -45,
+                    antialias: true
+                });
+                map.addControl(new mapboxgl.NavigationControl());
+            } else {
+                map.flyTo({ center: [lng, latitude], essential: true });
+            }
+
+            if (marker) marker.remove();
+
+            marker = new mapboxgl.Marker({ color: 'red' })
+                .setLngLat([lng, latitude])
+                .addTo(map);
+        }
+
+        $(document).ready(function () {
+            // Load JSON từ file
+        $.getJSON("/data/locations.json", function (data) {
+                // Load tỉnh/thành phố
+                data.forEach(city => {
+                    $('#city').append(`<option value="${city.CityName}">${city.CityName}</option>`);
+                });
+
+                // Khi chọn tỉnh → load huyện
+                $('#city').on('change', function () {
+                    const selectedCity = $(this).val();
+                    const city = data.find(c => c.CityName === selectedCity);
+
+                    resetDropdown('#district', '-- Chọn huyện --');
+                    resetDropdown('#ward', '-- Chọn xã --');
+
+                    if (city?.Districts) {
+                        city.Districts.forEach(d => {
+                            $('#district').append(`<option value="${d.DistrictName}">${d.DistrictName}</option>`);
+                        });
+                    }
+                });
+
+                // Khi chọn huyện → load xã
+                $('#district').on('change', function () {
+                    const selectedCity = $('#city').val();
+                    const selectedDistrict = $(this).val();
+                    const city = data.find(c => c.CityName === selectedCity);
+                    const district = city?.Districts.find(d => d.DistrictName === selectedDistrict);
+
+                    resetDropdown('#ward', '-- Chọn xã --');
+
+                    if (district?.Wards) {
+                        district.Wards.forEach(w => {
+                            $('#ward').append(`<option value="${w.WardName}">${w.WardName}</option>`);
+                        });
+                    }
+                });
+
+                // Khi chọn xã → tự động ghép địa chỉ và lấy tọa độ
+                $('#ward').on('change', function () {
+                    const ward = $('#ward').val();
+                    const district = $('#district').val();
+                    const city = $('#city').val();
+
+                    const full = `${ward}, ${district}, ${city}`;
+                    $('#Discription').val(full);
+                    getCoordinatesFromAddress(full);
+                });
+            });
+        });
+
+    // Loading
+        document.querySelector('form').addEventListener('submit', function () {
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('loadingSpinner').classList.remove('d-none');
+            document.getElementById('btnText').textContent = " Đang lưu...";
+        });
+</script>
+
+
+

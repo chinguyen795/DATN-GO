@@ -1,153 +1,523 @@
-﻿<div class="container-fluid chat-container mt-3 mb-0">
-    <div class="row h-100">
-        <!-- Seller List Section - Left Side -->
-        <div class="col-md-4 border-end">
-            <div class="p-3">
-                <!-- Search Box -->
-                <div class="input-group mb-3">
-                    <input type="text" class="form-control" placeholder="Tìm kiếm khách hàng" aria-label="Search customers">
-                    <button class="btn btn-danger" type="button">
-                        <i class="bi bi-search"></i>
-                    </button>
-                </div>
+﻿@{
+    Layout = "~/Areas/Seller/Views/Shared/_LayoutSeller.cshtml";
+}
+<style>
+    /* Chat Styles */
+    .chat-container {
+        height: calc(100vh - 80px);
+        margin-top: 80px;
+    }
 
-                <!-- Filter Options -->
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="unreadFilter">
-                        <label class="form-check-label" for="unreadFilter">
-                            Chỉ hiện tin nhắn chưa đọc
-                        </label>
-                    </div>
-                </div>
+    .seller-list {
+        height: calc(100vh - 220px);
+        overflow-y: auto;
+    }
 
-                <!-- Customer List -->
-                <div class="seller-list">
-                    <!-- Customer Item -->
-                    <div class="d-flex align-items-center p-2 border-bottom seller-item">
-                        <img src="https://via.placeholder.com/50" class="rounded-circle me-2" alt="Customer Avatar">
-                        <div class="flex-grow-1">
-                            <h6 class="mb-0">Nguyễn Văn A</h6>
-                            <small class="text-muted">Tin nhắn cuối cùng...</small>
-                        </div>
-                        <div class="d-flex flex-column align-items-end">
-                            <small class="text-muted">12:30</small>
-                            <span class="badge bg-danger rounded-pill">2</span>
-                        </div>
-                    </div>
+    .seller-item {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
 
-                    <!-- More Customer Items -->
-                    <div class="d-flex align-items-center p-2 border-bottom seller-item active">
-                        <img src="https://via.placeholder.com/50" class="rounded-circle me-2" alt="Customer Avatar">
-                        <div class="flex-grow-1">
-                            <h6 class="mb-0">Trần Thị B</h6>
-                            <small>Ok shop...</small>
-                        </div>
-                        <small>Hôm qua</small>
-                    </div>
+        .seller-item:hover {
+            background-color: rgba(220, 53, 69, 0.1);
+        }
 
-                    <div class="d-flex align-items-center p-2 border-bottom seller-item">
-                        <img src="https://via.placeholder.com/50" class="rounded-circle me-2" alt="Customer Avatar">
-                        <div class="flex-grow-1">
-                            <h6 class="mb-0">Lê Văn C</h6>
-                            <small class="text-muted">Cảm ơn shop...</small>
-                        </div>
-                        <small class="text-muted">23/04</small>
-                    </div>
-                </div>
+        .seller-item.active {
+            background-color: rgba(220, 53, 69, 0.2);
+        }
+
+    /* Status indicators */
+    .status {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        border: 2px solid #fff;
+    }
+
+        .status.active {
+            background-color: #28a745;
+        }
+
+        .status.away {
+            background-color: #ffc107;
+        }
+
+    /* Chat Messages Area */
+    .chat-messages {
+        height: calc(100vh - 300px);
+        /* 300px = header + footer + margin an toàn */
+        overflow-y: auto;
+        padding-bottom: 100px;
+    }
+
+    .media-chat {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+        padding: 0.5rem;
+    }
+
+    .chat-name {
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+    }
+
+        .chat-name.seller {
+            color: #dc3545;
+        }
+
+        .chat-name.customer {
+            color: #6c757d;
+        }
+
+    .media-chat.media-chat-reverse {
+        flex-direction: row-reverse;
+        text-align: right;
+    }
+
+    .chat-message-receive,
+    .chat-message-send {
+        max-width: 70%;
+        margin-bottom: 0.5rem;
+        padding: 0.75rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .chat-message-receive {
+        background-color: #ffffff;
+        border-radius: 20px 20px 20px 5px;
+    }
+
+    .chat-message-send {
+        background-color: #dc3545;
+        color: white;
+        margin-left: auto;
+        border-radius: 20px 20px 5px 20px;
+    }
+
+    .chat-timestamp {
+        font-size: 0.75rem;
+        display: block;
+        margin-top: 0.25rem;
+    }
+
+    /* Chat Input Area */
+    .chat-input-area {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 1rem;
+        background-color: #fff;
+        border-top: 1px solid #dee2e6;
+    }
+
+    /* Scrollbar Customization */
+    ::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #dc3545;
+        border-radius: 3px;
+    }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #b02a37;
+        }
+
+
+    /* Badge Styles */
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.25em 0.6em;
+    }
+
+    /* Profile Image Position */
+    .position-relative {
+        position: relative;
+    }
+
+    /* Message Content */
+    .message-contents {
+        width: 100%;
+    }
+
+    .last-msg {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 200px;
+    }
+</style>
+<div class="page-wrapper">
+
+    <!-- Header -->
+    <header class="main-header" id="header">
+        <nav class="navbar navbar-expand-lg navbar-light" id="navbar">
+            <!-- Sidebar toggle button -->
+            <button id="sidebar-toggler" class="sidebar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+            </button>
+
+            <span class="page-title">TIN NHẮN</span>
+
+            <div class="navbar-right ">
+
+                <ul class="nav navbar-nav">
+                    <li class="custom-dropdown">
+                        <a asp-area="Seller" asp-controller="Notification" asp-action="Notification" class="notify-toggler custom-dropdown-toggler">
+                            <i class="mdi mdi-bell-outline icon"></i>
+                        </a>
+                    </li>
+                    <!-- User Account -->
+                    <li class="dropdown user-menu">
+                        <button class="dropdown-toggle nav-link" data-toggle="dropdown">
+                            <img src="~/images/avt-user.jpg" alt="User Profile" width="32" height="32"
+                                 style="object-fit: cover;" loading="lazy">
+                            <span class="d-none d-lg-inline-block">Meo Meo</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-right">
+                            <li>
+                                <a class="dropdown-link-item" href="user-profile.html">
+                                    <i class="mdi mdi-account-outline"></i>
+                                    <span class="nav-text">Hồ Sơ</span>
+                                </a>
+                            </li>
+                            <li class="dropdown-footer">
+                                <a class="dropdown-link-item" href="sign-in.html">
+                                    <i class="mdi mdi-logout"></i> Đăng Xuất
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
             </div>
-        </div>
+        </nav>
 
-        <!-- Chat Section - Right Side -->
-        <div class="col-md-8 h-100 position-relative">
-            <!-- Chat Header -->
-            <div class="border-bottom p-3">
-                <div class="d-flex align-items-center">
-                    <img src="https://via.placeholder.com/50" class="rounded-circle me-2" alt="Current Customer Avatar">
-                    <div>
-                        <h5 class="mb-0">Trần Thị B</h5>
-                        <small class="text-muted">Khách hàng • Đang hoạt động</small>
+
+    </header>
+
+    <!-- ====================================
+    ——— CONTENT WRAPPER
+    ===================================== -->
+    <div class="content-wrapper">
+        <div class="content">
+            <div class="row no-gutters">
+                <div class="col-lg-5 col-xxl-4">
+                    <div class="card card-default chat-left-sidebar">
+                        <form class="card-header px-0">
+                            <div class="input-group px-5">
+                                <input type="text" class="form-control"
+                                       aria-label="Text input with dropdown button" placeholder="Tìm kiếm...">
+                            </div>
+                        </form>
+
+                        <ul class="card-body px-0" data-simplebar style="height: 630px;">
+                            <li class="mb-4 px-5 py-2">
+                                <a href="javascript:void(0)" class="media media-message">
+                                    <div class="position-relative mr-3">
+                                        <img class="rounded-circle" src="images/user/user-sm-01.jpg"
+                                             alt="User Image">
+                                        <span class="status away"></span>
+                                    </div>
+                                    <div class="media-body">
+                                        <div class="message-contents">
+                                            <span class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="username text-dark">Thiên Lý</span>
+                                                <span class="">
+                                                    <span class="state text-smoke"><em>5 phút trước</em></span>
+                                                </span>
+                                            </span>
+                                            <p class="last-msg text-smoke">
+                                                Xin chào, tôi muốn hỏi về sản phẩm
+                                                của bạn.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+
+                            <li class="mb-4 px-5 py-2">
+                                <a href="javascript:void(0)" class="media media-message">
+                                    <div class="position-relative mr-3">
+                                        <img class="rounded-circle" src="images/user/user-sm-02.jpg"
+                                             alt="User Image">
+                                        <span class="status away"></span>
+                                    </div>
+                                    <div class="media-body">
+                                        <div class="message-contents">
+                                            <span class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="username text-dark">K-ICM</span>
+                                                <span class="">
+                                                    <span class="badge badge-danger">3</span>
+                                                    <span class="state text-smoke"><em>1 giờ trước</em></span>
+                                                </span>
+                                            </span>
+                                            <p class="last-msg text-smoke">
+                                                Chào bạn, bạn muốn biết thêm thông
+                                                tin gì?
+                                            </p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+
+                            <li class="bg-danger mb-4 px-5 py-2">
+                                <a href="javascript:void(0)" class="media media-message">
+                                    <div class="position-relative mr-3">
+                                        <img class="rounded-circle" src="images/user/user-sm-03.jpg"
+                                             alt="User Image">
+                                        <span class="status active"></span>
+                                    </div>
+                                    <div class="media-body">
+                                        <div class="message-contents">
+                                            <span class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="username text-white">Misthy</span>
+                                                <span class="">
+                                                    <span class="state text-white"><em>11:59 sáng</em></span>
+                                                </span>
+                                            </span>
+                                            <p class="last-msg text-white">
+                                                Sản phẩm này có hỗ trợ bảo hành
+                                                không?
+                                            </p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+
+                            <li class="mb-4 px-5 py-2">
+                                <a href="javascript:void(0)" class="media media-message">
+                                    <div class="position-relative mr-3">
+                                        <img class="rounded-circle" src="images/user/user-sm-04.jpg"
+                                             alt="User Image">
+                                        <span class="status away"></span>
+                                    </div>
+                                    <div class="media-body">
+                                        <div class="message-contents">
+                                            <span class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="username text-dark">ViruSs</span>
+                                                <span class="">
+                                                    <span class="state text-smoke"><em>10 phút trước</em></span>
+                                                </span>
+                                            </span>
+                                            <p class="last-msg text-smoke">
+                                                Sản phẩm của tôi có bảo hành 1 năm,
+                                                bạn có thể tham khảo thêm trên website.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+
+                            <li class="mb-4 px-5 py-2">
+                                <a href="javascript:void(0)" class="media media-message">
+                                    <div class="position-relative mr-3">
+                                        <img class="rounded-circle" src="images/user/user-sm-05.jpg"
+                                             alt="User Image">
+                                        <span class="status away"></span>
+                                    </div>
+                                    <div class="media-body">
+                                        <div class="message-contents">
+                                            <span class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="username text-dark">Sol</span>
+                                                <span class="">
+                                                    <span class="state text-smoke"><em>26-Jan-20</em></span>
+                                                </span>
+                                            </span>
+                                            <p class="last-msg text-smoke">
+                                                Tôi đã xem qua và muốn đặt hàng. Làm
+                                                thế nào để tôi có thể mua?
+                                            </p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+
+                            <li class="mb-4 px-5 py-2">
+                                <a href="javascript:void(0)" class="media media-message">
+                                    <div class="position-relative mr-3">
+                                        <img class="rounded-circle" src="images/user/user-sm-04.jpg"
+                                             alt="User Image">
+                                        <span class="status away"></span>
+                                    </div>
+                                    <div class="media-body">
+                                        <div class="message-contents">
+                                            <span class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="username text-dark">Đóm</span>
+                                                <span class="">
+                                                    <span class="state text-smoke"><em>01-Jan-20</em></span>
+                                                </span>
+                                            </span>
+                                            <p class="last-msg text-smoke">
+                                                Cảm ơn bạn đã giải đáp các thắc mắc
+                                                của tôi. Tôi sẽ tiến hành mua ngay.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+
+                            <li class="mb-4 px-5 py-2">
+                                <a href="javascript:void(0)" class="media media-message">
+                                    <div class="position-relative mr-3">
+                                        <img class="rounded-circle" src="images/user/user-sm-05.jpg"
+                                             alt="User Image">
+                                        <span class="status away"></span>
+                                    </div>
+                                    <div class="media-body">
+                                        <div class="message-contents">
+                                            <span class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="username text-dark">Diễm My</span>
+                                                <span class="">
+                                                    <span class="state text-smoke"><em>26-Dec-19</em></span>
+                                                </span>
+                                            </span>
+                                            <p class="last-msg text-smoke">
+                                                Cảm ơn bạn đã tin tưởng mua sản phẩm
+                                                của chúng tôi. Chúng tôi sẽ giao hàng trong thời gian sớm nhất.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+
+                            <li class="mb-4 px-5 py-2">
+                                <a href="javascript:void(0)" class="media media-message">
+                                    <div class="position-relative mr-3">
+                                        <img class="rounded-circle" src="images/user/user-sm-02.jpg"
+                                             alt="User Image">
+                                        <span class="status away"></span>
+                                    </div>
+                                    <div class="media-body">
+                                        <div class="message-contents">
+                                            <span class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="username text-dark">Mtp</span>
+                                                <span class="">
+                                                    <span class="badge badge-danger">7</span>
+                                                    <span class="state text-smoke"><em>5 giờ trước</em></span>
+                                                </span>
+                                            </span>
+                                            <p class="last-msg text-smoke">
+                                                Bạn có thể thanh toán qua chuyển
+                                                khoản ngân hàng hoặc thẻ tín dụng. Để biết thêm chi tiết, vui
+                                                lòng tham khảo trang thanh toán của chúng tôi.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                        </ul>
                     </div>
                 </div>
-            </div>
 
-            <!-- Chat Messages Area -->
-            <div class="chat-messages p-3">
-                <!-- Received Message -->
-                <div class="d-flex mb-3">
-                    <img src="https://via.placeholder.com/40" class="rounded-circle me-2" alt="Seller Avatar" height="40">
-                    <div class="chat-message-receive">
-                        <p class="mb-0">Xin chào! Tôi đã nhận được đơn hàng của bạn về món Phở Bò Đặc Biệt. Bạn muốn giao hàng vào thời gian nào ạ?</p>
-                        <small class="chat-timestamp text-muted">10:30</small>
+                <div class="col-lg-7 col-xxl-8">
+                    <!-- Chat -->
+                    <div class="card card-default chat-right-sidebar">
+                        <div class="card-header">
+                            <h2>Thiên An</h2>
+
+                            <div class="dropdown">
+                                <div class="dropdown">
+                                    <a class="dropdown-toggle icon-burger-mini" href="#" role="button"
+                                       id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true"
+                                       aria-expanded="false">
+                                    </a>
+
+                                    <div class="dropdown-menu dropdown-menu-right"
+                                         aria-labelledby="dropdownMenuLink">
+                                        <a class="dropdown-item" href="user-profile-settings.html">Hồ sơ</a>
+                                        <a class="dropdown-item" href="javascript:void(0)">Đăng xuất</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body pb-0" data-simplebar style="height: 545px;">
+                            <!-- Media Chat Left -->
+                            <div class="media media-chat bg">
+                                <img src="images/user/user-sm-01.jpg" class="rounded-circle" alt="Avata Image">
+                                <div class="media-body">
+                                    <div class="text-content bg-danger">
+                                        <span class="message">
+                                            Chào bạn, tôi là Thiên An. Tôi thấy món ăn của bạn
+                                            trên website, có thể cho tôi biết thêm thông tin về nó không?
+                                        </span>
+                                        <time class="time">5 phút trước</time>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Media Chat Right -->
+                            <div class="media media-chat media-chat-right">
+                                <div class="media-body">
+                                    <div class="text-content">
+                                        <span class="message">
+                                            Chào, tôi là J97 - Trịnh Trần Phương Tuấn. Món
+                                            ăn bạn đang xem là "Mì Ý
+                                            Hải Sản", được chế biến từ những nguyên liệu tươi ngon và đặc biệt
+                                            là hải sản địa phương. Bạn muốn đặt món này không?
+                                        </span>
+                                        <time class="time">4 phút trước</time>
+                                    </div>
+
+                                    <div class="text-content">
+                                        <span class="message">Món này có thể được giao tận nơi không?</span>
+                                        <time class="time">3 phút trước</time>
+                                    </div>
+                                </div>
+                                <img src="images/user/user-sm-02.jpg" class="rounded-circle" alt="Avata Image">
+                            </div>
+
+                            <!-- Media Chat Left -->
+                            <div class="media media-chat">
+                                <img src="images/user/user-sm-01.jpg" class="rounded-circle" alt="Avata Image">
+                                <div class="media-body">
+                                    <div class="text-content bg-danger">
+                                        <span class="message">
+                                            Có chứ, chúng tôi hỗ trợ giao tận nơi trong khu
+                                            vực thành phố. Bạn muốn đặt ngay bây giờ không?
+                                        </span>
+                                        <time class="time">2 phút trước</time>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Media Chat Right -->
+                            <div class="media media-chat media-chat-right">
+                                <div class="media-body">
+                                    <div class="text-content">
+                                        <span class="message">Vậy tôi sẽ đặt một phần "Mì Ý Hải Sản".</span>
+                                        <time class="time">1 phút trước</time>
+                                    </div>
+                                </div>
+                                <img src="images/user/user-sm-02.jpg" class="rounded-circle" alt="Avata Image">
+                            </div>
+
+                            <!-- More chat messages can follow this pattern -->
+                        </div>
+
+                        <div class="chat-footer">
+                            <form>
+                                <div class="input-group input-group-chat">
+                                    <div class="input-group-prepend">
+                                        <span class="emoticon-icon mdi mdi-emoticon-happy-outline"></span>
+                                    </div>
+                                    <input type="text" class="form-control"
+                                           aria-label="Text input with dropdown button">
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Sent Message -->
-                <div class="d-flex justify-content-end mb-3">
-                    <div class="chat-message-send">
-                        <p class="mb-0">Dạ cho mình hỏi, shop có thể giao vào lúc 12h trưa được không ạ? Mình đang ở văn phòng tại 123 Nguyễn Văn Linh.</p>
-                        <small class="chat-timestamp text-white-50">10:31</small>
-                    </div>
-                </div>
-
-                <!-- Received Message -->
-                <div class="d-flex mb-3">
-                    <img src="https://via.placeholder.com/40" class="rounded-circle me-2" alt="Seller Avatar" height="40">
-                    <div class="chat-message-receive">
-                        <p class="mb-0">Dạ được ạ! Chúng tôi sẽ chuẩn bị và giao đến địa chỉ của bạn đúng 12h. Bạn có yêu cầu gì thêm về món ăn không ạ?</p>
-                        <small class="chat-timestamp text-muted">10:32</small>
-                    </div>
-                </div>
-
-                <!-- Sent Message -->
-                <div class="d-flex justify-content-end mb-3">
-                    <div class="chat-message-send">
-                        <p class="mb-0">Dạ cho mình xin thêm ít ớt và hành phi. Cảm ơn shop nhiều ạ!</p>
-                        <small class="chat-timestamp text-white-50">10:33</small>
-                    </div>
-                </div>
-
-                <div class="d-flex mb-3">
-                    <img src="https://via.placeholder.com/40" class="rounded-circle me-2" alt="Seller Avatar" height="40">
-                    <div class="chat-message-receive">
-                        <p class="mb-0">Xin chào! Tôi đã nhận được đơn hàng của bạn về món Phở Bò Đặc Biệt. Bạn muốn giao hàng vào thời gian nào ạ?</p>
-                        <small class="chat-timestamp text-muted">10:30</small>
-                    </div>
-                </div>
-
-                <!-- Sent Message -->
-                <div class="d-flex justify-content-end mb-3">
-                    <div class="chat-message-send">
-                        <p class="mb-0">Dạ cho mình hỏi, shop có thể giao vào lúc 12h trưa được không ạ? Mình đang ở văn phòng tại 123 Nguyễn Văn Linh.</p>
-                        <small class="chat-timestamp text-white-50">10:31</small>
-                    </div>
-                </div>
-
-                <!-- Received Message -->
-                <div class="d-flex mb-3">
-                    <img src="https://via.placeholder.com/40" class="rounded-circle me-2" alt="Seller Avatar" height="40">
-                    <div class="chat-message-receive">
-                        <p class="mb-0">Dạ được ạ! Chúng tôi sẽ chuẩn bị và giao đến địa chỉ của bạn đúng 12h. Bạn có yêu cầu gì thêm về món ăn không ạ?</p>
-                        <small class="chat-timestamp text-muted">10:32</small>
-                    </div>
-                </div>
-
-                <!-- Sent Message -->
-                <div class="d-flex justify-content-end mb-3">
-                    <div class="chat-message-send">
-                        <p class="mb-0">Dạ cho mình xin thêm ít ớt và hành phi. Cảm ơn shop nhiều ạ!</p>
-                        <small class="chat-timestamp text-white-50">10:33</small>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Chat Input Area -->
-            <div class="chat-input-area">
-                <div class="input-group">
-                    <input type="text" class="form-control" placeholder="Nhập tin nhắn...">
-                    <button class="btn btn-danger" type="button">
-                        <i class="bi bi-send"></i>
-                    </button>
                 </div>
             </div>
         </div>

@@ -48,7 +48,7 @@ namespace DATN_GO.Controllers
             // ✅ Lọc địa chỉ của user hiện tại
             var userAddresses = addresses
                 .Where(a => a.UserId == currentUserId &&
-                       (a.Discription == null || !a.Discription.StartsWith("Tự động tạo cho")))
+                       (a.Description == null || !a.Description.StartsWith("Tự động tạo cho")))
                 .ToList();
 
             // Gắn info user
@@ -66,27 +66,27 @@ namespace DATN_GO.Controllers
 
 
         // GET: Create
-        public async Task<IActionResult> Create()
-        {
-            // ✅ Kiểm tra đăng nhập
-            if (string.IsNullOrEmpty(HttpContext.Session.GetString("Id")))
-            {
-                TempData["TriggerLoginModal"] = true;
-                TempData["ToastMessage"] = "Vui lòng đăng nhập để tiếp tục.";
-                TempData["ToastType"] = "warning";
-                return RedirectToAction("Index", "Home");
+        //public async Task<IActionResult> Create()
+        //{
+        //    // ✅ Kiểm tra đăng nhập
+        //    if (string.IsNullOrEmpty(HttpContext.Session.GetString("Id")))
+        //    {
+        //        TempData["TriggerLoginModal"] = true;
+        //        TempData["ToastMessage"] = "Vui lòng đăng nhập để tiếp tục.";
+        //        TempData["ToastType"] = "warning";
+        //        return RedirectToAction("Index", "Home");
 
-            }
+        //    }
 
-            var users = await GetUsersAsync();
+        //    var users = await GetUsersAsync();
 
-            int.TryParse(HttpContext.Session.GetString("Id"), out var currentUserId);
-            var fullName = HttpContext.Session.GetString("FullName");
+        //    int.TryParse(HttpContext.Session.GetString("Id"), out var currentUserId);
+        //    var fullName = HttpContext.Session.GetString("FullName");
 
-            ViewBag.CurrentUserName = fullName;
+        //    ViewBag.CurrentUserName = fullName;
 
-            return View(new Addresses { UserId = currentUserId });
-        }
+        //    //return View(new Addresses { UserId = currentUserId });
+        //}
 
 
         // POST: Create
@@ -127,7 +127,7 @@ namespace DATN_GO.Controllers
                 return View(model);
             }
 
-            if (string.IsNullOrWhiteSpace(model.Discription))
+            if (string.IsNullOrWhiteSpace(model.Description))
             {
                 TempData["ToastMessage"] = "Vui lòng chọn địa chỉ trên bản đồ";
                 TempData["ToastType"] = "warning";
@@ -170,9 +170,9 @@ namespace DATN_GO.Controllers
                 shouldUpdate = true;
             }
 
-            if (phoneNumber != user.PhoneNumber)
+            if (phoneNumber != user.Phone)
             {
-                user.PhoneNumber = phoneNumber;
+                user.Phone = phoneNumber;
                 HttpContext.Session.SetString("PhoneNumber", phoneNumber);
                 shouldUpdate = true;
             }
@@ -188,17 +188,17 @@ namespace DATN_GO.Controllers
                 }
             }
 
-            if (model.Status == "Mặc định")
-            {
-                var existingDefault = userAddresses.FirstOrDefault(a => a.Status == "Mặc định");
-                if (existingDefault != null)
-                {
-                    ViewBag.ShowDefaultModal = true;
-                    ViewBag.ExistingDefault = existingDefault.Discription;
-                    TempData["PendingAddress"] = JsonConvert.SerializeObject(model);
-                    return View(model);
-                }
-            }
+            //if (model.Status == "Mặc định")
+            //{
+            //    var existingDefault = userAddresses.FirstOrDefault(a => a.Status == "Mặc định");
+            //    if (existingDefault != null)
+            //    {
+            //        ViewBag.ShowDefaultModal = true;
+            //        ViewBag.ExistingDefault = existingDefault.Discription;
+            //        TempData["PendingAddress"] = JsonConvert.SerializeObject(model);
+            //        return View(model);
+            //    }
+            //}
 
             var result = await _service.AddAddressAsync(model);
             if (result)
@@ -252,12 +252,12 @@ namespace DATN_GO.Controllers
             }
 
             // ❌ Nếu là địa chỉ mặc định, không cho xoá
-            if (address.Status == "Mặc định")
-            {
-                TempData["ToastMessage"] = "Không thể xoá địa chỉ mặc định";
-                TempData["ToastType"] = "warning";
-                return RedirectToAction("Address");
-            }
+            //if (address.Status == "Mặc định")
+            //{
+            //    TempData["ToastMessage"] = "Không thể xoá địa chỉ mặc định";
+            //    TempData["ToastType"] = "warning";
+            //    return RedirectToAction("Address");
+            //}
 
             // ✅ Cho xoá nếu không phải mặc định
             var success = await _service.DeleteAddressAsync(id);
@@ -298,7 +298,7 @@ namespace DATN_GO.Controllers
             address.User = users.FirstOrDefault(u => u.Id == address.UserId);
 
             // Optional: Lấy thông tin City/District/Ward nếu dùng
-            int? cityId = null, districtId = null, wardId = await TryGetWardIdFromDescriptionAsync(address.Discription);
+            int? cityId = null, districtId = null, wardId = await TryGetWardIdFromDescriptionAsync(address.Description);
             if (wardId.HasValue)
             {
                 var wardRes = await _httpClient.GetAsync($"api/wards/{wardId}");
@@ -374,15 +374,15 @@ namespace DATN_GO.Controllers
             // Cập nhật các địa chỉ khác thành "Không mặc định"
             foreach (var addr in allAddresses.Where(a => a.UserId == userId))
             {
-                if (addr.Status == "Mặc định")
-                {
-                    addr.Status = "Không mặc định";
-                    await _service.UpdateAddressAsync(addr);
-                }
+                //if (addr.Status == "Mặc định")
+                //{
+                //    addr.Status = "Không mặc định";
+                //    await _service.UpdateAddressAsync(addr);
+                //}
             }
 
             // Cập nhật địa chỉ được chọn thành "Mặc định"
-            addressToSet.Status = "Mặc định";
+            //addressToSet.Status = "Mặc định";
             await _service.UpdateAddressAsync(addressToSet);
 
             TempData["ToastMessage"] = "Đã cập nhật địa chỉ mặc định!";
@@ -413,16 +413,16 @@ namespace DATN_GO.Controllers
             if (confirm)
             {
                 // ✅ Nếu chọn CÓ: reset mặc định cũ
-                foreach (var addr in allAddresses.Where(a => a.UserId == pending.UserId && a.Status == "Mặc định"))
-                {
-                    addr.Status = "Không mặc định";
-                    await _service.UpdateAddressAsync(addr);
-                }
+                //foreach (var addr in allAddresses.Where(a => a.UserId == pending.UserId && a.Status == "Mặc định"))
+                //{
+                //    addr.Status = "Không mặc định";
+                //    await _service.UpdateAddressAsync(addr);
+                //}
             }
             else
             {
                 // ❌ Nếu chọn KHÔNG: ép status về "Không mặc định"
-                pending.Status = "Không mặc định";
+                //pending.Status = "Không mặc định";
             }
 
             var result = await _service.AddAddressAsync(pending);
@@ -469,9 +469,9 @@ namespace DATN_GO.Controllers
                     needUpdate = true;
                 }
 
-                if (!string.IsNullOrWhiteSpace(phoneNumber) && phoneNumber != user.PhoneNumber)
+                if (!string.IsNullOrWhiteSpace(phoneNumber) && phoneNumber != user.Phone)
                 {
-                    user.PhoneNumber = phoneNumber;
+                    user.Phone = phoneNumber;
                     HttpContext.Session.SetString("PhoneNumber", phoneNumber);
                     needUpdate = true;
                 }
@@ -490,28 +490,28 @@ namespace DATN_GO.Controllers
 
             var allAddresses = await _service.GetAddressesAsync();
 
-            if (model.Status == "Không mặc định")
-            {
-                var hasDefault = allAddresses.Any(a => a.UserId == model.UserId && a.Id != model.Id && a.Status == "Mặc định");
-                if (!hasDefault)
-                {
-                    TempData["ToastMessage"] = "Phải có ít nhất 1 địa chỉ mặc định";
-                    TempData["ToastType"] = "warning";
-                    return View(model);
-                }
-            }
+            //if (model.Status == "Không mặc định")
+            //{
+            //    var hasDefault = allAddresses.Any(a => a.UserId == model.UserId && a.Id != model.Id && a.Status == "Mặc định");
+            //    if (!hasDefault)
+            //    {
+            //        TempData["ToastMessage"] = "Phải có ít nhất 1 địa chỉ mặc định";
+            //        TempData["ToastType"] = "warning";
+            //        return View(model);
+            //    }
+            //}
 
-            if (model.Status == "Mặc định")
-            {
-                var existingDefault = allAddresses.FirstOrDefault(a => a.UserId == model.UserId && a.Status == "Mặc định" && a.Id != model.Id);
-                if (existingDefault != null)
-                {
-                    ViewBag.ShowDefaultModal = true;
-                    ViewBag.ExistingDefault = existingDefault.Discription;
-                    TempData["PendingEditAddress"] = JsonConvert.SerializeObject(model);
-                    return View(model);
-                }
-            }
+            //if (model.Status == "Mặc định")
+            //{
+            //    var existingDefault = allAddresses.FirstOrDefault(a => a.UserId == model.UserId && a.Status == "Mặc định" && a.Id != model.Id);
+            //    if (existingDefault != null)
+            //    {
+            //        ViewBag.ShowDefaultModal = true;
+            //        ViewBag.ExistingDefault = existingDefault.Discription;
+            //        TempData["PendingEditAddress"] = JsonConvert.SerializeObject(model);
+            //        return View(model);
+            //    }
+            //}
 
             var success = await _service.UpdateAddressAsync(model);
             if (success)
@@ -548,15 +548,15 @@ namespace DATN_GO.Controllers
             if (confirm)
             {
                 // Reset tất cả địa chỉ mặc định cũ
-                foreach (var addr in allAddresses.Where(a => a.UserId == pending.UserId && a.Status == "Mặc định" && a.Id != pending.Id))
-                {
-                    addr.Status = "Không mặc định";
-                    await _service.UpdateAddressAsync(addr);
-                }
+                //foreach (var addr in allAddresses.Where(a => a.UserId == pending.UserId && a.Status == "Mặc định" && a.Id != pending.Id))
+                //{
+                //    addr.Status = "Không mặc định";
+                //    await _service.UpdateAddressAsync(addr);
+                //}
             }
             else
             {
-                pending.Status = "Không mặc định";
+                //pending.Status = "Không mặc định";
             }
 
             var success = await _service.UpdateAddressAsync(pending);

@@ -57,7 +57,7 @@
                 @if (Model != null && Model.Any())
                 {
                     int index = 1;
-                    @foreach (var address in Model.OrderByDescending(a => a.Status == "Mặc định"))
+@*                     @foreach (var address in Model.OrderByDescending(a => a.Status == "Mặc định"))
                     {
                         <tr class="address-row">
                             <td class="text-center">@index</td>
@@ -101,7 +101,7 @@
                             </td>
                         </tr>
                         index++;
-                    }
+                    } *@
                 }
                 else
                 {

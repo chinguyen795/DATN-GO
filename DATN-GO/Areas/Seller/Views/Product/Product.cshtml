@@ -1,0 +1,499 @@
+﻿@{
+    Layout = "~/Areas/Seller/Views/Shared/_LayoutSeller.cshtml";
+}
+<div class="page-wrapper">
+
+    <!-- Header -->
+    <header class="main-header" id="header">
+        <nav class="navbar navbar-expand-lg navbar-light" id="navbar">
+            <!-- Sidebar toggle button -->
+            <button id="sidebar-toggler" class="sidebar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+            </button>
+
+            <span class="page-title">SẢN PHẨM</span>
+
+            <div class="navbar-right ">
+
+                <ul class="nav navbar-nav">
+                    <li class="custom-dropdown">
+                        <a asp-area="Seller" asp-controller="Notification" asp-action="Notification" class="notify-toggler custom-dropdown-toggler">
+                            <i class="mdi mdi-bell-outline icon"></i>
+                        </a>
+                    </li>
+                    <!-- User Account -->
+                    <li class="dropdown user-menu">
+                        <button class="dropdown-toggle nav-link" data-toggle="dropdown">
+                            <img src="~/images/avt-user.jpg" alt="User Profile" width="32" height="32"
+                                 style="object-fit: cover;" loading="lazy">
+                            <span class="d-none d-lg-inline-block">Meo Meo</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-right">
+                            <li>
+                                <a class="dropdown-link-item" href="user-profile.html">
+                                    <i class="mdi mdi-account-outline"></i>
+                                    <span class="nav-text">Hồ Sơ</span>
+                                </a>
+                            </li>
+                            <li class="dropdown-footer">
+                                <a class="dropdown-link-item" href="sign-in.html">
+                                    <i class="mdi mdi-logout"></i> Đăng Xuất
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+
+    </header>
+
+    <!-- ====================================
+    ——— CONTENT WRAPPER
+    ===================================== -->
+    <div class="content-wrapper">
+        <div class="content">
+            <!-- For Components documentaion -->
+            <!-- Products Inventory -->
+            <div class="card card-default">
+                <div class="card-header">
+                    <h2>Danh sách sản phẩm</h2>
+                    <div class="btn-group">
+                        <a href="@Url.Action("CreateProduct", "Product", new { area = "Seller" })" class="btn btn-danger" style="text-transform: capitalize;">
+                            <i class="bi bi-plus-circle-fill"></i> Thêm sản phẩm
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table id="productsTable" class="table table-hover table-product" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Ảnh sản phẩm</th>
+                                <th>Tên sản phẩm</th>
+                                <th>Danh mục</th>
+                                <th>Hiển thị</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>001</td>
+                                <td class="py-0">
+                                    <img src="images/products/products-xs-01.jpg" alt="Product Image">
+                                </td>
+                                <td>Áo thun nam</td>
+                                <td>Thời trang nam</td>
+                                <td>
+                                    <label class="switch switch-text switch-outline-alt-danger switch-pill form-control-label mr-2">
+                                        <input type="checkbox" class="switch-input form-check-input" value="on"
+                                               checked>
+                                        <span class="switch-label" data-on="On" data-off="Off"></span>
+                                        <span class="switch-handle"></span>
+                                    </label>
+                                </td>
+                                <td><span class="badge badge-success">Đang bán</span></td>
+                                <td>
+                                    <div class="dropdown">
+                                        <a class="dropdown-toggle icon-burger-mini" href="#" role="button"
+                                           id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true"
+                                           aria-expanded="false"></a>
+                                        <div class="dropdown-menu dropdown-menu-right"
+                                             aria-labelledby="dropdownMenuLink">
+                                            <a class="dropdown-item" type="button" data-toggle="modal"
+                                               data-target="#exampleModallarge">Chi tiết sản phẩm</a>
+                                            <a class="dropdown-item" href="#" data-toggle="modal"
+                                               data-target="#editProductModal">Sửa</a>
+                                            <a class="dropdown-item" type="button" data-toggle="modal"
+                                               data-target="#exampleModal">Xóa</a>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>002</td>
+                                <td>
+                                    <img src="images/products/product-2.jpg" alt="product"
+                                         style="width: 50px; height: 50px;">
+                                </td>
+                                <td>Quần jean nữ</td>
+                                <td>Thời trang nữ</td>
+                                <td>
+                                    <label class="switch switch-text switch-outline-alt-danger switch-pill form-control-label mr-2">
+                                        <input type="checkbox" class="switch-input form-check-input" value="on"
+                                               checked>
+                                        <span class="switch-label" data-on="On" data-off="Off"></span>
+                                        <span class="switch-handle"></span>
+                                    </label>
+                                </td>
+                                <td><span class="badge badge-danger">Chờ duyệt</span></td>
+                                <td>
+                                    <div class="dropdown">
+                                        <a class="dropdown-toggle icon-burger-mini" href="#" role="button"
+                                           id="dropdownMenuLink2" data-toggle="dropdown" aria-haspopup="true"
+                                           aria-expanded="false"></a>
+                                        <div class="dropdown-menu dropdown-menu-right"
+                                             aria-labelledby="dropdownMenuLink2">
+                                            <a class="dropdown-item" type="button" data-toggle="modal"
+                                               data-target="#exampleModallarge">Chi tiết sản phẩm</a>
+                                            <a class="dropdown-item" href="#" data-toggle="modal"
+                                               data-target="#editProductModal">Sửa</a>
+                                            <a class="dropdown-item" type="button" data-toggle="modal"
+                                               data-target="#exampleModal">Xóa</a>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>001</td>
+                                <td class="py-0">
+                                    <img src="images/products/products-xs-01.jpg" alt="Product Image">
+                                </td>
+                                <td>Áo thun nam</td>
+                                <td>Thời trang nam</td>
+                                <td>
+                                    <label class="switch switch-text switch-outline-alt-danger switch-pill form-control-label mr-2">
+                                        <input type="checkbox" class="switch-input form-check-input" value="on"
+                                               checked>
+                                        <span class="switch-label" data-on="On" data-off="Off"></span>
+                                        <span class="switch-handle"></span>
+                                    </label>
+                                </td>
+                                <td><span class="badge badge-light">Đã ẩn</span></td>
+                                <td>
+                                    <div class="dropdown">
+                                        <a class="dropdown-toggle icon-burger-mini" href="#" role="button"
+                                           id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true"
+                                           aria-expanded="false"></a>
+                                        <div class="dropdown-menu dropdown-menu-right"
+                                             aria-labelledby="dropdownMenuLink">
+                                            <a class="dropdown-item" type="button" data-toggle="modal"
+                                               data-target="#exampleModallarge">Chi tiết sản phẩm</a>
+                                            <a class="dropdown-item" href="#" data-toggle="modal"
+                                               data-target="#editProductModal">Sửa</a>
+                                            <a class="dropdown-item" type="button" data-toggle="modal"
+                                               data-target="#exampleModal">Xóa</a>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>002</td>
+                                <td>
+                                    <img src="images/products/product-2.jpg" alt="product"
+                                         style="width: 50px; height: 50px;">
+                                </td>
+                                <td>Quần jean nữ</td>
+                                <td>Thời trang nữ</td>
+                                <td>
+                                    <label class="switch switch-text switch-outline-alt-danger switch-pill form-control-label mr-2">
+                                        <input type="checkbox" class="switch-input form-check-input" value="on"
+                                               checked>
+                                        <span class="switch-label" data-on="On" data-off="Off"></span>
+                                        <span class="switch-handle"></span>
+                                    </label>
+                                </td>
+                                <td><span class="badge badge-warning">Hết hàng</span></td>
+                                <td>
+                                    <div class="dropdown">
+                                        <a class="dropdown-toggle icon-burger-mini" href="#" role="button"
+                                           id="dropdownMenuLink2" data-toggle="dropdown" aria-haspopup="true"
+                                           aria-expanded="false"></a>
+                                        <div class="dropdown-menu dropdown-menu-right"
+                                             aria-labelledby="dropdownMenuLink2">
+                                            <a class="dropdown-item" type="button" data-toggle="modal"
+                                               data-target="#exampleModallarge">Chi tiết sản phẩm</a>
+                                            <a class="dropdown-item" href="#" data-toggle="modal"
+                                               data-target="#editProductModal">Sửa</a>
+                                            <a class="dropdown-item" type="button" data-toggle="modal"
+                                               data-target="#exampleModal">Xóa</a>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>002</td>
+                                <td>
+                                    <img src="images/products/product-2.jpg" alt="product"
+                                         style="width: 50px; height: 50px;">
+                                </td>
+                                <td>Quần jean nữ</td>
+                                <td>Thời trang nữ</td>
+                                <td>
+                                    <label class="switch switch-text switch-outline-alt-danger switch-pill form-control-label mr-2">
+                                        <input type="checkbox" class="switch-input form-check-input" value="on"
+                                               checked>
+                                        <span class="switch-label" data-on="On" data-off="Off"></span>
+                                        <span class="switch-handle"></span>
+                                    </label>
+                                </td>
+                                <td><span class="badge badge-danger">Chờ duyệt</span></td>
+                                <td>
+                                    <div class="dropdown">
+                                        <a class="dropdown-toggle icon-burger-mini" href="#" role="button"
+                                           id="dropdownMenuLink2" data-toggle="dropdown" aria-haspopup="true"
+                                           aria-expanded="false"></a>
+                                        <div class="dropdown-menu dropdown-menu-right"
+                                             aria-labelledby="dropdownMenuLink2">
+                                            <a class="dropdown-item" type="button" data-toggle="modal"
+                                               data-target="#exampleModallarge">Chi tiết sản phẩm</a>
+                                            <a class="dropdown-item" href="#" data-toggle="modal"
+                                               data-target="#editProductModal">Sửa</a>
+                                            <a class="dropdown-item" type="button" data-toggle="modal"
+                                               data-target="#exampleModal">Xóa</a>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>001</td>
+                                <td class="py-0">
+                                    <img src="images/products/products-xs-01.jpg" alt="Product Image">
+                                </td>
+                                <td>Áo thun nam</td>
+                                <td>Thời trang nam</td>
+                                <td>
+                                    <label class="switch switch-text switch-outline-alt-danger switch-pill form-control-label mr-2">
+                                        <input type="checkbox" class="switch-input form-check-input" value="on"
+                                               checked>
+                                        <span class="switch-label" data-on="On" data-off="Off"></span>
+                                        <span class="switch-handle"></span>
+                                    </label>
+                                </td>
+                                <td><span class="badge badge-secondary">Đã ẩn</span></td>
+                                <td>
+                                    <div class="dropdown">
+                                        <a class="dropdown-toggle icon-burger-mini" href="#" role="button"
+                                           id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true"
+                                           aria-expanded="false"></a>
+                                        <div class="dropdown-menu dropdown-menu-right"
+                                             aria-labelledby="dropdownMenuLink">
+                                            <a class="dropdown-item" type="button" data-toggle="modal"
+                                               data-target="#exampleModallarge">Chi tiết sản phẩm</a>
+                                            <a class="dropdown-item" href="#" data-toggle="modal"
+                                               data-target="#editProductModal">Sửa</a>
+                                            <a class="dropdown-item" type="button" data-toggle="modal"
+                                               data-target="#exampleModal">Xóa</a>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Modal chi tiết-->
+<div class="modal fade" id="exampleModallarge" tabindex="-1" role="dialog" aria-labelledby="exampleModalLarge"
+     aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger">
+                <h5 class="modal-title text-white" id="exampleModalLabel">Chi Tiết Sản Phẩm</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-xl-4">
+                        <p class="text-dark font-weight-medium pt-4 mb-2">Tên sản phẩm</p>
+                        <p>Áo thun nam</p>
+                    </div>
+                    <div class="col-xl-4">
+                        <p class="text-dark font-weight-medium pt-4 mb-2">Xuất xứ</p>
+                        <p>Việt Nam</p>
+                    </div>
+                    <div class="col-xl-4">
+                        <p class="text-dark font-weight-medium pt-4 mb-2">Thương hiệu</p>
+                        <p>Polo</p>
+                    </div>
+
+                    <div class="col-xl-4">
+                        <p class="text-dark font-weight-medium pt-4 mb-2">Số lượng</p>
+                        <p>921</p>
+                    </div>
+                    <div class="col-xl-4">
+                        <p class="text-dark font-weight-medium pt-4 mb-2">Giá bán</p>
+                        <p>110.000đ</p>
+                    </div>
+                    <div class="col-xl-4">
+                        <p class="text-dark font-weight-medium pt-4 mb-2">Ngày tạo</p>
+                        <p>2025-06-15</p>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col">Màu</th>
+                                <th scope="col">Size</th>
+                                <th scope="col">Giá vốn</th>
+                                <th scope="col">Giá bán</th>
+                                <th scope="col">Số lượng</th>
+                                <th scope="col">Khối lượng (Grams)</th>
+                                <th scope="col">Kích thước (Dài x Rộng x Cao) cm</th>
+                                <th scope="col">Ảnh sản phẩm</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Xanh</td>
+                                <td>L</td>
+                                <td>100.000đ</td>
+                                <td>130.000đ</td>
+                                <td>50</td>
+                                <td>200g</td>
+                                <td>30cm x 20cm x 5cm</td>
+                                <td>
+                                    <img src="../theme/images/elements/user-md-1.jpg" alt="product"
+                                         style="width: 50px; height: 50px;">
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>Cam</td>
+                                <td>L</td>
+                                <td>120.000đ</td>
+                                <td>140.000đ</td>
+                                <td>30</td>
+                                <td>200g</td>
+                                <td>30cm x 20cm x 5cm</td>
+                                <td>
+                                    <img src="../theme/images/elements/user-md-3.jpg" alt="product"
+                                         style="width: 50px; height: 50px;">
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light btn-pill" data-dismiss="modal" style="text-transform: capitalize;">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal sửa -->
+<div class="modal fade" id="editProductModal" tabindex="-1" role="dialog" aria-labelledby="editProductModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header bg-danger">
+                <h5 class="modal-title text-white" id="exampleModalLabel">Sửa Sản Phẩm</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <form id="editProductForm">
+                    <div class="form-group">
+                        <label for="productName">Tên sản phẩm</label>
+                        <input type="text" class="form-control" id="productName" value="Áo thun nam">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productCategory">Danh mục</label>
+                        <select class="form-control" id="productCategory">
+                            <option selected>Thời trang nam</option>
+                            <option>Thời trang nữ</option>
+                            <option>Phụ kiện</option>
+                            <option>Khác</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productQuantity">Số lượng</label>
+                        <input type="number" class="form-control" id="productQuantity" value="100">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productPrice">Giá bán</label>
+                        <input type="text" class="form-control" id="productPrice" value="299000">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Trạng thái</label><br>
+                        <label class="switch switch-text switch-outline-alt-danger switch-pill form-control-label mr-2">
+                            <input type="checkbox" class="switch-input form-check-input" id="productStatus" checked>
+                            <span class="switch-label"></span>
+                            <span class="switch-handle"></span>
+                        </label>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light btn-pill" data-dismiss="modal" style="text-transform: capitalize;">Đóng</button>
+                <button type="button" class="btn btn-danger btn-pill" onclick="submitProductEdit()" style="text-transform: capitalize;">
+                    Lưu thay
+                    đổi
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Modal xóa -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger">
+                <h5 class="modal-title text-white" id="exampleModalLabel">Thông Báo Xóa</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Bạn có chắc chắn muốn xóa không? Hành động này sẽ không thể hoàn tác.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light btn-pill" data-dismiss="modal" style="text-transform: capitalize;">Đóng</button>
+                <button type="button" class="btn btn-danger btn-pill" style="text-transform: capitalize;">Xóa</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- DataTables Initialization Script -->
+<script>
+    $(document).ready(function () {
+        $('#productsTable').DataTable({
+            "order": [[0, "desc"]],
+            "language": {
+                "lengthMenu": "Hiển thị _MENU_ sản phẩm mỗi trang",
+                "zeroRecords": "Không tìm thấy sản phẩm nào",
+                "info": "Hiển thị trang _PAGE_ / _PAGES_",
+                "infoEmpty": "Không có sản phẩm nào",
+                "infoFiltered": "(lọc từ _MAX_ sản phẩm)",
+                "search": "Tìm kiếm:",
+                "paginate": {
+                    "first": "Đầu",
+                    "last": "Cuối",
+                    "next": "Sau",
+                    "previous": "Trước"
+                }
+            }
+        });
+    });
+</script>

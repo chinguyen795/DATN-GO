@@ -1,0 +1,287 @@
+﻿@{
+    Layout = "~/Areas/Seller/Views/Shared/_LayoutSeller.cshtml";
+}
+<style>
+    #imagePreview .btn-close {
+        display: block !important;
+        position: absolute;
+        top: -10px;
+        right: -2px;
+        right: 2px;
+        z-index: 10;
+    }
+</style>
+<div class="page-wrapper">
+
+    <!-- Header -->
+    <header class="main-header" id="header">
+        <nav class="navbar navbar-expand-lg navbar-light" id="navbar">
+            <!-- Sidebar toggle button -->
+            <button id="sidebar-toggler" class="sidebar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+            </button>
+
+            <span class="page-title">THÊM SẢN PHẨM</span>
+
+            <div class="navbar-right ">
+
+                <ul class="nav navbar-nav">
+                    <li class="custom-dropdown">
+                        <a asp-area="Seller" asp-controller="Notification" asp-action="Notification" class="notify-toggler custom-dropdown-toggler">
+                            <i class="mdi mdi-bell-outline icon"></i>
+                        </a>
+                    </li>
+                    <!-- User Account -->
+                    <li class="dropdown user-menu">
+                        <button class="dropdown-toggle nav-link" data-toggle="dropdown">
+                            <img src="~/images/avt-user.jpg" alt="User Profile" width="32" height="32"
+                                 style="object-fit: cover;" loading="lazy">
+                            <span class="d-none d-lg-inline-block">Meo Meo</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-right">
+                            <li>
+                                <a class="dropdown-link-item" href="user-profile.html">
+                                    <i class="mdi mdi-account-outline"></i>
+                                    <span class="nav-text">Hồ Sơ</span>
+                                </a>
+                            </li>
+                            <li class="dropdown-footer">
+                                <a class="dropdown-link-item" href="sign-in.html">
+                                    <i class="mdi mdi-logout"></i> Đăng Xuất
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+
+    </header>
+
+    <!-- ====================================
+    ——— CONTENT WRAPPER
+    ===================================== -->
+    <div class="content-wrapper">
+        <div class="content">
+            <!-- For Components documentaion -->
+            <div class="card card-default">
+                <div class="card-header">
+                    <h2>Thông tin sản phẩm</h2>
+                </div>
+                <div class="card-body">
+                    <div class="collapse">
+                    </div>
+                    <form>
+                        <div class="row">
+                            <div class="col-xl-6">
+                                <div class="border-start border-danger border-3 ps-3 mb-3">
+                                    <div class="form-group">
+                                        <label for="productname">Tên sản phẩm</label>
+                                        <span class="text-danger">*</span>
+                                        <input type="text" class="form-control" id="productname"
+                                               placeholder="Tên sản phẩm">
+                                    </div>
+
+
+                                    <div class="form-group">
+                                        <label for="cateloryproduct">Chọn danh mục</label>
+                                        <span class="text-danger">*</span>
+                                        <select class="selectpicker w-100" data-live-search="true">
+                                            <option>Quần áo</option>
+                                            <option>Gia dụng</option>
+                                            <option>Điện tử</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="madein">Xuất xứ</label>
+                                        <input type="text" class="form-control" id="madein"
+                                               placeholder="Nơi xuất xứ">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="brandproduct">Thương hiệu (nếu có)</label>
+                                        <input type="text" class="form-control" id="brandproduct"
+                                               placeholder="Tên thương hiệu">
+                                    </div>
+                                </div>
+
+                                <div class="border-start border-danger border-3 ps-3 mb-3"
+                                     id="no-variant-section">
+                                    <div class="alert alert-info alert-icon" role="alert">
+                                        <i class="mdi mdi-alert-circle-outline"></i>Mục này chỉ áp dụng cho sản
+                                        phẩm không có biến thể!
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="importprice">Giá nhập</label>
+                                        <input type="number" class="form-control" id="importprice"
+                                               placeholder="Giá nhập sản phẩm">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="sellingprice">Giá bán</label>
+                                        <input type="number" class="form-control" id="sellingprice"
+                                               placeholder="Giá bán sản phẩm">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="productnumber">Số lượng sản phẩm</label>
+                                        <input type="text" class="form-control" id="productnumber"
+                                               placeholder="Số lượng sản phẩm">
+                                    </div>
+                                </div>
+
+
+
+
+                            </div>
+                            <div class="col-xl-6">
+
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        Hình ảnh sản phẩm <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="mt-2">
+                                        <input type="file" class="d-none" id="productImage" accept="image/*"
+                                               onchange="previewImage(this)">
+                                        <div class="position-relative border-2 border-dashed rounded-3 bg-light d-flex align-items-center justify-content-center"
+                                             style="min-height: 300px; max-width: 100%; cursor: pointer;"
+                                             onclick="document.getElementById('productImage').click()"
+                                             id="dropZone">
+
+                                            <!-- Upload Icon and Text -->
+                                            <div id="uploadContent" class="text-center">
+                                                <div class="display-6 text-secondary mb-2">
+                                                    <i class="mdi mdi-image-area"></i>
+                                                </div>
+                                                <p class="mb-0 text-secondary">Click để tải ảnh lên</p>
+                                                <p class="small text-muted mt-2">Hỗ trợ: JPG, PNG, JPEG</p>
+                                            </div>
+
+                                            <!-- Image Preview -->
+                                            <div id="imagePreview"
+                                                 class="d-none w-100 h-100 position-relative border border-danger border-dashed rounded-3">
+                                                <img id="preview" src="#" alt="Preview"
+                                                     class="img-fluid mx-auto d-block w-100 h-100"
+                                                     style="max-height: 300px; object-fit: cover;">
+                                                <button type="button"
+                                                        class="btn-close position-absolute top-0 end-0 m-2 d-flex align-items-center justify-content-center"
+                                                        onclick="removeImage(event)" aria-label="Close">
+                                                    <i class="bi bi-x-circle-fill"
+                                                       style="font-size:2.5rem; color:#ff4d4f;"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="border-start border-danger border-3 ps-3 mb-3"
+                                     id="no-variant-section-2">
+                                    <div class="alert alert-info alert-icon" role="alert">
+                                        <i class="mdi mdi-alert-circle-outline"></i>Mục này chỉ áp dụng cho sản
+                                        phẩm không có biến thể!
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="volume">Khối lượng</label>
+                                        <input type="number" class="form-control" id="volume"
+                                               placeholder="Khối lượng sản phẩm">
+                                    </div>
+                                    <label class="form-label fw-medium">Kích Thước Đóng Gói (D x R x C)</label>
+                                    <div class="form-group d-flex align-items-center">
+                                        <input type="number" class="form-control" id="packageLength"
+                                               placeholder="Dài" min="0" />
+                                        <span class="input-group-text">x</span>
+                                        <input type="number" class="form-control" id="packageWidth"
+                                               placeholder="Rộng" min="0" />
+                                        <span class="input-group-text">x</span>
+                                        <input type="number" class="form-control" id="packageHeight"
+                                               placeholder="Cao" min="0" />
+                                    </div>
+                                </div>
+                            </div>
+                    </form>
+
+                    <!-- Variant Options Section -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="border-start border-danger border-3 ps-3 mb-3">
+                                <h4 class="mb-3">Biến thể sản phẩm</h4>
+                                <button type="button" class="btn btn-danger mb-3" id="addVariantType"
+                                        style="text-transform: capitalize;">
+                                    <i class="mdi mdi-plus"></i> Thêm loại tùy chọn
+                                </button>
+
+                                <div id="variantTypesContainer">
+                                    <!-- Variant types will be added here dynamically -->
+                                </div>
+
+                                <!-- Variant Combination Table -->
+                                <div class="variant-table mt-4" style="display: none;">
+                                    <h5 class="mb-3">Danh sách biến thể (SKU)</h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>Size</th>
+                                                    <th>Màu</th>
+                                                    <th>Giá Bán</th>
+                                                    <th>Giá Vốn</th>
+                                                    <th>Tồn Kho</th>
+                                                    <th>KL (kg)</th>
+                                                    <th>K.Thước (DxRxC)</th>
+                                                    <th>Ảnh</th>
+                                                    <!-- <th>Thao tác</th> -->
+                                                </tr>
+                                            </thead>
+                                            <tbody id="variantTableBody">
+                                                <!-- Variant combinations will be added here dynamically -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var addVariantBtn = document.getElementById('addVariantType');
+        if (addVariantBtn) {
+            addVariantBtn.addEventListener('click', function () {
+                var noVariantSection = document.getElementById('no-variant-section');
+                if (noVariantSection) {
+                    noVariantSection.style.display = 'none';
+                }
+                var noVariantSection2 = document.getElementById('no-variant-section-2');
+                if (noVariantSection2) {
+                    noVariantSection2.style.display = 'none';
+                }
+            });
+        }
+
+        // Listen for custom event to show sections again
+        document.addEventListener('showNoVariantSections', function () {
+            var noVariantSection = document.getElementById('no-variant-section');
+            if (noVariantSection) {
+                noVariantSection.style.display = '';
+            }
+            var noVariantSection2 = document.getElementById('no-variant-section-2');
+            if (noVariantSection2) {
+                noVariantSection2.style.display = '';
+            }
+        });
+    });
+
+    // Example: Call this function when all variant options are removed
+    function showNoVariantSections() {
+        var event = new Event('showNoVariantSections');
+        document.dispatchEvent(event);
+    }
+</script>

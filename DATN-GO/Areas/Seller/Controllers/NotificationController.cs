@@ -3,9 +3,9 @@
 namespace DATN_GO.Areas.Seller.Controllers
 {
     [Area("Seller")]
-    public class CategoryController : Controller
+    public class NotificationController : Controller
     {
-        public IActionResult Category()
+        public IActionResult Notification()
         {
             return View();
         }
