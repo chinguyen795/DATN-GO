@@ -1,0 +1,379 @@
+﻿@{
+    ViewData["Title"] = "Detail Diner Page";
+}
+
+
+<!-- Store Banner Section -->
+<section class="store-banner position-relative mb-3">
+    <div style="height: 400px; overflow: hidden;">
+        <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4"
+             alt="Store Banner"
+             class="w-100 h-100 object-fit-cover opacity-75">
+    </div>
+
+    <!-- Store Info Overlay -->
+    <div class="container position-relative">
+        <div class="row">
+            <div class="col-lg-8 col-md-10 mx-auto">
+                <div class="card shadow" style="margin-top: -50px;">
+                    <div class="card-body">
+                        <!-- Store Header -->
+                        <div class="d-flex align-items-center mb-4">
+                            <img src="image/logo.png"
+                                 alt="Meo Meo"
+                                 class="rounded-circle border border-3 border-white shadow-sm"
+                                 style="width: 100px; height: 100px; object-fit: cover;">
+                            <div class="ms-3">
+                                <h2 class="mb-1 text-danger">Meo Meo</h2>
+                                <p class="text-muted mb-0">
+                                    <i class="bi bi-geo-alt-fill"></i>
+                                    Thường Thạnh, Cái Răng, Cần Thơ
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Store Stats -->
+                        <div class="row g-3 text-center mb-4">
+                            <div class="col">
+                                <div class="border rounded p-3 bg-light">
+                                    <div class="text-danger h4 mb-0">0</div>
+                                    <small class="text-muted">Sản phẩm</small>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="border rounded p-3 bg-light">
+                                    <div class="text-danger h4 mb-0">0</div>
+                                    <small class="text-muted">Đã bán</small>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="border rounded p-3 bg-light">
+                                    <div class="text-danger h4 mb-0">0</div>
+                                    <small class="text-muted">Người theo dõi</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Store Rating -->
+                        <div class="d-flex align-items-center gap-2 mb-4">
+                            <h4 class="mb-0 text-danger">4.4</h4>
+                            <div class="text-warning">
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-half"></i>
+                            </div>
+                            <span class="text-muted">(0 đánh giá)</span>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-danger w-100">
+                                <i class="bi bi-heart me-1"></i>
+                                Theo dõi
+                            </button>
+                            <button class="btn btn-danger w-100">
+                                <i class="bi bi-chat-dots me-1"></i>
+                                Chat ngay
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Store Content Section -->
+<section class="container mb-3 p-0">
+    <div class="card">
+        <div class="card-header bg-white p-3">
+            <h5 class="mb-0 text-danger">Voucher của Shop</h5>
+        </div>
+        <div class="card-body position-relative px-3">
+            <div class="voucher-container py-2 p-1">
+                <div class="voucher-scroll d-flex gap-2 p-2">
+                    <!-- Voucher Item -->
+                    <div class="voucher-item">
+                        <div class="border rounded p-3 d-flex align-items-center justify-content-between bg-light" style="min-width: 320px;">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="text-danger" style="font-size: 2rem;">
+                                    <i class="bi bi-ticket-perforated-fill"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Giảm 20K</h6>
+                                    <p class="text-muted small mb-0">Đơn tối thiểu ₫150K</p>
+                                    <small class="text-danger">HSD: 30.04.2025</small>
+                                </div>
+                            </div>
+                            <button class="btn btn-outline-danger">Lưu</button>
+                        </div>
+                    </div>
+
+
+                    <div class="voucher-item">
+                        <div class="border rounded p-3 d-flex align-items-center justify-content-between bg-light" style="min-width: 320px;">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="text-danger" style="font-size: 2rem;">
+                                    <i class="bi bi-ticket-perforated-fill"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Giảm 20K</h6>
+                                    <p class="text-muted small mb-0">Đơn tối thiểu ₫150K</p>
+                                    <small class="text-danger">HSD: 30.04.2025</small>
+                                </div>
+                            </div>
+                            <button class="btn btn-outline-danger">Lưu</button>
+                        </div>
+                    </div>
+
+                    <div class="voucher-item">
+                        <div class="border rounded p-3 d-flex align-items-center justify-content-between bg-light" style="min-width: 320px;">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="text-danger" style="font-size: 2rem;">
+                                    <i class="bi bi-ticket-perforated-fill"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Giảm 20K</h6>
+                                    <p class="text-muted small mb-0">Đơn tối thiểu ₫150K</p>
+                                    <small class="text-danger">HSD: 30.04.2025</small>
+                                </div>
+                            </div>
+                            <button class="btn btn-outline-danger">Lưu</button>
+                        </div>
+                    </div>
+
+                    <!-- Voucher Item -->
+                    <div class="voucher-item">
+                        <div class="border rounded p-3 d-flex align-items-center justify-content-between bg-light" style="min-width: 320px;">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="text-danger" style="font-size: 2rem;">
+                                    <i class="bi bi-ticket-perforated-fill"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Giảm 50K</h6>
+                                    <p class="text-muted small mb-0">Đơn tối thiểu ₫300K</p>
+                                    <small class="text-danger">HSD: 30.04.2025</small>
+                                </div>
+                            </div>
+                            <button class="btn btn-outline-danger">Lưu</button>
+                        </div>
+                    </div>
+
+                    <!-- Voucher Item -->
+                    <div class="voucher-item">
+                        <div class="border rounded p-3 d-flex align-items-center justify-content-between bg-light" style="min-width: 320px;">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="text-danger" style="font-size: 2rem;">
+                                    <i class="bi bi-ticket-perforated-fill"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Freeship</h6>
+                                    <p class="text-muted small mb-0">Đơn tối thiểu ₫99K</p>
+                                    <small class="text-danger">HSD: 30.04.2025</small>
+                                </div>
+                            </div>
+                            <button class="btn btn-outline-danger">Lưu</button>
+                        </div>
+                    </div>
+
+                    <!-- Additional Voucher Items -->
+                    <div class="voucher-item">
+                        <div class="border rounded p-3 d-flex align-items-center justify-content-between bg-light" style="min-width: 320px;">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="text-danger" style="font-size: 2rem;">
+                                    <i class="bi bi-ticket-perforated-fill"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Giảm 100K</h6>
+                                    <p class="text-muted small mb-0">Đơn tối thiểu ₫500K</p>
+                                    <small class="text-danger">HSD: 30.04.2025</small>
+                                </div>
+                            </div>
+                            <button class="btn btn-outline-danger">Lưu</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Filter Section -->
+<section class="container mb-3 p-0">
+    <div class="row g-3 p-0">
+        <!-- Search Bar -->
+        <div class="col-12 col-md-3">
+            <div class="input-group" style="height: 38px;">
+                <input type="text" id="searchInput" class="form-control h-100" placeholder="Tìm kiếm món ăn..." style="height: 100%;">
+                <button class="btn btn-outline-danger h-100" style="height: 100%;">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Category Filter -->
+        <div class="col-12 col-md-3">
+            <select class="form-select border-danger" id="foodTypeFilter">
+                <option value="">Tất cả món ăn</option>
+                <option value="mon-nuoc">Món nước</option>
+                <option value="mon-kho">Món khô</option>
+                <option value="do-an-vat">Đồ ăn vặt</option>
+                <option value="trang-mieng">Tráng miệng</option>
+            </select>
+        </div>
+
+        <!-- Sort Options -->
+        <div class="col-12 col-md-3">
+            <select class="form-select border-danger" id="sortFilter">
+                <option value="">Sắp xếp theo</option>
+                <option value="price-asc">Giá thấp đến cao</option>
+                <option value="price-desc">Giá cao đến thấp</option>
+                <option value="newest">Mới nhất</option>
+            </select>
+        </div>
+
+        <!-- Filter Buttons -->
+        <div class="col-12 col-md-3 d-flex gap-2">
+            <button class="btn btn-outline-danger flex-grow-1" id="bestSellingFilter">
+                <i class="bi bi-graph-up"></i> Bán chạy
+            </button>
+            <button class="btn btn-outline-danger flex-grow-1" id="discountedFilter">
+                <i class="bi bi-tag"></i> Giảm giá
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- Products Grid Section -->
+<section mb-3>
+    <div class="row g-4">
+        <!-- Product Card 1 -->
+        <div class="col-xl-3 col-lg-4 col-md-6" data-aos="fade-up">
+            <div class="product-card card h-100 border-0 shadow-sm hover-scale">
+                <div class="position-relative">
+                    <img src="https://i.pinimg.com/736x/51/67/99/51679964424ad36d8cd3f01e391e6720.jpg"
+                         class="card-img-top" style="height: 200px; object-fit: cover;" alt="Product">
+                    <div class="product-badge bg-danger text-white position-absolute top-0 end-0 m-2 px-2 py-1 rounded-pill">
+                        -30%
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-light text-danger">Món Lẩu</span>
+                        <div class="rating text-warning">
+                            <i class="bi bi-star-fill icon-sm"></i>
+                            <span class="ms-1 text-dark">4.9</span>
+                        </div>
+                    </div>
+                    <h5 class="card-title fw-bold mb-1 text-truncate-1">Lẩu Thái Chua Cay</h5>
+                    <p class="card-text text-muted small mb-2 text-truncate-1">Nhà hàng Lẩu Thái</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-danger fw-bold">175.000đ</span>
+                            <span class="text-muted text-decoration-line-through small">250.000đ</span>
+                        </div>
+                        <button class="btn btn-crimson btn-sm rounded-pill">
+                            <i class="bi bi-cart-plus icon-sm"></i> Thêm
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Card 2 -->
+        <div class="col-xl-3 col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
+            <div class="product-card card h-100 border-0 shadow-sm hover-scale">
+                <div class="position-relative">
+                    <img src="https://i.pinimg.com/736x/32/c0/54/32c05405e98bf5f4e8c3a7d2e213dade.jpg"
+                         class="card-img-top" style="height: 200px; object-fit: cover;" alt="Product">
+                    <div class="product-badge bg-success text-white position-absolute top-0 end-0 m-2 px-2 py-1 rounded-pill">
+                        Mới
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-light text-danger">Món Nướng</span>
+                        <div class="rating text-warning">
+                            <i class="bi bi-star-fill icon-sm"></i>
+                            <span class="ms-1 text-dark">4.7</span>
+                        </div>
+                    </div>
+                    <h5 class="card-title fw-bold mb-1 text-truncate-1">Sườn Nướng BBQ</h5>
+                    <p class="card-text text-muted small mb-2 text-truncate-1">Quán Nướng 68</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-danger fw-bold">165.000đ</span>
+                        </div>
+                        <button class="btn btn-crimson btn-sm rounded-pill">
+                            <i class="bi bi-cart-plus icon-sm"></i> Thêm
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Card 3 -->
+        <div class="col-xl-3 col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
+            <div class="product-card card h-100 border-0 shadow-sm hover-scale">
+                <div class="position-relative">
+                    <img src="https://i.pinimg.com/736x/0e/0f/eb/0e0febf746d99bcdbbf7c8c688b86bb7.jpg"
+                         class="card-img-top" style="height: 200px; object-fit: cover;" alt="Product">
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-light text-danger">Món Chay</span>
+                        <div class="rating text-warning">
+                            <i class="bi bi-star-fill icon-sm"></i>
+                            <span class="ms-1 text-dark">4.8</span>
+                        </div>
+                    </div>
+                    <h5 class="card-title fw-bold mb-1 text-truncate-1">Cơm Chay Thập Cẩm</h5>
+                    <p class="card-text text-muted small mb-2 text-truncate-1">Nhà Hàng Chay An Nhiên</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-danger fw-bold">85.000đ</span>
+                        </div>
+                        <button class="btn btn-crimson btn-sm rounded-pill">
+                            <i class="bi bi-cart-plus icon-sm"></i> Thêm
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Card 4 -->
+        <div class="col-xl-3 col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
+            <div class="product-card card h-100 border-0 shadow-sm hover-scale">
+                <div class="position-relative">
+                    <img src="https://i.pinimg.com/736x/67/e9/f2/67e9f28cc9b02a92703a45a3c4c88cc9.jpg"
+                         class="card-img-top" style="height: 200px; object-fit: cover;" alt="Product">
+                    <div class="product-badge bg-danger text-white position-absolute top-0 end-0 m-2 px-2 py-1 rounded-pill">
+                        -15%
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-light text-danger">Món Âu</span>
+                        <div class="rating text-warning">
+                            <i class="bi bi-star-fill icon-sm"></i>
+                            <span class="ms-1 text-dark">4.6</span>
+                        </div>
+                    </div>
+                    <h5 class="card-title fw-bold mb-1 text-truncate-1">Steak Bò Mỹ</h5>
+                    <p class="card-text text-muted small mb-2 text-truncate-1">Western Cuisine</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-danger fw-bold">425.000đ</span>
+                            <span class="text-muted text-decoration-line-through small">500.000đ</span>
+                        </div>
+                        <button class="btn btn-crimson btn-sm rounded-pill">
+                            <i class="bi bi-cart-plus icon-sm"></i> Thêm
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,6 +1,10 @@
 ﻿﻿@{
     ViewData["Title"] = "Voucher Page";
 }
+@{
+    ViewData["UseContainer"] = false;
+}
+
 
 <div class="container-fluid">
     <div class="row">
@@ -56,23 +60,27 @@
                     </li>
                 </ul>
             </div>
-        </div>
-
-        <!-- Main Content -->
+        </div>                    <!-- Main Content -->
         <div class="col-lg-9 col-xl-10 p-4">
-            <div class="bg-white p-4 rounded shadow-sm border border-danger">
-                <h4 class="mb-4 text-danger">Voucher của tôi</h4>
+            <div class="bg-white p-4 rounded shadow-lg">
+                <div class="card mb-4">
+                    <div class="card-header bg-danger bg-opacity-10 border-danger border-5 border-top-0 border-end-0 border-bottom-0">
+                        <h4 class="card-title text-danger mb-0 py-2">
+                            <i class="bi bi-ticket-perforated-fill me-2"></i>
+                            Voucher của tôi
+                        </h4>
+                    </div>
+                </div>
 
-                <!-- Voucher Status Tabs -->
-                <ul class="nav nav-tabs mb-4">
+                <!-- Voucher Status Tabs -->                            <ul class="nav nav-tabs mb-4">
                     <li class="nav-item">
-                        <a class="nav-link active text-dark" href="#" data-voucher-tab="all">Tất cả</a>
+                        <a class="nav-link active" href="#" data-tab-color="gray" data-voucher-tab="all">Tất cả</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-primary" href="#" data-voucher-tab="shop">Voucher Shop</a>
+                        <a class="nav-link" href="#" data-tab-color="danger" data-voucher-tab="shop">Voucher Shop</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-success" href="#" data-voucher-tab="floor">Voucher Sàn</a>
+                        <a class="nav-link" href="#" data-tab-color="success" data-voucher-tab="floor">Voucher Sàn</a>
                     </li>
                 </ul>
 

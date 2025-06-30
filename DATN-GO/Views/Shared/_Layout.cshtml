@@ -1,4 +1,7 @@
-﻿<!doctype html>
+﻿@{
+	var useContainer = ViewData["UseContainer"] as bool? ?? true;
+}
+<!doctype html>
 <html lang="en">
 
 <head>
@@ -199,9 +202,16 @@
         </div>
     </div>
 
-    <main class="container">
-        @RenderBody();
-    </main>
+    @if (useContainer)
+    {
+        <div class="container">
+            @RenderBody()
+        </div>
+    }
+    else
+    {
+        @RenderBody()
+    }
 
 
 

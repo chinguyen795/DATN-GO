@@ -1006,18 +1006,13 @@ p {
 .carousel-control-prev,
 .carousel-control-next {
   width: 10%;
-  background: rgba(0, 0, 0, 0.1);
 }
 
-.carousel-control-prev:hover,
-.carousel-control-next:hover {
-  background: rgba(0, 0, 0, 0.2);
-}
 
 /* Main Carousel Image */
 .carousel-item img {
   object-fit: contain;
-  height: 400px;
+  height: 300px;
 }
 
 /* Banner Image Styles */
@@ -1334,4 +1329,172 @@ p {
   text-overflow: ellipsis;
   white-space: nowrap;
   display: block;
+}
+
+/* Shared tab styles */
+.nav-tabs .nav-link {
+    border: none;
+    position: relative;
+    transition: all 0.3s ease;
+    padding: 0.5rem 1rem;
+    margin-right: 1rem;
+}
+
+.nav-tabs .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+/* Hover và Active states chung cho tất cả tabs */
+.nav-tabs .nav-link:hover::after,
+.nav-tabs .nav-link.active::after {
+    width: 100%;
+}
+
+/* Màu cho các tab */
+/* Orders page */
+.nav-tabs .nav-link[data-tab-color="gray"],
+.nav-tabs .nav-link#all-tab {
+    color: #6c757d;
+}
+.nav-tabs .nav-link[data-tab-color="gray"]::after,
+.nav-tabs .nav-link#all-tab::after {
+    background-color: #6c757d;
+}
+
+.nav-tabs .nav-link[data-tab-color="warning"],
+.nav-tabs .nav-link#pending-tab {
+    color: #ffc107;
+}
+.nav-tabs .nav-link[data-tab-color="warning"]::after,
+.nav-tabs .nav-link#pending-tab::after {
+    background-color: #ffc107;
+}
+
+.nav-tabs .nav-link[data-tab-color="info"],
+.nav-tabs .nav-link#processing-tab {
+    color: #17a2b8;
+}
+.nav-tabs .nav-link[data-tab-color="info"]::after,
+.nav-tabs .nav-link#processing-tab::after {
+    background-color: #17a2b8;
+}
+
+.nav-tabs .nav-link[data-tab-color="success"],
+.nav-tabs .nav-link#shipping-tab {
+    color: #28a745;
+}
+.nav-tabs .nav-link[data-tab-color="success"]::after,
+.nav-tabs .nav-link#shipping-tab::after {
+    background-color: #28a745;
+}
+
+.nav-tabs .nav-link[data-tab-color="primary"],
+.nav-tabs .nav-link#completed-tab {
+    color: #007bff;
+}
+.nav-tabs .nav-link[data-tab-color="primary"]::after,
+.nav-tabs .nav-link#completed-tab::after {
+    background-color: #007bff;
+}
+
+.nav-tabs .nav-link[data-tab-color="danger"],
+.nav-tabs .nav-link#cancelled-tab {
+    color: #DC143C;
+}
+.nav-tabs .nav-link[data-tab-color="danger"]::after,
+.nav-tabs .nav-link#cancelled-tab::after {
+    background-color: #DC143C;
+}
+
+/* Badge colors */
+.nav-tabs .nav-link .badge[data-badge-color="warning"],
+.nav-tabs .nav-link#pending-tab .badge {
+    background-color: #ffc107;
+}
+
+.nav-tabs .nav-link .badge[data-badge-color="info"],
+.nav-tabs .nav-link#processing-tab .badge {
+    background-color: #17a2b8;
+}
+
+.nav-tabs .nav-link .badge[data-badge-color="success"],
+.nav-tabs .nav-link#shipping-tab .badge {
+    background-color: #28a745;
+}
+
+/* Badge styles */
+.nav-tabs .nav-link .badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: #DC143C;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Order item styles */
+.order-item {
+    transition: all 0.3s ease;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.order-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Button styles */
+.btn:hover {
+    transform: translateY(-1px);
+    transition: transform 0.3s ease;
+}
+
+/* Content animation */
+.tab-content > .tab-pane,
+.vouchers-content {
+    transition: all 0.3s ease;
+}
+
+.tab-content > .tab-pane:not(.show),
+.vouchers-content.d-none {
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+.tab-content > .tab-pane.show,
+.vouchers-content:not(.d-none) {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Voucher content animation */
+.vouchers-content {
+    transition: all 0.3s ease;
+}
+
+.vouchers-content.d-none {
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+.vouchers-content:not(.d-none) {
+    opacity: 1;
+    transform: translateY(0);
 }

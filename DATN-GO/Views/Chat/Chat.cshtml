@@ -2,145 +2,244 @@
     ViewData["Title"] = "Chat Page";
 }
 
-<div class="container-fluid chat-container">
-    <div class="row h-100">
-        <!-- Seller List Section - Left Side -->
-        <div class="col-md-4 border-end">
-            <div class="p-3">
-                <!-- Search Box -->
-                <div class="input-group mb-3">
-                    <input type="text" class="form-control" placeholder="Tìm kiếm người bán" aria-label="Search sellers">
-                    <button class="btn btn-danger" type="button">
-                        <i class="bi bi-search"></i>
-                    </button>
-                </div>
+    <div class="d-flex justify-content-between align-items-center mx-3 mt-2">
+        <!-- Back button - Hidden on mobile -->
+        <a href="Home.html" class="btn btn-outline-danger rounded-3 px-4 d-none d-md-block">
+            <i class="bi bi-arrow-left me-2"></i>Quay lại
+        </a>
 
-                <!-- Seller List -->
-                <div class="seller-list">
-                    <!-- Seller Item -->
-                    <div class="d-flex align-items-center p-2 border-bottom seller-item">
-                        <img src="https://via.placeholder.com/50" class="rounded-circle me-2" alt="Seller Avatar">
-                        <div class="flex-grow-1">
-                            <h6 class="mb-0">Cửa hàng A</h6>
-                            <small class="text-muted">Tin nhắn cuối cùng...</small>
+        <!-- Mobile Toggle Button -->
+        <button class="btn btn-outline-danger d-md-none ms-auto" type="button" data-bs-toggle="offcanvas"
+                data-bs-target="#chatListOffcanvas" aria-controls="chatListOffcanvas">
+            <i class="bi bi-list"></i> Danh sách chat
+        </button>
+    </div>
+
+    <!-- Chat Container -->
+    <div class="container-fluid chat-container p-0">
+        <div class="row g-0 h-100">
+            <!-- Seller List Section - Left Side -->
+            <div class="col-12 col-md-4 border-end d-none d-md-block">
+                <div class="p-3">
+                    <!-- Search Box -->
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" placeholder="Tìm kiếm người bán"
+                               aria-label="Search sellers">
+                        <button class="btn btn-danger" type="button">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+
+                    <!-- Seller List -->
+                    <div class="seller-list overflow-auto" style="max-height: 75vh;">
+                        <!-- Seller Item -->
+                        <div class="d-flex align-items-center p-2 border-bottom seller-item">
+                            <img src="https://vibienxanh.vn/upload/2017/09/29/rua-bien-4.jpg"
+                                 class="rounded-circle me-2" alt="Seller Avatar" width="40" height="40">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0">Cửa hàng A</h6>
+                                <small class="text-muted">Tin nhắn cuối cùng...</small>
+                            </div>
+                            <small class="text-muted">12:30</small>
                         </div>
-                        <small class="text-muted">12:30</small>
-                    </div>
 
-                    <!-- More Seller Items -->
-                    <div class="d-flex align-items-center p-2 border-bottom seller-item active">
-                        <img src="https://via.placeholder.com/50" class="rounded-circle me-2" alt="Seller Avatar">
-                        <div class="flex-grow-1">
-                            <h6 class="mb-0">Cửa hàng B</h6>
-                            <small>Ok bạn...</small>
+                        <!-- More Seller Items -->
+                        <div class="d-flex align-items-center p-2 border-bottom seller-item active">
+                            <img src="https://vibienxanh.vn/upload/2017/09/29/rua-bien-4.jpg"
+                                 class="rounded-circle me-2" alt="Seller Avatar" width="40" height="40">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0">Cửa hàng B</h6>
+                                <small>Ok bạn...</small>
+                            </div>
+                            <small>Hôm qua</small>
                         </div>
-                        <small>Hôm qua</small>
-                    </div>
 
-                    <div class="d-flex align-items-center p-2 border-bottom seller-item">
-                        <img src="https://via.placeholder.com/50" class="rounded-circle me-2" alt="Seller Avatar">
-                        <div class="flex-grow-1">
-                            <h6 class="mb-0">Cửa hàng C</h6>
-                            <small class="text-muted">Cảm ơn bạn...</small>
+                        <div class="d-flex align-items-center p-2 border-bottom seller-item">
+                            <img src="https://vibienxanh.vn/upload/2017/09/29/rua-bien-4.jpg"
+                                 class="rounded-circle me-2" alt="Seller Avatar" width="40" height="40">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0">Cửa hàng C</h6>
+                                <small class="text-muted">Cảm ơn bạn...</small>
+                            </div>
+                            <small class="text-muted">23/04</small>
                         </div>
-                        <small class="text-muted">23/04</small>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Chat Section - Right Side -->
-        <div class="col-md-8 h-100 position-relative">
-            <!-- Chat Header -->
-            <div class="border-bottom p-3">
-                <div class="d-flex align-items-center">
-                    <img src="https://via.placeholder.com/50" class="rounded-circle me-2" alt="Current Chat Avatar">
-                    <div>
-                        <h5 class="mb-0">Cửa hàng B</h5>
-                        <small class="text-muted">Đang hoạt động</small>
+            </div> <!-- Chat Section - Right Side -->
+            <div class="col-12 col-md-8 h-100 position-relative">
+                <!-- Mobile Seller List Offcanvas -->
+                <div class="offcanvas offcanvas-start" tabindex="-1" id="chatListOffcanvas"
+                     aria-labelledby="chatListOffcanvasLabel">
+                    <div class="offcanvas-header">
+                        <h5 class="offcanvas-title text-danger" id="chatListOffcanvasLabel">Danh sách chat</h5>
+                        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
+                                aria-label="Close"></button>
                     </div>
-                </div>
-            </div>
+                    <div class="offcanvas-body">
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" placeholder="Tìm kiếm người bán">
+                            <button class="btn btn-danger" type="button">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                        <div class="seller-list overflow-auto" style="max-height: calc(100vh - 150px);">
+                            <!-- Seller Item -->
+                            <div class="d-flex align-items-center p-2 border-bottom seller-item">
+                                <img src="https://vibienxanh.vn/upload/2017/09/29/rua-bien-4.jpg"
+                                     class="rounded-circle me-2" alt="Seller Avatar" width="40" height="40">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Cửa hàng A</h6>
+                                    <small class="text-muted">Tin nhắn cuối cùng...</small>
+                                </div>
+                                <small class="text-muted">12:30</small>
+                            </div>
 
-            <!-- Chat Messages Area -->
-            <div class="chat-messages p-3">
-                <!-- Received Message -->
-                <div class="d-flex mb-3">
-                    <img src="https://via.placeholder.com/40" class="rounded-circle me-2" alt="Seller Avatar" height="40">
-                    <div class="chat-message-receive">
-                        <p class="mb-0">Xin chào! Tôi đã nhận được đơn hàng của bạn về món Phở Bò Đặc Biệt. Bạn muốn giao hàng vào thời gian nào ạ?</p>
-                        <small class="chat-timestamp text-muted">10:30</small>
-                    </div>
-                </div>
+                            <!-- More Seller Items -->
+                            <div class="d-flex align-items-center p-2 border-bottom seller-item active">
+                                <img src="https://vibienxanh.vn/upload/2017/09/29/rua-bien-4.jpg"
+                                     class="rounded-circle me-2" alt="Seller Avatar" width="40" height="40">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Cửa hàng B</h6>
+                                    <small>Ok bạn...</small>
+                                </div>
+                                <small>Hôm qua</small>
+                            </div>
 
-                <!-- Sent Message -->
-                <div class="d-flex justify-content-end mb-3">
-                    <div class="chat-message-send">
-                        <p class="mb-0">Dạ cho mình hỏi, shop có thể giao vào lúc 12h trưa được không ạ? Mình đang ở văn phòng tại 123 Nguyễn Văn Linh.</p>
-                        <small class="chat-timestamp text-white-50">10:31</small>
-                    </div>
-                </div>
-
-                <!-- Received Message -->
-                <div class="d-flex mb-3">
-                    <img src="https://via.placeholder.com/40" class="rounded-circle me-2" alt="Seller Avatar" height="40">
-                    <div class="chat-message-receive">
-                        <p class="mb-0">Dạ được ạ! Chúng tôi sẽ chuẩn bị và giao đến địa chỉ của bạn đúng 12h. Bạn có yêu cầu gì thêm về món ăn không ạ?</p>
-                        <small class="chat-timestamp text-muted">10:32</small>
-                    </div>
-                </div>
-
-                <!-- Sent Message -->
-                <div class="d-flex justify-content-end mb-3">
-                    <div class="chat-message-send">
-                        <p class="mb-0">Dạ cho mình xin thêm ít ớt và hành phi. Cảm ơn shop nhiều ạ!</p>
-                        <small class="chat-timestamp text-white-50">10:33</small>
-                    </div>
-                </div>
-
-                <div class="d-flex mb-3">
-                    <img src="https://via.placeholder.com/40" class="rounded-circle me-2" alt="Seller Avatar" height="40">
-                    <div class="chat-message-receive">
-                        <p class="mb-0">Xin chào! Tôi đã nhận được đơn hàng của bạn về món Phở Bò Đặc Biệt. Bạn muốn giao hàng vào thời gian nào ạ?</p>
-                        <small class="chat-timestamp text-muted">10:30</small>
+                            <div class="d-flex align-items-center p-2 border-bottom seller-item">
+                                <img src="https://vibienxanh.vn/upload/2017/09/29/rua-bien-4.jpg"
+                                     class="rounded-circle me-2" alt="Seller Avatar" width="40" height="40">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Cửa hàng C</h6>
+                                    <small class="text-muted">Cảm ơn bạn...</small>
+                                </div>
+                                <small class="text-muted">23/04</small>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Sent Message -->
-                <div class="d-flex justify-content-end mb-3">
-                    <div class="chat-message-send">
-                        <p class="mb-0">Dạ cho mình hỏi, shop có thể giao vào lúc 12h trưa được không ạ? Mình đang ở văn phòng tại 123 Nguyễn Văn Linh.</p>
-                        <small class="chat-timestamp text-white-50">10:31</small>
+                <!-- Chat Content -->
+                <div class="d-flex flex-column h-100">
+                    <!-- Chat Header -->
+                    <div class="border-bottom p-3">
+                        <div class="d-flex align-items-center">
+                            <img src="https://vibienxanh.vn/upload/2017/09/29/rua-bien-4.jpg"
+                                 class="rounded-circle me-2" alt="Current Chat Avatar" width="40" height="40">
+                            <div>
+                                <h5 class="mb-0">Cửa hàng B</h5>
+                                <small class="text-muted">Đang hoạt động</small>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Received Message -->
-                <div class="d-flex mb-3">
-                    <img src="https://via.placeholder.com/40" class="rounded-circle me-2" alt="Seller Avatar" height="40">
-                    <div class="chat-message-receive">
-                        <p class="mb-0">Dạ được ạ! Chúng tôi sẽ chuẩn bị và giao đến địa chỉ của bạn đúng 12h. Bạn có yêu cầu gì thêm về món ăn không ạ?</p>
-                        <small class="chat-timestamp text-muted">10:32</small>
+                    <!-- Chat Messages Area -->
+                    <div class="chat-messages p-3 overflow-auto flex-grow-1" style="max-height: 60vh;">
+                        <!-- Received Message -->
+                        <div class="d-flex mb-3">
+                            <img src="https://vibienxanh.vn/upload/2017/09/29/rua-bien-4.jpg"
+                                 class="rounded-circle me-2" alt="Seller Avatar" width="40" height="40">
+                            <div class="chat-message-receive">
+                                <p class="mb-0">
+                                    Xin chào! Tôi đã nhận được đơn hàng của bạn về món Phở Bò Đặc Biệt.
+                                    Bạn
+                                    muốn giao hàng vào thời gian nào ạ?
+                                </p>
+                                <small class="chat-timestamp text-muted">10:30</small>
+                            </div>
+                        </div>
+
+                        <!-- Sent Message -->
+                        <div class="d-flex justify-content-end mb-3">
+                            <div class="chat-message-send">
+                                <p class="mb-0">
+                                    Dạ cho mình hỏi, shop có thể giao vào lúc 12h trưa được không ạ?
+                                    Mình
+                                    đang ở văn phòng tại 123 Nguyễn Văn Linh.
+                                </p>
+                                <small class="chat-timestamp text-white-50">10:31</small>
+                            </div>
+                        </div>
+
+                        <!-- Received Message -->
+                        <div class="d-flex mb-3">
+                            <img src="https://vibienxanh.vn/upload/2017/09/29/rua-bien-4.jpg"
+                                 class="rounded-circle me-2" alt="Seller Avatar" width="40" height="40">
+                            <div class="chat-message-receive">
+                                <p class="mb-0">
+                                    Dạ được ạ! Chúng tôi sẽ chuẩn bị và giao đến địa chỉ của bạn đúng
+                                    12h.
+                                    Bạn có yêu cầu gì thêm về món ăn không ạ?
+                                </p>
+                                <small class="chat-timestamp text-muted">10:32</small>
+                            </div>
+                        </div>
+
+                        <!-- Sent Message -->
+                        <div class="d-flex justify-content-end mb-3">
+                            <div class="chat-message-send">
+                                <p class="mb-0">Dạ cho mình xin thêm ít ớt và hành phi. Cảm ơn shop nhiều ạ!</p>
+                                <small class="chat-timestamp text-white-50">10:33</small>
+                            </div>
+                        </div>
+
+                        <div class="d-flex mb-3">
+                            <img src="https://vibienxanh.vn/upload/2017/09/29/rua-bien-4.jpg"
+                                 class="rounded-circle me-2" alt="Seller Avatar" width="40" height="40">
+                            <div class="chat-message-receive">
+                                <p class="mb-0">
+                                    Xin chào! Tôi đã nhận được đơn hàng của bạn về món Phở Bò Đặc Biệt.
+                                    Bạn
+                                    muốn giao hàng vào thời gian nào ạ?
+                                </p>
+                                <small class="chat-timestamp text-muted">10:30</small>
+                            </div>
+                        </div>
+
+                        <!-- Sent Message -->
+                        <div class="d-flex justify-content-end mb-3">
+                            <div class="chat-message-send">
+                                <p class="mb-0">
+                                    Dạ cho mình hỏi, shop có thể giao vào lúc 12h trưa được không ạ?
+                                    Mình
+                                    đang ở văn phòng tại 123 Nguyễn Văn Linh.
+                                </p>
+                                <small class="chat-timestamp text-white-50">10:31</small>
+                            </div>
+                        </div>
+
+                        <!-- Received Message -->
+                        <div class="d-flex mb-3">
+                            <img src="https://vibienxanh.vn/upload/2017/09/29/rua-bien-4.jpg"
+                                 class="rounded-circle me-2" alt="Seller Avatar" width="40" height="40">
+                            <div class="chat-message-receive">
+                                <p class="mb-0">
+                                    Dạ được ạ! Chúng tôi sẽ chuẩn bị và giao đến địa chỉ của bạn đúng
+                                    12h.
+                                    Bạn có yêu cầu gì thêm về món ăn không ạ?
+                                </p>
+                                <small class="chat-timestamp text-muted">10:32</small>
+                            </div>
+                        </div>
+
+                        <!-- Sent Message -->
+                        <div class="d-flex justify-content-end mb-3">
+                            <div class="chat-message-send">
+                                <p class="mb-0">Dạ cho mình xin thêm ít ớt và hành phi. Cảm ơn shop nhiều ạ!</p>
+                                <small class="chat-timestamp text-white-50">10:33</small>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Sent Message -->
-                <div class="d-flex justify-content-end mb-3">
-                    <div class="chat-message-send">
-                        <p class="mb-0">Dạ cho mình xin thêm ít ớt và hành phi. Cảm ơn shop nhiều ạ!</p>
-                        <small class="chat-timestamp text-white-50">10:33</small>
+                    <!-- Chat Input Area -->
+                    <div class="chat-input-area p-3 border-top">
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Nhập tin nhắn...">
+                            <button class="btn btn-danger" type="button">
+                                <i class="bi bi-send"></i>
+                            </button>
+                        </div>
                     </div>
-                </div>
-            </div>
-
-            <!-- Chat Input Area -->
-            <div class="chat-input-area">
-                <div class="input-group">
-                    <input type="text" class="form-control" placeholder="Nhập tin nhắn...">
-                    <button class="btn btn-danger" type="button">
-                        <i class="bi bi-send"></i>
-                    </button>
                 </div>
             </div>
         </div>
     </div>
-</div>

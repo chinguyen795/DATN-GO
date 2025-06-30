@@ -1,0 +1,595 @@
+﻿@{
+    ViewData["Title"] = "Detail Food Page";
+}
+
+
+
+            <div class="row mb-5">
+                <!-- Product Image Section -->
+                <div class="col-md-6 mb-4">
+                    <!-- Main Carousel -->
+                    <div id="productCarousel" class="carousel slide mb-3" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                            <div class="carousel-item active">
+                                <img src="https://i.pinimg.com/736x/75/f3/9f/75f39f3ba8033ee5201532c6d54dc7cd.jpg"
+                                    class="d-block w-100 border rounded" alt="Hình ảnh sản phẩm 1">
+                            </div>
+                            <div class="carousel-item">
+                                <img src="https://i.pinimg.com/736x/00/17/63/0017631d7ed34e0a714c40feee8e479d.jpg"
+                                    class="d-block w-100 border rounded" alt="Hình ảnh sản phẩm 2">
+                            </div>
+                            <div class="carousel-item">
+                                <img src="https://i.pinimg.com/736x/75/f3/9f/75f39f3ba8033ee5201532c6d54dc7cd.jpg"
+                                    class="d-block w-100 border rounded" alt="Hình ảnh sản phẩm 3">
+                            </div>
+                            <div class="carousel-item">
+                                <img src="https://i.pinimg.com/736x/00/17/63/0017631d7ed34e0a714c40feee8e479d.jpg"
+                                    class="d-block w-100 border rounded" alt="Hình ảnh sản phẩm 4">
+                            </div>
+                            <div class="carousel-item">
+                                <img src="https://i.pinimg.com/736x/75/f3/9f/75f39f3ba8033ee5201532c6d54dc7cd.jpg"
+                                    class="d-block w-100 border rounded" alt="Hình ảnh sản phẩm 5">
+                            </div>
+                            <div class="carousel-item">
+                                <img src="https://i.pinimg.com/736x/00/17/63/0017631d7ed34e0a714c40feee8e479d.jpg"
+                                    class="d-block w-100 border rounded" alt="Hình ảnh sản phẩm 6">
+                            </div>
+                            <div class="carousel-item">
+                                <img src="https://i.pinimg.com/736x/00/17/63/0017631d7ed34e0a714c40feee8e479d.jpg"
+                                    class="d-block w-100 border rounded" alt="Hình ảnh sản phẩm 4">
+                            </div>
+                            <div class="carousel-item">
+                                <img src="https://i.pinimg.com/736x/75/f3/9f/75f39f3ba8033ee5201532c6d54dc7cd.jpg"
+                                    class="d-block w-100 border rounded" alt="Hình ảnh sản phẩm 5">
+                            </div>
+                            <div class="carousel-item">
+                                <img src="https://i.pinimg.com/736x/00/17/63/0017631d7ed34e0a714c40feee8e479d.jpg"
+                                    class="d-block w-100 border rounded" alt="Hình ảnh sản phẩm 6">
+                            </div>
+                        </div>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel"
+                            data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#productCarousel"
+                            data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                    </div>
+
+                    <!-- Thumbnails with Navigation -->
+                    <div class="position-relative">
+                        <button class="thumbnail-nav prev" type="button" id="scrollPrev">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <div class="thumbnails-container">
+                            <div class="thumbnails-wrapper">
+                                <img src="https://i.pinimg.com/736x/75/f3/9f/75f39f3ba8033ee5201532c6d54dc7cd.jpg"
+                                    class="product-thumbnail active" data-bs-target="#productCarousel"
+                                    data-bs-slide-to="0">
+                                <img src="https://i.pinimg.com/736x/00/17/63/0017631d7ed34e0a714c40feee8e479d.jpg"
+                                    class="product-thumbnail" data-bs-target="#productCarousel" data-bs-slide-to="1">
+                                <img src="https://i.pinimg.com/736x/75/f3/9f/75f39f3ba8033ee5201532c6d54dc7cd.jpg"
+                                    class="product-thumbnail" data-bs-target="#productCarousel" data-bs-slide-to="2">
+                                <img src="https://i.pinimg.com/736x/00/17/63/0017631d7ed34e0a714c40feee8e479d.jpg"
+                                    class="product-thumbnail" data-bs-target="#productCarousel" data-bs-slide-to="3">
+                                <img src="https://i.pinimg.com/736x/75/f3/9f/75f39f3ba8033ee5201532c6d54dc7cd.jpg"
+                                    class="product-thumbnail" data-bs-target="#productCarousel" data-bs-slide-to="4">
+                                <img src="https://i.pinimg.com/736x/00/17/63/0017631d7ed34e0a714c40feee8e479d.jpg"
+                                    class="product-thumbnail" data-bs-target="#productCarousel" data-bs-slide-to="5">
+                                <img src="https://i.pinimg.com/736x/75/f3/9f/75f39f3ba8033ee5201532c6d54dc7cd.jpg"
+                                    class="product-thumbnail active" data-bs-target="#productCarousel"
+                                    data-bs-slide-to="66">
+                                <img src="https://i.pinimg.com/736x/00/17/63/0017631d7ed34e0a714c40feee8e479d.jpg"
+                                    class="product-thumbnail" data-bs-target="#productCarousel" data-bs-slide-to="7">
+                                <img src="https://i.pinimg.com/736x/75/f3/9f/75f39f3ba8033ee5201532c6d54dc7cd.jpg"
+                                    class="product-thumbnail" data-bs-target="#productCarousel" data-bs-slide-to="8">
+                                <img src="https://i.pinimg.com/736x/00/17/63/0017631d7ed34e0a714c40feee8e479d.jpg"
+                                    class="product-thumbnail" data-bs-target="#productCarousel" data-bs-slide-to="9">
+                                <img src="https://i.pinimg.com/736x/75/f3/9f/75f39f3ba8033ee5201532c6d54dc7cd.jpg"
+                                    class="product-thumbnail" data-bs-target="#productCarousel" data-bs-slide-to="10">
+                                <img src="https://i.pinimg.com/736x/00/17/63/0017631d7ed34e0a714c40feee8e479d.jpg"
+                                    class="product-thumbnail" data-bs-target="#productCarousel" data-bs-slide-to="11">
+                            </div>
+                        </div>
+                        <button class="thumbnail-nav next" type="button" id="scrollNext">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product Information Section -->
+                <div class="col-md-6">
+                    <!-- Store Information -->
+                    <div class="pb-2 mb-2 border-bottom">
+                        <div class="d-flex align-items-center"> <img src="image/logo.png" alt="Logo cửa hàng"
+                                class="rounded-circle me-2 logo-store">
+                            <div class="flex-grow-1">
+                                <h5 class="mb-0">Tên Cửa Hàng</h5>
+                                <div class="d-flex align-items-center mt-1">
+                                    <div class="text-muted me-3">
+                                        <small><i class="fas fa-star text-warning"></i> 4.8 (1.2k đánh giá)</small>
+                                    </div>
+                                    <div class="store-status">
+                                        <span class="badge bg-success"><i class="fas fa-clock me-1"></i>Đang mở
+                                            cửa</span>
+                                        <small class="text-muted ms-2">08:00 - 22:00</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>                    <!-- Product Information -->
+                    <h2 class="mb-3">Tên Sản Phẩm</h2>
+                    <div class="mb-3 d-flex align-items-center">
+                        <span class="text-danger fw-bold fs-3">99.000₫</span>
+                        <span class="text-decoration-line-through text-muted ms-3">120.000₫</span>
+                        <span class="badge bg-danger ms-2">-18%</span>
+                    </div>
+
+                    <!-- Rating -->
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center">
+                            <div class="text-warning me-2">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                            <span>4.5 (245 đánh giá)</span>
+                        </div>
+                    </div>
+
+                    <!-- Product Variants -->
+                    <div class="mb-4">
+                        <!-- Size Selection -->
+                        <div class="mb-3">
+                            <h5>Kích thước</h5>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <input type="radio" class="btn-check" name="size" id="size-s" autocomplete="off"
+                                    checked>
+                                <label class="btn btn-outline-danger" for="size-s">S</label>
+
+                                <input type="radio" class="btn-check" name="size" id="size-m" autocomplete="off">
+                                <label class="btn btn-outline-danger" for="size-m">M</label>
+
+                                <input type="radio" class="btn-check" name="size" id="size-l" autocomplete="off">
+                                <label class="btn btn-outline-danger" for="size-l">L</label>
+
+                                <input type="radio" class="btn-check" name="size" id="size-xl" autocomplete="off">
+                                <label class="btn btn-outline-danger" for="size-xl">XL</label>
+                            </div>
+                        </div>
+
+                        <!-- Color Selection -->
+                        <div class="mb-3">
+                            <h5>Màu sắc</h5>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <input type="radio" class="btn-check" name="color" id="color-red" autocomplete="off"
+                                    checked>
+                                <label class="btn btn-outline-danger" for="color-red">Đỏ</label>
+
+                                <input type="radio" class="btn-check" name="color" id="color-blue" autocomplete="off">
+                                <label class="btn btn-outline-danger" for="color-blue">Xanh dương</label>
+
+                                <input type="radio" class="btn-check" name="color" id="color-black" autocomplete="off">
+                                <label class="btn btn-outline-danger" for="color-black">Đen</label>
+
+                                <input type="radio" class="btn-check" name="color" id="color-white" autocomplete="off">
+                                <label class="btn btn-outline-danger" for="color-white">Trắng</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quantity Selector -->
+                    <div class="mb-4">
+                        <h5>Số lượng</h5>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="input-group quantity-input-group">
+                                <button class="btn btn-outline-secondary" type="button" id="decreaseQuantity">-</button>
+                                <input type="number" class="form-control text-center" value="1" min="1"
+                                    id="quantityInput">
+                                <button class="btn btn-outline-secondary" type="button" id="increaseQuantity">+</button>
+                            </div>
+                            <span class="text-muted">Còn lại: 150 sản phẩm</span>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-danger btn-lg">Mua ngay</button>
+                        <button class="btn btn-outline-primary btn-lg">Thêm vào giỏ hàng</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center container mb-3">
+                <hr class="flex-grow-1  border-danger border-1 opacity-100">
+            </div>
+            <div class="mb-4">
+                <h3>Thông tin chi tiết:</h3>
+
+                <p class="text-muted mb-3">
+                    Mô tả chi tiết về sản phẩm, bao gồm các đặc điểm và tính năng nổi bật.
+                    Có thể bao gồm nhiều thông tin về cách sử dụng, bảo quản và các lợi ích khi sử dụng sản phẩm.
+                </p>
+
+                <h5>Hướng dẫn sử dụng:</h5>
+                <p class="text-muted mb-4">
+                    Chi tiết về cách sử dụng sản phẩm, các lưu ý khi sử dụng và bảo quản để đạt hiệu quả tốt nhất.
+                </p>
+            </div>
+
+            <!-- Comments Section -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <button class="btn btn-outline-danger w-100 fs-4" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#commentsSection">
+                            <i class="fas fa-chevron-down4"></i> Xem đánh giá sản phẩm
+                        </button>
+                    </div>
+
+                    <div class="collapse" id="commentsSection">
+                        <!-- Comment Filters -->
+                        <div class="d-flex flex-wrap gap-3 mb-4 align-items-center">
+                            <div class="d-flex align-items-center">
+                                <span class="me-2">Sắp xếp theo:</span>
+                                <select class="form-select form-select-sm" style="width: auto;">
+                                    <option value="latest">Mới nhất</option>
+                                    <option value="oldest">Cũ nhất</option>
+                                    <option value="rating-high">Đánh giá cao nhất</option>
+                                    <option value="rating-low">Đánh giá thấp nhất</option>
+                                </select>
+                            </div>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button class="btn btn-outline-danger btn-sm active">
+                                    Tất cả
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm">
+                                    5 <i class="fas fa-star text-warning"></i>
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm">
+                                    4 <i class="fas fa-star text-warning"></i>
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm">
+                                    3 <i class="fas fa-star text-warning"></i>
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm">
+                                    2 <i class="fas fa-star text-warning"></i>
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm">
+                                    1 <i class="fas fa-star text-warning"></i>
+                                </button>
+                            </div>
+                        </div> <!-- Write Comment -->
+                        <div class="mb-4 border-bottom pb-4">
+                            <form id="commentForm">
+                                <div class="mb-3">
+                                    <label class="form-label">Đánh giá của bạn</label>
+                                    <div class="rating mb-3">
+                                        <i class="far fa-star fs-5" data-rating="1"></i>
+                                        <i class="far fa-star fs-5" data-rating="2"></i>
+                                        <i class="far fa-star fs-5" data-rating="3"></i>
+                                        <i class="far fa-star fs-5" data-rating="4"></i>
+                                        <i class="far fa-star fs-5" data-rating="5"></i>
+                                    </div>
+                                    <textarea class="form-control" rows="3"
+                                        placeholder="Nhập đánh giá của bạn về sản phẩm..."></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Thêm hình ảnh (tối đa 3 ảnh)</label>
+                                    <div class="d-flex gap-3">
+                                        <div class="cover-upload rounded d-flex flex-column align-items-center justify-content-center position-relative"
+                                            onclick="document.getElementById('imageInput1').click()">
+                                            <div id="imagePreview1"
+                                                class="w-100 h-100 position-relative d-flex align-items-center justify-content-center">
+                                                <img src="" class="preview-image rounded d-none" alt="Image preview">
+                                                <div class="upload-prompt">
+                                                    <i class="bi bi-image text-muted fs-4"></i>
+                                                    <p class="text-muted mb-0 small">Thêm ảnh</p>
+                                                </div>
+                                            </div>
+                                            <input type="file" id="imageInput1" accept="image/*" class="d-none"
+                                                onchange="previewImage(this, 'imagePreview1')">
+                                        </div>
+                                        <div class="cover-upload rounded d-flex flex-column align-items-center justify-content-center position-relative"
+                                            onclick="document.getElementById('imageInput2').click()">
+                                            <div id="imagePreview2"
+                                                class="w-100 h-100 position-relative d-flex align-items-center justify-content-center">
+                                                <img src="" class="preview-image rounded d-none" alt="Image preview">
+                                                <div class="upload-prompt">
+                                                    <i class="bi bi-image text-muted fs-4"></i>
+                                                    <p class="text-muted mb-0 small">Thêm ảnh</p>
+                                                </div>
+                                            </div>
+                                            <input type="file" id="imageInput2" accept="image/*" class="d-none"
+                                                onchange="previewImage(this, 'imagePreview2')">
+                                        </div>
+                                        <div class="cover-upload rounded d-flex flex-column align-items-center justify-content-center position-relative"
+                                            onclick="document.getElementById('imageInput3').click()">
+                                            <div id="imagePreview3"
+                                                class="w-100 h-100 position-relative d-flex align-items-center justify-content-center">
+                                                <img src="" class="preview-image rounded d-none" alt="Image preview">
+                                                <div class="upload-prompt">
+                                                    <i class="bi bi-image text-muted fs-4"></i>
+                                                    <p class="text-muted mb-0 small">Thêm ảnh</p>
+                                                </div>
+                                            </div>
+                                            <input type="file" id="imageInput3" accept="image/*" class="d-none"
+                                                onchange="previewImage(this, 'imagePreview3')">
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-danger">Gửi đánh giá</button>
+                            </form>
+                        </div>
+
+                        <!-- Comments List -->
+                        <div class="comments-list">
+                            <!-- Comment 1 -->
+                            <div class="mb-4 pb-4 border-bottom">
+                                <div class="d-flex mb-3">
+                                    <img src="https://via.placeholder.com/40" class="rounded-circle me-2"
+                                        alt="User Avatar">
+                                    <div>
+                                        <h6 class="mb-1">Nguyễn Văn A</h6>
+                                        <div class="text-warning mb-1">
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="far fa-star"></i>
+                                        </div>
+                                        <small class="text-muted">2 ngày trước</small>
+                                    </div>
+                                </div>
+                                <p>Món ăn rất ngon, đóng gói cẩn thận. Shipper giao hàng nhanh và nhiệt tình. Sẽ ủng hộ
+                                    quán lần sau!</p>
+                                <div class="d-flex align-items-center gap-3">
+                                    <button class="btn btn-sm btn-outline-secondary">
+                                        <i class="far fa-thumbs-up"></i> Hữu ích (12)
+                                    </button>
+                                    <button class="btn btn-sm btn-link text-muted">Trả lời</button>
+                                </div> <!-- Replies -->
+                                <div class="ms-5 mt-3">
+                                    <!-- Shop Reply -->
+                                    <div class="mb-3">
+                                        <div class="d-flex mb-2">
+                                            <img src="image/logo.png" class="rounded-circle me-2 shop-avatar"
+                                                alt="Shop Avatar">
+                                            <div>
+                                                <h6 class="mb-1">Shop <span class="badge bg-danger">Chủ shop</span></h6>
+                                                <small class="text-muted">1 ngày trước</small>
+                                            </div>
+                                        </div>
+                                        <p class="mb-2">Cảm ơn bạn đã ủng hộ shop ạ! Rất vui khi được phục vụ bạn.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Comment 2 -->
+                            <div class="mb-4 pb-4 border-bottom">
+                                <div class="d-flex mb-3">
+                                    <img src="https://via.placeholder.com/40" class="rounded-circle me-2"
+                                        alt="User Avatar">
+                                    <div>
+                                        <h6 class="mb-1">Trần Thị B</h6>
+                                        <div class="text-warning mb-1">
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="far fa-star"></i>
+                                            <i class="far fa-star"></i>
+                                        </div>
+                                        <small class="text-muted">4 ngày trước</small>
+                                    </div>
+                                </div>
+                                <p>Món ăn tạm được, nhưng giao hàng hơi chậm. Mong shop cải thiện thời gian giao hàng.
+                                </p>
+                                <div class="d-flex align-items-center gap-3">
+                                    <button class="btn btn-sm btn-outline-secondary">
+                                        <i class="far fa-thumbs-up"></i> Hữu ích (5)
+                                    </button>
+                                    <button class="btn btn-sm btn-link text-muted">Trả lời</button>
+                                </div>
+
+                                <!-- Replies -->
+                                <div class="ms-5 mt-3"> <!-- Shop Reply -->
+                                    <div class="mb-3">
+                                        <div class="d-flex mb-2">
+                                            <img src="image/logo.png" class="rounded-circle me-2 shop-avatar"
+                                                alt="Shop Avatar">
+                                            <div>
+                                                <h6 class="mb-1">Shop <span class="badge bg-danger">Chủ shop</span></h6>
+                                                <small class="text-muted">4 ngày trước</small>
+                                            </div>
+                                        </div>
+                                        <p class="mb-2">Xin lỗi vì trải nghiệm chưa tốt của bạn. Shop sẽ cố gắng cải
+                                            thiện thời gian giao hàng.</p>
+                                    </div>
+                                    <!-- Customer Reply -->
+                                    <div class="mb-3">
+                                        <div class="d-flex mb-2">
+                                            <img src="https://via.placeholder.com/32" class="rounded-circle me-2"
+                                                alt="User Avatar">
+                                            <div>
+                                                <h6 class="mb-1">Trần Thị B</h6>
+                                                <small class="text-muted">3 ngày trước</small>
+                                            </div>
+                                        </div>
+                                        <p class="mb-2">Cảm ơn shop đã phản hồi nhanh chóng!</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Load More Comments -->
+                            <div class="text-center">
+                                <button class="btn btn-outline-danger">
+                                    Xem thêm đánh giá
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+
+
+            <div class="">
+                <h3>Sản phẩm tương tự</h3>
+                <section>
+                    <div class="row container mx-auto">
+                        <div class="col-lg-3 col-md-6 col-sm-6 mb-3">
+                            <div class="card">
+                                <div class="card-header p-0 position-relative">
+                                    <a href="">
+                                        <img src="https://i.pinimg.com/736x/75/f3/9f/75f39f3ba8033ee5201532c6d54dc7cd.jpg"
+                                            class="card-img-top img-food-custom" alt="Chicago Skyscrapers" />
+                                    </a>
+                                    <div class="btn btn-danger btn-sm position-absolute top-0 end-0 rounded">-20%</div>
+                                </div>
+
+                                <div class="card-body">
+                                    <h4 class="card-title fw-bold text-truncate">Lẩu gà lá é é é é é é é é é é é </h5>
+                                        <div class="price-food d-flex text-nowrap">
+                                            <p class="fs-5 text-danger fw-bold">250.000 đ</p>
+                                            <p
+                                                class="text-decoration-line-through bg-secondary bg-gradient text-white mx-2 py-1 px-2">
+                                                300.000 đ</p>
+                                        </div>
+                                        <div class="row text-nowrap">
+                                            <div class="col-3 col-md-3 d-flex">
+                                                <p>4.4</p>
+                                                <i class="bi bi-star-fill text-danger ms-1"></i>
+                                            </div>
+                                            <div class="col-3 col-md-3 d-flex ">
+                                                <p>10k </p>
+                                                <i class="text-muted bi bi-cart-check-fill ms-1"></i>
+                                            </div>
+                                            <div class="col-6 col-md-6 d-flex justify-content-end">
+                                                <i class="bi bi-geo-alt-fill text-muted me-1"></i>
+                                                <p>Cần Thơ</p>
+
+                                            </div>
+                                        </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-md-6 col-sm-6 mb-3">
+                            <div class="card">
+                                <div class="card-header p-0 position-relative">
+                                    <a href="">
+                                        <img src="https://i.pinimg.com/736x/75/f3/9f/75f39f3ba8033ee5201532c6d54dc7cd.jpg"
+                                            class="card-img-top img-food-custom" alt="Chicago Skyscrapers" />
+                                    </a>
+                                    <div class="btn btn-danger btn-sm position-absolute top-0 end-0 rounded">-20%</div>
+                                </div>
+
+                                <div class="card-body">
+                                    <h4 class="card-title fw-bold text-truncate">Lẩu gà lá é é é é é é é é é é é </h5>
+                                        <div class="price-food d-flex text-nowrap">
+                                            <p class="fs-5 text-danger fw-bold">250.000 đ</p>
+                                            <p
+                                                class="text-decoration-line-through bg-secondary bg-gradient text-white mx-2 py-1 px-2">
+                                                300.000 đ</p>
+                                        </div>
+                                        <div class="row text-nowrap">
+                                            <div class="col-3 col-md-3 d-flex">
+                                                <p>4.4</p>
+                                                <i class="bi bi-star-fill text-danger ms-1"></i>
+                                            </div>
+                                            <div class="col-3 col-md-3 d-flex ">
+                                                <p>10k </p>
+                                                <i class="text-muted bi bi-cart-check-fill ms-1"></i>
+                                            </div>
+                                            <div class="col-6 col-md-6 d-flex justify-content-end">
+                                                <i class="bi bi-geo-alt-fill text-muted me-1"></i>
+                                                <p>Cần Thơ</p>
+
+                                            </div>
+                                        </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-md-6 col-sm-6 mb-3">
+                            <div class="card">
+                                <div class="card-header p-0 position-relative">
+                                    <a href="">
+                                        <img src="https://i.pinimg.com/736x/00/17/63/0017631d7ed34e0a714c40feee8e479d.jpg"
+                                            class="card-img-top img-food-custom" alt="Chicago Skyscrapers" />
+                                    </a>
+                                    <div class="btn btn-danger btn-sm position-absolute top-0 end-0 rounded">-20%</div>
+                                </div>
+
+                                <div class="card-body">
+                                    <h4 class="card-title fw-bold text-truncate">Lẩu gà lá é é é é é é é é é é é </h5>
+                                        <div class="price-food d-flex text-nowrap">
+                                            <p class="fs-5 text-danger fw-bold">250.000 đ</p>
+                                            <p
+                                                class="text-decoration-line-through bg-secondary bg-gradient text-white mx-2 py-1 px-2">
+                                                300.000 đ</p>
+                                        </div>
+                                        <div class="row text-nowrap">
+                                            <div class="col-3 col-md-3 d-flex">
+                                                <p>4.4</p>
+                                                <i class="bi bi-star-fill text-danger ms-1"></i>
+                                            </div>
+                                            <div class="col-3 col-md-3 d-flex ">
+                                                <p>10k </p>
+                                                <i class="text-muted bi bi-cart-check-fill ms-1"></i>
+                                            </div>
+                                            <div class="col-6 col-md-6 d-flex justify-content-end">
+                                                <i class="bi bi-geo-alt-fill text-muted me-1"></i>
+                                                <p>Cần Thơ</p>
+
+                                            </div>
+                                        </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-md-6 col-sm-6 mb-3">
+                            <div class="card">
+                                <div class="card-header p-0 position-relative">
+                                    <a href="">
+                                        <img src="https://i.pinimg.com/736x/75/f3/9f/75f39f3ba8033ee5201532c6d54dc7cd.jpg"
+                                            class="card-img-top img-food-custom" alt="Chicago Skyscrapers" />
+                                    </a>
+                                    <div class="btn btn-danger btn-sm position-absolute top-0 end-0 rounded">-20%</div>
+                                </div>
+
+                                <div class="card-body">
+                                    <h4 class="card-title fw-bold text-truncate">Lẩu gà lá é é é é é é é é é é é </h5>
+                                        <div class="price-food d-flex text-nowrap">
+                                            <p class="fs-5 text-danger fw-bold">250.000 đ</p>
+                                            <p
+                                                class="text-decoration-line-through bg-secondary bg-gradient text-white mx-2 py-1 px-2">
+                                                300.000 đ</p>
+                                        </div>
+                                        <div class="row text-nowrap">
+                                            <div class="col-3 col-md-3 d-flex">
+                                                <p>4.4</p>
+                                                <i class="bi bi-star-fill text-danger ms-1"></i>
+                                            </div>
+                                            <div class="col-3 col-md-3 d-flex ">
+                                                <p>10k </p>
+                                                <i class="text-muted bi bi-cart-check-fill ms-1"></i>
+                                            </div>
+                                            <div class="col-6 col-md-6 d-flex justify-content-end">
+                                                <i class="bi bi-geo-alt-fill text-muted me-1"></i>
+                                                <p>Cần Thơ</p>
+
+                                            </div>
+                                        </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
