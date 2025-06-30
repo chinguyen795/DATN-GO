@@ -5,7 +5,7 @@
 namespace DATN_API.Migrations
 {
     /// <inheritdoc />
-    public partial class addDB : Migration
+    public partial class sssss : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

@@ -51,8 +51,7 @@ builder.Services.AddScoped<AddressService>();
 builder.Services.AddScoped<AuthenticationService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<GoogleCloudStorageService>();
-/*builder.Services.AddScoped<DinerService>();*/
-builder.Services.AddScoped<VoucherService>();
+
 
 
 // Đăng ký HttpClient cho các Service

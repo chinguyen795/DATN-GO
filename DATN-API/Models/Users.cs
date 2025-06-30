@@ -32,11 +32,10 @@ namespace DATN_API.Models
         public int RoleId { get; set; }
         [Required]
         [EmailAddress(ErrorMessage = "Email không đúng định dạng.")]
-        [MaxLength(50)]
         public string Email { get; set; }
         [Required]
         [MinLength(7, ErrorMessage = "Mật khẩu phải từ 7 ký tự trở lên.")]
-        [MaxLength(50)]
+        [MaxLength]
         public string Password { get; set; }
         [Required]
         [MinLength(2, ErrorMessage = "Tên phải từ 2 ký tự trở lên.")]

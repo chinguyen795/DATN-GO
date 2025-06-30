@@ -152,7 +152,6 @@ namespace DATN_API.Controllers
                 FullName = "Người dùng",
                 Status = UserStatus.Active,
                 Gender = GenderType.Other,
-                CitizenIdentityCard = "",
                 CreateAt = DateTime.Now,
             };
 

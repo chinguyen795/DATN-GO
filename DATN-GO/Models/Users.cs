@@ -32,17 +32,16 @@ namespace DATN_GO.Models
         public int RoleId { get; set; }
         [Required]
         [EmailAddress(ErrorMessage = "Email không đúng định dạng.")]
-        [MaxLength(50)]
         public string Email { get; set; }
         [Required]
         [MinLength(7, ErrorMessage = "Mật khẩu phải từ 7 ký tự trở lên.")]
-        [MaxLength(50)]
+        [MaxLength]
         public string Password { get; set; }
         [Required]
         [MinLength(2, ErrorMessage = "Tên phải từ 2 ký tự trở lên.")]
         [MaxLength(50)]
         public string FullName { get; set; }
-        
+
         [MaxLength(13)]
         [RegularExpression(@"^(0|\+84)(3[2-9]|5[6|8|9]|7[0|6-9]|8[1-5]|9[0-9])[0-9]{7}$", ErrorMessage = "Số điện thoại không đúng định dạng Việt Nam.")]
         public required string Phone { get; set; }

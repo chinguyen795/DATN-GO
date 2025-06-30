@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DATN_API.Migrations
 {
     /// <inheritdoc />
-    public partial class asds : Migration
+    public partial class adad : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -52,8 +52,8 @@ namespace DATN_API.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     RoleId = table.Column<int>(type: "int", nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Password = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     FullName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Phone = table.Column<string>(type: "nvarchar(13)", maxLength: 13, nullable: false),
                     Avatar = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -108,7 +108,10 @@ namespace DATN_API.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false)
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    Theme = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Logo = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UpdateAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -330,7 +333,7 @@ namespace DATN_API.Migrations
                     Slug = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     MainImage = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Status = table.Column<int>(type: "int", nullable: false),
                     Quantity = table.Column<int>(type: "int", nullable: false),
                     Views = table.Column<int>(type: "int", nullable: false),
                     Rating = table.Column<float>(type: "real", nullable: true),
@@ -414,11 +417,11 @@ namespace DATN_API.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Reduce = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: false),
                     MinOrder = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
                     CategoryId = table.Column<int>(type: "int", nullable: true),
                     StoreId = table.Column<int>(type: "int", nullable: true),
                     Quantity = table.Column<int>(type: "int", nullable: false)
