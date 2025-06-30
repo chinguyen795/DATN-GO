@@ -84,7 +84,7 @@ namespace DATN_GO.Controllers
             {
                 TempData["ToastMessage"] = $"❌ {message}";
                 TempData["ToastType"] = "danger";
-                return View();
+                return RedirectToAction("Index", "Home");
             }
         }
 
