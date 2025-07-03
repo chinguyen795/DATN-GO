@@ -2,405 +2,637 @@
     ViewData["Title"] = "Diner Page";
 }
 
+<!-- Filter bar -->
+<div class="bg-danger rounded-3 mt-3 mb-5 py-3">
+    <div class="d-flex flex-row align-items-center justify-content-between flex-wrap mx-2">
+        <div class="text-white fw-bold me-2 my-auto">
+            <button class="btn btn-outline-light d-lg-none me-2" type="button" data-bs-toggle="offcanvas"
+                    data-bs-target="#filterOffcanvas">
+                <i class="bi bi-funnel"></i> Bộ lọc
+            </button>
+            <span>Sắp xếp theo:</span>
+        </div>
+        <div class="d-flex flex-row gap-2 flex-wrap">
+            <button class="btn text-white fw-bold border border-white filter-btn-hover"
+                    data-value="rating-desc">
+                <i class="bi bi-star-fill me-1"></i>
+                <span>Đánh giá cao nhất</span>
+            </button>
+            <button class="btn text-white fw-bold border border-white filter-btn-hover"
+                    data-value="orders-desc">
+                <i class="bi bi-bag-check me-1"></i>
+                <span>Đơn hàng nhiều nhất</span>
+            </button>
+            <button class="btn text-white fw-bold border border-white filter-btn-hover" data-value="newest">
+                <i class="bi bi-clock-history me-1"></i>
+                <span>Mới nhất</span>
+            </button>
+            <select class="form-select bg-danger text-white fw-bold border-0 border-bottom"
+                    style="width: auto; min-width: 150px;" id="statusFilter">
+                <option value="">
+                    <i class="bi bi-clock"></i> Trạng thái
+                </option>
+                <option value="open">Đang mở cửa</option>
+                <option value="closed">Đã đóng cửa</option>
+            </select>
+        </div>
+    </div>
+</div>
 
-            <div class="bg-danger rounded-3 mt-3 mb-5 py-3">
-                <div class="d-flex flex-row align-items-center justify-content-between flex-wrap mx-2">
-                    <div class="text-white fw-bold me-2 my-auto">
-                        <button class="btn btn-outline-light d-lg-none me-2" type="button" data-bs-toggle="offcanvas"
-                            data-bs-target="#filterOffcanvas">
-                            <i class="bi bi-funnel"></i> Bộ lọc
-                        </button>
-                        <span>Sắp xếp theo:</span>
-                    </div>
-                    <div class="d-flex flex-row gap-2 flex-wrap"> <button
-                            class="btn text-white fw-bold border border-white filter-btn-hover">
-                            <i class="bi bi-clock-history me-1"></i>
-                            <span>Mới nhất</span>
-                        </button>
-                        <button class="btn text-white fw-bold border border-white filter-btn-hover">
-                            <i class="bi bi-graph-up me-1"></i>
-                            <span>Phổ biến</span>
-                        </button>
-                        <button class="btn text-white fw-bold border border-white filter-btn-hover">
-                            <i class="bi bi-bag-check me-1"></i>
-                            <span>Bán chạy</span>
-                        </button>
-                        <select class="form-select bg-danger text-white fw-bold border-0 border-bottom"
-                            style="width: auto; min-width: 120px;">
-                            <option value="">
-                                <i class="bi bi-fire"></i> Giá
-                            </option>
-                            <option value="price-asc">Giá tăng dần</option>
-                            <option value="price-desc">Giá giảm dần</option>
-                        </select>
+<!-- Mobile Filter Offcanvas -->
+<div class="offcanvas offcanvas-start" tabindex="-1" id="filterOffcanvas">
+    <div class="offcanvas-header text-danger bg-light mx-0">
+        <h5 class="offcanvas-title fw-bold">Bộ lọc</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div class="filter-section">
+            <!-- Search -->
+            <div class="mb-3">
+                <label for="searchInputMobile" class="form-label">
+                    <i class="bi bi-search"></i> Tìm kiếm
+                </label>
+                <input type="text" id="searchInputMobile" class="form-control"
+                       placeholder="Tìm theo tên cửa hàng..." />
+            </div>
+            <!-- Province Filter -->
+            <div class="mb-3">
+                <label class="form-label">
+                    <i class="bi bi-geo-alt"></i> Tỉnh/Thành phố
+                </label>
+                <select class="form-select" id="provinceFilterMobile">
+                    <option value="">Tất cả tỉnh/thành</option>
+                    <option value="can-tho">Cần Thơ</option>
+                    <option value="hcm">TP. Hồ Chí Minh</option>
+                    <option value="ha-noi">Hà Nội</option>
+                    <option value="da-nang">Đà Nẵng</option>
+                    <option value="an-giang">An Giang</option>
+                    <option value="bac-lieu">Bạc Liêu</option>
+                    <option value="kien-giang">Kiên Giang</option>
+                    <option value="ca-mau">Cà Mau</option>
+                    <option value="tien-giang">Tiền Giang</option>
+                    <option value="long-an">Long An</option>
+                    <option value="dong-thap">Đồng Tháp</option>
+                </select>
+            </div>
+
+            <!-- Status Filter -->
+            <div class="mb-3">
+                <label class="form-label">
+                    <i class="bi bi-shop"></i> Trạng thái
+                </label>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-danger status-filter" type="button" data-status="open">
+                        <i class="bi bi-shop"></i> Đang mở cửa
+                    </button>
+                    <button class="btn btn-outline-danger status-filter" type="button" data-status="closed">
+                        <i class="bi bi-shop"></i> Đã đóng cửa
+                    </button>
+                </div>
+            </div>
+
+            <!-- Apply Filters Button -->
+            <button class="btn btn-danger w-100" data-bs-dismiss="offcanvas">
+                <i class="bi bi-funnel"></i> Áp dụng bộ lọc
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-3 col-md-12">
+        <!-- Store Filter -->
+        <h5 class="mb-3">Lọc cửa hàng</h5>
+        <!-- Search Filter -->
+        <div class="mb-3">
+            <label for="searchInput" class="form-label">
+                <i class="bi bi-search"></i> Tìm kiếm
+            </label>
+            <input type="text" id="searchInput" class="form-control"
+                   placeholder="Tìm theo tên cửa hàng..." />
+        </div>
+
+        <!-- Province Filter -->
+        <div class="mb-3">
+            <label for="provinceSelect" class="form-label">
+                <i class="bi bi-geo-alt"></i> Tỉnh/Thành phố
+            </label>
+            <select class="selectpicker w-100" id="provinceSelect" data-live-search="true"
+                    data-width="auto">
+                <option value="">Tất cả địa điểm</option>
+                <option value="can-tho">Cần Thơ</option>
+                <option value="hcm">TP. Hồ Chí Minh</option>
+                <option value="ha-noi">Hà Nội</option>
+                <option value="da-nang">Đà Nẵng</option>
+                <option value="other">Tỉnh/TP khác</option>
+            </select>
+        </div>
+        <!-- Rating Filter -->
+        <div class="mb-3">
+            <label class="form-label">
+                <i class="bi bi-star"></i> Đánh giá
+            </label>
+            <div class="d-grid gap-2">
+                <button class="btn btn-outline-danger rating-filter" type="button" data-rating="4.5"
+                        onclick="toggleRatingFilter(this)">
+                    Từ 4.5 <i class="bi bi-star-fill"></i>
+                </button>
+                <button class="btn btn-outline-danger rating-filter" type="button" data-rating="4.0"
+                        onclick="toggleRatingFilter(this)">
+                    Từ 4.0 <i class="bi bi-star-fill"></i>
+                </button>
+                <button class="btn btn-outline-danger rating-filter" type="button" data-rating="3.5"
+                        onclick="toggleRatingFilter(this)">
+                    Từ 3.5 <i class="bi bi-star-fill"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Orders Filter -->
+        <div class="mb-3">
+            <label class="form-label">
+                <i class="bi bi-cart-check"></i> Lượt đặt hàng
+            </label>
+            <div class="d-grid gap-2">
+                <button class="btn btn-outline-danger orders-filter" type="button" data-orders="15000"
+                        onclick="toggleOrdersFilter(this)">
+                    Trên 15k <i class="bi bi-cart-check-fill text-danger ms-1"></i>
+                </button>
+                <button class="btn btn-outline-danger orders-filter" type="button" data-orders="10000"
+                        onclick="toggleOrdersFilter(this)">
+                    Trên 10k <i class="bi bi-cart-check-fill text-danger ms-1"></i>
+                </button>
+                <button class="btn btn-outline-danger orders-filter" type="button" data-orders="5000"
+                        onclick="toggleOrdersFilter(this)">
+                    Trên 5k <i class="bi bi-cart-check-fill text-danger ms-1"></i>
+                </button>
+            </div>
+        </div>
+
+
+        <button class="btn btn-danger w-100" onclick="applyFilters()">
+            <i class="bi bi-search"></i> Tìm kiếm
+        </button>
+        <!-- End of Store Filter -->
+    </div>
+
+    <div class="col-lg-9 col-md-12">
+        <div class="row">
+            <!-- Card template -->
+            <!-- Card 1 -->
+            <div class="col-lg-4 col-md-6 col-sm-6 mb-3">
+                <div class="card h-100">
+                    <a href="DetailsDiner.html" class="text-decoration-none text-dark">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-4 align-items-center pt-2">
+                                    <img src="https://i.pinimg.com/736x/b8/72/48/b8724874ef9210c3857a686edb981f5f.jpg"
+                                         alt="" height="70" width="70"
+                                         class="rounded-circle object-fit-cover border">
+                                </div>
+                                <div class="col-8">
+                                    <h5 class="fw-bold text-truncate">Tiệm Bánh & Trà Sữa</h5>
+                                    <div class="d-flex align-items-center mb-1">
+                                        <i class="bi bi-geo-alt text-danger me-1"></i>
+                                        <p class="text-truncate mb-0 small">TP Cần Thơ</p>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-shop text-danger me-1"></i>
+                                        <span class="badge bg-success ms-2">Đang hoạt động</span>
+                                    </div>
+                                    <div class="row text-nowrap">
+                                        <div class="col-4 d-flex align-items-center">
+                                            <span class="fw-bold">4.8</span>
+                                            <i class="bi bi-star-fill text-danger ms-1"></i>
+                                        </div>
+                                        <div class="col-4 d-flex align-items-center">
+                                            <span>15k</span>
+                                            <i class="bi bi-cart-check-fill text-danger ms-1"></i>
+                                        </div>
+                                        <div class="col-4 d-flex align-items-center">
+                                            <span>30+</span>
+                                            <i class="bi bi-box text-danger ms-1"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                    <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center p-3">
+                        <a href="Chat.html" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-chat-dots"></i>
+                        </a>
+                        <a href="DetailsDiner.html" class="btn btn-danger flex-grow-1 ms-2">
+                            <i class="bi bi-shop me-2"></i>Xem cửa hàng
+                        </a>
                     </div>
                 </div>
             </div>
-            <!-- content -->
-            <div class="row">
-                <!-- Desktop Filter -->
-                <div class="col-lg-3 d-none d-lg-block">
-                    <div class="filter-section">
-                        <h5 class="mb-3">Lọc sản phẩm</h5>
-                        <div class="mb-3">
-                            <label for="searchInput" class="form-label">
-                                <i class="bi bi-search"></i> Tìm kiếm
-                            </label>
-                            <input type="text" id="searchInput" class="form-control" placeholder="Nhập từ khóa" />
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Khoảng giá</label>
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <input type="number" class="form-control" id="minPrice" placeholder="Tối thiểu">
+
+            <!-- Card 2 -->
+            <div class="col-lg-4 col-md-6 col-sm-6 mb-3">
+                <div class="card h-100">
+                    <a href="DetailsDiner.html" class="text-decoration-none text-dark">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-4 align-items-center pt-2">
+                                    <img src="https://i.pinimg.com/736x/b8/72/48/b8724874ef9210c3857a686edb981f5f.jpg"
+                                         alt="" height="70" width="70"
+                                         class="rounded-circle object-fit-cover border">
                                 </div>
-                                <div class="col-6">
-                                    <input type="number" class="form-control" id="maxPrice" placeholder="Tối đa">
+                                <div class="col-8">
+                                    <h5 class="fw-bold text-truncate">Tiệm Snack & Đồ Ăn Vặt</h5>
+                                    <div class="d-flex align-items-center mb-1">
+                                        <i class="bi bi-geo-alt text-danger me-1"></i>
+                                        <p class="text-truncate mb-0 small">TP Cần Thơ</p>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-shop text-danger me-1"></i>
+                                        <span class="badge bg-success ms-2">Đang hoạt động</span>
+                                    </div>
+                                    <div class="row text-nowrap">
+                                        <div class="col-4 d-flex align-items-center">
+                                            <span class="fw-bold">4.6</span>
+                                            <i class="bi bi-star-fill text-danger ms-1"></i>
+                                        </div>
+                                        <div class="col-4 d-flex align-items-center">
+                                            <span>12k</span>
+                                            <i class="bi bi-cart-check-fill text-danger ms-1"></i>
+                                        </div>
+                                        <div class="col-4 d-flex align-items-center">
+                                            <span>40+</span>
+                                            <i class="bi bi-box text-danger ms-1"></i>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Category Filter -->
-                        <div class="mb-3">
-                            <label for="categorySelect" class="form-label">
-                                <i class="bi bi-grid"></i> Danh mục
-                            </label>
-                            <select class="selectpicker w-100" id="categorySelect" data-live-search="true"
-                                title="Chọn danh mục" data-width="auto">
-                                <option value="">Tất cả danh mục</option>
-                                <option value="mon-nuoc" data-tokens="mon nuoc">Món nước</option>
-                                <option value="mon-kho" data-tokens="mon kho">Món khô</option>
-                                <option value="do-an-vat" data-tokens="do an vat">Đồ ăn vặt</option>
-                                <option value="do-uong" data-tokens="do uong">Đồ uống</option>
-                                <option value="trang-mieng" data-tokens="trang mieng">Tráng miệng</option>
-                            </select>
-                        </div>
-
-                        <!-- Province Filter -->
-                        <div class="mb-3">
-                            <label for="provinceSelect" class="form-label">
-                                <i class="bi bi-geo-alt"></i> Tỉnh/Thành phố
-                            </label>
-                            <select class="selectpicker w-100" id="provinceSelect" data-live-search="true" data-width="auto">
-                                <option value="">Tất cả địa điểm</option>
-                                <option value="can-tho">Cần Thơ</option>
-                                <option value="hcm">TP. Hồ Chí Minh</option>
-                                <option value="ha-noi">Hà Nội</option>
-                                <option value="da-nang">Đà Nẵng</option>
-                                <option value="other">Tỉnh/TP khác</option>
-                            </select>
-                        </div>
-
-                        <!-- Star Rating Filter -->
-                        <div class="mb-3">
-                            <label class="form-label">Đánh giá</label>
-                            <div class="d-grid gap-2">
-                                <button class="btn btn-outline-danger" type="button">
-                                    5 <i class="bi bi-star-fill"></i>
-                                </button>
-                                <button class="btn btn-outline-danger" type="button">
-                                    3 đến 4 <i class="bi bi-star-fill"></i>
-                                </button>
-                                <button class="btn btn-outline-danger" type="button">
-                                    1 đến 2 <i class="bi bi-star-fill"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <button class="btn btn-danger w-100">
-                            <i class="bi bi-search"></i> Tìm kiếm
-                        </button>
+                    </a>
+                    <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center p-3">
+                        <a href="Chat.html" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-chat-dots"></i>
+                        </a>
+                        <a href="DetailsDiner.html" class="btn btn-danger flex-grow-1 ms-2">
+                            <i class="bi bi-shop me-2"></i>Xem cửa hàng
+                        </a>
                     </div>
                 </div>
+            </div>
 
-                <!-- Mobile Filter Offcanvas -->
-                <div class="offcanvas offcanvas-start" tabindex="-1" id="filterOffcanvas">
-                    <div class="offcanvas-header text-danger bg-light mx-0">
-                        <h5 class="offcanvas-title fw-bold">Bộ lọc</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"
-                            aria-label="Close"></button>
-                    </div>
-                    <div class="offcanvas-body">
-                        <div class="filter-section">
-                            <!-- Search -->
-                            <div class="mb-3">
-                                <label for="searchInput" class="form-label">
-                                    <i class="bi bi-search"></i> Tìm kiếm
-                                </label>
-                                <input type="text" id="searchInputMobile" class="form-control"
-                                    placeholder="Nhập từ khóa" />
-                            </div>
-
-                            <!-- Price Range -->
-                            <div class="mb-3">
-                                <label class="form-label">Khoảng giá</label>
-                                <div class="row g-2">
-                                    <div class="col-6">
-                                        <input type="number" class="form-control" id="minPriceMobile"
-                                            placeholder="Tối thiểu">
+            <!-- Card 3 -->
+            <div class="col-lg-4 col-md-6 col-sm-6 mb-3">
+                <div class="card h-100">
+                    <a href="DetailsDiner.html" class="text-decoration-none text-dark">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-4 align-items-center pt-2">
+                                    <img src="https://i.pinimg.com/736x/b8/72/48/b8724874ef9210c3857a686edb981f5f.jpg"
+                                         alt="" height="70" width="70"
+                                         class="rounded-circle object-fit-cover border">
+                                </div>
+                                <div class="col-8">
+                                    <h5 class="fw-bold text-truncate">Trà Sữa & Kem</h5>
+                                    <div class="d-flex align-items-center mb-1">
+                                        <i class="bi bi-geo-alt text-danger me-1"></i>
+                                        <p class="text-truncate mb-0 small">TP Cần Thơ</p>
                                     </div>
-                                    <div class="col-6">
-                                        <input type="number" class="form-control" id="maxPriceMobile"
-                                            placeholder="Tối đa">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-shop text-danger me-1"></i>
+                                        <span class="badge bg-success ms-2">Đang hoạt động</span>
+                                    </div>
+                                    <div class="row text-nowrap">
+                                        <div class="col-4 d-flex align-items-center">
+                                            <span class="fw-bold">4.7</span>
+                                            <i class="bi bi-star-fill text-danger ms-1"></i>
+                                        </div>
+                                        <div class="col-4 d-flex align-items-center">
+                                            <span>18k</span>
+                                            <i class="bi bi-cart-check-fill text-danger ms-1"></i>
+                                        </div>
+                                        <div class="col-4 d-flex align-items-center">
+                                            <span>35+</span>
+                                            <i class="bi bi-box text-danger ms-1"></i>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- Category Filter -->
-                            <div class="mb-3">
-                                <label for="categorySelectMobile" class="form-label">
-                                    <i class="bi bi-grid"></i> Danh mục
-                                </label>
-                                <select class="form-select w-100" id="categorySelectMobile">
-                                    <option value="">Tất cả danh mục</option>
-                                    <option value="mon-nuoc">Món nước</option>
-                                    <option value="mon-kho">Món khô</option>
-                                    <option value="do-an-vat">Đồ ăn vặt</option>
-                                    <option value="do-uong">Đồ uống</option>
-                                    <option value="trang-mieng">Tráng miệng</option>
-                                </select>
-                            </div>
-
-                            <!-- Province Filter -->
-                            <div class="mb-3">
-                                <label for="provinceSelectMobile" class="form-label">
-                                    <i class="bi bi-geo-alt"></i> Tỉnh/Thành phố
-                                </label>
-                                <select class="form-select" id="provinceSelectMobile">
-                                    <option value="">Tất cả địa điểm</option>
-                                    <option value="can-tho">Cần Thơ</option>
-                                    <option value="hcm">TP. Hồ Chí Minh</option>
-                                    <option value="ha-noi">Hà Nội</option>
-                                    <option value="da-nang">Đà Nẵng</option>
-                                    <option value="other">Tỉnh/TP khác</option>
-                                </select>
-                            </div>
-
-                            <!-- Star Rating Filter -->
-                            <div class="mb-3">
-                                <label class="form-label">Đánh giá</label>
-                                <div class="d-grid gap-2">
-                                    <button class="btn btn-outline-danger" type="button">
-                                        5 <i class="bi bi-star-fill"></i>
-                                    </button>
-                                    <button class="btn btn-outline-danger" type="button">
-                                        3 đến 4 <i class="bi bi-star-fill"></i>
-                                    </button>
-                                    <button class="btn btn-outline-danger" type="button">
-                                        1 đến 2 <i class="bi bi-star-fill"></i>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <button class="btn btn-danger w-100" data-bs-dismiss="offcanvas">
-                                <i class="bi bi-search"></i> Áp dụng bộ lọc
-                            </button>
                         </div>
+                    </a>
+                    <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center p-3">
+                        <a href="Chat.html" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-chat-dots"></i>
+                        </a>
+                        <a href="DetailsDiner.html" class="btn btn-danger flex-grow-1 ms-2">
+                            <i class="bi bi-shop me-2"></i>Xem cửa hàng
+                        </a>
                     </div>
                 </div>
+            </div>
 
-                <div class="col-lg-9">
-                    <div class="row">
-
-                        <div class="col-lg-3 col-md-4 col-sm-6 mb-2" data-aos="fade-up">
-                            <div class="product-card card h-100 border-0 shadow-sm hover-scale">
-                                <div class="position-relative">
-                                    <img src="https://i.pinimg.com/736x/75/f3/9f/75f39f3ba8033ee5201532c6d54dc7cd.jpg"
-                                        class="card-img-top" style="height: 200px; object-fit: cover;" alt="Product">
-                                    <div
-                                        class="product-badge bg-danger text-white position-absolute top-0 end-0 m-2 px-2 py-1 rounded-pill">
-                                        -20%
-                                    </div>
+            <!-- Card 4 -->
+            <div class="col-lg-4 col-md-6 col-sm-6 mb-3">
+                <div class="card h-100">
+                    <a href="DetailsDiner.html" class="text-decoration-none text-dark">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-4 align-items-center pt-2">
+                                    <img src="https://i.pinimg.com/originals/bc/88/15/bc881536a76015d935aeae08de4a16df.jpg"
+                                         alt="" height="70" width="70"
+                                         class="rounded-circle object-fit-cover border">
                                 </div>
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span class="badge bg-light text-danger">Món Việt Nam</span>
-                                        <div class="rating text-warning">
-                                            <i class="bi bi-star-fill"></i>
-                                            <span class="ms-1 text-dark">4.8</span>
-                                        </div>
+                                <div class="col-8">
+                                    <h5 class="fw-bold text-truncate">Tiệm Bánh & Cookie</h5>
+                                    <div class="d-flex align-items-center mb-1">
+                                        <i class="bi bi-geo-alt text-danger me-1"></i>
+                                        <p class="text-truncate mb-0 small">TP Cần Thơ</p>
                                     </div>
-                                    <h5 class="card-title fw-bold mb-1">Phở Bò Hà Nội</h5>
-                                    <p class="card-text text-muted small mb-2">Nhà hàng Phở Ngon</p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <span class="text-danger fw-bold">45.000đ</span>
-                                            <span class="text-muted text-decoration-line-through small">55.000đ</span>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-shop text-danger me-1"></i>
+                                        <span class="badge bg-success ms-2">Đang hoạt động</span>
+                                    </div>
+                                    <div class="row text-nowrap">
+                                        <div class="col-4 d-flex align-items-center">
+                                            <span class="fw-bold">4.5</span>
+                                            <i class="bi bi-star-fill text-danger ms-1"></i>
                                         </div>
-                                        <button class="btn btn-danger btn-sm rounded-pill">
-                                            <i class="bi bi-cart-plus"></i> Thêm
-                                        </button>
+                                        <div class="col-4 d-flex align-items-center">
+                                            <span>25k</span>
+                                            <i class="bi bi-cart-check-fill text-danger ms-1"></i>
+                                        </div>
+                                        <div class="col-4 d-flex align-items-center">
+                                            <span>20+</span>
+                                            <i class="bi bi-box text-danger ms-1"></i>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                        <div class="col-lg-3 col-md-4 col-sm-6 mb-2" data-aos="fade-up">
-                            <div class="product-card card h-100 border-0 shadow-sm hover-scale">
-                                <div class="position-relative">
-                                    <img src="https://i.pinimg.com/736x/75/f3/9f/75f39f3ba8033ee5201532c6d54dc7cd.jpg"
-                                        class="card-img-top" style="height: 200px; object-fit: cover;" alt="Product">
-                                    <div
-                                        class="product-badge bg-danger text-white position-absolute top-0 end-0 m-2 px-2 py-1 rounded-pill">
-                                        -20%
-                                    </div>
-                                </div>
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span class="badge bg-light text-danger">Món Việt Nam</span>
-                                        <div class="rating text-warning">
-                                            <i class="bi bi-star-fill"></i>
-                                            <span class="ms-1 text-dark">4.8</span>
-                                        </div>
-                                    </div>
-                                    <h5 class="card-title fw-bold mb-1">Phở Bò Hà Nội</h5>
-                                    <p class="card-text text-muted small mb-2">Nhà hàng Phở Ngon</p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <span class="text-danger fw-bold">45.000đ</span>
-                                            <span class="text-muted text-decoration-line-through small">55.000đ</span>
-                                        </div>
-                                        <button class="btn btn-danger btn-sm rounded-pill">
-                                            <i class="bi bi-cart-plus"></i> Thêm
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-lg-3 col-md-4 col-sm-6 mb-2" data-aos="fade-up">
-                            <div class="product-card card h-100 border-0 shadow-sm hover-scale">
-                                <div class="position-relative">
-                                    <img src="https://i.pinimg.com/736x/75/f3/9f/75f39f3ba8033ee5201532c6d54dc7cd.jpg"
-                                        class="card-img-top" style="height: 200px; object-fit: cover;" alt="Product">
-                                    <div
-                                        class="product-badge bg-danger text-white position-absolute top-0 end-0 m-2 px-2 py-1 rounded-pill">
-                                        -20%
-                                    </div>
-                                </div>
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span class="badge bg-light text-danger">Món Việt Nam</span>
-                                        <div class="rating text-warning">
-                                            <i class="bi bi-star-fill"></i>
-                                            <span class="ms-1 text-dark">4.8</span>
-                                        </div>
-                                    </div>
-                                    <h5 class="card-title fw-bold mb-1">Phở Bò Hà Nội</h5>
-                                    <p class="card-text text-muted small mb-2">Nhà hàng Phở Ngon</p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <span class="text-danger fw-bold">45.000đ</span>
-                                            <span class="text-muted text-decoration-line-through small">55.000đ</span>
-                                        </div>
-                                        <button class="btn btn-danger btn-sm rounded-pill">
-                                            <i class="bi bi-cart-plus"></i> Thêm
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-lg-3 col-md-4 col-sm-6 mb2" data-aos="fade-up">
-                            <div class="product-card card h-100 border-0 shadow-sm hover-scale">
-                                <div class="position-relative">
-                                    <img src="https://i.pinimg.com/736x/75/f3/9f/75f39f3ba8033ee5201532c6d54dc7cd.jpg"
-                                        class="card-img-top" style="height: 200px; object-fit: cover;" alt="Product">
-                                    <div
-                                        class="product-badge bg-danger text-white position-absolute top-0 end-0 m-2 px-2 py-1 rounded-pill">
-                                        -20%
-                                    </div>
-                                </div>
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span class="badge bg-light text-danger">Món Việt Nam</span>
-                                        <div class="rating text-warning">
-                                            <i class="bi bi-star-fill"></i>
-                                            <span class="ms-1 text-dark">4.8</span>
-                                        </div>
-                                    </div>
-                                    <h5 class="card-title fw-bold mb-1">Phở Bò Hà Nội</h5>
-                                    <p class="card-text text-muted small mb-2">Nhà hàng Phở Ngon</p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <span class="text-danger fw-bold">45.000đ</span>
-                                            <span class="text-muted text-decoration-line-through small">55.000đ</span>
-                                        </div>
-                                        <button class="btn btn-danger btn-sm rounded-pill">
-                                            <i class="bi bi-cart-plus"></i> Thêm
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-lg-3 col-md-4 col-sm-6 mb2" data-aos="fade-up">
-                            <div class="product-card card h-100 border-0 shadow-sm hover-scale">
-                                <div class="position-relative">
-                                    <img src="https://i.pinimg.com/736x/75/f3/9f/75f39f3ba8033ee5201532c6d54dc7cd.jpg"
-                                        class="card-img-top" style="height: 200px; object-fit: cover;" alt="Product">
-                                    <div
-                                        class="product-badge bg-danger text-white position-absolute top-0 end-0 m-2 px-2 py-1 rounded-pill">
-                                        -20%
-                                    </div>
-                                </div>
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span class="badge bg-light text-danger">Món Việt Nam</span>
-                                        <div class="rating text-warning">
-                                            <i class="bi bi-star-fill"></i>
-                                            <span class="ms-1 text-dark">4.8</span>
-                                        </div>
-                                    </div>
-                                    <h5 class="card-title fw-bold mb-1">Phở Bò Hà Nội</h5>
-                                    <p class="card-text text-muted small mb-2">Nhà hàng Phở Ngon</p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <span class="text-danger fw-bold">45.000đ</span>
-                                            <span class="text-muted text-decoration-line-through small">55.000đ</span>
-                                        </div>
-                                        <button class="btn btn-danger btn-sm rounded-pill">
-                                            <i class="bi bi-cart-plus"></i> Thêm
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-lg-3 col-md-4 col-sm-6 mb-2" data-aos="fade-up">
-                            <div class="product-card card h-100 border-0 shadow-sm hover-scale">
-                                <div class="position-relative">
-                                    <img src="https://i.pinimg.com/736x/75/f3/9f/75f39f3ba8033ee5201532c6d54dc7cd.jpg"
-                                        class="card-img-top" style="height: 200px; object-fit: cover;" alt="Product">
-                                    <div
-                                        class="product-badge bg-danger text-white position-absolute top-0 end-0 m-2 px-2 py-1 rounded-pill">
-                                        -20%
-                                    </div>
-                                </div>
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span class="badge bg-light text-danger">Món Việt Nam</span>
-                                        <div class="rating text-warning">
-                                            <i class="bi bi-star-fill"></i>
-                                            <span class="ms-1 text-dark">4.8</span>
-                                        </div>
-                                    </div>
-                                    <h5 class="card-title fw-bold mb-1">Phở Bò Hà Nội</h5>
-                                    <p class="card-text text-muted small mb-2">Nhà hàng Phở Ngon</p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <span class="text-danger fw-bold">45.000đ</span>
-                                            <span class="text-muted text-decoration-line-through small">55.000đ</span>
-                                        </div>
-                                        <button class="btn btn-danger btn-sm rounded-pill">
-                                            <i class="bi bi-cart-plus"></i> Thêm
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
+                    </a>
+                    <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center p-3">
+                        <a href="Chat.html" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-chat-dots"></i>
+                        </a>
+                        <a href="DetailsDiner.html" class="btn btn-danger flex-grow-1 ms-2">
+                            <i class="bi bi-shop me-2"></i>Xem cửa hàng
+                        </a>
                     </div>
-
-
                 </div>
+            </div>
+
+            <!-- Card 5 -->
+            <div class="col-lg-4 col-md-6 col-sm-6 mb-3">
+                <div class="card h-100">
+                    <a href="DetailsDiner.html" class="text-decoration-none text-dark">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-4 align-items-center pt-2">
+                                    <img src="https://i.pinimg.com/originals/bc/88/15/bc881536a76015d935aeae08de4a16df.jpg"
+                                         alt="" height="70" width="70"
+                                         class="rounded-circle object-fit-cover border">
+                                </div>
+                                <div class="col-8">
+                                    <h5 class="fw-bold text-truncate">Candy Pop - Tiệm Bánh & Kẹo</h5>
+                                    <div class="d-flex align-items-center mb-1">
+                                        <i class="bi bi-geo-alt text-danger me-1"></i>
+                                        <p class="text-truncate mb-0 small">TP Hồ Chí Minh</p>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-shop text-danger me-1"></i>
+                                        <span class="badge bg-danger ms-2">Đã đóng cửa</span>
+                                    </div>
+                                    <div class="row text-nowrap">
+                                        <div class="col-4 d-flex align-items-center">
+                                            <span class="fw-bold">4.8</span>
+                                            <i class="bi bi-star-fill text-danger ms-1"></i>
+                                        </div>
+                                        <div class="col-4 d-flex align-items-center">
+                                            <span>40k</span>
+                                            <i class="bi bi-cart-check-fill text-danger ms-1"></i>
+                                        </div>
+                                        <div class="col-4 d-flex align-items-center">
+                                            <span>50+</span>
+                                            <i class="bi bi-box text-danger ms-1"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                    <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center p-3">
+                        <a href="Chat.html" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-chat-dots"></i>
+                        </a>
+                        <a href="DetailsDiner.html" class="btn btn-danger flex-grow-1 ms-2">
+                            <i class="bi bi-shop me-2"></i>Xem cửa hàng
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 6 -->
+            <div class="col-lg-4 col-md-6 col-sm-6 mb-3">
+                <div class="card h-100">
+                    <a href="DetailsDiner.html" class="text-decoration-none text-dark">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-4 align-items-center pt-2">
+                                    <img src="https://i.pinimg.com/originals/bc/88/15/bc881536a76015d935aeae08de4a16df.jpg"
+                                         alt="" height="70" width="70"
+                                         class="rounded-circle object-fit-cover border">
+                                </div>
+                                <div class="col-8">
+                                    <h5 class="fw-bold text-truncate">Fruit Tea House</h5>
+                                    <div class="d-flex align-items-center mb-1">
+                                        <i class="bi bi-geo-alt text-danger me-1"></i>
+                                        <p class="text-truncate mb-0 small">TP Hồ Chí Minh</p>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-shop text-danger me-1"></i>
+                                        <span class="badge bg-success ms-2">Đang hoạt động</span>
+                                    </div>
+                                    <div class="row text-nowrap">
+                                        <div class="col-4 d-flex align-items-center">
+                                            <span class="fw-bold">4.5</span>
+                                            <i class="bi bi-star-fill text-danger ms-1"></i>
+                                        </div>
+                                        <div class="col-4 d-flex align-items-center">
+                                            <span>7k</span>
+                                            <i class="bi bi-cart-check-fill text-danger ms-1"></i>
+                                        </div>
+                                        <div class="col-4 d-flex align-items-center">
+                                            <span>22+</span>
+                                            <i class="bi bi-box text-danger ms-1"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                    <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center p-3">
+                        <a href="Chat.html" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-chat-dots"></i>
+                        </a>
+                        <a href="DetailsDiner.html" class="btn btn-danger flex-grow-1 ms-2">
+                            <i class="bi bi-shop me-2"></i>Xem cửa hàng
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 7 -->
+            <div class="col-lg-4 col-md-6 col-sm-6 mb-3">
+                <div class="card h-100">
+                    <a href="DetailsDiner.html" class="text-decoration-none text-dark">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-4 align-items-center pt-2">
+                                    <img src="https://i.pinimg.com/236x/17/ec/8c/17ec8c1f13ce13a79b708074e8b4ec09.jpg"
+                                         alt="" height="70" width="70"
+                                         class="rounded-circle object-fit-cover border">
+                                </div>
+                                <div class="col-8">
+                                    <h5 class="fw-bold text-truncate">TocoToco Bubble Tea</h5>
+                                    <div class="d-flex align-items-center mb-1">
+                                        <i class="bi bi-geo-alt text-danger me-1"></i>
+                                        <p class="text-truncate mb-0 small">TP Hồ Chí Minh</p>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-shop text-danger me-1"></i>
+                                        <span class="badge bg-success ms-2">Đang hoạt động</span>
+                                    </div>
+                                    <div class="row text-nowrap">
+                                        <div class="col-4 d-flex align-items-center">
+                                            <span class="fw-bold">4.9</span>
+                                            <i class="bi bi-star-fill text-danger ms-1"></i>
+                                        </div>
+                                        <div class="col-4 d-flex align-items-center">
+                                            <span>30k</span>
+                                            <i class="bi bi-cart-check-fill text-danger ms-1"></i>
+                                        </div>
+                                        <div class="col-4 d-flex align-items-center">
+                                            <span>45+</span>
+                                            <i class="bi bi-box text-danger ms-1"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                    <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center p-3">
+                        <a href="Chat.html" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-chat-dots"></i>
+                        </a>
+                        <a href="DetailsDiner.html" class="btn btn-danger flex-grow-1 ms-2">
+                            <i class="bi bi-shop me-2"></i>Xem cửa hàng
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 8 -->
+            <div class="col-lg-4 col-md-6 col-sm-6 mb-3">
+                <div class="card h-100">
+                    <a href="DetailsDiner.html" class="text-decoration-none text-dark">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-4 align-items-center pt-2">
+                                    <img src="https://i.pinimg.com/236x/17/ec/8c/17ec8c1f13ce13a79b708074e8b4ec09.jpg"
+                                         alt="" height="70" width="70"
+                                         class="rounded-circle object-fit-cover border">
+                                </div>
+                                <div class="col-8">
+                                    <h5 class="fw-bold text-truncate">Snack House</h5>
+                                    <div class="d-flex align-items-center mb-1">
+                                        <i class="bi bi-geo-alt text-danger me-1"></i>
+                                        <p class="text-truncate mb-0 small">TP Cần Thơ</p>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-shop text-danger me-1"></i>
+                                        <span class="badge bg-danger ms-2">Đã đóng cửa</span>
+                                    </div>
+                                    <div class="row text-nowrap">
+                                        <div class="col-4 d-flex align-items-center">
+                                            <span class="fw-bold">4.2</span>
+                                            <i class="bi bi-star-fill text-danger ms-1"></i>
+                                        </div>
+                                        <div class="col-4 d-flex align-items-center">
+                                            <span>6k</span>
+                                            <i class="bi bi-cart-check-fill text-danger ms-1"></i>
+                                        </div>
+                                        <div class="col-4 d-flex align-items-center">
+                                            <span>18+</span>
+                                            <i class="bi bi-box text-danger ms-1"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                    <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center p-3">
+                        <a href="Chat.html" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-chat-dots"></i>
+                        </a>
+                        <a href="DetailsDiner.html" class="btn btn-danger flex-grow-1 ms-2">
+                            <i class="bi bi-shop me-2"></i>Xem cửa hàng
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 9 -->
+            <div class="col-lg-4 col-md-6 col-sm-6 mb-3">
+                <div class="card h-100">
+                    <a href="DetailsDiner.html" class="text-decoration-none text-dark">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-4 align-items-center pt-2">
+                                    <img src="https://i.pinimg.com/236x/17/ec/8c/17ec8c1f13ce13a79b708074e8b4ec09.jpg"
+                                         alt="" height="70" width="70"
+                                         class="rounded-circle object-fit-cover border">
+                                </div>
+                                <div class="col-8">
+                                    <h5 class="fw-bold text-truncate">Sweet & Tasty Corner</h5>
+                                    <div class="d-flex align-items-center mb-1">
+                                        <i class="bi bi-geo-alt text-danger me-1"></i>
+                                        <p class="text-truncate mb-0 small">TP Đà Nẵng</p>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-shop text-danger me-1"></i>
+                                        <span class="badge bg-success ms-2">Đang hoạt động</span>
+                                    </div>
+                                    <div class="row text-nowrap">
+                                        <div class="col-4 d-flex align-items-center">
+                                            <span class="fw-bold">4.7</span>
+                                            <i class="bi bi-star-fill text-danger ms-1"></i>
+                                        </div>
+                                        <div class="col-4 d-flex align-items-center">
+                                            <span>35k</span>
+                                            <i class="bi bi-cart-check-fill text-danger ms-1"></i>
+                                        </div>
+                                        <div class="col-4 d-flex align-items-center">
+                                            <span>42+</span>
+                                            <i class="bi bi-box text-danger ms-1"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                    <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center p-3">
+                        <a href="Chat.html" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-chat-dots"></i>
+                        </a>
+                        <a href="DetailsDiner.html" class="btn btn-danger flex-grow-1 ms-2">
+                            <i class="bi bi-shop me-2"></i>Xem cửa hàng
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+</div>

@@ -220,11 +220,20 @@
                                                 <div class="input-group input-group-lg align-items-center">
                                                     <input type="tel" class="form-control border-crimson" id="phone"
                                                         value="@Model.Phone" readonly>
-                                                    <a href="./ChangeEmail.html"
-                                                        class="btn btn-crimson d-flex align-items-center px-4"
-                                                        style="height: 44px;">
-                                                        <i class="bi bi-pencil-square me-2"></i> Đổi số
-                                                    </a>
+                                                    @if (string.IsNullOrEmpty(Model.Phone))
+                                                    {
+                                                        <a asp-controller="UserAuthentication" asp-action="ChangeEmailPrompt"
+                                                            class="btn btn-crimson d-flex align-items-center px-4" style="height: 44px;">
+                                                            <i class="bi bi-plus-circle me-2"></i> Thêm số điện thoại
+                                                        </a>
+                                                    }
+                                                    else
+                                                    {
+                                                        <a asp-controller="UserAuthentication" asp-action="ChangeEmailPrompt"
+                                                            class="btn btn-crimson d-flex align-items-center px-4" style="height: 44px;">
+                                                            <i class="bi bi-pencil-square me-2"></i> Đổi số
+                                                        </a>
+                                                    }
                                                 </div>
                                             </div>
 
@@ -235,11 +244,20 @@
                                                 <div class="input-group input-group-lg align-items-center">
                                                     <input type="email" class="form-control border-crimson" id="email"
                                                         value="@Model.Email" readonly>
-                                                    <a href="./ChangeEmail.html"
-                                                        class="btn btn-crimson d-flex align-items-center px-4"
-                                                        style="height: 44px;">
-                                                        <i class="bi bi-pencil-square me-2"></i> Đổi email
-                                                    </a>
+                                                    @if (string.IsNullOrEmpty(Model.Email))
+                                                    {
+                                                        <a asp-controller="UserAuthentication" asp-action="ChangeEmailPrompt"
+                                                            class="btn btn-crimson d-flex align-items-center px-4" style="height: 44px;">
+                                                            <i class="bi bi-plus-circle me-2"></i> Thêm email
+                                                        </a>
+                                                    }
+                                                    else
+                                                    {
+                                                        <a asp-controller="UserAuthentication" asp-action="ChangeEmailPrompt"
+                                                            class="btn btn-crimson d-flex align-items-center px-4" style="height: 44px;">
+                                                            <i class="bi bi-pencil-square me-2"></i> Đổi email
+                                                        </a>
+                                                    }
                                                 </div>
                                             </div>
                                         </div>

@@ -173,6 +173,15 @@ namespace DATN_GO.Service
             }
         }
 
+        public async Task<bool> IsEmailExistAsync(string email)
+        {
+            var response = await _httpClient.GetAsync($"{_baseUrl}Authentication/IsEmailExist?email={Uri.EscapeDataString(email)}");
+            if (!response.IsSuccessStatusCode)
+                return false;
+            var json = await response.Content.ReadAsStringAsync();
+            return bool.TryParse(json, out var exists) && exists;
+        }
+
 
         public class VerifyRequest
 		{

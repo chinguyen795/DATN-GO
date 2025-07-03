@@ -290,6 +290,11 @@ namespace DATN_API.Controllers
         [HttpPost("SendOtpToNewEmail")]
         public async Task<IActionResult> SendOtpToNewEmail([FromBody] string newEmail)
         {
+            // Kiểm tra email đã tồn tại trong database
+            if (await _context.Users.AnyAsync(u => u.Email == newEmail))
+            {
+                return BadRequest("Email đã được sử dụng !");
+            }
             try
             {
                 var mailAddress = new MailAddress(newEmail);
@@ -369,6 +374,16 @@ namespace DATN_API.Controllers
                 return StatusCode(500, "Đã xảy ra lỗi khi cập nhật email. Vui lòng thử lại sau.");
             }
         }
+
+        // GET: api/authentication/IsEmailExist?email=abc@gmail.com
+        [HttpGet("IsEmailExist")]
+        public async Task<IActionResult> IsEmailExist([FromQuery] string email)
+        {
+            if (string.IsNullOrEmpty(email)) return BadRequest(false);
+            var exists = await _context.Users.AnyAsync(u => u.Email == email);
+            return Ok(exists);
+        }
+
         public class ChangePasswordWithIdentifierRequest
         {
             public string Identifier { get; set; }

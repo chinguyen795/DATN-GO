@@ -1,4 +1,4 @@
-﻿
+﻿@model DATN_GO.Models.Users
 @{
     ViewData["Title"] = "Chỉnh sửa Email";
 }
@@ -24,16 +24,13 @@
 
                 <form asp-action="ChangeEmailPrompt" asp-controller="UserAuthentication" method="post">
                     @Html.AntiForgeryToken()
-
                     <div class="mb-4">
-                        <label for="newEmail" class="form-label">Email mới</label>
+                        <label asp-for="Email" class="form-label">Email mới</label>
                         <div class="input-group">
-                            <input type="email" class="form-control border-only-bottom" id="newEmail" name="newEmail" placeholder="Nhập email mới của bạn" required>
+                            <input asp-for="Email" class="form-control border-only-bottom" id="newEmail" name="newEmail" placeholder="Nhập email mới của bạn" required />
                         </div>
-                        @if (TempData["ToastMessage"] != null && TempData["ToastType"] != null && TempData["ToastType"].ToString() == "danger")
-                        {
-                            <div class="text-danger mt-2">@TempData["ToastMessage"]</div>
-                        }
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                       
                     </div>
                     <div class="d-grid">
                         <button type="submit" class="btn btn-danger">
