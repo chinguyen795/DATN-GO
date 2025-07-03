@@ -37,10 +37,19 @@ namespace DATN_API.Services
             if (id != model.Id) return false;
             var user = await _context.Users.FindAsync(id);
             if (user == null) return false;
-            // Update properties here (add more as needed)
+            // Update all properties
             user.Status = model.Status;
             user.Email = model.Email;
-            // ... add other properties as needed
+            user.RoleId = model.RoleId;
+            user.Password = model.Password;
+            user.FullName = model.FullName;
+            user.Phone = model.Phone;
+            user.Avatar = model.Avatar;
+            user.Gender = model.Gender;
+            user.CitizenIdentityCard = model.CitizenIdentityCard;
+            user.BirthDay = model.BirthDay;
+            user.UpdateAt = model.UpdateAt;
+            // Do not update CreateAt, navigation properties, or collections here
             await _context.SaveChangesAsync();
             return true;
         }

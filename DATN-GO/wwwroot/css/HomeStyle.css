@@ -1293,11 +1293,10 @@ p {
 .text-crimson {
   color: #DC143C !important;
 }
-
 .btn-crimson {
-  background-color: #DC143C !important;
-  border-color: #DC143C !important;
-  color: #fff !important;
+    background-color: #DC143C !important;
+    border-color: #DC143C !important;
+    color: #fff !important;
 }
 
 .btn-crimson:hover,
