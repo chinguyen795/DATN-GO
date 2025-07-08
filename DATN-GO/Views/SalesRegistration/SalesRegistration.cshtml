@@ -1,11 +1,8 @@
-﻿@{
-    ViewData["Title"] = "SalesRegistration Page";
-}
+﻿@model DATN_GO.ViewModels.SalesRegistrationViewModel
 @{
+    ViewData["Title"] = "SalesRegistration Page";
     ViewData["UseContainer"] = false;
 }
-
-
 
 <div class="container mt-2">
     <div class="row align-items-center pt-1 pb-2">
@@ -26,40 +23,42 @@
         <div class="col-lg-8">
             <div class="bg-white rounded shadow-sm">
                 <!-- Cover Image Upload -->
+                <form action="/SalesRegistration/SalesRegistration" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
                 <div class="cover-upload-box rounded-top d-flex flex-column align-items-center justify-content-center position-relative border border-2 border-dashed bg-light"
-                     onclick="document.getElementById('coverInput').click()">
+                     onclick="document.getElementById('CoverPhoto').click()">
                     <div id="coverPreview" class="w-100 h-100 position-relative">
-                        <img src="../Icons/placeholder.png" class="w-100 h-100 object-fit-cover rounded-top d-none"
-                             alt="Cover preview">
+                        <img id="coverImg" src="../Icons/placeholder.png"
+                             class="w-100 h-100 object-fit-cover rounded-top d-none" alt="Cover preview">
                         <div class="position-absolute top-50 start-50 translate-middle text-center">
                             <i class="bi bi-image text-muted fs-1"></i>
                             <p class="text-muted mb-0">Click để tải ảnh bìa</p>
                         </div>
                     </div>
-                    <input type="file" id="coverInput" accept="image/*" class="d-none"
+                    <input asp-for="CoverPhoto" type="file" accept="image/*" class="d-none" id="CoverPhoto"
                            onchange="previewImage(this, 'coverPreview')">
                 </div>
 
                 <!-- Avatar Upload -->
                 <div class="d-flex justify-content-center">
                     <div class="avatar-upload-box rounded-circle border border-3 border-white bg-light d-flex flex-column align-items-center justify-content-center position-relative border-dashed"
-                         onclick="document.getElementById('avatarInput').click()">
+                         onclick="document.getElementById('Avatar').click()">
                         <div id="avatarPreview" class="w-100 h-100 position-relative">
-                            <img src="../Icons/placeholder.png" class="w-100 h-100 object-fit-cover rounded-circle d-none"
-                                 alt="Avatar preview">
+                            <img id="avatarImg" src="../Icons/placeholder.png"
+                                 class="w-100 h-100 object-fit-cover rounded-circle d-none" alt="Avatar preview">
                             <div class="position-absolute top-50 start-50 translate-middle text-center">
                                 <i class="bi bi-person text-muted fs-4"></i>
                                 <p class="text-muted mb-0 small">Click để tải avatar</p>
                             </div>
                         </div>
-                        <input type="file" id="avatarInput" accept="image/*" class="d-none"
+                        <input asp-for="Avatar" type="file" accept="image/*" class="d-none" id="Avatar"
                                onchange="previewImage(this, 'avatarPreview')">
                     </div>
                 </div>
 
                 <!-- Form Content -->
                 <div class="p-4">
-                    <form>
+                  
                         <!-- Tên cửa hàng -->
                         <div class="mb-4">
                             <label class="form-label">Tên cửa hàng</label>
@@ -67,8 +66,25 @@
                                 <span class="input-group-text bg-danger-subtle border-danger text-danger">
                                     <i class="bi bi-shop"></i>
                                 </span>
-                                <input type="text" class="form-control border-danger"
-                                       placeholder="Nhập tên cửa hàng">
+                                <input asp-for="Name" class="form-control border-danger" placeholder="Nhập tên cửa hàng" />
+                                @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <!-- Ảnh CCCD/CMND -->
+                        <div class="mb-4">
+                            <label class="form-label">Ảnh CCCD/CMND</label>
+                            <div class="border border-danger bg-danger-subtle rounded p-3 text-center"
+                                 onclick="document.getElementById('idFrontInput').click()">
+                                <div id="idFrontPreview" class="id-preview position-relative">
+                                    <img id="idFrontImg" src="" class="preview-image img-fluid d-none" alt="ID front preview">
+                                    <div class="upload-prompt">
+                                        <i class="bi bi-credit-card-2-front fs-1 text-danger"></i>
+                                        <p class="mb-0 text-danger">Mặt trước CCCD/CMND</p>
+                                    </div>
+                                </div>
+                                <input type="file" id="idFrontInput" accept="image/*" class="d-none"
+                                       onchange="handleOcrImageChange(this)">
                             </div>
                         </div>
 
@@ -79,11 +95,38 @@
                                 <span class="input-group-text bg-danger-subtle border-danger text-danger">
                                     <i class="bi bi-person-badge-fill"></i>
                                 </span>
-                                <input type="text" class="form-control border-danger"
-                                       placeholder="Nhập tên người đại diện">
+                                <input asp-for="RepresentativeName" class="form-control border-danger" id="representativeName" placeholder="Nhập tên người đại diện" />
+                                @Html.ValidationMessageFor(m => m.RepresentativeName, "", new { @class = "text-danger" })
                             </div>
                         </div>
 
+                        <!-- Số CCCD/CMND -->
+                        <div class="mb-4">
+                            <label class="form-label">Số CCCD/CMND</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-danger-subtle border-danger text-danger">
+                                    <i class="bi bi-credit-card-2-front"></i>
+                                </span>
+                                <input asp-for="CitizenIdentityCard" class="form-control border-danger" id="citizenIdentityCard" placeholder="Nhập số CCCD/CMND" />
+                                @Html.ValidationMessageFor(m => m.CitizenIdentityCard, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                        <!-- Địa chỉ -->
+                        <div class="mb-4">
+                            <label class="form-label">Địa chỉ</label>
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-danger-subtle border-danger text-danger">
+                                            <i class="bi bi-house"></i>
+                                        </span>
+                                        <input asp-for="Address" class="form-control border-danger" id="address" placeholder="Địa chỉ" />
+                                        @Html.ValidationMessageFor(m => m.Address, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                         <!-- Tài khoản ngân hàng -->
                         <div class="mb-4">
@@ -94,8 +137,8 @@
                                         <span class="input-group-text bg-danger-subtle border-danger text-danger">
                                             <i class="bi bi-credit-card"></i>
                                         </span>
-                                        <input type="text" class="form-control border-danger"
-                                               placeholder="Số tài khoản">
+                                        <input asp-for="BankAccount" class="form-control border-danger" placeholder="Số tài khoản" />
+                                        @Html.ValidationMessageFor(m => m.BankAccount, "", new { @class = "text-danger" })
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -103,39 +146,20 @@
                                         <span class="input-group-text bg-danger-subtle border-danger text-danger">
                                             <i class="bi bi-bank"></i>
                                         </span>
-                                        <select class="form-select border-danger">
+                                        <select asp-for="Bank" class="form-select border-danger">
                                             <option value="">Chọn ngân hàng</option>
-                                            <option value="BIDV">
-                                                BIDV - Ngân hàng TMCP Đầu tư và Phát triển Việt
-                                                Nam
-                                            </option>
-                                            <option value="Vietcombank">
-                                                Vietcombank - Ngân hàng TMCP Ngoại
-                                                thương Việt Nam
-                                            </option>
-                                            <option value="Agribank">
-                                                Agribank - Ngân hàng Nông nghiệp và Phát
-                                                triển Nông thôn Việt Nam
-                                            </option>
-                                            <option value="VietinBank">
-                                                VietinBank - Ngân hàng TMCP Công Thương
-                                                Việt Nam
-                                            </option>
-                                            <option value="Techcombank">
-                                                Techcombank - Ngân hàng TMCP Kỹ Thương
-                                                Việt Nam
-                                            </option>
+                                            <option value="BIDV">BIDV - Ngân hàng TMCP Đầu tư và Phát triển Việt Nam</option>
+                                            <option value="Vietcombank">Vietcombank - Ngân hàng TMCP Ngoại thương Việt Nam</option>
+                                            <option value="Agribank">Agribank - Ngân hàng Nông nghiệp và Phát triển Nông thôn Việt Nam</option>
+                                            <option value="VietinBank">VietinBank - Ngân hàng TMCP Công Thương Việt Nam</option>
+                                            <option value="Techcombank">Techcombank - Ngân hàng TMCP Kỹ Thương Việt Nam</option>
                                             <option value="ACB">ACB - Ngân hàng TMCP Á Châu</option>
                                             <option value="MBBank">MB Bank - Ngân hàng TMCP Quân đội</option>
                                             <option value="TPBank">TPBank - Ngân hàng TMCP Tiên Phong</option>
-                                            <option value="VPBank">
-                                                VPBank - Ngân hàng TMCP Việt Nam Thịnh Vượng
-                                            </option>
-                                            <option value="SacomBank">
-                                                Sacombank - Ngân hàng TMCP Sài Gòn Thương
-                                                Tín
-                                            </option>
+                                            <option value="VPBank">VPBank - Ngân hàng TMCP Việt Nam Thịnh Vượng</option>
+                                            <option value="SacomBank">Sacombank - Ngân hàng TMCP Sài Gòn Thương Tín</option>
                                         </select>
+                                        @Html.ValidationMessageFor(m => m.Bank, "", new { @class = "text-danger" })
                                     </div>
                                 </div>
                                 <div class="col-12">
@@ -143,91 +167,8 @@
                                         <span class="input-group-text bg-danger-subtle border-danger text-danger">
                                             <i class="bi bi-person"></i>
                                         </span>
-                                        <input type="text" class="form-control border-danger"
-                                               placeholder="Tên chủ tài khoản">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Ảnh CCCD/CMND -->
-                        <div class="mb-4">
-                            <label class="form-label">Ảnh CCCD/CMND</label>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <div class="border border-danger bg-danger-subtle rounded p-3 text-center"
-                                         onclick="document.getElementById('idFrontInput').click()">
-                                        <div id="idFrontPreview" class="id-preview position-relative">
-                                            <img src="" class="preview-image img-fluid d-none"
-                                                 alt="ID front preview">
-                                            <div class="upload-prompt">
-                                                <i class="bi bi-credit-card-2-front fs-1 text-danger"></i>
-                                                <p class="mb-0 text-danger">Mặt trước CCCD/CMND</p>
-                                            </div>
-                                        </div>
-                                        <input type="file" id="idFrontInput" accept="image/*" class="d-none"
-                                               onchange="previewImage(this, 'idFrontPreview')">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="border border-danger bg-danger-subtle rounded p-3 text-center"
-                                         onclick="document.getElementById('idBackInput').click()">
-                                        <div id="idBackPreview" class="id-preview position-relative">
-                                            <img src="" class="preview-image img-fluid d-none"
-                                                 alt="ID back preview">
-                                            <div class="upload-prompt">
-                                                <i class="bi bi-credit-card-2-back fs-1 text-danger"></i>
-                                                <p class="mb-0 text-danger">Mặt sau CCCD/CMND</p>
-                                            </div>
-                                        </div>
-                                        <input type="file" id="idBackInput" accept="image/*" class="d-none"
-                                               onchange="previewImage(this, 'idBackPreview')">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Địa chỉ -->
-                        <div class="mb-4">
-                            <label class="form-label">Địa chỉ</label>
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-danger-subtle border-danger text-danger">
-                                            <i class="bi bi-map"></i>
-                                        </span>
-                                        <select class="form-select border-danger" id="province">
-                                            <option value="">Chọn tỉnh/thành</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-danger-subtle border-danger text-danger">
-                                            <i class="bi bi-pin-map"></i>
-                                        </span>
-                                        <select class="form-select border-danger" id="district" disabled>
-                                            <option value="">Chọn quận/huyện</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-danger-subtle border-danger text-danger">
-                                            <i class="bi bi-geo"></i>
-                                        </span>
-                                        <select class="form-select border-danger" id="commune" disabled>
-                                            <option value="">Chọn phường/xã</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-12">
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-danger-subtle border-danger text-danger">
-                                            <i class="bi bi-house"></i>
-                                        </span>
-                                        <input type="text" class="form-control border-danger"
-                                               placeholder="Số nhà, tên đường">
+                                        <input asp-for="BankAccountOwner" class="form-control border-danger" placeholder="Tên chủ tài khoản" />
+                                        @Html.ValidationMessageFor(m => m.BankAccountOwner, "", new { @class = "text-danger" })
                                     </div>
                                 </div>
                             </div>
@@ -239,10 +180,48 @@
                                 <i class="bi bi-shop me-2"></i>Đăng ký
                             </button>
                         </div>
-                    </form>
-
+                    
                 </div> <!-- end p-4 -->
+                </form>
             </div> <!-- end shadow-sm -->
         </div> <!-- end col-lg-8 -->
     </div> <!-- end row -->
 </div>
+
+<script>
+function handleOcrImageChange(input) {
+    if (input.files && input.files[0]) {
+        // Hiển thị preview ảnh
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const img = document.getElementById('idFrontImg');
+            img.src = e.target.result;
+            img.classList.remove('d-none');
+        };
+        reader.readAsDataURL(input.files[0]);
+
+        // Gửi ảnh lên server để OCR
+        var formData = new FormData();
+        formData.append('ImageFile', input.files[0]);
+        fetch('/SalesRegistration/ExtractOcr', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('OCR response:', data); // Thêm log để debug
+            if (data.success && data.data) {
+                document.getElementById('representativeName').value = data.data.representativeName || '';
+                document.getElementById('citizenIdentityCard').value = data.data.citizenIdentityCard || '';
+                document.getElementById('address').value = data.data.address || '';
+            } else {
+                alert(data.message || 'Không nhận diện được thông tin.');
+            }
+        })
+        .catch(() => alert('Lỗi khi gửi ảnh nhận diện.'));
+    }
+}
+</script>
+
+
+

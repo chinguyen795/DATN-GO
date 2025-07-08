@@ -40,7 +40,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // Đăng ký HttpClient cho AddressService
 builder.Services.AddHttpClient("api", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7096/"); // đúng cổng API
+    client.BaseAddress = new Uri("https://localhost:7096/"); 
 });
 builder.Services.AddHttpContextAccessor();
 
@@ -51,6 +51,7 @@ builder.Services.AddScoped<AddressService>();
 builder.Services.AddScoped<AuthenticationService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<GoogleCloudStorageService>();
+builder.Services.AddHttpClient<OcrService>();
 
 
 

@@ -30,6 +30,8 @@ namespace DATN_API.Models
         [MaxLength(50)]
         [MinLength(2, ErrorMessage = "Tên phải từ 2 đến 50 kí tự.")]
         public string Name { get; set; }
+        [MaxLength(50)]
+        public string? RepresentativeName { get; set; }
 
         [MaxLength]
         public string? Address { get; set; }
@@ -52,6 +54,9 @@ namespace DATN_API.Models
 
         [MaxLength(50)]
         public string? Bank { get; set; }
+
+        [MaxLength(50)]
+        public string? BankAccountOwner { get; set; }
 
         public float Rating { get; set; }
 

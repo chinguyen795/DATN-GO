@@ -56,21 +56,25 @@ builder.Services.AddScoped<IWardsService, WardsService>();
 builder.Services.AddScoped<IVariantValuesService, VariantValuesService>();
 builder.Services.AddScoped<IVariantsService, VariantsService>();
 builder.Services.AddScoped<IUsersService, UsersService>();
+builder.Services.AddScoped<IOcrService, OcrService>();
 
 
 
 builder.Services.AddAuthorization();
+builder.Services.AddHttpClient();
 
 // Thêm controllers và Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
 var app = builder.Build();
 
 // Cấu hình middleware
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage(); 
     app.UseSwagger();
     app.UseSwaggerUI();
 }
