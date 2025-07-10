@@ -1,358 +1,382 @@
-﻿@* @using DATN_GO.Service
-@using DATN_GO.Services
-@inject DinerService service;
-@inject UserService userService;
+﻿@using DATN_GO.ViewModels
+@model StoreProfileViewModel
+
 @{
     Layout = "~/Areas/Seller/Views/Shared/_LayoutSeller.cshtml";
+    var errors = TempData["BasicInfoErrors"] as Dictionary<string, string>;
+    var paymentErrors = TempData["PaymentInfoErrors"] as Dictionary<string, string>;
 }
 
 <div class="page-wrapper">
-
-    <!-- Header -->
     <header class="main-header" id="header">
         <nav class="navbar navbar-expand-lg navbar-light" id="navbar">
+
             <!-- Sidebar toggle button -->
             <button id="sidebar-toggler" class="sidebar-toggle">
                 <span class="sr-only">Toggle navigation</span>
             </button>
 
-            <span class="page-title">TRANG CHỦ</span>
+            <span class="page-title">TRANG CHỦ</span>
 
-            <div class="navbar-right ">
+            <div class="navbar-right">
                 <ul class="nav navbar-nav">
+
+                    <!-- Thông báo -->
                     <li class="custom-dropdown">
                         <a asp-area="Seller" asp-controller="Notification" asp-action="Notification" class="notify-toggler custom-dropdown-toggler">
                             <i class="mdi mdi-bell-outline icon"></i>
                         </a>
                     </li>
+
                     <!-- User Account -->
                     <li class="dropdown user-menu">
                         <button class="dropdown-toggle nav-link" data-toggle="dropdown">
-                            <img src="images/avt-user.jpg" alt="User Profile" width="32" height="32"
-                                 style="object-fit: cover;" loading="lazy">
-                            <span class="d-none d-lg-inline-block">Meo Meo</span>
+
+                            <img src="@(string.IsNullOrEmpty(Model.UserAvatar) ? Url.Content("~/images/avt-user.jpg") : Model.UserAvatar)"
+                                 alt="User Profile" width="32" height="32" style="object-fit: cover;" loading="lazy">
+
+                            <span class="d-none d-lg-inline-block">@Model.FullName</span>
                         </button>
+
                         <ul class="dropdown-menu dropdown-menu-right">
                             <li>
-                                <a class="dropdown-link-item" href="user-profile.html">
+                                <a asp-area="Seller" asp-controller="Home" asp-action="Index" class="dropdown-link-item">
                                     <i class="mdi mdi-account-outline"></i>
-                                    <span class="nav-text">Hồ Sơ</span>
+                                    <span class="nav-text">Hồ Sơ</span>
                                 </a>
                             </li>
                             <li class="dropdown-footer">
-                                <a class="dropdown-link-item" href="sign-in.html">
-                                    <i class="mdi mdi-logout"></i> Đăng Xuất
+                                <a asp-area="" asp-controller="Account" asp-action="Logout" class="dropdown-link-item">
+                                    <i class="mdi mdi-logout"></i> Đăng Xuất
                                 </a>
                             </li>
                         </ul>
                     </li>
+
                 </ul>
             </div>
         </nav>
-
-
     </header>
 
-    <!-- ====================================
-    ——— CONTENT WRAPPER
-    ===================================== -->
     <div class="content-wrapper">
         <div class="content">
-            <!-- Card Profile -->
             <div class="card card-default card-profile">
-                <!-- Ảnh bìa -->
-                <div class="card-header-bg" id="coverImage"
-                     style="background-image:url('@Url.Content("~/images/logo.png")'); background-size: cover; background-position: center; height: 250px;">
-                </div>
-
-
-                <div class="card-body card-profile-body">
-                    <!-- Ảnh đại diện -->
-                    <div class="profile-avata">
-                        <img class="rounded-circle" src="~/images/avt-user.jpg" alt="User Profile"
+                <div class="card-header-bg position-relative" id="coverContainer"
+                     style="background-image:url('@Model.CoverImage'); background-size: cover; background-position: center; height: 250px;">
+                    <!-- Avatar đặt trong đây để nó nằm chồng lên cover -->
+                    <div class="position-absolute" style="bottom: -60px; left: 50%; transform: translateX(-50%);">
+                        <img class="rounded-circle" src="@Model.Avatar" alt="User Profile"
                              id="profileImage" width="120" height="120"
                              style="object-fit: cover; border: 4px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                        <span class="h5 d-block mt-3 mb-2">Bear Store</span>
-                        <span class="d-block">nguyenchinguyen@gmail.com</span>
-
-                        <!-- Các nút để thay đổi ảnh đại diện và ảnh bìa -->
-                        <input type="file" id="profilePicInput" class="d-none"
-                               onchange="changeProfileImage(event)">
-                        <button onclick="document.getElementById('profilePicInput').click()"
-                                class="btn btn-danger btn-sm mt-2" style="text-transform: capitalize;">
-                            Đổi ảnh đại diện
-                        </button>
-
-                        <input type="file" id="coverPicInput" class="d-none" onchange="changeCoverImage(event)">
-                        <button onclick="document.getElementById('coverPicInput').click()"
-                                class="btn btn-danger btn-sm mt-2" style="text-transform: capitalize;">
-                            Đổi ảnh nền
-                        </button>
                     </div>
+                </div>
+
+                <div class="card-body card-profile-body text-center" style="margin-top: 60px;display:block">
+                    <span class="h5 d-block mt-3 mb-2">@Model.StoreName</span>
+                    <span class="d-block">@Model.Email</span>
+
+                    <input type="file" id="profilePicInput" class="d-none" accept="image/*" onchange="previewProfileImage(event)">
+                    <button onclick="document.getElementById('profilePicInput').click()" class="btn btn-danger btn-sm mt-2">
+                        Đổi ảnh đại diện
+                    </button>
+
+                    <input type="file" id="coverPicInput" class="d-none" accept="image/*" onchange="previewCoverImage(event)">
+                    <button onclick="document.getElementById('coverPicInput').click()" class="btn btn-danger btn-sm mt-2">
+                        Đổi ảnh nền
+                    </button>
+
+                    <button id="saveImageBtn" class="btn btn-success btn-sm mt-2 d-none" onclick="uploadImages()">
+                        Lưu thay đổi
+                    </button>
                 </div>
             </div>
 
-            <div class="row">
-                <div class="col-xl-3 col-md-6">
-                    <div class="card card-default">
-                        <div class="d-flex p-5">
-                            <div class="icon-md bg-secondary rounded-circle mr-3">
-                                <i class="mdi mdi-account-multiple-outline"></i>
-                            </div>
-                            <div class="text-left">
-                                <span class="h2 d-block">890</span>
-                                <p>Người theo dõi</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="card card-default">
-                        <div class="d-flex p-5">
-                            <div class="icon-md bg-success rounded-circle mr-3">
-                                <i class="mdi mdi-table-edit"></i>
-                            </div>
-                            <div class="text-left">
-                                <span class="h2 d-block">350</span>
-                                <p>Đơn hàng</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="card card-default">
-                        <div class="d-flex p-5">
-                            <div class="icon-md bg-primary rounded-circle mr-3">
-                                <i class="mdi mdi-toolbox"></i>
-                            </div>
-                            <div class="text-left">
-                                <span class="h2 d-block">1360</span>
-                                <p>Sản phẩm</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-md-6">
-                    <div class="card card-default">
-                        <div class="d-flex p-5">
-                            <div class="icon-md bg-info rounded-circle mr-3">
-                                <i class="mdi mdi-star"></i>
-                            </div>
-                            <div class="text-left">
-                                <span class="h2 d-block">3.6</span>
-                                <p>Đánh giá</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             <div class="row">
                 <div class="col-lg-6">
-                    <!-- Thông tin cơ bản -->
-                    <div class="card card-default"
-                         style="display: flex; flex-direction: column; min-height: 400px;">
+                    <div class="card card-default" style="min-height: 400px;">
                         <div class="card-header d-flex align-items-center">
                             <h2>Thông tin cơ bản</h2>
-                            <div class="profile-button">
-                                <button class="btn btn-danger btn-pill" data-toggle="modal"
-                                        data-target="#editBasicInfoModal" style="text-transform: capitalize;">
-                                    Sửa thông tin
-                                </button>
-                            </div>
+                            <button class="btn btn-danger btn-pill ml-auto" data-toggle="modal" data-target="#editBasicInfoModal">Sửa thông tin</button>
                         </div>
-                        <div class="card-body slim-scroll">
-                            <div class="contact-info px-1 my-0">
-                                <p class="text-dark font-weight-medium pt-4 mb-2">Người đại diện</p>
-                                <p>Nguyễn Văn A</p>
-                                <p class="text-dark font-weight-medium pt-4 mb-2">Địa chỉ Email</p>
-                                <p>jack@gmail.com</p>
-                                <p class="text-dark font-weight-medium pt-4 mb-2">Số điện thoại</p>
-                                <p>0953926411</p>
-                                <p class="text-dark font-weight-medium pt-4 mb-2">Ngày tạo</p>
-                                <p>15/02/2021</p>
-                                <p class="text-dark font-weight-medium pt-4 mb-2">Địa chỉ</p>
-                                <p>Phường Bến Thành, Quận 1, Thành phố Hồ Chí Minh</p>
-                            </div>
+                        <div class="card-body">
+                            <p class="text-dark font-weight-bold">Người đại diện:</p>
+                            <p>@Model.FullName</p>
+
+                            <p class="text-dark font-weight-bold">Địa chỉ Email:</p>
+                            <p>@Model.Email</p>
+
+                            <p class="text-dark font-weight-bold">Số điện thoại:</p>
+                            <p>@Model.Phone</p>
+
+                            <p class="text-dark font-weight-bold">Địa chỉ:</p>
+                            <p>@Model.Address</p>
+
+                            <p class="text-dark font-weight-bold">Ngày tạo:</p>
+                            <p>
+                                @(Model.CreateAt.HasValue
+                                    ? Model.CreateAt.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss")
+                                    : "Chưa có dữ liệu")
+                            </p>
+
                         </div>
                     </div>
                 </div>
 
                 <div class="col-lg-6">
-                    <!-- Thông tin thanh toán -->
-                    <div class="card card-default"
-                         style="display: flex; flex-direction: column; min-height: 400px;">
+                    <div class="card card-default" style="min-height: 400px;">
                         <div class="card-header d-flex align-items-center">
                             <h2>Thông tin thanh toán</h2>
-                            <div class="profile-button">
-                                <button class="btn btn-danger btn-pill" data-toggle="modal"
-                                        data-target="#editPaymentInfoModal" style="text-transform: capitalize;">
-                                    Sửa thông tin
-                                </button>
-                            </div>
+                            <button class="btn btn-danger btn-pill ml-auto" data-toggle="modal" data-target="#editPaymentInfoModal">Sửa thông tin</button>
                         </div>
-                        <div class="card-body slim-scroll">
-                            <div class="payment-info px-1 my-0">
-                                <p class="text-dark font-weight-medium pt-4 mb-2">Ngân hàng</p>
-                                <p>BIDV - Ngân hàng TMCP Đầu tư và Phát triển Việt Nam</p>
+                        <div class="card-body">
+                            <p class="text-dark font-weight-bold">Ngân hàng:</p>
+                            <p>@Model.Bank</p>
 
-                                <p class="text-dark font-weight-medium pt-4 mb-2">Tên tài khoản</p>
-                                <p>Nguyễn Văn A</p>
-
-                                <p class="text-dark font-weight-medium pt-4 mb-2">Số thẻ</p>
-                                <p>9704123456789012</p>
-                            </div>
+                            <p class="text-dark font-weight-bold">Số tài khoản:</p>
+                            <p>@Model.BankAccount</p>
                         </div>
                     </div>
-
                 </div>
             </div>
-
         </div>
     </div>
 </div>
 
 
-<!-- Modal sửa thông tin cơ bản -->
-<div class="modal fade" id="editBasicInfoModal" tabindex="-1" role="dialog"
-     aria-labelledby="editBasicInfoModalTitle" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header bg-danger">
-                <h5 class="modal-title text-white" id="exampleModalLabel">Sửa Thông Tin Cá Nhân</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="basicInfoForm">
+<!-- Modal Sửa Thông Tin Cơ Bản -->
+<form asp-action="UpdateBasicInfo" asp-controller="Home" asp-area="Seller" method="post">
+    <div class="modal fade" id="editBasicInfoModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-danger">
+                    <h5 class="modal-title text-white">Sửa Thông Tin Cơ Bản</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
                     <div class="form-group">
-                        <label for="repName">Người đại diện</label>
-                        <input type="text" class="form-control" id="repName" value="Nguyễn Văn A">
+                        <label>Tên cửa hàng</label>
+                        <input type="text" class="form-control" name="StoreName" id="storeName" value="@Model.StoreName">
                     </div>
                     <div class="form-group">
-                        <label for="email">Địa chỉ Email</label>
-                        <input type="email" class="form-control" id="email" value="jack@gmail.com">
+                        <label>Người đại diện</label>
+                        <input type="text" class="form-control" name="FullName" id="fullName" value="@Model.FullName" readonly>
                     </div>
                     <div class="form-group">
-                        <label for="phone">Số điện thoại</label>
-                        <input type="text" class="form-control" id="phone" value="0953926411">
+                        <label>Địa chỉ Email</label>
+                        <input type="email" class="form-control" name="Email" id="email" value="@Model.Email" readonly>
                     </div>
                     <div class="form-group">
-                        <label for="address">Địa chỉ</label>
-                        <input type="text" class="form-control" id="address"
-                               value="Phường Bến Thành, Quận 1, Thành phố Hồ Chí Minh">
+                        <label>Số điện thoại</label>
+                        <input type="text" class="form-control" name="Phone" id="phone" value="@Model.Phone" readonly>
                     </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-light btn-pill" data-dismiss="modal" style="text-transform: capitalize;">Đóng</button>
-                <button type="button" class="btn btn-danger btn-pill " onclick="submitBasicInfo()" style="text-transform: capitalize;">
-                    Lưu thay
-                    đổi
-                </button>
+                    <div class="form-group">
+                        <label>Địa chỉ</label>
+                        <input type="text" class="form-control" name="Address" id="address" value="@Model.Address">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-danger">Lưu thay đổi</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
+</form>
 
-<!-- Modal sửa thông tin ngân hàng -->
-<div class="modal fade" id="editPaymentInfoModal" tabindex="-1" role="dialog"
-     aria-labelledby="editPaymentInfoModalTitle" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
 
-            <div class="modal-header bg-danger">
-                <h5 class="modal-title text-white" id="exampleModalLabel">Sửa Thông Tin Thanh Toán</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-
-            <div class="modal-body">
-                <form id="paymentInfoForm">
+<form asp-action="UpdatePaymentInfo" asp-controller="Home" asp-area="Seller" method="post">
+    <div class="modal fade" id="editPaymentInfoModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-danger">
+                    <h5 class="modal-title text-white">Sửa Thông Tin Thanh Toán</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
                     <div class="form-group">
-                        <label for="bank">Ngân hàng</label>
-                        <select class="form-control" id="bank">
-                            <option value="BIDV" selected>
-                                BIDV - Ngân hàng TMCP Đầu tư và Phát triển Việt Nam
-                            </option>
-                            <option value="Vietcombank">Vietcombank - Ngân hàng TMCP Ngoại thương Việt Nam</option>
-                            <option value="Agribank">
-                                Agribank - Ngân hàng Nông nghiệp và Phát triển Nông thôn Việt
-                                Nam
-                            </option>
-                            <option value="VietinBank">VietinBank - Ngân hàng TMCP Công Thương Việt Nam</option>
-                            <option value="Techcombank">Techcombank - Ngân hàng TMCP Kỹ Thương Việt Nam</option>
-                            <option value="ACB">ACB - Ngân hàng TMCP Á Châu</option>
-                            <option value="MBBank">MB Bank - Ngân hàng TMCP Quân đội</option>
-                            <option value="TPBank">TPBank - Ngân hàng TMCP Tiên Phong</option>
-                            <option value="VPBank">VPBank - Ngân hàng TMCP Việt Nam Thịnh Vượng</option>
-                            <option value="SacomBank">Sacombank - Ngân hàng TMCP Sài Gòn Thương Tín</option>
+                        <label>Ngân hàng</label>
+                        <select class="form-control" name="Bank" id="bank">
+                            <option value="">-- Chọn ngân hàng --</option>
+                            @foreach (var bank in ViewBag.BankList)
+                            {
+                                <option value="@bank.Value" selected="@(Model.Bank == bank.Value ? "selected" : null)">@bank.Text</option>
+                            }
                         </select>
                     </div>
-
                     <div class="form-group">
-                        <label for="accountName">Tên tài khoản</label>
-                        <input type="text" class="form-control" id="accountName" value="Nguyễn Văn A">
+                        <label>Số tài khoản</label>
+                        <input type="text" class="form-control" name="BankAccount" id="bankAccount" value="@Model.BankAccount">
                     </div>
-
-                    <div class="form-group">
-                        <label for="cardNumber">Số thẻ</label>
-                        <input type="text" class="form-control" id="cardNumber" value="9704123456789012">
-                    </div>
-
-                </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-danger">Lưu thay đổi</button>
+                </div>
             </div>
-
-            <div class="modal-footer">
-                <button type="button" class="btn btn-light btn-pill" data-dismiss="modal" style="text-transform: capitalize;">Đóng</button>
-                <button type="button" class="btn btn-danger btn-pill" style="text-transform: capitalize;">Lưu thay đổi</button>
-            </div>
-
         </div>
     </div>
-</div>
+</form>
+
 
 
 <script>
-    // Thay đổi ảnh đại diện
     function changeProfileImage(event) {
         const file = event.target.files[0];
         if (file) {
             const reader = new FileReader();
             reader.onload = function (e) {
-                // Cập nhật ảnh đại diện
                 document.getElementById('profileImage').src = e.target.result;
+                uploadImage(e.target.result, true);
             };
             reader.readAsDataURL(file);
         }
     }
 
-                    // Gửi base64 kèm loại ảnh lên server
-                    const model = {
-                        IsAvatar: isAvatar,
-                        Data: e.target.result // base64 data
-                    };
-
-                    $.ajax({
-                        url: '/Seller/Diners/Image',
-                        type: 'PUT',
-                        contentType: 'application/json',
-                        data: JSON.stringify(model),
-                        success: function (response) {
-                            console.log('✅ Ảnh đã được lưu thành công:', response);
-                        },
-                        error: function (xhr, status, error) {
-                            console.error('❌ Lỗi khi upload ảnh:', error);
-                            alert('Upload ảnh thất bại. Vui lòng thử lại.');
-                        }
-                    });
-                };
-
-                reader.readAsDataURL(input.files[0]);
-            }
+    function changeCoverImage(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('coverImage').style.backgroundImage = `url(${e.target.result})`;
+                uploadImage(e.target.result, false);
+            };
+            reader.readAsDataURL(file);
         }
-    </script>
-}
- *@
+    }
+    let selectedAvatar = null;
+    let selectedCover = null;
+
+    function previewProfileImage(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                document.getElementById('profileImage').src = e.target.result;
+                selectedAvatar = file;
+                document.getElementById('saveImageBtn').classList.remove('d-none');
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function previewCoverImage(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                document.getElementById('coverContainer').style.backgroundImage = `url(${e.target.result})`;
+                selectedCover = file;
+                document.getElementById('saveImageBtn').classList.remove('d-none');
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function uploadImages() {
+        const formData = new FormData();
+        if (selectedAvatar) formData.append('avatarFile', selectedAvatar);
+        if (selectedCover) formData.append('coverFile', selectedCover);
+
+        $.ajax({
+            url: '/Seller/Home/UpdateImages',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: () => location.reload(),
+            error: () => alert('Lỗi khi cập nhật hình ảnh!')
+        });
+    }
+
+
+    function uploadImage(base64Data, isAvatar) {
+        $.ajax({
+            url: '/Seller/Stores/Image',
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify({ IsAvatar: isAvatar, Data: base64Data }),
+            success: () => alert('Cập nhật ảnh thành công!'),
+            error: () => alert('Lỗi khi cập nhật ảnh!')
+        });
+    }
+
+    function submitBasicInfo() {
+        const model = {
+            FullName: $('#fullName').val(),
+            Email: $('#email').val(),
+            Phone: $('#phone').val(),
+            Address: $('#address').val()
+        };
+        $.ajax({
+            url: '/Seller/Stores/UpdateBasicInfo',
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(model),
+            success: () => location.reload(),
+            error: () => alert('Lỗi khi cập nhật thông tin!')
+        });
+    }
+
+    function submitPaymentInfo() {
+        const model = {
+            Bank: $('#bank').val(),
+            BankAccount: $('#bankAccount').val(),
+            FullName: $('#accountName').val()
+        };
+        $.ajax({
+            url: '/Seller/Stores/UpdatePaymentInfo',
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(model),
+            success: () => location.reload(),
+            error: () => alert('Lỗi khi cập nhật thanh toán!')
+        });
+
+    }
+    document.addEventListener("DOMContentLoaded", function () {
+        var toastEl = document.getElementById('autoToast');
+        if (toastEl) {
+            var bsToast = new bootstrap.Toast(toastEl, { delay: 3000 });
+            bsToast.show();
+        }
+    });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 2000;">
+    @if (TempData["ToastMessage"] != null && TempData["ToastType"] != null)
+    {
+        var toastType = TempData["ToastType"].ToString();
+        var isSuccess = toastType == "success";
+
+        <div class="toast shadow-lg" role="alert" aria-live="assertive" aria-atomic="true"
+             id="autoToast" style="min-width: 320px; font-size: 1.1rem;">
+            <div class="toast-header @(isSuccess ? "bg-success" : "bg-danger") text-white">
+                <img src="@(isSuccess ? "/icons/happy.gif" : "/icons/sad.gif")"
+                     class="rounded me-2" alt="@(isSuccess ? "Success" : "Error")" width="24" height="24">
+                <strong class="me-auto">@((isSuccess) ? "Thành công" : "Lỗi")</strong>
+                <small>Vừa xong</small>
+                <button type="button" class="btn-close btn-close-white" style="
+                           width: 26.4px !important;
+                           height: 26.4px !important;" data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+            </div>
+            <div class="toast-body fw-semibold">
+                @TempData["ToastMessage"]
+            </div>
+        </div>
+    }
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var toastEl = document.getElementById('autoToast');
+        if (toastEl) {
+            var bsToast = new bootstrap.Toast(toastEl, { autohide: false });
+            bsToast.show();
+
+            setTimeout(function () {
+                bsToast.hide();
+            }, 3000);
+        }
+    });
+</script>

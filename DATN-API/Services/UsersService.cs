@@ -35,10 +35,21 @@ namespace DATN_API.Services
         public async Task<bool> UpdateAsync(int id, Users model)
         {
             if (id != model.Id) return false;
+
             var user = await _context.Users.FindAsync(id);
             if (user == null) return false;
+
+            user.FullName = model.FullName;
+            user.Email = model.Email;
+            user.Phone = model.Phone;
+            user.Avatar = model.Avatar;
             // Update all properties
             user.Status = model.Status;
+            user.Gender = model.Gender;
+            user.CitizenIdentityCard = model.CitizenIdentityCard;
+            user.BirthDay = model.BirthDay;
+            user.UpdateAt = DateTime.Now;
+
             user.Email = model.Email;
             user.RoleId = model.RoleId;
             user.Password = model.Password;
@@ -53,6 +64,7 @@ namespace DATN_API.Services
             await _context.SaveChangesAsync();
             return true;
         }
+
 
         public async Task<bool> DeleteAsync(int id)
         {

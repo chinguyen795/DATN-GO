@@ -60,5 +60,17 @@ namespace DATN_API.Controllers
                 return NotFound();
             return NoContent();
         }
+        [HttpGet("count/total")]
+        public async Task<IActionResult> GetTotalProducts()
+        {
+            var count = await _service.GetTotalProductsAsync();
+            return Ok(count);
+        }
+        [HttpGet("count/by-month/{year}")]
+        public async Task<IActionResult> GetProductCountByMonth(int year)
+        {
+            var result = await _service.GetProductCountByMonthAsync(year);
+            return Ok(result);
+        }
     }
 }

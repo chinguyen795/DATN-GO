@@ -38,24 +38,39 @@
         <div class="content">
             <div class="row">
                 <div class="col-xl-4 col-sm-6">
-                    <div class="card card-default card-mini"
-                         style="height: calc(100% - 1rem)">
+                    <div class="card card-default card-mini" style="height: calc(100% - 1rem)">
+
                         <div class="card-header">
                             <h2>Tổng cửa hàng</h2>
                             <div class="sub-title">
-                                <span class="mr-1">Đang hoạt động</span>
+                                <span class="mr-1">Tất cả và đang hoạt động</span>
                             </div>
                         </div>
+
                         <div class="card-body d-flex align-items-center justify-content-between">
-                            <h2 class="text-dark" id="totalShops">0</h2>
-                            <i class="mdi mdi-store text-primary"
-                               style="font-size: 3.5rem; opacity: 0.8"></i>
+
+                            <div class="flex-grow-1 me-3">
+                                <!-- Tự đẩy rộng, giữ khoảng cách -->
+                                <p class="mb-1 fs-5 d-flex justify-content-between">
+                                    Tổng cộng:
+                                    <strong class="text-dark fs-4">@ViewBag.TotalShops</strong>
+                                </p>
+                                <p class="mb-0 fs-5 d-flex justify-content-between">
+                                    Đang hoạt động:
+                                    <strong class="text-success fs-4">@ViewBag.TotalActiveShops</strong>
+                                </p>
+                            </div>
+
+                            <i class="mdi mdi-store text-primary" style="font-size: 3.5rem; opacity: 0.8;"></i>
+
                         </div>
+
                     </div>
                 </div>
+
+
                 <div class="col-xl-4 col-sm-6">
-                    <div class="card card-default card-mini"
-                         style="height: calc(100% - 1rem)">
+                    <div class="card card-default card-mini" style="height: calc(100% - 1rem)">
                         <div class="card-header">
                             <h2>Tổng sản phẩm</h2>
                             <div class="sub-title">
@@ -63,12 +78,12 @@
                             </div>
                         </div>
                         <div class="card-body d-flex align-items-center justify-content-between">
-                            <h2 class="text-dark" id="totalProducts">0</h2>
-                            <i class="mdi mdi-package-variant text-success"
-                               style="font-size: 3.5rem; opacity: 0.8"></i>
+                            <h2 class="text-dark">@ViewBag.TotalProducts</h2>
+                            <i class="mdi mdi-package-variant text-success" style="font-size: 3.5rem; opacity: 0.8"></i>
                         </div>
                     </div>
                 </div>
+
                 <div class="col-xl-4 col-sm-12">
                     <div class="card card-default card-mini"
                          style="height: calc(100% - 1rem)">
@@ -96,14 +111,22 @@
                     </div>
                 </div>
             </div>
-
+            
             <div class="row">
                 <div class="col-xl-12">
                     <div class="card card-default">
                         <div class="card-header"></div>
                         <div class="card-body">
                             <div class="chart-wrapper">
+                                <div class="d-flex justify-content-between mb-3">
+                                    <h3>Thống kê số lượng cửa hàng theo tháng</h3>
+                                    <select id="yearSelect" class="form-select w-auto">
+                                        <!-- Sẽ thêm option động bằng JS -->
+                                    </select>
+                                </div>
+
                                 <div id="mixed-chart-1"></div>
+
                             </div>
                         </div>
                     </div>
@@ -118,3 +141,111 @@
         </div>
     </footer>
 </div>
+<script>
+    const mixedChart1 = document.querySelector("#mixed-chart-1");
+    const yearSelect = document.getElementById("yearSelect");
+    let renderMixedChart1 = null;
+
+    // Tạo danh sách năm (2020 đến hiện tại)
+    const currentYear = new Date().getFullYear();
+    for (let year = 2020; year <= currentYear; year++) {
+        const option = document.createElement("option");
+        option.value = year;
+        option.textContent = year;
+        if (year === currentYear) option.selected = true;
+        yearSelect.appendChild(option);
+    }
+
+    // Hàm load biểu đồ theo năm
+    function loadChartData(year) {
+        const storeAPI = `/api/Stores/count/by-month/${year}`;
+        const productAPI = `/api/Products/count/by-month/${year}`;
+
+        Promise.all([
+            fetch(storeAPI).then(res => res.json()),
+            fetch(productAPI).then(res => res.json())
+        ])
+            .then(([storeData, productData]) => {
+                const labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+                const storeCounts = Array.from({ length: 12 }, (_, i) => storeData[i + 1] || 0);
+                const productCounts = Array.from({ length: 12 }, (_, i) => productData[i + 1] || 0);
+
+                const chartOptions = {
+                    chart: {
+                        height: 370,
+                        type: "bar",
+                        toolbar: { show: false }
+                    },
+                    colors: ["#9e6de0", "#00c5dc"],
+                    legend: {
+                        show: true,
+                        position: "top",
+                        horizontalAlign: "right",
+                        markers: { width: 20, height: 5, radius: 0 }
+                    },
+                    plotOptions: {
+                        bar: {
+                            horizontal: false,
+                            columnWidth: "50%",
+                        }
+                    },
+                    dataLabels: { enabled: false },
+                    stroke: {
+                        show: true,
+                        width: 2,
+                        curve: "smooth"
+                    },
+                    series: [
+                        {
+                            name: "Cửa hàng",
+                            type: "column",
+                            data: storeCounts
+                        },
+                        {
+                            name: "Sản phẩm",
+                            type: "column",
+                            data: productCounts
+                        }
+                    ],
+                    xaxis: {
+                        categories: labels,
+                        axisBorder: { show: false },
+                        axisTicks: { show: false },
+                        crosshairs: { width: 40 }
+                    },
+                    tooltip: {
+                        shared: true,
+                        intersect: false,
+                        followCursor: true,
+                        x: { show: false },
+                        y: {
+                            formatter: val => Math.round(val),
+                            title: { formatter: name => name }
+                        }
+                    },
+                    fill: { opacity: 1 }
+                };
+
+                if (renderMixedChart1) renderMixedChart1.destroy();
+                renderMixedChart1 = new ApexCharts(mixedChart1, chartOptions);
+                renderMixedChart1.render();
+            })
+            .catch(error => {
+                console.error("Lỗi khi tải biểu đồ:", error);
+            });
+    }
+
+    // Khởi chạy mặc định theo năm hiện tại
+    loadChartData(currentYear);
+
+    // Khi chọn năm khác
+    yearSelect.addEventListener("change", function () {
+        const selectedYear = parseInt(this.value);
+        loadChartData(selectedYear);
+    });
+
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>

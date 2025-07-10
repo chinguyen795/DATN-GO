@@ -11,5 +11,7 @@ namespace DATN_API.Services.Interfaces
         Task<Products> CreateAsync(Products model);
         Task<bool> UpdateAsync(int id, Products model);
         Task<bool> DeleteAsync(int id);
+        Task<int> GetTotalProductsAsync();
+        Task<Dictionary<int, int>> GetProductCountByMonthAsync(int year);
     }
 }

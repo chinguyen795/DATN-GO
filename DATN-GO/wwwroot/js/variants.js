@@ -15,11 +15,11 @@ const variantTypeTemplate = (id) => `
                     </button>
                 </div>
                 <div class="form-group">
-                    <label>Tên tùy chọn:</label>
+                    <label>Tên biến thể:</label>
                     <input type="text" class="form-control variant-type-name" placeholder="Ví dụ: Màu sắc, Kích thước...">
                 </div>
                 <div class="variant-values mt-3">
-                    <label>Giá trị tùy chọn:</label>
+                    <label>Giá trị biến thể:</label>
                     <div class="variant-values-container">
                         <div class="d-flex align-items-center mb-2">
                             <input type="text" class="form-control variant-value" placeholder="Nhập giá trị" style="margin-right:16px;">

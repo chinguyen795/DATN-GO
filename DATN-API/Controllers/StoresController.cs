@@ -1,5 +1,6 @@
 using DATN_API.Interfaces;
 using DATN_API.Models;
+using DATN_API.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
@@ -70,6 +71,39 @@ namespace DATN_API.Controllers
             return Ok(store);
         }
 
+
+        [HttpGet("User/{userId}")]
+        public async Task<IActionResult> GetStoreByUserId(int userId)
+        {
+            var store = await _service.GetStoreByUserIdAsync(userId);
+            if (store == null) return NotFound();
+            return Ok(store);
+        }
+        [HttpGet("count/all")]
+        public async Task<IActionResult> GetTotalStores()
+        {
+            var total = await _service.GetTotalStoresAsync();
+            return Ok(total);
+        }
+
+        [HttpGet("count/active")]
+        public async Task<IActionResult> GetTotalActiveStores()
+        {
+            var total = await _service.GetTotalActiveStoresAsync();
+            return Ok(total);
+        }
+        [HttpGet("count/by-month-year")]
+        public async Task<IActionResult> GetStoreCountByMonthYear([FromQuery] int month, [FromQuery] int year)
+        {
+            var count = await _service.GetStoreCountByMonthYearAsync(month, year);
+            return Ok(count);
+        }
+        [HttpGet("count/by-month/{year}")]
+        public async Task<IActionResult> GetStoreCountByMonth(int year)
+        {
+            var data = await _service.GetStoreCountByMonthAsync(year);
+            return Ok(data);
+        }
 
     }
 }

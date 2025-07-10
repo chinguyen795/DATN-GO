@@ -1,0 +1,90 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
+using DATN_GO.Models;
+using Microsoft.Extensions.Configuration;
+
+namespace DATN_GO.Service
+{
+    public class PricesService
+    {
+        private readonly HttpClient _httpClient;
+        private readonly string _baseUrl;
+
+        public PricesService(HttpClient httpClient, IConfiguration configuration)
+        {
+            _httpClient = httpClient;
+            _baseUrl = configuration["ApiSettings:BaseUrl"] + "Prices";
+        }
+
+        public async Task<List<Prices>?> GetAllPricesAsync()
+        {
+            var response = await _httpClient.GetAsync(_baseUrl);
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                return JsonSerializer.Deserialize<List<Prices>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            }
+
+            Console.WriteLine($"Lỗi khi lấy danh sách giá: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
+            return null;
+        }
+
+        public async Task<Prices?> GetPriceByIdAsync(int id)
+        {
+            var response = await _httpClient.GetAsync($"{_baseUrl}/{id}");
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                return JsonSerializer.Deserialize<Prices>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            }
+
+            Console.WriteLine($"Lỗi khi lấy giá ID {id}: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
+            return null;
+        }
+
+        public async Task<Prices?> CreatePriceAsync(Prices price)
+        {
+            var content = new StringContent(JsonSerializer.Serialize(price), Encoding.UTF8, "application/json");
+            var response = await _httpClient.PostAsync(_baseUrl, content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                return JsonSerializer.Deserialize<Prices>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            }
+
+            Console.WriteLine($"Lỗi khi tạo giá: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
+            return null;
+        }
+
+        public async Task<bool> UpdatePriceAsync(int id, Prices price)
+        {
+            var content = new StringContent(JsonSerializer.Serialize(price), Encoding.UTF8, "application/json");
+            var response = await _httpClient.PutAsync($"{_baseUrl}/{id}", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return true;
+            }
+
+            Console.WriteLine($"Lỗi khi cập nhật giá ID {id}: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
+            return false;
+        }
+
+        public async Task<bool> DeletePriceAsync(int id)
+        {
+            var response = await _httpClient.DeleteAsync($"{_baseUrl}/{id}");
+            if (response.IsSuccessStatusCode)
+            {
+                return true;
+            }
+
+            Console.WriteLine($"Lỗi khi xoá giá ID {id}: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
+            return false;
+        }
+    }
+}

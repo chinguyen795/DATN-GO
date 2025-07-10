@@ -1,101 +1,69 @@
 ﻿using DATN_API.Data;
+using DATN_API.Interfaces;
 using DATN_API.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace DATN_API.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
+    [ApiController]
     public class PostsController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IPostsService _postsService;
 
-        public PostsController(ApplicationDbContext context)
+        public PostsController(IPostsService postsService)
         {
-            _context = context;
+            _postsService = postsService;
         }
 
-        // GET: api/posts
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<ActionResult<IEnumerable<Posts>>> GetAll()
         {
-            var posts = await _context.Posts
-                .Include(p => p.User)
-                .ToListAsync();
-
+            var posts = await _postsService.GetAllAsync();
             return Ok(posts);
         }
 
-        // GET: api/posts/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<ActionResult<Posts>> GetById(int id)
         {
-            var post = await _context.Posts
-                .Include(p => p.User)
-                .FirstOrDefaultAsync(p => p.Id == id);
-
+            var post = await _postsService.GetByIdAsync(id);
             if (post == null) return NotFound();
-
             return Ok(post);
         }
 
-        // GET: api/posts/user/3
-        [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetByUser(int userId)
-        {
-            var posts = await _context.Posts
-                .Where(p => p.UserId == userId)
-                .ToListAsync();
-
-            return Ok(posts);
-        }
-
-        // POST: api/posts
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] Posts model)
+        public async Task<ActionResult<Posts>> Create([FromBody] Posts model)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            if (string.IsNullOrEmpty(model.Content) || model.Content.Length < 5)
+            {
+                return BadRequest("Nội dung phải từ 5 ký tự trở lên.");
+            }
 
-            model.CreateAt = DateTime.UtcNow;
-
-            _context.Posts.Add(model);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetById), new { id = model.Id }, model);
+            var newPost = await _postsService.CreateAsync(model);
+            return CreatedAtAction(nameof(GetById), new { id = newPost.Id }, newPost);
         }
 
-        // PUT: api/posts/5
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] Posts model)
         {
-            if (id != model.Id)
-                return BadRequest("ID không khớp");
-
-            var post = await _context.Posts.FindAsync(id);
-            if (post == null) return NotFound();
-
-            post.UserId = model.UserId;
-            post.Content = model.Content;
-            post.Image = model.Image;
-            post.CreateAt = model.CreateAt;
-
-            await _context.SaveChangesAsync();
+            var success = await _postsService.UpdateAsync(id, model);
+            if (!success) return NotFound();
             return NoContent();
         }
 
-        // DELETE: api/posts/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var post = await _context.Posts.FindAsync(id);
-            if (post == null) return NotFound();
-
-            _context.Posts.Remove(post);
-            await _context.SaveChangesAsync();
-
+            var success = await _postsService.DeleteAsync(id);
+            if (!success) return NotFound();
             return NoContent();
+        }
+        [HttpGet("User/{userId}")]
+        public async Task<ActionResult<IEnumerable<Posts>>> GetPostsByUserId(int userId)
+        {
+            var posts = await _postsService.GetByUserIdAsync(userId);
+            return Ok(posts);
         }
     }
 }

@@ -49,7 +49,11 @@ namespace DATN_API.Models
         public DateTime UpdateAt { get; set; }
         [Range(1000, double.MaxValue, ErrorMessage = "Giá phải từ 1.000")] 
         public decimal? CostPrice { get; set; }
-        public string? PackageSize { get; set; }
+        public float? Height { get; set; }
+
+        public float? Width { get; set; }
+
+        public float? Length { get; set; }
         public string? PlaceOfOrigin { get; set; }
         [MaxLength(50)]
         public string? Hashtag { get; set; }

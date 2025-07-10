@@ -40,7 +40,11 @@ namespace DATN_GO.Models
         public DateTime CreateAt { get; set; }
         public DateTime UpdateAt { get; set; }
         public decimal? CostPrice { get; set; }
-        public string? PackageSize { get; set; }
+        public float? Height { get; set; }
+
+        public float? Width { get; set; }
+
+        public float? Length { get; set; }
         public string? PlaceOfOrigin { get; set; }
         [MaxLength(50)]
         public string? Hashtag { get; set; }

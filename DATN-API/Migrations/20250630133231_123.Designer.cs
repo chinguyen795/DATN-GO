@@ -4,6 +4,7 @@ using DATN_API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DATN_API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250630133231_123")]
+    partial class _123
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -535,26 +538,20 @@ namespace DATN_API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("CreateAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int?>("ProductId")
+                    b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("UpdateAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("VariantValuesId")
+                    b.Property<int>("VariantCompositionId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ProductId");
 
-                    b.HasIndex("VariantValuesId");
+                    b.HasIndex("VariantCompositionId");
 
                     b.ToTable("Prices");
                 });
@@ -683,12 +680,6 @@ namespace DATN_API.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<float?>("Height")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("Length")
-                        .HasColumnType("real");
-
                     b.Property<string>("MainImage")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -697,6 +688,9 @@ namespace DATN_API.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("PackageSize")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PlaceOfOrigin")
                         .HasColumnType("nvarchar(max)");
@@ -724,9 +718,6 @@ namespace DATN_API.Migrations
 
                     b.Property<int?>("Weight")
                         .HasColumnType("int");
-
-                    b.Property<float?>("Width")
-                        .HasColumnType("real");
 
                     b.HasKey("Id");
 
@@ -1035,49 +1026,30 @@ namespace DATN_API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal?>("CostPrice")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<float?>("Height")
-                        .HasColumnType("real");
-
                     b.Property<string>("Image")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
-                    b.Property<float?>("Length")
-                        .HasColumnType("real");
-
-                    b.Property<int?>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("VariantId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("VariantValueName")
+                    b.Property<string>("Type")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<int?>("VariantsId")
+                    b.Property<string>("ValueName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("VariantId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("Weight")
-                        .HasColumnType("int");
-
-                    b.Property<float?>("Width")
-                        .HasColumnType("real");
+                    b.Property<string>("colorHex")
+                        .HasMaxLength(7)
+                        .HasColumnType("nvarchar(7)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("VariantId");
-
-                    b.HasIndex("VariantsId");
 
                     b.ToTable("VariantValues");
                 });
@@ -1405,15 +1377,18 @@ namespace DATN_API.Migrations
                     b.HasOne("DATN_API.Models.Products", "Product")
                         .WithMany("Prices")
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.HasOne("DATN_API.Models.VariantValues", "VariantValue")
-                        .WithMany("Prices")
-                        .HasForeignKey("VariantValuesId");
+                    b.HasOne("DATN_API.Models.VariantComposition", "VariantComposition")
+                        .WithMany()
+                        .HasForeignKey("VariantCompositionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Product");
 
-                    b.Navigation("VariantValue");
+                    b.Navigation("VariantComposition");
                 });
 
             modelBuilder.Entity("DATN_API.Models.ProductImages", b =>
@@ -1610,10 +1585,6 @@ namespace DATN_API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("DATN_API.Models.Variants", null)
-                        .WithMany("VariantValues")
-                        .HasForeignKey("VariantsId");
-
                     b.Navigation("Variant");
                 });
 
@@ -1764,16 +1735,6 @@ namespace DATN_API.Migrations
                     b.Navigation("SentMessages");
 
                     b.Navigation("Store");
-                });
-
-            modelBuilder.Entity("DATN_API.Models.VariantValues", b =>
-                {
-                    b.Navigation("Prices");
-                });
-
-            modelBuilder.Entity("DATN_API.Models.Variants", b =>
-                {
-                    b.Navigation("VariantValues");
                 });
 
             modelBuilder.Entity("DATN_API.Models.Vouchers", b =>

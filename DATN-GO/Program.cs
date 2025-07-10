@@ -55,6 +55,9 @@ builder.Services.AddHttpClient<OcrService>();
 builder.Services.AddHttpClient<BankService>();
 builder.Services.AddHttpClient<StoreService>();
 
+builder.Services.AddScoped<PostService>();
+builder.Services.AddScoped<StoreService>();
+builder.Services.AddScoped<ProductService>();
 
 // Đăng ký HttpClient cho các Service
 builder.Services.AddHttpClient<AuthenticationService>();

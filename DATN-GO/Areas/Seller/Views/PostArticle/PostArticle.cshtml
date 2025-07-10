@@ -1,40 +1,41 @@
-﻿
+﻿@model DATN_GO.ViewModels.PostArticleViewModel
+@using Microsoft.AspNetCore.Http
 
 @{
     Layout = "~/Areas/Seller/Views/Shared/_LayoutSeller.cshtml";
+    var userId = Context.Session.GetString("Id");
+    var currentUser = ViewBag.CurrentUser as DATN_GO.Models.Users;
+    var search = Context.Request.Query["search"];
+    var sortOrder = Context.Request.Query["sortOrder"];
 }
-<div class="page-wrapper">
 
+<div class="page-wrapper">
     <!-- Header -->
     <header class="main-header" id="header">
         <nav class="navbar navbar-expand-lg navbar-light" id="navbar">
-            <!-- Sidebar toggle button -->
             <button id="sidebar-toggler" class="sidebar-toggle">
                 <span class="sr-only">Toggle navigation</span>
             </button>
-
             <span class="page-title">ĐĂNG BÀI</span>
 
-            <div class="navbar-right ">
-
+            <div class="navbar-right">
                 <ul class="nav navbar-nav">
                     <li class="custom-dropdown">
                         <a asp-area="Seller" asp-controller="Notification" asp-action="Notification" class="notify-toggler custom-dropdown-toggler">
                             <i class="mdi mdi-bell-outline icon"></i>
                         </a>
                     </li>
-                    <!-- User Account -->
                     <li class="dropdown user-menu">
                         <button class="dropdown-toggle nav-link" data-toggle="dropdown">
-                            <img src="~/images/avt-user.jpg" alt="User Profile" width="32" height="32"
-                                 style="object-fit: cover;" loading="lazy">
-                            <span class="d-none d-lg-inline-block">Meo Meo</span>
+                            <img src="@(string.IsNullOrEmpty(currentUser?.Avatar) ? "/images/default_avatar.jpg" : currentUser.Avatar)"
+                                 class="rounded-circle me-3" width="45" height="45" alt="Author">
+
+                            <span class="d-none d-lg-inline-block">@currentUser?.FullName</span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-right">
                             <li>
                                 <a class="dropdown-link-item" href="user-profile.html">
-                                    <i class="mdi mdi-account-outline"></i>
-                                    <span class="nav-text">Hồ Sơ</span>
+                                    <i class="mdi mdi-account-outline"></i> Hồ Sơ
                                 </a>
                             </li>
                             <li class="dropdown-footer">
@@ -47,185 +48,313 @@
                 </ul>
             </div>
         </nav>
-
-
     </header>
 
-    <!-- ====================================
-    ——— CONTENT WRAPPER
-    ===================================== -->
+    <!-- CONTENT -->
     <div class="content-wrapper">
         <div class="content">
             <div class="container">
-                <!-- Create Post Card -->
-                <div class="card shadow-sm mb-4">
-                    <div class="card-body p-4">
-                        <div class="d-flex mb-4">
-                            <img src="images/user/user-xs-01.jpg" class="rounded-circle me-3 border shadow-sm"
-                                 alt="Người dùng" width="50" height="50"
-                                 style="object-fit: cover; margin-right: 10px;">
-                            <div class="flex-grow-1">
-                                <textarea class="form-control border-0 bg-light shadow-sm"
-                                          placeholder="Nội dung bài viết..." rows="4"
-                                          style="resize: none; border-radius: 15px;"></textarea>
+
+                <!-- Form đăng bài -->
+                <form asp-action="Create" method="post" enctype="multipart/form-data">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body p-4">
+
+                            <!-- Header -->
+                            <div class="d-flex mb-4">
+                                <img src="@(string.IsNullOrEmpty(currentUser?.Avatar) ? "/images/default_avatar.jpg" : currentUser.Avatar)"
+                                     class="rounded-circle me-3" width="45" height="45" alt="Author" width="45" height="45">
+
+                                <div class="flex-grow-1">
+                                    <textarea asp-for="Post.Content" class="form-control border-0 bg-light shadow-sm"
+                                              placeholder="Nội dung bài viết..." rows="4"
+                                              style="resize: none; border-radius: 15px;"></textarea>
+                                    <span asp-validation-for="Post.Content" class="text-danger"></span>
+                                </div>
                             </div>
-                        </div> <!-- Media Previews -->
-                        <div class="media-previews mb-4">
-                            <!-- Image Preview -->
-                            <div id="imagePreview" class="preview-item mb-3 d-none">
-                                <div class="position-relative">
+
+                            <!-- Khu vực nút và upload -->
+                            <div class="border-top pt-4">
+                                <div class="row g-4 align-items-center mb-3">
+
+                                    <!-- Nút thêm ảnh -->
+                                    <div class="col-auto">
+                                        <label for="imageInput" class="btn btn-light rounded-circle p-3 d-flex align-items-center justify-content-center shadow-sm" title="Thêm ảnh">
+                                            <i class="fas fa-image fs-5 text-success"></i>
+                                        </label>
+                                    </div>
+
+                                    <!-- Nút đăng bài -->
+                                    <div class="col ms-auto">
+                                        <button type="submit" class="btn btn-danger w-100 py-2 px-4 d-flex align-items-center justify-content-center gap-2 shadow-sm">
+                                            <span class="fw-semibold">Đăng Bài</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Xem trước ảnh nằm ngay trên nút đăng bài -->
+                                <div id="imagePreviewSection" class="d-none mb-3">
                                     <div class="d-flex align-items-center mb-2">
                                         <i class="fas fa-image text-success me-2"></i>
-                                        <span class="text-muted small">Hình ảnh đính kèm</span>
-                                        <button type="button" class="btn btn-sm btn-light ms-auto"
-                                                onclick="removeImage()">
+                                        <span class="text-muted small">Xem trước hình ảnh</span>
+                                        <button type="button" class="btn btn-sm btn-light ms-auto" onclick="removeImage()">
                                             <i class="fas fa-times"></i>
                                         </button>
                                     </div>
-                                    <div class="preview-content position-relative">
-                                        <img src="" alt="Preview" class="img-fluid rounded shadow-sm w-100"
-                                             style="max-height: 300px; object-fit: cover;">
-                                    </div>
+                                    <img id="previewImage" src="#" alt="Preview" class="img-fluid rounded shadow-sm w-100" style="max-height: 300px;">
                                 </div>
-                            </div>
 
-                            <!-- Video Preview -->
-                            <div id="videoPreview" class="preview-item mb-3 d-none">
-                                <div class="position-relative">
-                                    <div class="d-flex align-items-center mb-2">
-                                        <i class="fas fa-film text-primary me-2"></i>
-                                        <span class="text-muted small">Video đính kèm</span>
-                                        <button type="button" class="btn btn-sm btn-light ms-auto"
-                                                onclick="removeVideo()">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </div>
-                                    <div class="preview-content position-relative">
-                                        <video id="videoPlayer" controls class="w-100 rounded shadow-sm"
-                                               style="max-height: 300px;">
-                                            <source src="" type="video/mp4">
-                                            Trình duyệt của bạn không hỗ trợ video.
-                                        </video>
-                                    </div>
-                                </div>
+                                <!-- Input file ẩn -->
+                                <input type="file" name="imageFile" id="imageInput" accept="image/*" class="d-none" onchange="previewImage(this)">
                             </div>
-                        </div>
-                        <div class="border-top pt-4">
-                            <div class="row g-4 align-items-center">
-                                <div class="col-auto">
-                                    <label for="imageInput"
-                                           class="btn btn-light rounded-circle p-3 d-flex align-items-center justify-content-center shadow-sm"
-                                           data-bs-toggle="tooltip" title="Thêm ảnh">
-                                        <i class="fas fa-image fs-5 text-success"></i>
-                                    </label>
-                                </div>
-                                <div class="col-auto">
-                                    <button class="btn btn-light rounded-circle p-3 d-flex align-items-center justify-content-center shadow-sm"
-                                            data-media-type="video" data-bs-toggle="tooltip" title="Thêm video">
-                                        <i class="fas fa-film fs-5 text-primary"></i>
-                                    </button>
-                                </div>
-                                <!-- <div class="col-auto">
-                                    <button
-                                        class="btn btn-light rounded-circle p-3 d-flex align-items-center justify-content-center shadow-sm"
-                                        data-bs-toggle="tooltip" title="Thêm tag">
-                                        <i class="fas fa-hashtag fs-5 text-info"></i>
-                                    </button>
-                                </div> -->
-                                <div class="col ms-auto">
-                                    <button class="btn btn-danger w-100 py-2 px-4 d-flex align-items-center justify-content-center gap-2 shadow-sm" style="text-transform: capitalize;">
-                                        <span class="fw-semibold">Đăng Bài</span>
-                                    </button>
-                                </div>
-                            </div>
-                            <input type="file" id="imageInput" accept="image/*" class="d-none"
-                                   onchange="previewImage(this)">
                         </div>
                     </div>
-                </div> <!-- Search + Filter -->
-                <div class="d-flex flex-column flex-md-row gap-3 mb-4 align-items-md-center justify-content-between">
+                </form>
+
+
+
+                <!-- Search & Filter -->
+                <form method="get" asp-action="PostArticle" class="d-flex flex-column flex-md-row gap-3 mb-4 align-items-md-center justify-content-between">
+
+                    <!-- Ô tìm kiếm -->
                     <div style="width: 300px;">
-                        <input type="search" class="form-control search-input"
-                               placeholder="Tìm kiếm bài viết..." aria-label="Tìm kiếm">
+                        <input type="search" name="search" class="form-control shadow-sm"
+                               value="@(ViewContext.HttpContext.Request.Query["search"])"
+                               placeholder="🔍 Tìm kiếm bài viết...">
                     </div>
-                    <div style="width: 200px;">
-                        <select class="form-select w-100">
+
+                    <!-- Select sắp xếp -->
+                    <div style="width: 220px; position: relative;">
+                        <select name="sortOrder" class="form-select shadow-sm ps-3 pe-5" onchange="this.form.submit()">
                             <option value="">Sắp xếp theo</option>
-                            <option value="newest">Mới nhất</option>
-                            <option value="oldest">Cũ nhất</option>
+
+                            @if (ViewContext.HttpContext.Request.Query["sortOrder"] == "newest")
+                            {
+                                <option value="newest" selected>Mới nhất</option>
+                            }
+                            else
+                            {
+                                <option value="newest">Mới nhất</option>
+                            }
+
+                            @if (ViewContext.HttpContext.Request.Query["sortOrder"] == "oldest")
+                            {
+                                <option value="oldest" selected>Cũ nhất</option>
+                            }
+                            else
+                            {
+                                <option value="oldest">Cũ nhất</option>
+                            }
                         </select>
+
+                        <!-- Icon mũi tên cho đẹp -->
+                        <span class="position-absolute top-50 end-0 translate-middle-y pe-3 text-muted">
+                            <i class="bi bi-chevron-down"></i>
+                        </span>
                     </div>
-                </div>
-                <!-- Articles List -->
+                </form>
+
+
+
+
+                <!-- Danh sách bài viết -->
                 <div class="articles-list">
-
-                    <!-- Article Card Template -->
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start mb-3">
-                                <div class="d-flex align-items-center">
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/9/96/Carassius_wild_golden_fish_2013_G1.jpg"
-                                         class="rounded-circle me-3" width="45" height="45" alt="Author">
-                                    <div>
-                                        <h6 class="mb-1 fw-bold">Tên người bán</h6>
-                                        <small class="text-muted">⏱ 2 giờ trước</small>
+                    @foreach (var post in Model.PostList)
+                    {
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div class="d-flex align-items-center">
+                                        <img src="@(string.IsNullOrEmpty(post.User?.Avatar) ? "/images/default_avatar.jpg" : post.User.Avatar)"
+                                             class="rounded-circle me-3" width="45" height="45" alt="Author">
+                                        <div>
+                                            <h6 class="mb-1 fw-bold">@post.User?.FullName</h6>
+                                            <small class="text-muted">⏱ @post.CreateAt.ToLocalTime().ToString("HH:mm dd/MM/yyyy")</small>
+                                        </div>
                                     </div>
+                                    <div class="btn-group">
+                                        <!-- Nút mở modal sửa -->
+                                        <button type="button" class="btn btn-sm btn-outline-warning d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#editModal_@post.Id">
+                                            <i class="fas fa-edit me-1"></i> <span class="d-none d-md-inline">Sửa</span>
+                                        </button>
+
+                                        <!-- Nút mở modal xác nhận xoá -->
+                                        <button type="button" class="btn btn-sm btn-outline-danger d-flex align-items-center" onclick="setDeleteId(@post.Id)" data-bs-toggle="modal" data-bs-target="#deleteConfirmModal">
+                                            <i class="fas fa-trash me-1"></i> <span class="d-none d-md-inline">Xoá</span>
+                                        </button>
+                                    </div>
+
                                 </div>
-                                <div class="btn-group">
-                                    <button class="btn btn-sm btn-outline-warning d-flex align-items-center">
-                                        <i class="fas fa-edit me-1"></i> <span class="d-none d-md-inline">Sửa</span>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger d-flex align-items-center"
-                                            data-toggle="modal" data-target="#deleteConfirmModal">
-                                        <i class="fas fa-trash me-1"></i>
-                                        <span class="d-none d-md-inline">Xoá</span>
-                                    </button>
-                                </div>
-                            </div>
-                            <p class="mb-3">Nội dung bài viết mẫu...</p>
-                            <div class="text-center">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/9/96/Carassius_wild_golden_fish_2013_G1.jpg"
-                                     class="img-fluid rounded" style="max-height: 400px; object-fit: contain;"
-                                     alt="Article image">
+
+                                <p class="mb-3">@post.Content</p>
+
+                                @if (!string.IsNullOrEmpty(post.Image))
+                                {
+                                    <div class="text-center">
+                                        <img src="@post.Image"
+                                             class="img-fluid rounded" style="max-height: 400px; object-fit: contain;"
+                                             alt="Article image">
+                                    </div>
+                                }
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Another Article -->
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start mb-3">
-                                <div class="d-flex align-items-center">
-                                    <img src="https://source.unsplash.com/random/40x40?portrait"
-                                         class="rounded-circle me-3" width="45" height="45" alt="Author">
-                                    <div>
-                                        <h6 class="mb-1 fw-bold">Tên người bán khác</h6>
-                                        <small class="text-muted">⏱ 5 giờ trước</small>
-                                    </div>
+                        <!-- Modal chỉnh sửa -->
+                        <div class="modal fade" id="editModal_@post.Id" tabindex="-1" aria-labelledby="editModalLabel_@post.Id" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                                        <input type="hidden" name="Id" value="@post.Id" />
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Chỉnh sửa bài viết</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label class="form-label">Nội dung</label>
+                                                <textarea name="Content" class="form-control" rows="3">@post.Content</textarea>
+                                            </div>
+                                            @if (!string.IsNullOrEmpty(post.Image))
+                                            {
+                                                <div class="mb-3">
+                                                    <label class="form-label">Ảnh hiện tại:</label><br />
+                                                    <img src="@post.Image" class="img-fluid rounded mb-2" style="max-height: 200px;" />
+                                                </div>
+                                            }
+                                            <div class="mb-3">
+                                                <label class="form-label">Chọn ảnh mới (nếu muốn thay)</label>
+                                                <input type="file" name="imageFile" class="form-control" accept="image/*" />
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                            <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                                        </div>
+                                    </form>
                                 </div>
-                                <div class="btn-group">
-                                    <button class="btn btn-sm btn-outline-warning d-flex align-items-center">
-                                        <i class="fas fa-edit me-1"></i> <span class="d-none d-md-inline">Sửa</span>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger d-flex align-items-center"
-                                            data-toggle="modal" data-target="#deleteConfirmModal" data-id="2"
-                                            title="Xóa">
-                                        <i class="fas fa-trash me-1"></i>
-                                        <span class="d-none d-md-inline">Xoá</span>
-                                    </button>
-                                </div>
-                            </div>
-                            <p class="mb-3">Nội dung của bài viết khác...</p>
-                            <div class="text-center">
-                                <img src="https://source.unsplash.com/random/800x400" class="img-fluid rounded"
-                                     style="max-height: 300px; object-fit: contain;" alt="Article image">
                             </div>
                         </div>
-                    </div>
-
+                    }
                 </div>
+
             </div>
         </div>
     </div>
 </div>
 
+<!-- Modal xác nhận xóa -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Xác nhận xóa bài viết</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Bạn có chắc chắn muốn xóa bài viết này không?
+            </div>
+            <div class="modal-footer">
+                <form id="deleteForm" asp-action="Delete" asp-controller="PostArticle" asp-area="Seller" method="post">
+                    <input type="hidden" name="id" id="deletePostId" />
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger">Xóa</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1056">
+    @if (TempData["ToastMessage"] != null && TempData["ToastType"] != null)
+    {
+        var toastType = TempData["ToastType"].ToString();
+        var isSuccess = toastType == "success";
+        <div class="toast @(isSuccess ? "" : "mt-3")" role="alert" aria-live="assertive" aria-atomic="true"
+             id="autoToast">
+            <div class="toast-header @(isSuccess ? "bg-success" : "bg-danger") text-white">
+                <img src="@(isSuccess ? "/icons/happy.gif" : "/icons/sad.gif")" class="rounded me-2"
+                     alt="@(isSuccess ? "Success" : "Error")" width="20" height="20">
+                <strong class="me-auto">@((isSuccess) ? "Thành công" : "Lỗi")</strong>
+                <small>Vừa xong</small>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                @TempData["ToastMessage"]
+            </div>
+        </div>
+    }
+</div>
+<script src="~/js/Toast.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    function previewImage(input) {
+        const previewSection = document.getElementById('imagePreviewSection');
+        const previewImg = document.getElementById('previewImage');
+
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                previewImg.src = e.target.result;
+                previewSection.classList.remove('d-none');
+            }
+
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function removeImage() {
+        const input = document.getElementById('imageInput');
+        const previewSection = document.getElementById('imagePreviewSection');
+        const previewImg = document.getElementById('previewImage');
+
+        input.value = '';
+        previewImg.src = '#';
+        previewSection.classList.add('d-none');
+    }
+    document.addEventListener("DOMContentLoaded", function () {
+        var toastEl = document.getElementById('autoToast');
+        if (toastEl) {
+            var bsToast = new bootstrap.Toast(toastEl, { delay: 3000 });
+            bsToast.show();
+        }
+    });
+</script>
+
+<!-- Đặt ở cuối file _Layout.cshtml hoặc cuối trang Razor, ngay trên </body> -->
+
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 2000;">
+    @if (TempData["ToastMessage"] != null && TempData["ToastType"] != null)
+    {
+        var toastType = TempData["ToastType"].ToString();
+        var isSuccess = toastType == "success";
+
+        <div class="toast shadow-lg" role="alert" aria-live="assertive" aria-atomic="true"
+             id="autoToast" style="min-width: 320px; font-size: 1.1rem;">
+            <div class="toast-header @(isSuccess ? "bg-success" : "bg-danger") text-white">
+                <img src="@(isSuccess ? "/icons/happy.gif" : "/icons/sad.gif")"
+                     class="rounded me-2" alt="@(isSuccess ? "Success" : "Error")" width="24" height="24">
+                <strong class="me-auto">@((isSuccess) ? "Thành công" : "Lỗi")</strong>
+                <small>Vừa xong</small>
+                <button type="button" class="btn-close btn-close-white" style="
+                           width: 26.4px !important;
+                           height: 26.4px !important;" data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+            </div>
+            <div class="toast-body fw-semibold">
+                @TempData["ToastMessage"]
+            </div>
+        </div>
+    }
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var toastEl = document.getElementById('autoToast');
+        if (toastEl) {
+            var bsToast = new bootstrap.Toast(toastEl, { delay: 3000 });
+            bsToast.show();
+        }
+    });
+</script>
