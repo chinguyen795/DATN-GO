@@ -52,7 +52,8 @@ builder.Services.AddScoped<AuthenticationService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<GoogleCloudStorageService>();
 builder.Services.AddHttpClient<OcrService>();
-
+builder.Services.AddHttpClient<BankService>();
+builder.Services.AddHttpClient<StoreService>();
 
 
 // Đăng ký HttpClient cho các Service

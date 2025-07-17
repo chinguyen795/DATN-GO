@@ -32,8 +32,6 @@ namespace DATN_API.Controllers
         }
 
 
-
-
         [HttpPost("save-info")]
         public IActionResult SaveInfoFromOcr([FromBody] Models.OcrSaveInfoRequest request)
         {

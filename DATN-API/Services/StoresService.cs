@@ -52,5 +52,10 @@ namespace DATN_API.Services
             await _context.SaveChangesAsync();
             return true;
         }
+        public async Task<Stores?> GetByUserIdAsync(int userId)
+        {
+            return await _context.Stores.FirstOrDefaultAsync(s => s.UserId == userId);
+        }
+
     }
 }

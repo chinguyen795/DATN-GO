@@ -60,5 +60,16 @@ namespace DATN_API.Controllers
                 return NotFound();
             return NoContent();
         }
+
+        // GET: api/stores/user/5
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetByUserId(int userId)
+        {
+            var store = await _service.GetByUserIdAsync(userId);
+            if (store == null) return NotFound();
+            return Ok(store);
+        }
+
+
     }
 }

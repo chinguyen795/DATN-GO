@@ -22,14 +22,12 @@ namespace DATN_GO.Services
             streamContent.Headers.ContentType = new MediaTypeHeaderValue(imageFile.ContentType);
             content.Add(streamContent, "ImageFile", imageFile.FileName);
 
-            // Lấy base url từ ApiSettings
             var baseUrl = _configuration["ApiSettings:BaseUrl"] ?? "https://localhost:7096/api/";
             var apiUrl = baseUrl.TrimEnd('/') + "/ocr/cccd";
             var response = await _httpClient.PostAsync(apiUrl, content);
             if (!response.IsSuccessStatusCode)
                 return null;
             var json = await response.Content.ReadAsStringAsync();
-            // Parse lại cho chắc chắn, vì backend trả về JSON string
             try
             {
                 var result = JsonSerializer.Deserialize<OcrResultModel>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
@@ -37,7 +35,6 @@ namespace DATN_GO.Services
             }
             catch
             {
-                // Nếu backend trả về string JSON, cần parse 2 lần
                 try
                 {
                     var inner = JsonSerializer.Deserialize<string>(json);

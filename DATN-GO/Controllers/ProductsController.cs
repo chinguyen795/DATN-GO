@@ -2,14 +2,15 @@
 
 namespace DATN_GO.Controllers
 {
-    public class FoodController : Controller
+    public class ProductsController : Controller
     {
-        public IActionResult Food()
+        [HttpGet]
+        public IActionResult Products()
         {
             return View();
         }
 
-        public IActionResult DetailFood()
+        public IActionResult DetailProducts()
         {
             return View();
         }

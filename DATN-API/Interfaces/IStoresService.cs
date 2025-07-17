@@ -11,5 +11,7 @@ namespace DATN_API.Interfaces
         Task<Stores> CreateAsync(Stores model);
         Task<bool> UpdateAsync(int id, Stores model);
         Task<bool> DeleteAsync(int id);
+        Task<Stores?> GetByUserIdAsync(int userId);
+
     }
 }

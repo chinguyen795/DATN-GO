@@ -5,7 +5,7 @@
 }
 
 <div class="container mt-2">
-    <div class="row align-items-center pt-1 pb-2">
+    <div class="row align-items-center pt-1 pb-2 mx-0">
         <div class="col-auto">
             <a href="#" class="btn btn-outline-danger">
                 <i class="bi bi-arrow-left me-1"></i>Quay lại
@@ -18,63 +18,41 @@
     </div>
 </div>
 
-<div class="container py-5 bg-light">
+<div class="bg-light">
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="bg-white rounded shadow-sm">
-                <!-- Cover Image Upload -->
                 <form action="/SalesRegistration/SalesRegistration" method="post" enctype="multipart/form-data">
                     @Html.AntiForgeryToken()
-                <div class="cover-upload-box rounded-top d-flex flex-column align-items-center justify-content-center position-relative border border-2 border-dashed bg-light"
-                     onclick="document.getElementById('CoverPhoto').click()">
-                    <div id="coverPreview" class="w-100 h-100 position-relative">
-                        <img id="coverImg" src="../Icons/placeholder.png"
-                             class="w-100 h-100 object-fit-cover rounded-top d-none" alt="Cover preview">
-                        <div class="position-absolute top-50 start-50 translate-middle text-center">
-                            <i class="bi bi-image text-muted fs-1"></i>
-                            <p class="text-muted mb-0">Click để tải ảnh bìa</p>
-                        </div>
-                    </div>
-                    <input asp-for="CoverPhoto" type="file" accept="image/*" class="d-none" id="CoverPhoto"
-                           onchange="previewImage(this, 'coverPreview')">
-                </div>
+                    <div class="mb-3 mx-4">
+                        
+                            <label class="form-label">Ảnh đại diện</label>
+                        <input type="file" asp-for="Avatar" class="filepond avatar-pond" name="Avatar" id="avatarInput"
+                                   accept="image/*" />
 
-                <!-- Avatar Upload -->
-                <div class="d-flex justify-content-center">
-                    <div class="avatar-upload-box rounded-circle border border-3 border-white bg-light d-flex flex-column align-items-center justify-content-center position-relative border-dashed"
-                         onclick="document.getElementById('Avatar').click()">
-                        <div id="avatarPreview" class="w-100 h-100 position-relative">
-                            <img id="avatarImg" src="../Icons/placeholder.png"
-                                 class="w-100 h-100 object-fit-cover rounded-circle d-none" alt="Avatar preview">
-                            <div class="position-absolute top-50 start-50 translate-middle text-center">
-                                <i class="bi bi-person text-muted fs-4"></i>
-                                <p class="text-muted mb-0 small">Click để tải avatar</p>
-                            </div>
-                        </div>
-                        <input asp-for="Avatar" type="file" accept="image/*" class="d-none" id="Avatar"
-                               onchange="previewImage(this, 'avatarPreview')">
+                            <label class="form-label">Ảnh bìa</label>
+                        <input type="file" asp-for="CoverPhoto" class="filepond cover-pond" name="CoverPhoto" id="coverInput"
+                                   accept="image/*" />
                     </div>
-                </div>
 
-                <!-- Form Content -->
                 <div class="p-4">
                   
                         <!-- Tên cửa hàng -->
                         <div class="mb-4">
-                            <label class="form-label">Tên cửa hàng</label>
+                            <label class="form-label">Tên cửa hàng  <span class="text-danger">*</span></label>
                             <div class="input-group">
-                                <span class="input-group-text bg-danger-subtle border-danger text-danger">
+                                <span class="input-group-text text-danger">
                                     <i class="bi bi-shop"></i>
                                 </span>
-                                <input asp-for="Name" class="form-control border-danger" placeholder="Nhập tên cửa hàng" />
-                                @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger" })
+                                <input asp-for="Name" class="form-control " placeholder="Nhập tên cửa hàng" />
+                                <span asp-validation-for="Name" class="text-danger"></span>
                             </div>
                         </div>
 
                         <!-- Ảnh CCCD/CMND -->
                         <div class="mb-4">
-                            <label class="form-label">Ảnh CCCD/CMND</label>
-                            <div class="border border-danger bg-danger-subtle rounded p-3 text-center"
+                            <label class="form-label">Ảnh CCCD/CMND  <span class="text-danger">*</span></label>
+                            <div class="border rounded p-3 text-center"
                                  onclick="document.getElementById('idFrontInput').click()">
                                 <div id="idFrontPreview" class="id-preview position-relative">
                                     <img id="idFrontImg" src="" class="preview-image img-fluid d-none" alt="ID front preview">
@@ -90,39 +68,37 @@
 
                         <!-- Người đại diện -->
                         <div class="mb-4">
-                            <label class="form-label">Người đại diện</label>
+                            <label class="form-label">Người đại diện <span class="text-danger">*</span></label>
                             <div class="input-group">
-                                <span class="input-group-text bg-danger-subtle border-danger text-danger">
+                                <span class="input-group-text text-danger">
                                     <i class="bi bi-person-badge-fill"></i>
                                 </span>
-                                <input asp-for="RepresentativeName" class="form-control border-danger" id="representativeName" placeholder="Nhập tên người đại diện" />
+                                <input asp-for="RepresentativeName" class="form-control " id="representativeName" placeholder="Nhập tên người đại diện" readonly />
                                 @Html.ValidationMessageFor(m => m.RepresentativeName, "", new { @class = "text-danger" })
                             </div>
                         </div>
 
                         <!-- Số CCCD/CMND -->
                         <div class="mb-4">
-                            <label class="form-label">Số CCCD/CMND</label>
+                            <label class="form-label">Số CCCD/CMND <span class="text-danger">*</span></label>
                             <div class="input-group">
-                                <span class="input-group-text bg-danger-subtle border-danger text-danger">
+                                <span class="input-group-text text-danger">
                                     <i class="bi bi-credit-card-2-front"></i>
                                 </span>
-                                <input asp-for="CitizenIdentityCard" class="form-control border-danger" id="citizenIdentityCard" placeholder="Nhập số CCCD/CMND" />
-                                @Html.ValidationMessageFor(m => m.CitizenIdentityCard, "", new { @class = "text-danger" })
+                                <input asp-for="CitizenIdentityCard" class="form-control " id="citizenIdentityCard" placeholder="Nhập số CCCD/CMND" readonly />
                             </div>
                         </div>
 
                         <!-- Địa chỉ -->
                         <div class="mb-4">
-                            <label class="form-label">Địa chỉ</label>
+                            <label class="form-label">Địa chỉ <span class="text-danger">*</span></label>
                             <div class="row g-3">
                                 <div class="col-12">
                                     <div class="input-group">
-                                        <span class="input-group-text bg-danger-subtle border-danger text-danger">
+                                        <span class="input-group-text text-danger">
                                             <i class="bi bi-house"></i>
                                         </span>
-                                        <input asp-for="Address" class="form-control border-danger" id="address" placeholder="Địa chỉ" />
-                                        @Html.ValidationMessageFor(m => m.Address, "", new { @class = "text-danger" })
+                                        <input asp-for="Address" class="form-control " id="address" placeholder="Địa chỉ" readonly />
                                     </div>
                                 </div>
                             </div>
@@ -130,62 +106,56 @@
 
                         <!-- Tài khoản ngân hàng -->
                         <div class="mb-4">
-                            <label class="form-label">Thông tin tài khoản ngân hàng</label>
+                            <label class="form-label">Thông tin tài khoản ngân hàng <span class="text-danger">*</span></label>
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <div class="input-group">
-                                        <span class="input-group-text bg-danger-subtle border-danger text-danger">
+                                        <span class="input-group-text text-danger">
                                             <i class="bi bi-credit-card"></i>
                                         </span>
-                                        <input asp-for="BankAccount" class="form-control border-danger" placeholder="Số tài khoản" />
+                                        <input asp-for="BankAccount" class="form-control " placeholder="Số tài khoản" />
                                         @Html.ValidationMessageFor(m => m.BankAccount, "", new { @class = "text-danger" })
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="input-group">
-                                        <span class="input-group-text bg-danger-subtle border-danger text-danger">
-                                            <i class="bi bi-bank"></i>
+                                        <span class="input-group-text text-danger">
+                                            <i class="bi bi-person"></i>
                                         </span>
-                                        <select asp-for="Bank" class="form-select border-danger">
-                                            <option value="">Chọn ngân hàng</option>
-                                            <option value="BIDV">BIDV - Ngân hàng TMCP Đầu tư và Phát triển Việt Nam</option>
-                                            <option value="Vietcombank">Vietcombank - Ngân hàng TMCP Ngoại thương Việt Nam</option>
-                                            <option value="Agribank">Agribank - Ngân hàng Nông nghiệp và Phát triển Nông thôn Việt Nam</option>
-                                            <option value="VietinBank">VietinBank - Ngân hàng TMCP Công Thương Việt Nam</option>
-                                            <option value="Techcombank">Techcombank - Ngân hàng TMCP Kỹ Thương Việt Nam</option>
-                                            <option value="ACB">ACB - Ngân hàng TMCP Á Châu</option>
-                                            <option value="MBBank">MB Bank - Ngân hàng TMCP Quân đội</option>
-                                            <option value="TPBank">TPBank - Ngân hàng TMCP Tiên Phong</option>
-                                            <option value="VPBank">VPBank - Ngân hàng TMCP Việt Nam Thịnh Vượng</option>
-                                            <option value="SacomBank">Sacombank - Ngân hàng TMCP Sài Gòn Thương Tín</option>
-                                        </select>
-                                        @Html.ValidationMessageFor(m => m.Bank, "", new { @class = "text-danger" })
+                                        <input asp-for="BankAccountOwner" class="form-control " placeholder="Tên chủ tài khoản" />
+                                        @Html.ValidationMessageFor(m => m.BankAccountOwner, "", new { @class = "text-danger" })
                                     </div>
                                 </div>
                                 <div class="col-12">
+
                                     <div class="input-group">
-                                        <span class="input-group-text bg-danger-subtle border-danger text-danger">
-                                            <i class="bi bi-person"></i>
-                                        </span>
-                                        <input asp-for="BankAccountOwner" class="form-control border-danger" placeholder="Tên chủ tài khoản" />
-                                        @Html.ValidationMessageFor(m => m.BankAccountOwner, "", new { @class = "text-danger" })
+                                        <select asp-for="Bank" class="selectpicker" data-live-search="true" data-width="100%">
+                                            <option value="">-- Chọn ngân hàng --</option>
+                                            @foreach (var bank in ViewBag.Banks as List<BankModel>)
+                                            {
+                                                <option value="@bank.Bin">@bank.Name (@bank.ShortName)</option>
+                                            }
+                                        </select>
+
+                                        @Html.ValidationMessageFor(m => m.Bank, "", new { @class = "text-danger" })
                                     </div>
+
+                                    
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Nút đăng ký -->
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-danger">
+                            <button type="submit" class="btn btn-crimson">
                                 <i class="bi bi-shop me-2"></i>Đăng ký
                             </button>
                         </div>
                     
-                </div> <!-- end p-4 -->
+                </div> 
                 </form>
-            </div> <!-- end shadow-sm -->
-        </div> <!-- end col-lg-8 -->
-    </div> <!-- end row -->
+            </div> 
+        </div> 
+    </div> 
 </div>
 
 <script>
@@ -209,7 +179,7 @@ function handleOcrImageChange(input) {
         })
         .then(response => response.json())
         .then(data => {
-            console.log('OCR response:', data); // Thêm log để debug
+            console.log('OCR response:', data);
             if (data.success && data.data) {
                 document.getElementById('representativeName').value = data.data.representativeName || '';
                 document.getElementById('citizenIdentityCard').value = data.data.citizenIdentityCard || '';
@@ -221,6 +191,70 @@ function handleOcrImageChange(input) {
         .catch(() => alert('Lỗi khi gửi ảnh nhận diện.'));
     }
 }
+
+</script>
+<link href="https://unpkg.com/filepond/dist/filepond.min.css" rel="stylesheet" />
+<link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.css"
+      rel="stylesheet" />
+<script src="https://unpkg.com/filepond/dist/filepond.min.js"></script>
+<script src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.min.js"></script>
+<script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.js"></script>
+<!-- Bootstrap JavaScript Libraries -->
+<style>
+    .filepond--root.avatar-pond .filepond--item {
+        border-radius: 50%;
+        overflow: hidden;
+        aspect-ratio: 1/1;
+    }
+
+    .filepond--root.avatar-pond {
+        max-width: 180px; 
+        margin: 0 auto;
+    .filepond--root.cover-pond {
+        max-width: 100%;
+    }
+
+        .filepond--root.cover-pond .filepond--item {
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .filepond--root.cover-pond .filepond--image-preview {
+            object-fit: cover;
+            height: 100%;
+            width: 100%;
+        }
+</style>
+
+<script>
+    FilePond.registerPlugin(
+        FilePondPluginImagePreview,
+        FilePondPluginFileValidateType
+    );
+
+    FilePond.setOptions({
+        labelIdle: 'Kéo & thả ảnh hoặc <span class="filepond--label-action">Chọn ảnh</span>',
+        acceptedFileTypes: ['image/*'],
+        instantUpload: false,
+        storeAsFile: true // ✅ QUAN TRỌNG!
+    });
+
+    // Khởi tạo cho Avatar
+    FilePond.create(document.querySelector('.avatar-pond'), {
+        imagePreviewHeight: 130,
+        stylePanelLayout: 'compact circle',
+        styleLoadIndicatorPosition: 'center bottom',
+        styleProgressIndicatorPosition: 'right bottom',
+        styleButtonRemoveItemPosition: 'left bottom',
+        styleButtonProcessItemPosition: 'right bottom'
+    });
+
+    // Khởi tạo cho Cover
+    FilePond.create(document.querySelector('.cover-pond'), {
+        imagePreviewHeight: 200,
+        stylePanelLayout: 'compact'
+    });
 </script>
 
 

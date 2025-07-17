@@ -150,16 +150,17 @@
 
                 <!-- Category Filter -->
                 <div class="mb-3">
-                    <label for="categorySelectMobile" class="form-label">
+                    <label for="categorySelect" class="form-label">
                         <i class="bi bi-grid"></i> Danh mục
                     </label>
-                    <select class="form-select w-100" id="categorySelectMobile">
+                    <select class="selectpicker w-100" id="categorySelect" data-live-search="true"
+                            title="Chọn danh mục" data-width="auto">
                         <option value="">Tất cả danh mục</option>
-                        <option value="mon-nuoc">Món nước</option>
-                        <option value="mon-kho">Món khô</option>
-                        <option value="do-an-vat">Đồ ăn vặt</option>
-                        <option value="do-uong">Đồ uống</option>
-                        <option value="trang-mieng">Tráng miệng</option>
+                        <option value="mon-nuoc" data-tokens="mon nuoc">Món nước</option>
+                        <option value="mon-kho" data-tokens="mon kho">Món khô</option>
+                        <option value="do-an-vat" data-tokens="do an vat">Đồ ăn vặt</option>
+                        <option value="do-uong" data-tokens="do uong">Đồ uống</option>
+                        <option value="trang-mieng" data-tokens="trang mieng">Tráng miệng</option>
                     </select>
                 </div>
 

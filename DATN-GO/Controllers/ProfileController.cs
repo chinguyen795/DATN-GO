@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 using System;
+using DATN_GO.Services;
 
 namespace DATN_GO.Controllers
 {
@@ -12,13 +13,16 @@ namespace DATN_GO.Controllers
         private readonly UserService _userService;
         private readonly GoogleCloudStorageService _gcsService;
         private readonly ILogger<ProfileController> _logger;
+        private readonly StoreService _storeService;
 
-        public ProfileController(UserService userService, GoogleCloudStorageService gcsService, ILogger<ProfileController> logger)
+        public ProfileController(UserService userService, GoogleCloudStorageService gcsService, StoreService storeService, ILogger<ProfileController> logger)
         {
             _userService = userService;
             _gcsService = gcsService;
+            _storeService = storeService;
             _logger = logger;
         }
+
 
         [HttpGet]
         public async Task<IActionResult> Index()
@@ -40,6 +44,8 @@ namespace DATN_GO.Controllers
                 TempData["ToastType"] = "danger";
                 return RedirectToAction("Index", "Home");
             }
+            var store = await _storeService.GetStoreByUserIdAsync(userId);
+            ViewBag.StoreStatus = store?.Status;
 
             return View(user);
         }

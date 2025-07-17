@@ -7,6 +7,9 @@
 @{
     ViewData["UseContainer"] = false;
 }
+@{
+    var storeStatus = ViewBag.StoreStatus as StoreStatus?;
+}
 
 <!-- Offcanvas Sidebar for Mobile -->
 <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
@@ -270,9 +273,19 @@
                                             <a href="./Repassword.html" class="btn btn-outline-crimson btn-lg px-4">
                                                 <i class="bi bi-key me-2"></i>Đổi mật khẩu
                                             </a>
-                                            <a asp-action="SalesRegistration" asp-controller="SalesRegistration" class="btn btn-warning btn-lg px-4">
-                                                <i class="bi bi-shop me-2"></i>Đăng ký bán hàng
+                                            @if (storeStatus == StoreStatus.PendingApproval)
+                                            {
+                                                <a asp-action="PendingApproval" asp-controller="SalesRegistration" class="btn btn-warning btn-lg px-4">
+                                                    <i class="bi bi-shop me-2"></i> Đăng ký bán hàng
                                             </a>
+                                            }
+                                            else
+                                            {
+                                            <a asp-action="SalesRegistration" asp-controller="SalesRegistration" class="btn btn-warning btn-lg px-4">
+                                                <i class="bi bi-shop me-2"></i> Đăng ký bán hàng
+                                            </a>
+                                            }
+
                                         </div>
                                     </div>
                                 </div>
