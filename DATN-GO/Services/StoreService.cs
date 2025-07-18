@@ -11,7 +11,6 @@ using DATN_GO.Models;
 using Microsoft.AspNetCore.Http;
 
 namespace DATN_GO.Service
-namespace DATN_GO.Services
 {
     public class StoreService
     {
@@ -37,10 +36,8 @@ namespace DATN_GO.Services
         }
 
         public async Task<Stores?> GetStoreByIdAsync(int id)
-        public async Task<Stores?> GetStoreByUserIdAsync(int userId)
         {
             var response = await _httpClient.GetAsync($"{_baseUrl}Stores/{id}");
-            var response = await _httpClient.GetAsync($"{_baseUrl}Stores/user/{userId}");
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync();
@@ -98,22 +95,17 @@ namespace DATN_GO.Services
 
         public async Task<Stores?> GetStoreByUserIdAsync(int userId)
         {
-            try
+            var response = await _httpClient.GetAsync($"{_baseUrl}Stores/user/{userId}");
+            if (response.IsSuccessStatusCode)
             {
-                var response = await _httpClient.GetAsync($"{_baseUrl}Stores/User/{userId}");
-                if (response.IsSuccessStatusCode)
-                {
-                    var json = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<Stores>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                }
+                var json = await response.Content.ReadAsStringAsync();
+                return JsonSerializer.Deserialize<Stores>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Lỗi lấy Store theo UserId: {ex.Message}");
-            }
+
             Console.WriteLine($"❌ Lỗi khi lấy Store theo UserId {userId}: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
             return null;
         }
+
         public async Task<int> GetTotalStoresAsync()
         {
             try
