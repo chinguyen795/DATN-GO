@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using System.Text.RegularExpressions;
+using DATN_GO.ViewModels.Authentication;
 
 namespace DATN_GO.Controllers
 {
@@ -24,9 +25,14 @@ namespace DATN_GO.Controllers
         }
 
         [HttpPost("Login")]
-        public async Task<IActionResult> Login(string identifier, string password)
+        public async Task<IActionResult> Login(LoginRequest model)
         {
-            var loginResult = await _AuthenticationService.LoginAsync(identifier, password);
+            if (!ModelState.IsValid)
+            {
+                return View("Login", model);
+            }
+
+            var loginResult = await _AuthenticationService.LoginAsync(model.Identifier, model.Password);
 
             if (loginResult != null)
             {
@@ -34,7 +40,7 @@ namespace DATN_GO.Controllers
                 HttpContext.Session.SetString("Id", loginResult.Id.ToString());
                 HttpContext.Session.SetString("FullName", loginResult.FullName);
                 HttpContext.Session.SetString("Role", loginResult.Roles.ToString());
-                HttpContext.Session.SetString("Identifier", identifier);
+                HttpContext.Session.SetString("Identifier", model.Identifier);
                 HttpContext.Session.SetString("Email", loginResult.Email ?? string.Empty);
 
                 TempData["ToastMessage"] = $"Chào mừng {loginResult.FullName}, bạn đã đăng nhập thành công!";
@@ -52,9 +58,10 @@ namespace DATN_GO.Controllers
             {
                 TempData["ToastMessage"] = "Tài khoản hoặc mật khẩu không đúng!";
                 TempData["ToastType"] = "danger";
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Login");
             }
         }
+
 
         [HttpGet("Register")]
         public IActionResult Register()
@@ -63,30 +70,69 @@ namespace DATN_GO.Controllers
         }
 
         [HttpPost("Register")]
-        public async Task<IActionResult> Register(string identifier)
+        public async Task<IActionResult> Register(RegisterIdentifierRequest model)
         {
-            if (string.IsNullOrEmpty(identifier))
+            if (!ModelState.IsValid)
             {
-                TempData["ToastMessage"] = "Vui lòng nhập email hoặc số điện thoại!";
-                TempData["ToastType"] = "danger";
-                return View();
+                return View("Register", model);
             }
 
-            var (success, message) = await _AuthenticationService.SendVerificationCodeAsync(identifier);
+            var (success, message) = await _AuthenticationService.SendVerificationCodeAsync(model.Identifier);
 
             if (success)
             {
                 TempData["ToastMessage"] = message;
                 TempData["ToastType"] = "success";
-                return RedirectToAction("AuthenticationCode", new { identifier });
+                return RedirectToAction("AuthenticationCode", new { identifier = model.Identifier });
             }
             else
             {
-                TempData["ToastMessage"] = $"❌ {message}";
-                TempData["ToastType"] = "danger";
-                return RedirectToAction("Index", "Home");
+                ModelState.AddModelError(nameof(model.Identifier), message);
+                return View("Register", model);
             }
         }
+
+        [HttpGet("CreatePassword")]
+        public IActionResult CreatePassword(string identifier)
+        {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                return RedirectToAction("Index", "Home");
+            }
+            ViewBag.Identifier = identifier;
+            return View();
+        }
+
+        [HttpPost("CreatePassword")]
+        public async Task<IActionResult> CreatePassword(RegisterRequest model)
+        {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Identifier = model.Identifier;
+                return View(model);
+            }
+
+            if (string.IsNullOrEmpty(model.Identifier))
+                return RedirectToAction("Register");
+
+
+            var (success, message) = await _AuthenticationService.RegisterAsync(model.Identifier, model.Password, model.ConfirmPassword);
+
+            if (success)
+            {
+                TempData["ToastMessage"] = "🎉 Bạn đã đăng ký thành công! Vui lòng đăng nhập.";
+                TempData["ToastType"] = "success";
+                return RedirectToAction("index", "Home");
+            }
+            else
+            {
+                ViewBag.Identifier = model.Identifier;
+                return View();
+            }
+        }
+
+
+
 
         [HttpGet("AuthenticationCode")]
         public IActionResult AuthenticationCode(string identifier)
@@ -106,7 +152,7 @@ namespace DATN_GO.Controllers
 
             if (string.IsNullOrEmpty(identifier) || string.IsNullOrEmpty(code))
             {
-                TempData["ToastMessage"] = "❌ Thiếu thông tin hoặc mã OTP. Vui lòng thử lại!";
+                TempData["ToastMessage"] = " Thiếu thông tin hoặc mã OTP. Vui lòng thử lại!";
                 TempData["ToastType"] = "danger";
                 ViewBag.Identifier = identifier;
                 return View();
@@ -116,13 +162,13 @@ namespace DATN_GO.Controllers
 
             if (success)
             {
-                TempData["ToastMessage"] = "✅ Mã xác thực hợp lệ! " + message;
+                TempData["ToastMessage"] = " Mã xác thực hợp lệ! " + message;
                 TempData["ToastType"] = "success";
                 return RedirectToAction("CreatePassword", new { identifier });
             }
             else
             {
-                TempData["ToastMessage"] = $"❌ {message}";
+                TempData["ToastMessage"] = $" {message}";
                 TempData["ToastType"] = "danger";
                 ViewBag.Identifier = identifier;
                 return View();
@@ -130,12 +176,13 @@ namespace DATN_GO.Controllers
         }
 
 
+
         [HttpPost("ResendAuthenticationCode")]
         public async Task<IActionResult> ResendAuthenticationCode(string identifier)
         {
             if (string.IsNullOrEmpty(identifier))
             {
-                TempData["ToastMessage"] = "❌ Không tìm thấy thông tin định danh để gửi lại mã.";
+                TempData["ToastMessage"] = " Không tìm thấy thông tin người dùng để gửi lại mã.";
                 TempData["ToastType"] = "danger";
                 return RedirectToAction("Register");
             }
@@ -149,56 +196,14 @@ namespace DATN_GO.Controllers
             }
             else
             {
-                TempData["ToastMessage"] = $"❌ {message}";
+                TempData["ToastMessage"] = $" {message}";
                 TempData["ToastType"] = "danger";
             }
 
             return RedirectToAction("AuthenticationCode", new { identifier });
         }
 
-        [HttpGet("CreatePassword")]
-        public IActionResult CreatePassword(string identifier)
-        {
-            if (string.IsNullOrEmpty(identifier))
-            {
-                return RedirectToAction("Index", "Home");
-            }
-            ViewBag.Identifier = identifier;
-            return View();
-        }
-
-        [HttpPost("CreatePassword")]
-        public async Task<IActionResult> CreatePassword(string identifier, string password, string confirmPassword)
-        {
-            if (string.IsNullOrEmpty(identifier))
-                return RedirectToAction("Register");
-
-            if (password != confirmPassword)
-            {
-                TempData["ToastMessage"] = "❌ Mật khẩu không trùng khớp!";
-                TempData["ToastType"] = "danger";
-                ViewBag.Identifier = identifier;
-                return View();
-            }
-
-            var (success, message) = await _AuthenticationService.RegisterAsync(identifier, password, confirmPassword);
-
-            if (success)
-            {
-                TempData["ToastMessage"] = "🎉 Đăng ký thành công! Vui lòng đăng nhập.";
-                TempData["ToastType"] = "success";
-                return RedirectToAction("index","Home");
-            }
-            else
-            {
-                TempData["ToastMessage"] = $"❌ Đăng ký thất bại: {message}";
-                TempData["ToastType"] = "danger";
-                ViewBag.Identifier = identifier;
-                return View();
-            }
-        }
-
-
+       
         [HttpGet("ChangePassword")]
         public IActionResult ChangePassword()
         {
@@ -269,7 +274,7 @@ namespace DATN_GO.Controllers
             }
             else
             {
-                TempData["ToastMessage"] = "✅ Bạn đã đăng xuất thành công!";
+                TempData["ToastMessage"] = " Bạn đã đăng xuất thành công!";
                 TempData["ToastType"] = "success";
             }
 
@@ -319,7 +324,7 @@ namespace DATN_GO.Controllers
             }
             else
             {
-                TempData["ToastMessage"] = $"❌ {message}";
+                TempData["ToastMessage"] = $" {message}";
                 TempData["ToastType"] = "danger";
                 ViewBag.CurrentEmail = HttpContext.Session.GetString("Email");
                 return View();
@@ -362,7 +367,7 @@ namespace DATN_GO.Controllers
             }
             else
             {
-                TempData["ToastMessage"] = $"❌ {message}";
+                TempData["ToastMessage"] = $" {message}";
                 TempData["ToastType"] = "danger";
                 ViewBag.NewEmail = newEmail;
                 ViewBag.UserId = userId;

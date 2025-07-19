@@ -109,17 +109,19 @@
                                 @if (string.IsNullOrEmpty(fullName))
                                 {
                                     <!-- Chưa đăng nhập -->
-                                    <li><a class="dropdown-item d-flex align-items-center gap-2" data-bs-toggle="modal"
-                                            href="#exampleModalToggle"><i class="bi bi-person-circle icon-sm"></i> Đăng
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center gap-2" asp-action="Login" asp-controller="UserAuthentication">
+                                            <i class="bi bi-person-circle icon-sm"></i> Đăng
                                             nhập</a></li>
-                                    <li><a class="dropdown-item d-flex align-items-center gap-2" data-bs-toggle="modal"
-                                            href="#exampleModalToggle2"><i class="bi bi-person-plus-fill icon-sm"></i> Đăng
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center gap-2" asp-action="Register" asp-controller="UserAuthentication">
+                                            <i class="bi bi-person-plus-fill icon-sm"></i> Đăng
                                             ký</a></li>
                                 }
                                 else
                                 {
                                     <!-- Đã đăng nhập -->
-                                    <li><span class="dropdown-item disabled text-muted d-flex align-items-center gap-2"><i
+                                    <li><span class="dropdown-item text-muted d-flex align-items-center gap-2"><i
                                                 class="bi bi-person-check icon-sm"></i> Xin chào, @fullName</span></li>
                                     <li><a class="dropdown-item d-flex align-items-center gap-2" asp-controller="Profile"
                                             asp-action="Index"><i class="bi bi-person-square icon-sm"></i> Thông tin cá
@@ -394,125 +396,6 @@
         });
     </script>
 
-
-
-
-    <!-- modal dang nhap -->
-    <div class="modal fade " id="exampleModalToggle" aria-hidden="false" aria-labelledby="exampleModalToggleLabel"
-        tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-lg ">
-            <div class="modal-content text-white position-relative-example"
-                style="  background: linear-gradient(to bottom, #DC143c, white);">
-                <div class="modal-header border-0">
-                    <div type="button" class="position-absolute top-0 start-100 translate-middle"
-                        data-bs-dismiss="modal" aria-label="Close">
-                        <i class="fs-1 bi bi-x-circle-fill"></i>
-                    </div>
-                </div>
-                <div class="modal-body">
-                    <div class="logo-login d-flex justify-content-center">
-                        <a class="navbar-brand" href="#">
-                            <img src="~/images/logo.png" alt="" height="170">
-                        </a>
-                    </div>
-                    <h1 class="d-flex fw-bold justify-content-center pb-4">
-                        Đăng nhập
-                    </h1>
-                    <div class="d-block justify-content-center">
-                        <form asp-controller="UserAuthentication" asp-action="Login" method="post" class="d-block mx-5">
-                            <input name="Identifier" class="form-control mx-2 rounded-pill form-control-lg mb-2"
-                                type="text" id="emailHelpId" placeholder="Email / Số điện thoại" aria-label="">
-                            <small id="emailHelpId" class="form-text text-muted mx-2 mb-2"> </small>
-                            <input name="Password" class="form-control mx-2 rounded-pill form-control-lg mb-2"
-                                type="password" id="password" placeholder="Mật khẩu" aria-label="password">
-                            <small id="password" class="form-text text-muted mx-2 mb-2"> </small>
-                            <div class="row mx-3 mb-4">
-                                <div class="col d-flex justify-content-end">
-                                    <!-- Simple link -->
-                                    <a asp-controller="UserAuthentication" asp-action="ForgotPassword">Quên mật
-                                        khẩu?</a>
-                                </div>
-                            </div>
-                            <div class="d-grid gap-2 col-6 mx-auto mb-2">
-                                <button class="btn btn-crimson rounded-pill" type="submit">Đăng nhập</button>
-                            </div>
-                        </form>
-
-                        <div class="text-center mb-4">
-                            <p>
-                                Bạn chưa có tài khoản? <a href="#" data-bs-target="#exampleModalToggle2"
-                                    data-bs-toggle="modal" data-bs-dismiss="modal">Đăng kí</a>
-                            </p>
-                            <p>Hoặc đăng nhập với:</p>
-                            <button data-mdb-ripple-init type="button"
-                                class="btn btn-outline-primary btn-floating mx-4 btn-lg">
-                                <i class="fab fa-facebook-f"></i>
-                            </button>
-
-                            <button data-mdb-ripple-init type="button"
-                                class="btn btn-outline-danger btn-floating mx-4 btn-lg">
-                                <i class="fab fa-google"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-    <!-- modal dang ki -->
-    <div class="modal fade" id="exampleModalToggle2" aria-hidden="true" aria-labelledby="exampleModalToggleLabel2"
-        tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-lg ">
-            <div class="modal-content text-white position-relative-example"
-                style="  background: linear-gradient(to bottom, #DC143c, white);">
-                <div class="modal-header border-0">
-                    <div type="button" class="position-absolute top-0 start-100 translate-middle"
-                        data-bs-dismiss="modal" aria-label="Close">
-                        <i class="fs-1 bi bi-x-circle-fill"></i>
-                    </div>
-                </div>
-                <div class="modal-body">
-                    <div class="logo-login d-flex justify-content-center">
-                        <a class="navbar-brand" href="#">
-                            <img src="~/images/logo.png" alt="" height="170">
-                        </a>
-                    </div>
-                    <h1 class="d-flex fw-bold justify-content-center pb-4">
-                        Đăng kí
-                    </h1>
-                    <div class="d-block justify-content-center">
-                        <form class="d-block mx-5" asp-controller="UserAuthentication" asp-action="Register"
-                            method="post">
-                            <input name="identifier" class="form-control mx-2 rounded-pill form-control-lg mb-2"
-                                type="text" id="emailHelpId" placeholder="Email / Số điện thoại" aria-label="">
-                            <small id="emailHelpId" class="form-text text-muted mx-2 mb-2"> </small>
-
-                            <div class="d-grid gap-2 col-6 mx-auto mb-2">
-                                <button class="btn btn-crimson rounded-pill" type="submit">Xác nhận</button>
-                            </div>
-                            <div class="text-center mb-4">
-                                <p>Bạn đã có tài khoản? <a href="#" data-bs-target="#exampleModalToggle"
-                                        data-bs-toggle="modal" data-bs-dismiss="modal">Đăng nhập</a></p>
-                                <p>Hoặc đăng kí với:</p>
-                                <button data-mdb-ripple-init type="button"
-                                    class="btn btn-outline-primary btn-floating mx-4 btn-lg">
-                                    <i class="fab fa-facebook-f"></i>
-                                </button>
-
-                                <button data-mdb-ripple-init type="button"
-                                    class="btn btn-outline-danger btn-floating mx-4 btn-lg">
-                                    <i class="fab fa-google"></i>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-    </div>
 
 
     <div class="position-fixed top-0 end-0 p-3" style="z-index: 1056">

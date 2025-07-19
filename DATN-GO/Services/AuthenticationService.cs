@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using DATN_GO.ViewModels.Authentication;
 using Microsoft.Extensions.Configuration;
 
 namespace DATN_GO.Service
@@ -183,48 +184,6 @@ namespace DATN_GO.Service
         }
 
 
-        public class VerifyRequest
-		{
-			public string Identifier { get; set; }
-			public string Code { get; set; }
-		}
-
-		public class RegisterRequest
-		{
-			public string Identifier { get; set; }
-			public string Password { get; set; }
-			public string ConfirmPassword { get; set; }
-		}
-
-		public class LoginRequest
-		{
-			public string Identifier { get; set; }
-			public string Password { get; set; }
-		}
-
-		public class LoginResult
-		{
-			public int Id { get; set; }
-			public string Email { get; set; }
-			public string PhoneNumber { get; set; }
-			public string FullName { get; set; }
-			public int Roles { get; set; }
-			public string Token { get; set; }
-		}
-
-        public class ChangePasswordWithIdentifierRequest
-        {
-            public string Identifier { get; set; }
-            public string CurrentPassword { get; set; }
-            public string NewPassword { get; set; }
-            public string ConfirmNewPassword { get; set; }
-        }
-
-        public class ChangeEmailRequest
-        {
-            public int UserId { get; set; }
-            public string NewEmail { get; set; }
-            public string OtpCode { get; set; }
-        }
+        
     }
 }

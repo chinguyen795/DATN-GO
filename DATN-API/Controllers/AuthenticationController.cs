@@ -71,9 +71,9 @@ namespace DATN_API.Controllers
                 }
                 catch (TwilioException ex)
                 {
-                    Console.WriteLine($"Lỗi gửi SMS: {ex.Message}");
-                    return BadRequest("Không thể gửi OTP!");
+                    return BadRequest($"Lỗi gửi OTP từ Twilio: {ex.Message}");
                 }
+
             }
             else
             {
