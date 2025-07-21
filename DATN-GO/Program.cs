@@ -58,7 +58,10 @@ builder.Services.AddHttpClient<StoreService>();
 builder.Services.AddScoped<PostService>();
 builder.Services.AddScoped<StoreService>();
 builder.Services.AddScoped<ProductService>();
-
+builder.Services.AddScoped<ProductVariantService>();
+builder.Services.AddScoped<VariantService>();
+builder.Services.AddScoped<VariantValueService>();
+builder.Services.AddScoped<VariantCompositionService>();
 // Đăng ký HttpClient cho các Service
 builder.Services.AddHttpClient<AuthenticationService>();
 builder.Services.AddHttpClient<UserService>();

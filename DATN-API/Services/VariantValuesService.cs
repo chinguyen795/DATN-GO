@@ -37,9 +37,12 @@ namespace DATN_API.Services
             if (id != model.Id) return false;
             var value = await _context.VariantValues.FindAsync(id);
             if (value == null) return false;
+            value.VariantId = model.VariantId;
             value.ValueName = model.ValueName;
             value.Type = model.Type;
-            value.VariantId = model.VariantId;
+            value.Image = model.Image;
+            value.colorHex = model.colorHex;
+
             // ... add other properties as needed
             await _context.SaveChangesAsync();
             return true;
