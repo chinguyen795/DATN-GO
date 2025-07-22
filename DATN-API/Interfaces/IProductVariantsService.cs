@@ -11,5 +11,7 @@ namespace DATN_API.Interfaces
         Task<ProductVariants> CreateAsync(ProductVariants model);
         Task<bool> UpdateAsync(int id, ProductVariants model);
         Task<bool> DeleteAsync(int id);
+        Task<List<ProductVariants>> GetByProductIdAsync(int productId);
+        Task<List<string>> GetAllImagesByProductIdAsync(int productId);
     }
 }

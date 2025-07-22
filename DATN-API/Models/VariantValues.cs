@@ -25,6 +25,6 @@ namespace DATN_API.Models
         public string? colorHex { get; set; }
 
         [JsonIgnore]
-        public virtual Variants Variant { get; set; }
+        public virtual Variants? Variant { get; set; }
     }
 }

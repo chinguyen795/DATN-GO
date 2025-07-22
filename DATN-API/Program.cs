@@ -58,6 +58,7 @@ builder.Services.AddScoped<IVariantsService, VariantsService>();
 builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IOcrService, OcrService>();
 builder.Services.AddScoped<IPostsService, PostsService>();
+builder.Services.AddScoped<IVariantCompositionService, VariantCompositionService>();
 
 
 

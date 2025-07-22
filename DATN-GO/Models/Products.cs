@@ -1,9 +1,18 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using DATN_GO.Models;
 
 namespace DATN_GO.Models
 {
+    public enum ProductStatus
+    {
+        [Display(Name = "Chờ duyệt")]
+        Pending,
+        [Display(Name = "Đã duyệt")]
+        Approved
+    }
+
     public class Products
     {
         [Key]
@@ -28,17 +37,17 @@ namespace DATN_GO.Models
 
         public string? Description { get; set; }
 
-        [MaxLength(50)]
         public string? MainImage { get; set; }
 
-        [MaxLength(50)]
-        public string? Status { get; set; }
+        public ProductStatus Status { get; set; }
 
+        [Range(0, int.MaxValue, ErrorMessage = "Số lượng phải >= 0")]
         public int Quantity { get; set; }
         public int Views { get; set; }
         public float? Rating { get; set; }
         public DateTime CreateAt { get; set; }
         public DateTime UpdateAt { get; set; }
+        [Range(1000, double.MaxValue, ErrorMessage = "Giá phải từ 1.000")]
         public decimal? CostPrice { get; set; }
         public float? Height { get; set; }
 

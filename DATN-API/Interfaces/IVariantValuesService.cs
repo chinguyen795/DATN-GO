@@ -11,5 +11,8 @@ namespace DATN_API.Interfaces
         Task<VariantValues> CreateAsync(VariantValues model);
         Task<bool> UpdateAsync(int id, VariantValues model);
         Task<bool> DeleteAsync(int id);
+        Task<List<object>> GetGroupedVariantsByProductAsync(int productId);
+        Task<IEnumerable<VariantValues>> GetByVariantIdAsync(int variantId);
+
     }
 }

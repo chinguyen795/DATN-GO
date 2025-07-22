@@ -10,14 +10,15 @@ namespace DATN_API.Models
         public int Id { get; set; }
 
         [ForeignKey("Product")]
-        public int ProductId { get; set; }
+        public int? ProductId { get; set; }
 
         [MaxLength(50)]
         public string VariantName { get; set; }
 
         [MaxLength(50)]
         public string Type { get; set; }
+        [JsonIgnore]
 
-        public virtual Products Product { get; set; }
+        public virtual Products? Product { get; set; }
     }
 }

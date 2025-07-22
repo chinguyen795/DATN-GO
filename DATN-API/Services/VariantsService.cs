@@ -52,5 +52,12 @@ namespace DATN_API.Services
             await _context.SaveChangesAsync();
             return true;
         }
+        public async Task<IEnumerable<Variants>> GetByProductIdAsync(int productId)
+        {
+            return await _context.Variants
+                .Where(v => v.ProductId == productId)
+                .ToListAsync();
+        }
+
     }
 }

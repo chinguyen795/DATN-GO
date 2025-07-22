@@ -60,5 +60,25 @@ namespace DATN_API.Controllers
                 return NotFound();
             return NoContent();
         }
+
+        [HttpGet("GetByProductId/{productId}")]
+        public async Task<IActionResult> GetByProductId(int productId)
+        {
+            var result = await _service.GetByProductIdAsync(productId);
+            if (result == null || result.Count == 0)
+                return NotFound("Không tìm thấy biến thể nào cho sản phẩm này.");
+            return Ok(result);
+        }
+        [HttpGet("images/{productId}")]
+        public async Task<IActionResult> GetImagesByProductId(int productId)
+        {
+            var images = await _service.GetAllImagesByProductIdAsync(productId);
+            if (images == null || !images.Any())
+            {
+                return NotFound("Không tìm thấy hình ảnh nào.");
+            }
+
+            return Ok(images);
+        }
     }
 }

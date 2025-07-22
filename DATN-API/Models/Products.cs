@@ -36,7 +36,6 @@ namespace DATN_API.Models
 
         public string? Description { get; set; }
 
-        [MaxLength(50)]
         public string? MainImage { get; set; }
 
         public ProductStatus Status { get; set; }

@@ -18,9 +18,14 @@ namespace DATN_API.Models
         public int Weight { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+        public string? Image { get; set; }
         public decimal CostPrice { get; set; }
         public int Quantity { get; set; }
-        public string? PackageSize { get; set; }
+        public float? Height { get; set; }
+
+        public float? Width { get; set; }
+
+        public float? Length { get; set; }
 
         [JsonIgnore]
         public ICollection<ProductImages>? ProductImages { get; set; }

@@ -9,12 +9,12 @@ using Microsoft.Extensions.Configuration;
 
 namespace DATN_GO.Service
 {
-    public class PricesService
+    public class PriceService
     {
         private readonly HttpClient _httpClient;
         private readonly string _baseUrl;
 
-        public PricesService(HttpClient httpClient, IConfiguration configuration)
+        public PriceService(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
             _baseUrl = configuration["ApiSettings:BaseUrl"] + "Prices";
@@ -86,5 +86,21 @@ namespace DATN_GO.Service
             Console.WriteLine($"Lỗi khi xoá giá ID {id}: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
             return false;
         }
+        public async Task<decimal?> GetMinPriceByProductIdAsync(int productId)
+        {
+            var response = await _httpClient.GetAsync($"{_baseUrl}/min-price/{productId}");
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                if (decimal.TryParse(json, out var price))
+                {
+                    return price;
+                }
+            }
+
+            Console.WriteLine($"Lỗi khi lấy giá nhỏ nhất của sản phẩm ID {productId}: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
+            return null;
+        }
+
     }
 }

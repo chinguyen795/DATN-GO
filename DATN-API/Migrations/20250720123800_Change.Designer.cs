@@ -4,6 +4,7 @@ using DATN_API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DATN_API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250720123800_Change")]
+    partial class Change
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -538,10 +541,10 @@ namespace DATN_API.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int?>("ProductId")
+                    b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("VariantCompositionId")
+                    b.Property<int>("VariantCompositionId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -598,14 +601,8 @@ namespace DATN_API.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<float?>("Height")
-                        .HasColumnType("real");
-
-                    b.Property<string>("Image")
+                    b.Property<string>("PackageSize")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<float?>("Length")
-                        .HasColumnType("real");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
@@ -621,9 +618,6 @@ namespace DATN_API.Migrations
 
                     b.Property<int>("Weight")
                         .HasColumnType("int");
-
-                    b.Property<float?>("Width")
-                        .HasColumnType("real");
 
                     b.HasKey("Id");
 
@@ -693,7 +687,8 @@ namespace DATN_API.Migrations
                         .HasColumnType("real");
 
                     b.Property<string>("MainImage")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1086,7 +1081,7 @@ namespace DATN_API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("ProductId")
+                    b.Property<int>("ProductId")
                         .HasColumnType("int");
 
                     b.Property<string>("Type")
@@ -1401,11 +1396,14 @@ namespace DATN_API.Migrations
                     b.HasOne("DATN_API.Models.Products", "Product")
                         .WithMany("Prices")
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("DATN_API.Models.VariantComposition", "VariantComposition")
                         .WithMany()
-                        .HasForeignKey("VariantCompositionId");
+                        .HasForeignKey("VariantCompositionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Product");
 
@@ -1620,7 +1618,8 @@ namespace DATN_API.Migrations
                     b.HasOne("DATN_API.Models.Products", "Product")
                         .WithMany("Variants")
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Product");
                 });

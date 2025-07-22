@@ -70,5 +70,14 @@ namespace DATN_API.Controllers
 
             return NoContent();
         }
+        [HttpGet("min-price/{productId}")]
+        public async Task<IActionResult> GetMinPrice(int productId)
+        {
+            var minPrice = await _pricesService.GetMinPriceByProductIdAsync(productId);
+            if (minPrice == null)
+                return NotFound();
+
+            return Ok(minPrice);
+        }
     }
 }

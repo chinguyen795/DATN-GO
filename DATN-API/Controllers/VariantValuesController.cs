@@ -60,5 +60,18 @@ namespace DATN_API.Controllers
                 return NotFound();
             return NoContent();
         }
+        [HttpGet("grouped/by-product/{productId}")]
+        public async Task<IActionResult> GetGroupedVariantsByProduct(int productId)
+        {
+            var result = await _service.GetGroupedVariantsByProductAsync(productId);
+            return Ok(result);
+        }
+        [HttpGet("variant/{variantId}")]
+        public async Task<IActionResult> GetByVariantId(int variantId)
+        {
+            var values = await _service.GetByVariantIdAsync(variantId);
+            return Ok(values);
+        }
+
     }
 }

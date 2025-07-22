@@ -56,5 +56,36 @@ namespace DATN_API.Services
             await _context.SaveChangesAsync();
             return true;
         }
+        public async Task<List<object>> GetGroupedVariantsByProductAsync(int productId)
+        {
+            var variants = await _context.Variants
+                .Where(v => v.ProductId == productId)
+                .ToListAsync();
+
+            var variantIds = variants.Select(v => v.Id).ToList();
+
+            var variantValues = await _context.VariantValues
+                .Where(vv => variantIds.Contains(vv.VariantId))
+                .ToListAsync();
+
+            var result = variants.Select(variant => new
+            {
+                VariantName = variant.VariantName,
+                Values = variantValues
+                    .Where(vv => vv.VariantId == variant.Id)
+                    .Select(vv => vv.ValueName)
+                    .Distinct()
+                    .ToList()
+            }).ToList<object>();
+
+            return result;
+        }
+        public async Task<IEnumerable<VariantValues>> GetByVariantIdAsync(int variantId)
+        {
+            return await _context.VariantValues
+                .Where(vv => vv.VariantId == variantId)
+                .ToListAsync();
+        }
+
     }
 }

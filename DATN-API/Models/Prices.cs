@@ -10,12 +10,12 @@ namespace DATN_API.Models
         public int Id { get; set; }
 
         [ForeignKey("Product")]
-        public int ProductId { get; set; }
+        public int? ProductId { get; set; }
         [JsonIgnore]
         public virtual Products? Product { get; set; }
 
         [ForeignKey("VariantComposition")]
-        public int VariantCompositionId { get; set; }
+        public int? VariantCompositionId { get; set; }
         [JsonIgnore]
         public virtual VariantComposition? VariantComposition { get; set; }
         [Range(1000, double.MaxValue, ErrorMessage = "Giá phải từ 1.000")] 

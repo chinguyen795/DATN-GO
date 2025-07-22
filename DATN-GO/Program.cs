@@ -54,6 +54,7 @@ builder.Services.AddScoped<GoogleCloudStorageService>();
 builder.Services.AddHttpClient<OcrService>();
 builder.Services.AddHttpClient<BankService>();
 builder.Services.AddHttpClient<StoreService>();
+builder.Services.AddScoped<PriceService>();
 
 builder.Services.AddScoped<PostService>();
 builder.Services.AddScoped<StoreService>();

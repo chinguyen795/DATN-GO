@@ -60,5 +60,12 @@ namespace DATN_API.Controllers
                 return NotFound();
             return NoContent();
         }
+        [HttpGet("product/{productId}")]
+        public async Task<IActionResult> GetByProductId(int productId)
+        {
+            var variants = await _service.GetByProductIdAsync(productId);
+            return Ok(variants);
+        }
+
     }
 }

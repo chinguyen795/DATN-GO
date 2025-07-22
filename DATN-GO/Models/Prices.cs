@@ -15,7 +15,7 @@ namespace DATN_GO.Models
         public virtual Products? Product { get; set; }
 
         [ForeignKey("VariantComposition")]
-        public int VariantCompositionId { get; set; }
+        public int? VariantCompositionId { get; set; }
         [JsonIgnore]
         public virtual VariantComposition? VariantComposition { get; set; }
 

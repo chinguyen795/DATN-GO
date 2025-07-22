@@ -53,5 +53,13 @@ namespace DATN_API.Services
             await _context.SaveChangesAsync();
             return true;
         }
+        public async Task<decimal?> GetMinPriceByProductIdAsync(int productId)
+        {
+            return await _context.Prices
+                .Where(p => p.ProductId == productId)
+                .OrderBy(p => p.Price)
+                .Select(p => (decimal?)p.Price)
+                .FirstOrDefaultAsync();
+        }
     }
 }

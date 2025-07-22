@@ -11,5 +11,6 @@ namespace DATN_API.Interfaces
         Task<Prices> CreateAsync(Prices model);
         Task<bool> UpdateAsync(int id, Prices model);
         Task<bool> DeleteAsync(int id);
+        Task<decimal?> GetMinPriceByProductIdAsync(int productId);
     }
 }
