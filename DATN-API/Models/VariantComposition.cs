@@ -20,7 +20,7 @@ namespace DATN_API.Models
 
         [ForeignKey("ProductVariantId")]
         [JsonIgnore]
-        public virtual Products? ProductVariant { get; set; }
+        public virtual ProductVariants? ProductVariant { get; set; }
 
         [ForeignKey("VariantValueId")]
         [JsonIgnore]
