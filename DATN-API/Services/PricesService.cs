@@ -58,7 +58,7 @@ namespace DATN_API.Services
             return await _context.Prices
                 .Where(p => p.ProductId == productId)
                 .OrderBy(p => p.Price)
-                .Select(p => (decimal?)p.Price)
+                .Select(p => (decimal?)(p.Price / 100))
                 .FirstOrDefaultAsync();
         }
     }

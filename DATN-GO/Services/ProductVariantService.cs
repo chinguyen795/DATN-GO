@@ -1,4 +1,5 @@
 ﻿using DATN_GO.Models;
+using DATN_GO.ViewModels;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -110,6 +111,24 @@ namespace DATN_GO.Service
             Console.WriteLine($"Lỗi khi lấy danh sách hình ảnh theo ProductId {productId}: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
             return null;
         }
+
+        public async Task<List<VariantCombinationViewModel>?> GetVariantCombinationsByProductIdAsync(int productId)
+        {
+            var response = await _httpClient.GetAsync($"{_baseUrl}VariantComposition/combinations/{productId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                return JsonSerializer.Deserialize<List<VariantCombinationViewModel>>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+            }
+
+            Console.WriteLine($"Lỗi khi lấy combinations của sản phẩm {productId}: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
+            return null;
+        }
+
 
     }
 }

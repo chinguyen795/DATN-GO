@@ -1,6 +1,7 @@
 ﻿using DATN_API.Data;
 using DATN_API.Interfaces;
 using DATN_API.Models;
+using DATN_API.ViewModels.Request;
 using Microsoft.EntityFrameworkCore;
 
 namespace DATN_API.Services
@@ -58,7 +59,7 @@ namespace DATN_API.Services
         {
             var existing = await _context.VariantCompositions.FindAsync(variantComposition.Id);
             if (existing == null)
-                return; // chỉ return rỗng
+                return;
 
             existing.ProductId = variantComposition.ProductId;
             existing.ProductVariantId = variantComposition.ProductVariantId;
@@ -78,6 +79,36 @@ namespace DATN_API.Services
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<List<VariantCombinationViewModel>> GetVariantCombinationsByProductIdAsync(int productId)
+        {
+            var productVariants = await _context.ProductVariants
+                .Where(pv => pv.ProductId == productId)
+                .ToListAsync();
+
+            var variantCompositions = await _context.VariantCompositions
+                .Where(vc => vc.VariantValueId.HasValue)
+                .ToListAsync();
+
+            var result = productVariants.Select(pv => new VariantCombinationViewModel
+            {
+                ProductVariantId = pv.Id,
+                Price = pv.Price,
+                Quantity = pv.Quantity,
+                Image = pv.Image,
+                VariantValueIds = variantCompositions
+                    .Where(vc => vc.ProductVariantId == pv.Id)
+                    .Select(vc => vc.VariantValueId.Value)
+                    .Distinct()
+                    .ToList()
+            }).ToList();
+
+            return result;
+        }
+
+
+
+
     }
 
 }

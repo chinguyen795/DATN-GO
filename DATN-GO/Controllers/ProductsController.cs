@@ -51,6 +51,9 @@ namespace DATN_GO.Controllers
 
             ViewBag.ProductName = product.Name;
             var productvariant = await _productVariantService.GetByProductIdAsync(id);
+
+            var variantCombinations = await _productVariantService.GetVariantCombinationsByProductIdAsync(id);
+
             // Lấy ảnh
             var variantImages = await _productVariantService.GetImagesByProductIdAsync(id);
 
@@ -103,6 +106,7 @@ namespace DATN_GO.Controllers
             }
 
             ViewBag.VariantOptions = variantViewModels;
+            ViewBag.VariantCombinations = variantCombinations;
 
             return View(product);
         }

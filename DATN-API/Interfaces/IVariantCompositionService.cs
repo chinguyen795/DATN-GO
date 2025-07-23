@@ -1,4 +1,5 @@
 ﻿using DATN_API.Models;
+using DATN_API.ViewModels.Request;
 
 namespace DATN_API.Interfaces
 {
@@ -10,5 +11,7 @@ namespace DATN_API.Interfaces
         Task AddMultipleAsync(int productId, int productVariantId, List<(int variantId, int variantValueId)> pairs);
         Task UpdateAsync(VariantComposition variantComposition);
         Task DeleteAsync(int id);
+        Task<List<VariantCombinationViewModel>> GetVariantCombinationsByProductIdAsync(int productId);
+
     }
 }

@@ -62,6 +62,13 @@ namespace DATN_API.Controllers
             await _service.DeleteAsync(id);
             return Ok("Xóa thành công.");
         }
+        [HttpGet("combinations/{productId}")]
+        public async Task<IActionResult> GetVariantCombinations(int productId)
+        {
+            var combinations = await _service.GetVariantCombinationsByProductIdAsync(productId);
+            return Ok(combinations);
+        }
+
     }
 
 }
