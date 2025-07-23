@@ -10,7 +10,6 @@ namespace DATN_API.Controllers
     public class PricesController : ControllerBase
     {
         private readonly IPricesService _pricesService;
-
         public PricesController(IPricesService pricesService)
         {
             _pricesService = pricesService;
@@ -70,6 +69,7 @@ namespace DATN_API.Controllers
 
             return NoContent();
         }
+
         [HttpGet("min-price/{productId}")]
         public async Task<IActionResult> GetMinPrice(int productId)
         {
@@ -79,5 +79,14 @@ namespace DATN_API.Controllers
 
             return Ok(minPrice);
         }
+
+        [HttpGet("min-max-price/{productId}")]
+        public async Task<IActionResult> GetMinMaxPrice(int productId)
+        {
+            var result = await _pricesService.GetMinMaxPriceByProductIdAsync(productId);
+            return Ok(result);
+        }
+
+
     }
 }

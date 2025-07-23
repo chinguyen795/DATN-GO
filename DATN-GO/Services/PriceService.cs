@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using DATN_GO.Models;
+using DATN_GO.ViewModels;
 using Microsoft.Extensions.Configuration;
 
 namespace DATN_GO.Service
@@ -101,6 +102,20 @@ namespace DATN_GO.Service
             Console.WriteLine($"Lỗi khi lấy giá nhỏ nhất của sản phẩm ID {productId}: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
             return null;
         }
+
+        public async Task<MinMaxPriceResponse?> GetMinMaxPriceByProductIdAsync(int productId)
+        {
+            var response = await _httpClient.GetAsync($"{_baseUrl}/min-max-price/{productId}");
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                return JsonSerializer.Deserialize<MinMaxPriceResponse>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            }
+
+            Console.WriteLine($"Lỗi khi lấy giá min-max của sản phẩm ID {productId}: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
+            return null;
+        }
+
 
     }
 }

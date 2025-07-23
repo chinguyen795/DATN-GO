@@ -106,4 +106,12 @@ namespace DATN_GO.ViewModels
         public List<int> VariantValueIds { get; set; } = new List<int>();
     }
 
+    public class MinMaxPriceResponse
+    {
+        public bool IsVariant { get; set; }
+        public decimal? Price { get; set; }           
+        public decimal? MinPrice { get; set; }      
+        public decimal? MaxPrice { get; set; }       
+    }
+
 }

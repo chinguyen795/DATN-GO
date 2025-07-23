@@ -39,7 +39,6 @@ namespace DATN_GO.Controllers
         [HttpGet]
         public IActionResult Products()
         {
-            // gọi thử: var products = await _productService.GetAllAsync(); (nếu async thì action cần đổi sang async Task<IActionResult>)
             return View();
         }
 
@@ -79,7 +78,7 @@ namespace DATN_GO.Controllers
                 ViewBag.StoreLogo = store.Avatar ?? "/image/default-logo.png";
             }
 
-            ViewBag.Price = await _priceService.GetMinPriceByProductIdAsync(id) ?? 0;
+            ViewBag.MinMaxPrice = await _priceService.GetMinMaxPriceByProductIdAsync(id);
             ViewBag.Rating = 4.8;
             ViewBag.Reviews = "1.2k";
 

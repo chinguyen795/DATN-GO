@@ -58,8 +58,54 @@ namespace DATN_API.Services
             return await _context.Prices
                 .Where(p => p.ProductId == productId)
                 .OrderBy(p => p.Price)
-                .Select(p => (decimal?)(p.Price / 100))
+                .Select(p => (decimal?)p.Price)
                 .FirstOrDefaultAsync();
         }
+
+        public async Task<object> GetMinMaxPriceByProductIdAsync(int productId)
+        {
+            var prices = await _context.ProductVariants
+                .Where(pv => pv.ProductId == productId)
+                .Select(pv => pv.Price)
+                .ToListAsync();
+
+            if (prices == null || !prices.Any())
+            {
+                // Không có bi?n th?, l?y t? b?ng Prices (giá m?c ??nh)
+                var price = await _context.Prices
+                    .Where(p => p.ProductId == productId)
+                    .Select(p => p.Price)
+                    .FirstOrDefaultAsync();
+
+                return new
+                {
+                    isVariant = false,
+                    price = price
+                };
+            }
+
+            // Có bi?n th?, tính giá min - max
+            var minPrice = prices.Min();
+            var maxPrice = prices.Max();
+
+            if (minPrice == maxPrice)
+            {
+                return new
+                {
+                    isVariant = false,
+                    price = minPrice
+                };
+            }
+
+            return new
+            {
+                isVariant = true,
+                minPrice = minPrice,
+                maxPrice = maxPrice
+            };
+        }
+
+
+
     }
 }

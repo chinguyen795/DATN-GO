@@ -3,12 +3,8 @@
     var images = ViewBag.Images as List<string> ?? new List<string>();
     var variants = ViewBag.VariantOptions as List<VariantWithValuesViewModel>;
     var variantCombinations = ViewBag.VariantCombinations as List<DATN_GO.ViewModels.VariantCombinationViewModel> ?? new List<DATN_GO.ViewModels.VariantCombinationViewModel>();
+    var priceInfo = ViewBag.MinMaxPrice as DATN_GO.ViewModels.MinMaxPriceResponse;
 }
-
-
-
-<pre>@Html.Raw(Json.Serialize(ViewBag.VariantCombinations))</pre>
-<pre style="color:red">@ViewBag.VariantCombinations?.Count</pre>
 
             <div class="row mb-5">
                 <!-- Product Image Section -->
@@ -89,9 +85,29 @@
                     <div class="mb-3 d-flex align-items-center">
             <span class="text-danger fw-bold fs-3" style="white-space: nowrap; font-family: Arial, sans-serif; font-size: 16px; font-weight: 600;">
                 <span id="product-price" class="text-danger fw-bold fs-3">
-                    @((Convert.ToDecimal(ViewBag.Price)).ToString("N0")) đ
+                    @if (priceInfo != null)
+                    {
+                        if (priceInfo.IsVariant)
+                        {
+                            if (priceInfo.MinPrice == priceInfo.MaxPrice)
+                            {
+                                @($"{(priceInfo.MinPrice):N0} đ")
+                            }
+                            else
+                            {
+                                @($"{(priceInfo.MinPrice):N0} đ - {(priceInfo.MaxPrice):N0} đ")
+                            }
+                        }
+                        else
+                        {
+                            @($"{(priceInfo.Price):N0} đ")
+                        }
+                    }
+                    else
+                    {
+                        <span class="text-muted">Không có giá</span>
+                    }
                 </span>
-                <span id="product-quantity" class="text-muted ms-3">Còn lại: @Model.Quantity sản phẩm</span>
 
             </span>
 
@@ -234,7 +250,7 @@
                 console.log("Match found:", match);
 
                 // ✅ Hiện đúng giá
-                document.getElementById('product-price').textContent = (match.price / 100).toLocaleString("vi-VN") + " đ";
+                document.getElementById('product-price').textContent = (match.price).toLocaleString("vi-VN") + " đ";
 
                 // ✅ Số lượng tồn kho
                 const quantityDisplay = document.querySelector(".text-muted");
