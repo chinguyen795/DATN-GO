@@ -18,8 +18,8 @@
                 <div class="carousel-inner">
                     @for (int i = 0; i < images.Count; i++)
                     {
-                        <div class="carousel-item @(i == 0 ? "active" : "")">
-                            <img src="@images[i]" class="d-block w-100 border rounded" alt="Hình ảnh sản phẩm @(i + 1)">
+                        <div id="mainImage" class="carousel-item active">
+                            <img id="mainProductImage" src="@images.FirstOrDefault()" class="d-block w-100 border rounded" alt="Hình ảnh sản phẩm">
                         </div>
                     }
                 </div>
@@ -71,20 +71,20 @@
                         <h5 class="mb-0">@ViewBag.StoreName</h5>
                         <div class="d-flex align-items-center mt-1">
                             <div class="text-muted me-3">
-                                <small>
+                            <!--<small>
                                     <i class="fas fa-star text-warning"></i>
                                     @($"{ViewBag.Rating} ({ViewBag.Reviews} đánh giá)")
-                                </small>
+                                </small>-->
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <!-- Product Information -->
+        <!-- Product Information -->
             <h2 class="mb-3">@ViewBag.ProductName</h2>
-                    <div class="mb-3 d-flex align-items-center">
+        <div class="mb-3 d-flex align-items-center">
             <span class="text-danger fw-bold fs-3" style="white-space: nowrap; font-family: Arial, sans-serif; font-size: 16px; font-weight: 600;">
-                <span id="product-price" class="text-danger fw-bold fs-3">
+                <span id="productPriceDisplay" class="text-crimson fw-bold fs-3">
                     @if (priceInfo != null)
                     {
                         if (priceInfo.IsVariant)
@@ -108,12 +108,8 @@
                         <span class="text-muted">Không có giá</span>
                     }
                 </span>
-
             </span>
-
-                <!--<span class="text-decoration-line-through text-muted ms-3">120.000₫</span>
-                <span class="badge bg-danger ms-2">-18%</span>-->
-                    </div>
+        </div>
 
                     <!-- Rating -->
                     <div class="mb-4">
@@ -148,7 +144,7 @@
                                        id="@inputId"
                                        value="@value.Id"
                                        autocomplete="off" />
-                                <label class="btn btn-outline-danger" for="@inputId">
+                                <label class="btn btn-outline-crimson" for="@inputId">
                                     @value.ValueName
                                 </label>
                             }
@@ -160,24 +156,24 @@
                     </div>
 
                     <!-- Quantity Selector -->
-                    <div class="mb-4">
-                        <h5>Số lượng</h5>
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="input-group quantity-input-group">
-                                <button class="btn btn-outline-secondary" type="button" id="decreaseQuantity">-</button>
-                    <input type="number" class="form-control text-center" value="1" min="1" id="quantityInput" step="1">
+        <div class="mb-4">
+            <h5>Số lượng</h5>
+            <div class="d-flex align-items-center gap-3">
+                <div class="input-group quantity-input-group">
+                    <button class="btn btn-outline-secondary" type="button" id="btnDecreaseProductQuantity">-</button>
+                    <input type="number" class="form-control text-center" value="1" min="1" id="productQuantityInput" step="1">
+                    <button class="btn btn-outline-secondary" type="button" id="btnIncreaseProductQuantity">+</button>
+                </div>
+                <span class="text-muted" id="productQuantityDisplay">Còn lại: @Model.Quantity sản phẩm</span>
+            </div>
+        </div>
 
-                                <button class="btn btn-outline-secondary" type="button" id="increaseQuantity">+</button>
-                            </div>
-                            <span class="text-muted">Còn lại: @Model.Quantity sản phẩm</span>
-                        </div>
-                    </div>
 
                     <!-- Action Buttons -->
-                    <div class="d-grid gap-2">
-            <button id="btnBuy" class="btn btn-danger btn-lg">Mua ngay</button>
-                        <button class="btn btn-outline-primary btn-lg">Thêm vào giỏ hàng</button>
-                    </div>
+        <div class="d-grid gap-2">
+            <button id="btnBuyProduct" class="btn btn-crimson btn-lg">Mua ngay</button>
+            <button class="btn btn-outline-primary btn-lg">Thêm vào giỏ hàng</button>
+        </div>
                 </div>
             </div>
 
@@ -194,12 +190,79 @@
             <li><strong>Mô tả:</strong> @Model.Description</li>
         </ul>
     </div>
-
-
-
 <script>
-    document.getElementById("btnBuy").addEventListener("click", function () {
-        // Lấy tất cả các group name (theo name trong input radio)
+    const variantCombinations = @Html.Raw(Json.Serialize(variantCombinations));
+    console.log("Variant Combinations:", variantCombinations);
+
+    let currentVariantPrice = 0;
+    let totalQuantity = variantCombinations.reduce((sum, v) => sum + v.quantity, 0);
+
+    const quantityDisplay = document.getElementById("productQuantityDisplay");
+    if (quantityDisplay) {
+        quantityDisplay.textContent = `Còn lại: ${totalQuantity} sản phẩm`;
+    }
+
+    const selectedValues = new Set();
+
+    function updateTotalPrice() {
+        const quantity = parseInt(document.getElementById("productQuantityInput").value) || 1;
+        const total = quantity * currentVariantPrice;
+        document.getElementById("productPriceDisplay").textContent = total.toLocaleString("vi-VN") + " đ";
+    }
+
+    document.querySelectorAll('.btn-check').forEach(input => {
+        input.addEventListener('change', () => {
+            document.querySelectorAll(`.btn-check[name="${input.name}"]`).forEach(i => selectedValues.delete(parseInt(i.value)));
+            selectedValues.add(parseInt(input.value));
+
+            const selectedArray = Array.from(selectedValues).sort((a, b) => a - b);
+
+            const match = variantCombinations.find(variant => {
+                const sortedIds = [...variant.variantValueIds].sort((a, b) => a - b);
+                return JSON.stringify(sortedIds) === JSON.stringify(selectedArray);
+            });
+
+            if (match) {
+                currentVariantPrice = match.price;
+                updateTotalPrice();
+
+                if (quantityDisplay) {
+                    quantityDisplay.textContent = `Còn lại: ${match.quantity} sản phẩm`;
+                }
+
+                const mainImage = document.getElementById('mainProductImage');
+                if (mainImage && match.image) {
+                    mainImage.src = match.image;
+                }
+            } else {
+                currentVariantPrice = 0;
+                updateTotalPrice();
+
+                if (quantityDisplay) {
+                    quantityDisplay.textContent = `Còn lại: ${totalQuantity} sản phẩm`;
+                }
+            }
+        });
+    });
+
+    document.getElementById("btnIncreaseProductQuantity").addEventListener("click", function () {
+        const input = document.getElementById("productQuantityInput");
+        input.value = parseInt(input.value) + 1;
+        updateTotalPrice();
+    });
+
+    document.getElementById("btnDecreaseProductQuantity").addEventListener("click", function () {
+        const input = document.getElementById("productQuantityInput");
+        const current = parseInt(input.value);
+        if (current > 1) {
+            input.value = current - 1;
+            updateTotalPrice();
+        }
+    });
+
+    document.getElementById("productQuantityInput").addEventListener("input", updateTotalPrice);
+
+    document.getElementById("btnBuyProduct").addEventListener("click", function () {
         const radioInputs = document.querySelectorAll("input[type=radio]");
         const groupNames = [...new Set([...radioInputs].map(i => i.name))];
 
@@ -216,7 +279,6 @@
             return;
         }
 
-        // Lấy các value đã chọn
         const selectedValues = groupNames.map(group => {
             const checkedInput = document.querySelector(`input[name="${group}"]:checked`);
             return {
@@ -227,45 +289,5 @@
 
         console.log("Đã chọn:", selectedValues);
         alert("Đã chọn đủ. Gửi dữ liệu đi hoặc xử lý tiếp.");
-        // TODO: Gửi selectedValues đi server (nếu cần)
     });
-
-
-        const selectedValues = new Set();
-
-    document.querySelectorAll('.btn-check').forEach(input => {
-        input.addEventListener('change', () => {
-            // Xóa chọn cũ trong cùng nhóm variant
-            document.querySelectorAll(`.btn-check[name="${input.name}"]`).forEach(i => selectedValues.delete(parseInt(i.value)));
-            selectedValues.add(parseInt(input.value));
-
-            const selectedArray = Array.from(selectedValues).sort((a, b) => a - b);
-
-            const match = variantCombinations.find(variant => {
-                const sortedIds = [...variant.variantValueIds].sort((a, b) => a - b);
-                return JSON.stringify(sortedIds) === JSON.stringify(selectedArray);
-            });
-
-            if (match) {
-                console.log("Match found:", match);
-
-                // ✅ Hiện đúng giá
-                document.getElementById('product-price').textContent = (match.price).toLocaleString("vi-VN") + " đ";
-
-                // ✅ Số lượng tồn kho
-                const quantityDisplay = document.querySelector(".text-muted");
-                if (quantityDisplay) {
-                    quantityDisplay.textContent = `Còn lại: ${match.quantity} sản phẩm`;
-                }
-
-                document.getElementById('mainImage').src = match.image;
-            }
-        });
-    });
-
-</script>
-<script>
-    const variantCombinations = @Html.Raw(Json.Serialize(variantCombinations));
-    console.log("Variant Combinations:", variantCombinations);
-
 </script>
