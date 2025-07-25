@@ -1,5 +1,8 @@
 ﻿using DATN_API.Data;
+using DATN_API.Interfaces;
 using DATN_API.Models;
+using DATN_API.Services;
+using DATN_API.ViewModels.Cart;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,96 +10,47 @@ namespace DATN_API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class CartsController : ControllerBase
+    public class CartController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ICartService _cartService;
 
-        public CartsController(ApplicationDbContext context)
+        public CartController(ICartService cartService)
         {
-            _context = context;
+            _cartService = cartService;
         }
 
-        // GET: api/carts
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
+        [HttpPost("add")]
+        public async Task<IActionResult> AddToCart([FromBody] AddToCartRequest request)
         {
-            var carts = await _context.Carts
-                .Include(c => c.User)
-                .Include(c => c.Product)
-                .ToListAsync();
-
-            return Ok(carts);
+            var result = await _cartService.AddToCartAsync(request);
+            if (result) return Ok(new { message = "Thêm vào giỏ hàng thành công" });
+            return BadRequest(new { message = "Thêm giỏ hàng thất bại" });
         }
 
-        // GET: api/carts/5
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetCartByUserId(int userId)
         {
-            var cart = await _context.Carts
-                .Include(c => c.User)
-                .Include(c => c.Product)
-                .FirstOrDefaultAsync(c => c.Id == id);
-
-            if (cart == null) return NotFound();
-
+            var cart = await _cartService.GetCartByUserIdAsync(userId);
             return Ok(cart);
         }
 
-        // GET: api/carts/user/3
-        [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetByUser(int userId)
+        [HttpDelete("remove/{cartId}")]
+        public async Task<IActionResult> RemoveFromCart(int cartId)
         {
-            var userCarts = await _context.Carts
-                .Include(c => c.Product)
-                .Where(c => c.UserId == userId)
-                .ToListAsync();
-
-            return Ok(userCarts);
+            var result = await _cartService.RemoveFromCartAsync(cartId);
+            if (result) return Ok(new { message = "Xóa sản phẩm khỏi giỏ hàng thành công" });
+            return NotFound(new { message = "Không tìm thấy sản phẩm trong giỏ hàng" });
         }
 
-        // POST: api/carts
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] Carts model)
+        [HttpPut("update-quantity")]
+        public async Task<IActionResult> UpdateQuantity([FromBody] UpdateQuantityRequest request)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            model.CreateAt = DateTime.UtcNow;
-            _context.Carts.Add(model);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetById), new { id = model.Id }, model);
+            var result = await _cartService.UpdateQuantityAsync(request.CartId, request.NewQuantity);
+            if (result) return Ok(new { message = "Cập nhật số lượng thành công" });
+            return BadRequest(new { message = "Cập nhật số lượng thất bại" });
         }
 
-        // PUT: api/carts/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] Carts model)
-        {
-            if (id != model.Id)
-                return BadRequest("ID không khớp");
 
-            var cart = await _context.Carts.FindAsync(id);
-            if (cart == null) return NotFound();
-
-            cart.ProductId = model.ProductId;
-            cart.Quantity = model.Quantity;
-            cart.UserId = model.UserId;
-            // Không cập nhật CreateAt khi update, giữ nguyên thời điểm tạo
-
-            await _context.SaveChangesAsync();
-            return NoContent();
-        }
-
-        // DELETE: api/carts/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var cart = await _context.Carts.FindAsync(id);
-            if (cart == null) return NotFound();
-
-            _context.Carts.Remove(cart);
-            await _context.SaveChangesAsync();
-            return NoContent();
-        }
     }
+
 }

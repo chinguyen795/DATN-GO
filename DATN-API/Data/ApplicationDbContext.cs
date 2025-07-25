@@ -45,6 +45,7 @@ namespace DATN_API.Data
         public DbSet<ShippingMethods> ShippingMethods { get; set; }
         public DbSet<ProductVouchers> ProductVouchers { get; set; }
         public DbSet<Vouchers> Vouchers { get; set; }
+        public DbSet<CartItemVariants> CartItemVariants { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

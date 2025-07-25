@@ -66,6 +66,7 @@ builder.Services.AddScoped<VariantCompositionService>();
 // Đăng ký HttpClient cho các Service
 builder.Services.AddHttpClient<AuthenticationService>();
 builder.Services.AddHttpClient<UserService>();
+builder.Services.AddHttpClient<CartService>();
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
