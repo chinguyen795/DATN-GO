@@ -97,27 +97,23 @@
         });
     }
 
-    function setupCheckboxHandlers() {
-        const selectAllCheckbox = document.getElementById('selectAllItems');
+function updateCartSummary() {
     const itemCheckboxes = document.querySelectorAll('.item-checkbox');
+    let subtotal = 0;
 
-    selectAllCheckbox.addEventListener('change', function () {
-        itemCheckboxes.forEach(checkbox => {
-            checkbox.checked = this.checked;
-        });
-    updateCartSummary();
-        });
+    itemCheckboxes.forEach(checkbox => {
+        if (checkbox.checked) {
+            const row = checkbox.closest('tr');
+            const total = parseCurrency(row.querySelector('.total').textContent);
+            subtotal += total;
+        }
+    });
 
-        itemCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function () {
-            const allChecked = Array.from(itemCheckboxes).every(cb => cb.checked);
-            selectAllCheckbox.checked = allChecked;
-            updateCartSummary();
-        });
-        });
+    const formattedSubtotal = formatCurrency(subtotal);
+    document.getElementById('subtotal').textContent = formattedSubtotal;
+    document.getElementById('grand-total').textContent = formattedSubtotal;
+}
 
-    updateCartSummary();
-    }
 
     function updateCartSummary() {
         const itemCheckboxes = document.querySelectorAll('.item-checkbox');
@@ -138,11 +134,6 @@
     document.getElementById('grand-total').textContent = formattedSubtotal;
     }
 
-    function formatCurrency(amount) {
-        return amount.toLocaleString('vi-VN', {
-        style: 'decimal',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-        }) + ' ?';
-    }
-
+function formatCurrency(amount) {
+    return amount.toLocaleString('vi-VN') + ' ?';
+}

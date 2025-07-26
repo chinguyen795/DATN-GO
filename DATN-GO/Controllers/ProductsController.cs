@@ -60,11 +60,14 @@ namespace DATN_GO.Controllers
             if (!string.IsNullOrEmpty(product.MainImage))
                 allImages.Add(product.MainImage);
 
-            foreach (var variant in productvariant)
+            if (productvariant != null)
             {
-                if (!string.IsNullOrEmpty(variant.Image))
+                foreach (var variant in productvariant)
                 {
-                    allImages.Add(variant.Image);
+                    if (!string.IsNullOrEmpty(variant.Image))
+                    {
+                        allImages.Add(variant.Image);
+                    }
                 }
             }
 
