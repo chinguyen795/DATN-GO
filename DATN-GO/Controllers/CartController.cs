@@ -1,4 +1,5 @@
 ﻿using DATN_GO.Service;
+using DATN_GO.ViewModels;
 using DATN_GO.ViewModels.Cart;
 using Microsoft.AspNetCore.Mvc;
 using System.Text;
@@ -42,13 +43,32 @@ namespace DATN_GO.Controllers
 
             request.UserId = userId;
 
+            // ✅ Kiểm tra nếu sản phẩm có biến thể mà chưa chọn đủ
+            var productVariantCount = ViewBag.VariantOptions is List<VariantWithValuesViewModel> variants
+                ? variants.Count
+                : 0;
+
+            if (productVariantCount > 0 && (request.VariantValueIds == null || request.VariantValueIds.Count != productVariantCount))
+            {
+                TempData["ToastMessage"] = "Vui lòng chọn đầy đủ các biến thể.";
+                TempData["ToastType"] = "danger";
+                return RedirectToAction("DetailProducts", "Products", new { id = request.ProductId });
+            }
+
             var success = await _cartService.AddToCartAsync(request);
             if (success)
+            {
+                TempData["ToastMessage"] = "Đã thêm sản phẩm vào giỏ hàng.";
+                TempData["ToastType"] = "success";
                 return RedirectToAction("Index");
+            }
 
-            TempData["Error"] = "Thêm sản phẩm vào giỏ hàng thất bại";
-            return RedirectToAction("Index", "Products");
+            TempData["ToastMessage"] = "Thêm sản phẩm vào giỏ hàng thất bại.";
+            TempData["ToastType"] = "danger";
+            return RedirectToAction("DetailProducts", "Products", new { id = request.ProductId });
         }
+
+
 
         [HttpPost]
         public async Task<IActionResult> Remove(int cartId)

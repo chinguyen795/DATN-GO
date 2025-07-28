@@ -28,7 +28,7 @@ namespace DATN_API.Models
         [MaxLength(50)]
         public string PaymentMethod { get; set; }
 
-        public int? TransactionId { get; set; } // giả định Transaction table?
+        public int? TransactionId { get; set; }
 
         public DateTime? PaymentDate { get; set; }
 

@@ -21,12 +21,23 @@ namespace DATN_GO.Service
             _baseUrl = configuration["ApiSettings:BaseUrl"];
         }
 
-        public async Task<bool> AddToCartAsync(AddToCartRequest request)
-        {
-            var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync($"{_baseUrl}Cart/add", content);
-            return response.IsSuccessStatusCode;
-        }
+     public async Task<bool> AddToCartAsync(AddToCartRequest request)
+{
+    var json = JsonSerializer.Serialize(request);
+    Console.WriteLine("➡️ JSON gửi đến API:");
+    Console.WriteLine(json); // 👈 CẦN CÓ DÒNG NÀY
+
+    var content = new StringContent(json, Encoding.UTF8, "application/json");
+    var response = await _httpClient.PostAsync($"{_baseUrl}Cart/add", content);
+
+    var responseContent = await response.Content.ReadAsStringAsync();
+    Console.WriteLine($"📥 Kết quả trả về: {response.StatusCode}");
+    Console.WriteLine($"📥 Nội dung trả về: {responseContent}"); // 👈 CẦN CÓ DÒNG NÀY
+
+    return response.IsSuccessStatusCode;
+}
+
+
 
         public async Task<List<CartItemViewModel>?> GetCartByUserIdAsync(int userId)
         {

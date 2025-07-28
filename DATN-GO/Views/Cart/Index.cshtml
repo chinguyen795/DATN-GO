@@ -3,6 +3,15 @@
 @{
     ViewData["Title"] = "Cart Page";
 }
+<style>
+    .text-truncate-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
 
     <h2 class="text-center mb-4 text-danger">Giỏ Hàng Của Bạn</h2>
     <div class="row">
@@ -25,8 +34,8 @@
                                 <th scope="col" class="text-center">Số lượng</th>
                                 <th scope="col" class="text-end">Giá</th>
                                 <th scope="col" class="text-end">Tổng</th>
-                                <th scope="col" class="text-center">Thao tác</th>
-                            </tr>
+                            <th scope="col" class="text-center"><i class="bi bi-gear"></i></th>
+                        </tr>
                         </thead>
                         <tbody id="cart-items-body">
                         @foreach (var item in Model)
@@ -44,7 +53,7 @@
                                     <div class="d-flex align-items-center">
                                         <img src="@item.Image" alt="@item.ProductName" class="img-fluid rounded me-3" style="width: 60px; height: 60px; object-fit: cover;">
                                         <div>
-                                            <p class="mb-1 fw-bold">@item.ProductName</p>
+                                            <p class="mb-1 fw-bold text-truncate-2">@item.ProductName</p>
                                             @if (item.Variants != null && item.Variants.Count > 0)
                                             {
                                                 <small class="text-muted">@string.Join(" | ", item.Variants)</small>
@@ -54,24 +63,27 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="input-group justify-content-center" style="width: 120px;">
-                                        <!-- Form giảm số lượng -->
+                                        <!-- Nút Giảm -->
                                         <form asp-action="UpdateQuantity" asp-controller="Cart" method="post" class="d-inline">
                                             <input type="hidden" name="CartId" value="@item.CartId" />
                                             <input type="hidden" name="NewQuantity" value="@(item.Quantity - 1 <= 0 ? 1 : item.Quantity - 1)" />
-                                            <button class="btn btn-outline-danger btn-sm" type="submit" style="height: 35px;">-</button>
+                                            <button class="btn btn-outline-danger btn-sm" type="submit" style="height: 35px;" @(item.Quantity <= 1 ? "disabled" : "")>-</button>
                                         </form>
+
                                         <!-- Input số lượng -->
-                                        <input type="text" readonly class="form-control form-control-sm text-center" value="@item.Quantity" style="max-width: 50px;" />
-                                        <!-- Form tăng số lượng -->
+                                        <input type="text" readonly class="form-control form-control-sm text-center quantity-input" value="@item.Quantity" data-max="@item.MaxQuantity" style="max-width: 50px;" />
+
+                                        <!-- Nút Tăng -->
                                         <form asp-action="UpdateQuantity" asp-controller="Cart" method="post" class="d-inline">
                                             <input type="hidden" name="CartId" value="@item.CartId" />
-                                            <input type="hidden" name="NewQuantity" value="@(item.Quantity + 1)" />
-                                            <button class="btn btn-outline-danger btn-sm" type="submit" style="height: 35px;">+</button>
+                                            <input type="hidden" name="NewQuantity" value="@(item.Quantity + 1 > item.MaxQuantity ? item.MaxQuantity : item.Quantity + 1)" />
+                                            <button class="btn btn-outline-danger btn-sm" type="submit" style="height: 35px;" @(item.Quantity >= item.MaxQuantity ? "disabled" : "")>+</button>
                                         </form>
                                     </div>
+
                                 </td>
-                                <td class="text-end price">@item.Price.ToString("N0") đ</td>
-                                <td class="text-end total">@item.Total.ToString("N0") đ</td>
+                                <td class="text-end price" style="white-space: nowrap;">@item.Price.ToString("N0") đ</td>
+                                <td class="text-end total" style="white-space: nowrap;">@item.Total.ToString("N0") đ</td>
                                 <td class="text-center">
                                     <form asp-action="Remove" asp-controller="Cart" method="post">
                                         <input type="hidden" name="cartId" value="@item.CartId" />
@@ -86,21 +98,16 @@
                         </tbody>
                     </table>
                 </div>
-                <!-- See More Button Container -->
-                <div id="see-more-container" class="text-center p-2 border-top">
-                    <button id="see-more-btn" class="btn btn-sm btn-outline-danger">Xem thêm sản phẩm</button>
-                </div>
+               
             </div>
         </div>
     <!-- Cart Summary -->
         <div class="col-lg-4">
-        <!-- Added id="cart-summary-card" -->
         <div id="cart-summary-card" class="card border-danger shadow-sm mb-3">
             <div class="card-header bg-danger text-white">
-                <strong>Tổng cộng</strong> <!-- Made header bold -->
+                <strong>Tổng cộng</strong> 
             </div>
             <div class="card-body p-4">
-                <!-- Increased padding -->
                 <div class="mb-4">
                     <label for="discountCode" class="form-label fw-semibold">Mã giảm giá</label>
                     <div class="input-group">
@@ -152,9 +159,8 @@
                         <input class="form-check-input" type="radio" name="paymentMethod" id="paymentMoMo"
                                value="momo" checked>
                         <label class="form-check-label d-flex align-items-center" for="paymentMoMo">
-                            <!-- Added d-flex -->
                             <img src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png"
-                                 alt="MoMo" height="24" class="me-2"> <!-- Increased height -->
+                                 alt="MoMo" height="24" class="me-2">
                             <span>MoMo</span>
                         </label>
                     </div>
@@ -171,9 +177,7 @@
                         <input class="form-check-input" type="radio" name="paymentMethod" id="paymentCOD"
                                value="cod">
                         <label class="form-check-label d-flex align-items-center" for="paymentCOD">
-                            <!-- Added d-flex -->
                             <i class="bi bi-cash-coin me-2 text-danger fs-5"></i>
-                            <!-- Increased icon size -->
                             <span>Thanh toán khi nhận hàng (COD)</span>
                         </label>
                     </div>

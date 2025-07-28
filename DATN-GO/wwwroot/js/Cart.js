@@ -1,139 +1,49 @@
-    function parseCurrency(currencyString) {
-        return parseFloat(currencyString.replace(/[^0-9]/g, ''));
-    }
+﻿function parseCurrency(str) {
+    return parseFloat(str.replace(/[^\d]/g, '')) || 0;
+}
 
-    function formatCurrency(number) {
-        return number.toLocaleString('vi-VN', {style: 'currency', currency: 'VND' }).replace('?', '?');
-    }
-
-    function updateRowTotal(inputElement) {
-        const row = inputElement.closest('tr');
-    const priceElement = row.querySelector('.price');
-    const totalElement = row.querySelector('.total');
-    const quantityInput = row.querySelector('.quantity-input');
-
-    const price = parseCurrency(priceElement.textContent);
-    const quantity = parseInt(quantityInput.value);
-
-        if (!isNaN(price) && !isNaN(quantity) && quantity >= 1) {
-            const total = price * quantity;
-    totalElement.textContent = formatCurrency(total);
-        } else {
-        quantityInput.value = 1;
-    totalElement.textContent = formatCurrency(price);
-        }
-
-    updateCartTotal();
-    }
-
-
-
-    function updateCartTotal() {
-        const rows = document.querySelectorAll('tbody tr');
-    let subtotal = 0;
-        rows.forEach(row => {
-            const totalElement = row.querySelector('.total');
-    subtotal += parseCurrency(totalElement.textContent);
-        });
-
-    const subtotalElement = document.getElementById('subtotal');
-    const grandTotalElement = document.getElementById('grand-total');
-
-    if (subtotalElement) subtotalElement.textContent = formatCurrency(subtotal);
-    if (grandTotalElement) grandTotalElement.textContent = formatCurrency(subtotal);
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        setupQuantityHandlers();
-    setupDeleteButtons();
-    setupDiscountCode();
-    setupPaymentMethods();
-    setupSeeMoreButton();
-    setupCheckboxHandlers();
-    });
-
-    function setupQuantityHandlers() {
-        const quantityInputs = document.querySelectorAll('.quantity-input');
-        quantityInputs.forEach(input => updateRowTotal(input));
-    updateCartTotal();
-        quantityInputs.forEach(input => {
-        input.addEventListener('change', updateCartSummary);
-        });
-    }
-
-
-    function setupDiscountCode() {
-        const applyDiscountBtn = document.getElementById('applyDiscountBtn');
-    if (applyDiscountBtn) {
-        applyDiscountBtn.addEventListener('click', () => {
-            const discountCode = document.getElementById('discountCode').value;
-            console.log('Applying discount code:', discountCode);
-        });
-        }
-    }
-
-    function setupPaymentMethods() {
-        document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
-            radio.addEventListener('change', (event) => {
-                console.log('Selected payment method:', event.target.value);
-            });
-        });
-    }
-
-    function setupSeeMoreButton() {
-        const seeMoreBtn = document.getElementById('see-more-btn');
-    const seeMoreContainer = document.getElementById('see-more-container');
-    const cartItemsBody = document.getElementById('cart-items-body');
-    const hiddenRows = cartItemsBody.querySelectorAll('.cart-item-row.cart-item-hidden');
-
-    if (!seeMoreBtn || hiddenRows.length === 0) {
-            if (seeMoreContainer) seeMoreContainer.classList.add('cart-item-hidden');
-    return;
-        }
-
-        seeMoreBtn.addEventListener('click', () => {
-        hiddenRows.forEach(row => row.classList.remove('cart-item-hidden'));
-    seeMoreContainer.classList.add('cart-item-hidden');
-        });
-    }
+function formatCurrency(number) {
+    return number.toLocaleString('vi-VN') + ' đ';
+}
 
 function updateCartSummary() {
-    const itemCheckboxes = document.querySelectorAll('.item-checkbox');
-    let subtotal = 0;
-
-    itemCheckboxes.forEach(checkbox => {
-        if (checkbox.checked) {
-            const row = checkbox.closest('tr');
-            const total = parseCurrency(row.querySelector('.total').textContent);
-            subtotal += total;
+    let total = 0;
+    document.querySelectorAll('.item-checkbox').forEach(cb => {
+        if (cb.checked) {
+            const row = cb.closest('tr');
+            const price = parseInt(cb.dataset.price);
+            const quantity = parseInt(row.querySelector('.quantity-input').value);
+            total += price * quantity;
         }
     });
-
-    const formattedSubtotal = formatCurrency(subtotal);
-    document.getElementById('subtotal').textContent = formattedSubtotal;
-    document.getElementById('grand-total').textContent = formattedSubtotal;
+    document.getElementById('subtotal').textContent = formatCurrency(total);
+    document.getElementById('grand-total').textContent = formatCurrency(total);
 }
 
+function setupCheckboxHandlers() {
+    const selectAll = document.getElementById('selectAllItems');
+    const checkboxes = document.querySelectorAll('.item-checkbox');
 
-    function updateCartSummary() {
-        const itemCheckboxes = document.querySelectorAll('.item-checkbox');
-    let subtotal = 0;
+    // Khi tích chọn "chọn tất cả"
+    selectAll.addEventListener('change', function () {
+        checkboxes.forEach(cb => cb.checked = this.checked);
+        updateCartSummary();
+    });
 
-        itemCheckboxes.forEach(checkbox => {
-            if (checkbox.checked) {
-                const row = checkbox.closest('tr');
-    const quantityInput = row.querySelector('.quantity-input');
-    const price = parseFloat(checkbox.dataset.price);
-    const quantity = parseInt(quantityInput.value);
-    subtotal += price * quantity;
-            }
+    // Khi tích chọn từng sản phẩm
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', function () {
+            // Nếu có 1 ô bỏ chọn => bỏ chọn ô tổng
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            selectAll.checked = allChecked;
+
+            updateCartSummary();
         });
+    });
 
-    const formattedSubtotal = formatCurrency(subtotal);
-    document.getElementById('subtotal').textContent = formattedSubtotal;
-    document.getElementById('grand-total').textContent = formattedSubtotal;
-    }
-
-function formatCurrency(amount) {
-    return amount.toLocaleString('vi-VN') + ' ?';
+    updateCartSummary(); // Gọi lúc load
 }
+
+
+
+document.addEventListener('DOMContentLoaded', setupCheckboxHandlers);

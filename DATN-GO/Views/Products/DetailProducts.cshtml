@@ -2,15 +2,16 @@
 @{
     var images = ViewBag.Images as List<string> ?? new List<string>();
     var variants = ViewBag.VariantOptions as List<VariantWithValuesViewModel>;
-    var variantCombinations = ViewBag.VariantCombinations as List<DATN_GO.ViewModels.VariantCombinationViewModel> ?? new List<DATN_GO.ViewModels.VariantCombinationViewModel>();
+    var variantCombinations = ViewBag.VariantCombinations as List<DATN_GO.ViewModels.VariantCombinationViewModel> ?? new
+    List<DATN_GO.ViewModels.VariantCombinationViewModel>();
     var priceInfo = ViewBag.MinMaxPrice as DATN_GO.ViewModels.MinMaxPriceResponse;
 }
 
-            <div class="row mb-5">
-                <!-- Product Image Section -->
-                <div class="col-md-6 mb-4">
-                    <!-- Main Carousel -->
-       
+<div class="row mb-5">
+    <!-- Product Image Section -->
+    <div class="col-md-6 mb-4">
+        <!-- Main Carousel -->
+
         @if (images.Count > 0)
         {
             <!-- Carousel Main -->
@@ -19,7 +20,8 @@
                     @for (int i = 0; i < images.Count; i++)
                     {
                         <div id="mainImage" class="carousel-item active">
-                            <img id="mainProductImage" src="@images.FirstOrDefault()" class="d-block w-100 border rounded" alt="Hình ảnh sản phẩm">
+                            <img id="mainProductImage" src="@images.FirstOrDefault()" class="d-block w-100 border rounded"
+                                alt="Hình ảnh sản phẩm">
                         </div>
                     }
                 </div>
@@ -42,10 +44,8 @@
                     <div class="thumbnails-wrapper">
                         @for (int i = 0; i < images.Count; i++)
                         {
-                            <img src="@images[i]"
-                                 class="product-thumbnail @(i == 0 ? "active" : "")"
-                                 data-bs-target="#productCarousel"
-                                 data-bs-slide-to="@i" />
+                            <img src="@images[i]" class="product-thumbnail @(i == 0 ? "active" : "")"
+                                data-bs-target="#productCarousel" data-bs-slide-to="@i" />
                         }
                     </div>
                 </div>
@@ -58,32 +58,32 @@
         {
             <p>Không có hình ảnh sản phẩm.</p>
         }
-        </div>
-                <!-- Product Information Section -->
-                <div class="col-md-6">
-                    <!-- Store Information -->
-            <div class="pb-2 mb-2 border-bottom">
-                <div class="d-flex align-items-center">
-                    <img src="@ViewBag.StoreLogo" alt="Logo cửa hàng"
-                         class="rounded-circle me-2 logo-store"
-                         style="width: 48px; height: 48px; object-fit: cover;">
-                    <div class="flex-grow-1">
-                        <h5 class="mb-0">@ViewBag.StoreName</h5>
-                        <div class="d-flex align-items-center mt-1">
-                            <div class="text-muted me-3">
+    </div>
+    <!-- Product Information Section -->
+    <div class="col-md-6">
+        <!-- Store Information -->
+        <div class="pb-2 mb-2 border-bottom">
+            <div class="d-flex align-items-center">
+                <img src="@ViewBag.StoreLogo" alt="Logo cửa hàng" class="rounded-circle me-2 logo-store"
+                    style="width: 48px; height: 48px; object-fit: cover;">
+                <div class="flex-grow-1">
+                    <h5 class="mb-0">@ViewBag.StoreName</h5>
+                    <div class="d-flex align-items-center mt-1">
+                        <div class="text-muted me-3">
                             <!--<small>
                                     <i class="fas fa-star text-warning"></i>
                                     @($"{ViewBag.Rating} ({ViewBag.Reviews} đánh giá)")
                                 </small>-->
-                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
         <!-- Product Information -->
-            <h2 class="mb-3">@ViewBag.ProductName</h2>
+        <h2 class="mb-3">@ViewBag.ProductName</h2>
         <div class="mb-3 d-flex align-items-center">
-            <span class="text-danger fw-bold fs-3" style="white-space: nowrap; font-family: Arial, sans-serif; font-size: 16px; font-weight: 600;">
+            <span class="text-danger fw-bold fs-3"
+                style="white-space: nowrap; font-family: Arial, sans-serif; font-size: 16px; font-weight: 600;">
                 <span id="productPriceDisplay" class="text-crimson fw-bold fs-3">
                     @if (priceInfo != null)
                     {
@@ -111,36 +111,37 @@
             </span>
         </div>
 
-                    <!-- Rating -->
-                    <div class="mb-4">
-                        <div class="d-flex align-items-center">
-                            <div class="text-warning me-2">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star-half-alt"></i>
-                            </div>
-                            <span>4.5 (245 đánh giá)</span>
-                        </div>
-                    </div>
+        <!-- Rating -->
+        <div class="mb-4">
+            <div class="d-flex align-items-center">
+                <div class="text-warning me-2">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star-half-alt"></i>
+                </div>
+                <span>4.5 (245 đánh giá)</span>
+            </div>
+        </div>
 
-                    <!-- Product Variants -->
-                    <div class="mb-4">
-                        <!-- Size Selection -->
+        <!-- Product Variants -->
+        <!-- Product Variants -->
+        <div class="mb-4">
             @if (variants != null)
             {
-                @foreach (var variant in variants)
+                @for (int i = 0; i < variants.Count; i++)
                 {
+                    var variant = variants[i];
                     <div class="mb-3">
                         <h5>@variant.VariantName</h5>
                         <div class="d-flex gap-2 flex-wrap">
                             @foreach (var value in variant.Values)
                             {
-                                var inputId = $"{variant.VariantType}-{value.Id}";
+                                var inputId = $"variant_{variant.VariantName}_{value.Id}";
                                 <input type="radio"
                                        class="btn-check"
-                                       name="@variant.VariantName"
+                                       name="variant_@variant.VariantName"
                                        id="@inputId"
                                        value="@value.Id"
                                        autocomplete="off" />
@@ -151,17 +152,17 @@
                         </div>
                     </div>
                 }
-
             }
-                    </div>
+        </div>
 
-                    <!-- Quantity Selector -->
+
+        <!-- Quantity Selector -->
         <div class="mb-4">
             <h5>Số lượng</h5>
             <div class="d-flex align-items-center gap-3">
                 <div class="input-group quantity-input-group">
                     <button class="btn btn-outline-secondary" type="button" id="btnDecreaseProductQuantity">-</button>
-                    <input  class="form-control text-center" value="1" min="1" id="productQuantityInput" step="1">
+                    <input class="form-control text-center" value="1" min="1" id="productQuantityInput" step="1">
                     <button class="btn btn-outline-secondary" type="button" id="btnIncreaseProductQuantity">+</button>
                 </div>
                 <span class="text-muted" id="productQuantityDisplay">Còn lại: @Model.Quantity sản phẩm</span>
@@ -169,32 +170,42 @@
         </div>
 
 
-                    <!-- Action Buttons -->
-        <div class="d-grid gap-2">
-            <button id="btnBuyProduct" class="btn btn-crimson btn-lg">Mua ngay</button>
-            <button class="btn btn-outline-primary btn-lg">Thêm vào giỏ hàng</button>
-        </div>
-                </div>
+        <form asp-controller="Cart" asp-action="AddToCart" method="post">
+            @Html.AntiForgeryToken()
+
+            <!-- Hidden product ID -->
+            <input type="hidden" name="ProductId" value="@Model.Id" />
+            <div id="variantInputsContainer"></div>
+            <!-- Hidden Quantity -->
+            <input type="hidden" name="Quantity" id="QuantityHidden" value="1" />
+
+            <div class="d-grid gap-2 mt-3">
+                <button type="submit" class="btn btn-outline-primary btn-lg">Thêm vào giỏ hàng</button>
             </div>
+        </form>
 
-    <div class="d-flex align-items-center container mb-3">
-        <hr class="flex-grow-1 border-danger border-1 opacity-100">
+
     </div>
+</div>
 
-    <div class="mb-4">
-        <h3>Thông tin chi tiết:</h3>
+<div class="d-flex align-items-center container mb-3">
+    <hr class="flex-grow-1 border-danger border-1 opacity-100">
+</div>
 
-        <ul class="list-unstyled text-muted mb-3">
-            <li><strong>Nơi xuất xứ:</strong> @Model.PlaceOfOrigin</li>
-            <li><strong>Thương hiệu:</strong> @Model.Brand</li>
-            <li><strong>Mô tả:</strong> @Model.Description</li>
-        </ul>
-    </div>
+<div class="mb-4">
+    <h3>Thông tin chi tiết:</h3>
+
+    <ul class="list-unstyled text-muted mb-3">
+        <li><strong>Nơi xuất xứ:</strong> @Model.PlaceOfOrigin</li>
+        <li><strong>Thương hiệu:</strong> @Model.Brand</li>
+        <li><strong>Mô tả:</strong> @Model.Description</li>
+    </ul>
+</div>
 <script>
     const variantCombinations = @Html.Raw(Json.Serialize(variantCombinations));
     console.log("Variant Combinations:", variantCombinations);
 
-    let currentVariantPrice = 0;
+    let currentVariantPrice = parseFloat("@((priceInfo != null && !priceInfo.IsVariant && priceInfo.Price.HasValue) ? priceInfo.Price.Value.ToString("0.##") : "0")");
     let totalQuantity = variantCombinations.reduce((sum, v) => sum + v.quantity, 0);
 
     const quantityDisplay = document.getElementById("productQuantityDisplay");
@@ -202,7 +213,7 @@
         quantityDisplay.textContent = `Còn lại: ${totalQuantity} sản phẩm`;
     }
 
-    const selectedValues = new Set();
+    const selectedVariantsMap = new Map();
 
     function updateTotalPrice() {
         const quantity = parseInt(document.getElementById("productQuantityInput").value) || 1;
@@ -210,12 +221,12 @@
         document.getElementById("productPriceDisplay").textContent = total.toLocaleString("vi-VN") + " đ";
     }
 
+    // Xử lý chọn biến thể
     document.querySelectorAll('.btn-check').forEach(input => {
         input.addEventListener('change', () => {
-            document.querySelectorAll(`.btn-check[name="${input.name}"]`).forEach(i => selectedValues.delete(parseInt(i.value)));
-            selectedValues.add(parseInt(input.value));
+            selectedVariantsMap.set(input.name, parseInt(input.value));
 
-            const selectedArray = Array.from(selectedValues).sort((a, b) => a - b);
+            const selectedArray = Array.from(selectedVariantsMap.values()).sort((a, b) => a - b);
 
             const match = variantCombinations.find(variant => {
                 const sortedIds = [...variant.variantValueIds].sort((a, b) => a - b);
@@ -242,52 +253,60 @@
                     quantityDisplay.textContent = `Còn lại: ${totalQuantity} sản phẩm`;
                 }
             }
+
+            updateFormHiddenInputs();
         });
     });
 
-    document.getElementById("btnIncreaseProductQuantity").addEventListener("click", function () {
-        const input = document.getElementById("productQuantityInput");
-        input.value = parseInt(input.value) + 1;
+    const quantityInput = document.getElementById("productQuantityInput");
+    const hiddenQuantity = document.getElementById("QuantityHidden");
+
+    document.getElementById("btnIncreaseProductQuantity").addEventListener("click", () => {
+        quantityInput.value = parseInt(quantityInput.value) + 1;
+        hiddenQuantity.value = quantityInput.value;
         updateTotalPrice();
+        updateFormHiddenInputs();
     });
 
-    document.getElementById("btnDecreaseProductQuantity").addEventListener("click", function () {
-        const input = document.getElementById("productQuantityInput");
-        const current = parseInt(input.value);
-        if (current > 1) {
-            input.value = current - 1;
-            updateTotalPrice();
+    document.getElementById("btnDecreaseProductQuantity").addEventListener("click", () => {
+        quantityInput.value = Math.max(1, parseInt(quantityInput.value) - 1);
+        hiddenQuantity.value = quantityInput.value;
+        updateTotalPrice();
+        updateFormHiddenInputs();
+    });
+
+    quantityInput.addEventListener("input", () => {
+        hiddenQuantity.value = quantityInput.value;
+        updateTotalPrice();
+        updateFormHiddenInputs();
+    });
+
+    function updateFormHiddenInputs() {
+        const container = document.getElementById("variantInputsContainer");
+        if (!container) return;
+
+        container.innerHTML = "";
+
+        const checkedRadios = document.querySelectorAll("input[type=radio]:checked");
+
+        if (checkedRadios.length === 0) {
+            const emptyInput = document.createElement("input");
+            emptyInput.type = "hidden";
+            emptyInput.name = "VariantValueIds";
+            emptyInput.value = "";
+            container.appendChild(emptyInput);
+        } else {
+            checkedRadios.forEach(radio => {
+                const input = document.createElement("input");
+                input.type = "hidden";
+                input.name = "VariantValueIds";
+                input.value = radio.value;
+                container.appendChild(input);
+            });
         }
-    });
 
-    document.getElementById("productQuantityInput").addEventListener("input", updateTotalPrice);
+        hiddenQuantity.value = quantityInput.value || "1";
+    }
 
-    document.getElementById("btnBuyProduct").addEventListener("click", function () {
-        const radioInputs = document.querySelectorAll("input[type=radio]");
-        const groupNames = [...new Set([...radioInputs].map(i => i.name))];
-
-        let allSelected = true;
-        groupNames.forEach(group => {
-            const selected = document.querySelector(`input[name="${group}"]:checked`);
-            if (!selected) {
-                allSelected = false;
-            }
-        });
-
-        if (!allSelected) {
-            alert("Vui lòng chọn đầy đủ các biến thể (ví dụ: Size, Màu).");
-            return;
-        }
-
-        const selectedValues = groupNames.map(group => {
-            const checkedInput = document.querySelector(`input[name="${group}"]:checked`);
-            return {
-                group: group,
-                valueId: checkedInput.value
-            };
-        });
-
-        console.log("Đã chọn:", selectedValues);
-        alert("Đã chọn đủ. Gửi dữ liệu đi hoặc xử lý tiếp.");
-    });
+    updateFormHiddenInputs();
 </script>
