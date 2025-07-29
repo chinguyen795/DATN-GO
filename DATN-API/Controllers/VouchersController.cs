@@ -66,7 +66,6 @@ namespace DATN_API.Controllers
             if (voucher == null) return NotFound();
 
             voucher.Reduce = model.Reduce;
-            voucher.Type = model.Type;
             voucher.MinOrder = model.MinOrder;
             voucher.StartDate = model.StartDate;
             voucher.EndDate = model.EndDate;

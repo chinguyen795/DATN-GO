@@ -9,7 +9,11 @@ namespace DATN_API.Models
         [Display(Name = "Còn hạn")]
         Valid,
         [Display(Name = "Hết hạn")]
-        Expired
+        Expired,
+        [Display(Name = "Đã sử dụng")]
+        Used,
+        [Display(Name = "Đã lưu")]
+        Saved,
     }
 
     public enum VoucherType

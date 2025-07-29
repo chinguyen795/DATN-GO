@@ -1,9 +1,30 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using DATN_GO.Models;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace DATN_GO.Models
 {
+    public enum VoucherStatus
+    {
+        [Display(Name = "Còn hạn")]
+        Valid,
+        [Display(Name = "Hết hạn")]
+        Expired,
+        [Display(Name = "Đã sử dụng")]
+        Used,
+        [Display(Name = "Đã lưu")]
+        Saved,
+    }
+
+    public enum VoucherType
+    {
+        [Display(Name = "Mã của sàn")]
+        Platform,
+        [Display(Name = "Mã của shop")]
+        Shop
+    }
+
     public class Vouchers
     {
         [Key]
@@ -11,8 +32,7 @@ namespace DATN_GO.Models
 
         public decimal Reduce { get; set; }
 
-        [MaxLength(50)]
-        public string Type { get; set; }
+        public VoucherType Type { get; set; }
 
         public decimal MinOrder { get; set; }
 
@@ -20,8 +40,7 @@ namespace DATN_GO.Models
 
         public DateTime EndDate { get; set; }
 
-        [MaxLength(50)]
-        public string Status { get; set; }
+        public VoucherStatus Status { get; set; }
         [JsonIgnore]
         public ICollection<ProductVouchers>? ProductVouchers { get; set; }
         [JsonIgnore]
@@ -37,6 +56,7 @@ namespace DATN_GO.Models
         [JsonIgnore]
         public virtual Stores? Store { get; set; }
 
+        [Range(1, int.MaxValue, ErrorMessage = "Số lượng phải từ 1 trở lên")]
         public int Quantity { get; set; }
     }
 }

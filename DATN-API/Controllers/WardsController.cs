@@ -42,6 +42,20 @@ namespace DATN_API.Controllers
         }
 
         // POST: api/wards
+
+        //[HttpPost]
+        //public async Task<IActionResult> Create([FromBody] Wards model)
+        //{
+        //    if (!ModelState.IsValid)
+        //        return BadRequest(ModelState);
+
+        //    model.District = null;
+
+        //    var created = await _service.CreateAsync(model);
+        //    return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+        //}
+
+
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Wards model)
         {

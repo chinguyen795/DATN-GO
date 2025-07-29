@@ -67,6 +67,7 @@ builder.Services.AddScoped<VariantCompositionService>();
 builder.Services.AddHttpClient<AuthenticationService>();
 builder.Services.AddHttpClient<UserService>();
 builder.Services.AddHttpClient<CartService>();
+builder.Services.AddHttpClient<VoucherService>();
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())

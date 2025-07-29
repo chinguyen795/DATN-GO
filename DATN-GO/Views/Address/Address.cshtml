@@ -1,9 +1,11 @@
-﻿@* @model List<DATN_GO.Models.Addresses>
+﻿@model List<DATN_GO.ViewModels.Address.AddressViewModel>
 @{
     ViewData["Title"] = "Địa chỉ Page";
 }
 
+
 <div class="container py-5">
+
     @if (TempData["Success"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -19,54 +21,61 @@
         </div>
     }
 
-    <!-- Header Section -->
-    <div class="bg-danger text-white p-3 rounded-top d-flex align-items-center mb-4">
-        <h5 class="mb-0">Địa chỉ của tôi</h5>
+    <div class="bg-crimson text-white p-3 rounded-top d-flex align-items-center mb-4">
+        <h5 class="mb-0">ĐỊA CHỈ CỦA TÔI</h5>
     </div>
 
-    <!-- Search Bar and Add Button Row -->
-    <div class="row mb-4">
+    <div class="row align-items-center mb-4">
         <div class="col-md-6">
-            <div class="input-group">
-                <input type="text" id="searchInput" class="form-control border-only-bottom" placeholder="Tìm kiếm địa chỉ...">
-                <button class="btn btn-outline-danger" type="button">
+            <div class="input-group shadow-sm rounded">
+                <input type="text" id="searchInput" class="form-control border-danger" placeholder="Tìm kiếm địa chỉ..." aria-label="Search">
+                <button id="searchButton" class="btn btn-crimson" type="button">
                     <i class="bi bi-search"></i>
                 </button>
             </div>
         </div>
+
         <div class="col-md-6 d-flex justify-content-md-end mt-3 mt-md-0">
-            <a asp-action="Create" class="btn btn-danger">
+            <a asp-action="Create" class="btn btn-crimson" style="text-transform: capitalize;">
                 <i class="bi bi-plus-lg me-1"></i>Thêm địa chỉ mới
             </a>
         </div>
     </div>
 
-    <!-- Address Table -->
-    <div class="table-responsive">
-        <table class="table table-hover align-middle">
+    <div class="table-responsive pb-5">
+        <table class="table table-hover align-middle w-100">
             <thead class="table-light">
                 <tr>
-                    <th scope="col" class="text-center">#</th>
-                    <th scope="col">Thông tin nhận hàng</th>
-                    <th scope="col">Địa chỉ</th>
-                    <th scope="col">Trạng thái</th>
-                    <th scope="col" class="text-center">Thao tác</th>
+                    <th class="text-center">#</th>
+                    <th>Tên người nhận</th>
+                    <th>Số điện thoại</th>
+                    <th>Địa chỉ</th>
+                    <th>Mô tả</th>
+                    <th>Trạng thái</th>
+                    <th class="text-center">Thao tác</th>
                 </tr>
             </thead>
             <tbody>
                 @if (Model != null && Model.Any())
                 {
                     int index = 1;
-@*                     @foreach (var address in Model.OrderByDescending(a => a.Status == "Mặc định"))
+                    foreach (var address in Model.OrderByDescending(a => a.Status == AddressStatus.Default))
                     {
                         <tr class="address-row">
                             <td class="text-center">@index</td>
+                            <td><strong>@address.Name</strong></td>
+                            <td><strong>@address.Phone</strong></td>
                             <td>
-                                <strong class="">@address.User?.FullName</strong>
+                                @{
+                                    var fullAddress = string.Join(", ", new[] {
+                                                address.WardName, address.DistrictName, address.CityName
+                                                }.Where(s => !string.IsNullOrWhiteSpace(s)));
+                                }
+                                @fullAddress
                             </td>
-                            <td>@address.Discription</td>
+                            <td>@address.Description</td>
                             <td>
-                                @if (address.Status == "Mặc định")
+                                @if (address.Status == AddressStatus.Default)
                                 {
                                     <span class="badge bg-success">Mặc định</span>
                                 }
@@ -77,23 +86,22 @@
                             </td>
                             <td class="text-center">
                                 <div class="d-flex flex-column align-items-center gap-1">
-                                    <a asp-action="Edit" asp-route-id="@address.Id" class="btn btn-sm btn-outline-warning w-100">
+                                    <a asp-action="Edit" asp-route-id="@address.Id" class="btn btn-sm btn-outline-warning w-100" style="text-transform: capitalize;">
                                         <i class="bi bi-pencil-square"></i> Sửa
                                     </a>
-                                    <button type="button" class="btn btn-sm btn-outline-danger w-100"
+                                    <button type="button" class="btn btn-sm btn-outline-crimson w-100"
                                             data-bs-toggle="modal"
                                             data-bs-target="#deleteConfirmModal"
-                                            data-id="@address.Id">
+                                            data-id="@address.Id" style="text-transform: capitalize;">
                                         <i class="bi bi-trash3"></i> Xoá
                                     </button>
 
-
-                                    @if (address.Status != "Mặc định")
+                                    @if (address.Status != AddressStatus.Default)
                                     {
-                                        <button type="button" class="btn btn-sm btn-outline-primary w-100"
+                                        <button type="button" class="btn btn-sm btn-outline-success w-100"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#confirmSetDefaultModal"
-                                                data-id="@address.Id">
+                                                data-id="@address.Id" style="text-transform: capitalize;">
                                             <i class="bi bi-bookmark-heart"></i> Mặc định
                                         </button>
                                     }
@@ -101,61 +109,56 @@
                             </td>
                         </tr>
                         index++;
-                    } *@
+                    }
                 }
                 else
                 {
                     <tr>
-                        <td colspan="5" class="text-center">Không có địa chỉ nào được tìm thấy.</td>
+                        <td colspan="7" class="text-center">Không có địa chỉ nào được tìm thấy.</td>
                     </tr>
                 }
             </tbody>
-
         </table>
     </div>
+
     <!-- Modal xác nhận xoá -->
     <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title" id="deleteConfirmModalLabel">Xác nhận xoá</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                <div class="modal-header bg-crimson text-white">
+                    <h5 class="modal-title">Xác nhận xoá</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">Bạn có chắc chắn muốn xoá địa chỉ này không?</div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="text-transform: capitalize;">Đóng</button>
+                    <a href="#" class="btn btn-crimson" id="confirmDeleteBtn" style="text-transform: capitalize;">Xoá</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal xác nhận đặt mặc định -->
+    <div class="modal fade" id="confirmSetDefaultModal" tabindex="-1" aria-labelledby="confirmSetDefaultModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Xác nhận mặc định</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    Bạn có chắc chắn muốn xoá địa chỉ này không?
+                    Bạn có chắc chắn muốn đặt địa chỉ này làm <strong>mặc định</strong> không?
                 </div>
                 <div class="modal-footer">
-                    <a href="#" class="btn btn-danger" id="confirmDeleteBtn">Xoá</a>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huỷ</button>
+                    <form id="setDefaultForm" method="post">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal" style="text-transform: capitalize;">Đóng</button>
+                        <button type="submit" class="btn btn-success" style="text-transform: capitalize;">Đặt làm mặc định</button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
-
-
 </div>
-
-<!-- Modal xác nhận đặt mặc định -->
-<div class="modal fade" id="confirmSetDefaultModal" tabindex="-1" aria-labelledby="confirmSetDefaultModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="confirmSetDefaultModalLabel">Xác nhận đặt làm mặc định</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
-            </div>
-            <div class="modal-body">
-                Bạn có chắc chắn muốn đặt địa chỉ này làm <strong>mặc định</strong> không?
-            </div>
-            <div class="modal-footer">
-                <form id="setDefaultForm" method="post">
-                    <button type="submit" class="btn btn-primary">Có, đặt làm mặc định</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huỷ</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
 
 <script>
     function removeVietnameseTones(str) {
@@ -164,37 +167,45 @@
         return str;
     }
 
-    document.getElementById('searchInput').addEventListener('input', function () {
-        const keyword = removeVietnameseTones(this.value.toLowerCase().trim());
-        const rows = document.querySelectorAll('.address-row');
-
-        rows.forEach(row => {
-            const rowText = removeVietnameseTones(row.innerText.toLowerCase());
-            row.style.display = rowText.includes(keyword) ? '' : 'none';
-        });
-    });
-
     document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', function () {
+                const keyword = removeVietnameseTones(this.value.toLowerCase().trim());
+                const rows = document.querySelectorAll('.address-row');
+
+                rows.forEach(row => {
+                    const rowText = removeVietnameseTones(row.innerText.toLowerCase());
+                    row.style.display = rowText.includes(keyword) ? '' : 'none';
+                });
+            });
+        }
+
         const deleteModal = document.getElementById('deleteConfirmModal');
         const confirmBtn = document.getElementById('confirmDeleteBtn');
 
-        deleteModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget;
-            const addressId = button.getAttribute('data-id');
-            const deleteUrl = `/Address/Delete/${addressId}`;
-            confirmBtn.setAttribute('href', deleteUrl);
-        });
-    });
+        if (deleteModal && confirmBtn) {
+            deleteModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const addressId = button?.getAttribute('data-id');
+                if (addressId) {
+                    const deleteUrl = `/Address/Delete/${addressId}`;
+                    confirmBtn.setAttribute('href', deleteUrl);
+                }
+            });
+        }
 
-    document.addEventListener('DOMContentLoaded', function () {
         const defaultModal = document.getElementById('confirmSetDefaultModal');
         const defaultForm = document.getElementById('setDefaultForm');
 
-        defaultModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget;
-            const addressId = button.getAttribute('data-id');
-            defaultForm.setAttribute('action', `/Address/SetDefault/${addressId}`);
-        });
+        if (defaultModal && defaultForm) {
+            defaultModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const addressId = button?.getAttribute('data-id');
+                if (addressId) {
+                    defaultForm.setAttribute('action', `/Address/SetDefault/${addressId}`);
+                }
+            });
+        }
     });
 </script>
-

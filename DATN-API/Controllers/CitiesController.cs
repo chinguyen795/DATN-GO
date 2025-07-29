@@ -41,15 +41,35 @@ namespace DATN_API.Controllers
         }
 
         // POST: api/cities
+
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Cities model)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            if (model.Id == 0)
+                return BadRequest("City.Id bắt buộc phải truyền vào vì dùng shared primary key.");
+
+            if (string.IsNullOrWhiteSpace(model.CityName))
+                return BadRequest("Tên thành phố không được để trống.");
+
             _context.Cities.Add(model);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetById), new { id = model.Id }, model);
+
+            return Ok(model);
         }
+
+
+        //[HttpPost]
+        //public async Task<IActionResult> Create([FromBody] Cities model)
+        //{
+        //    if (!ModelState.IsValid)
+        //        return BadRequest(ModelState);
+        //    _context.Cities.Add(model);
+        //    await _context.SaveChangesAsync();
+        //    return CreatedAtAction(nameof(GetById), new { id = model.Id }, model);
+        //}
+
+
+
 
         // PUT: api/cities/5
         [HttpPut("{id}")]
@@ -76,96 +96,6 @@ namespace DATN_API.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
-
-        // // API để lấy tỉnh/thành phố từ Mapbox và lưu vào DB
-        // [HttpPost("import-cities")]
-        // public async Task<IActionResult> ImportCitiesFromJson()
-        // {
-        //     var filePath = Path.Combine(Directory.GetCurrentDirectory(), "tree_mien_nam.json");
-
-        //     if (!System.IO.File.Exists(filePath))
-        //         return NotFound("File tree_mien_nam.json không tồn tại.");
-
-        //     var json = await System.IO.File.ReadAllTextAsync(filePath);
-
-        //     List<CityDto>? cityDtos;
-        //     try
-        //     {
-        //         cityDtos = JsonSerializer.Deserialize<List<CityDto>>(json);
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         return BadRequest($"Lỗi khi đọc JSON: {ex.Message}");
-        //     }
-
-        //     if (cityDtos == null || !cityDtos.Any())
-        //         return BadRequest("Dữ liệu JSON rỗng hoặc không hợp lệ.");
-
-        //     // 👉 Lấy danh sách tất cả userId hiện có trong hệ thống
-        //     var userIds = await _context.Users.Select(u => u.Id).ToListAsync();
-        //     if (!userIds.Any())
-        //         return BadRequest("Không có user nào trong hệ thống để gán.");
-
-        //     var random = new Random();
-        //     int count = 0;
-
-        //     foreach (var dto in cityDtos)
-        //     {
-        //         if (_context.Cities.Any(c => c.CityName == dto.CityName))
-        //             continue;
-
-        //         // 👉 Chọn ngẫu nhiên một UserId
-        //         int randomUserId = userIds[random.Next(userIds.Count)];
-
-        //         var address = new Addresses
-        //         {
-        //             UserId = randomUserId,
-        //             Longitude = 0,
-        //             Latitude = 0,
-        //             Name = $"Địa chỉ {dto.CityName}",
-        //             Phone = "0000000000",
-        //             Description = $"Tự động tạo cho {dto.CityName}",
-        //             Status = AddressStatus.Default
-        //         };
-
-        //         _context.Addresses.Add(address);
-        //         await _context.SaveChangesAsync(); // để lấy được address.Id
-
-        //         var city = new Cities
-        //         {
-        //             CityName = dto.CityName,
-        //             Id = address.Id
-        //         };
-
-        //         _context.Cities.Add(city);
-        //         count++;
-        //     }
-
-        //     // ❗Tuỳ logic bạn muốn — giữ lại đoạn này nếu bạn vẫn muốn xóa các địa chỉ vừa tạo
-        //     var autoAddresses = await _context.Addresses
-        //         .Where(a => a.Description.StartsWith("Tự động tạo cho"))
-        //         .ToListAsync();
-
-
-        //     return Ok(new { message = $"Đã lưu {count} tỉnh/thành phố vào hệ thống." });
-        // }
-        public class CityDto
-        {
-            public string CityName { get; set; } = string.Empty;
-            public List<DistrictDto> Districts { get; set; } = new();
-        }
-
-        public class DistrictDto
-        {
-            public string DistrictName { get; set; } = string.Empty;
-            public List<WardDto> Wards { get; set; } = new();
-        }
-
-        public class WardDto
-        {
-            public string WardName { get; set; } = string.Empty;
-        }
-
 
         //Trả danh sách huyện theo tỉnh
         [HttpGet("city/{cityId}")]

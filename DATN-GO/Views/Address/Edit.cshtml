@@ -1,14 +1,12 @@
-﻿@model DATN_GO.Models.Addresses
+﻿@model DATN_GO.ViewModels.Address.AddressEditViewModel
 @{
-    ViewData["Title"] = "Sửa địa chỉ";
+    ViewData["Title"] = "SỬA ĐỊA CHỈ";
 }
 
 <!-- Mapbox CSS -->
 <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
 
-<div class="container py-4">
-    <h3 class="text-center mb-4">@ViewData["Title"]</h3>
-
+<div class="container">
     @if (TempData["Success"] != null)
     {
         <div class="alert alert-success text-center fade show" id="successMessage" role="alert">
@@ -25,82 +23,122 @@
         </script>
     }
 
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card shadow-sm">
+    <div class="row justify-content-center mb-4">
+        <div class="col-12 col-md-10 col-lg-10 col-xl-10">
+            <div class="card border border-2 rounded-3">
                 <div class="card-body">
+
+                    <!-- ✅ Tiêu đề ở giữa -->
+                    <h3 class="text-center mb-3">@ViewData["Title"]</h3>
+
+                    <!-- ✅ Nút quay về bên trái -->
+                    <div class="mb-4">
+                        <a asp-action="Address" class="btn btn-light" style="text-transform: capitalize;">
+                            <i class="bi bi-arrow-left"></i> Quay về danh sách
+                        </a>
+                    </div>
+
                     <form asp-action="Edit" method="post">
-                        <input type="hidden" asp-for="Id" />
+                        <input asp-for="Id" type="hidden" />
+                        <input asp-for="UserId" type="hidden" />
+                        <input asp-for="CityName" id="CityName" type="hidden" />
+                        <input asp-for="DistrictName" id="DistrictName" type="hidden" />
+                        <input asp-for="WardName" id="WardName" type="hidden" />
+                        <input asp-for="CityId" id="CityId" type="hidden" />
+                        <input asp-for="DistrictId" id="DistrictId" type="hidden" />
+                        <input asp-for="WardId" id="WardId" type="hidden" />
+
+
+
 
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label class="form-label">Tên người dùng</label>
-                                <input type="text" class="form-control" name="DisplayName" value="@ViewBag.CurrentUserName" />
+                                <label asp-for="Name" class="form-label">Tên người dùng</label>
+                                <input asp-for="Name" class="form-control" placeholder="Nhập tên người nhận..." />
+                                <div id="nameError" class="text-danger small mt-1">Vui lòng nhập tên người nhận</div>
                             </div>
-                            <input type="hidden" asp-for="UserId" />
+                            <div class="col-md-6">
+                                <label asp-for="Phone" class="form-label">Số điện thoại</label>
+                                <input asp-for="Phone" class="form-control" placeholder="Nhập sđt..." />
+                                <div id="phoneError" class="text-danger small mt-1"> Vui lòng nhập số điện thoại </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
                             <div class="col-md-6">
                                 <label asp-for="Status" class="form-label">Trạng thái</label>
                                 <select asp-for="Status" class="form-control">
-                                    <option value="Mặc định">Mặc định</option>
-                                    <option value="Không mặc định">Không mặc định</option>
+                                    <option value="@((int)AddressStatus.Default)">Mặc định</option>
+                                    <option value="@((int)AddressStatus.NotDefault)">Không mặc định</option>
                                 </select>
                                 <span asp-validation-for="Status" class="text-danger"></span>
                             </div>
                         </div>
 
                         <div class="row mb-3">
+                            <!-- CITY -->
                             <div class="col-md-4">
                                 <label class="form-label">Tỉnh / Thành phố</label>
-                                <select id="city" class="form-control">
+                                <select id="city" class="form-control" data-selected="1">
                                     <option value="">-- Chọn tỉnh --</option>
                                 </select>
+                                <div id="cityError" class="text-danger small mt-1 d-none">Vui lòng chọn Tỉnh / Thành phố</div>
+                                <input type="hidden" name="city" id="cityText" />
+                                <input type="hidden" name="hiddenCity" id="hiddenCity" />
                             </div>
+
+                            <!-- DISTRICT -->
                             <div class="col-md-4">
                                 <label class="form-label">Quận / Huyện</label>
-                                <select id="district" class="form-control">
+                                <select id="district" class="form-control" data-selected="2">
                                     <option value="">-- Chọn huyện --</option>
                                 </select>
+                                <div id="districtError" class="text-danger small mt-1 d-none">Vui lòng chọn Quận / Huyện</div>
+                                <input type="hidden" name="district" id="districtText" />
+                                <input type="hidden" name="hiddenDistrict" id="hiddenDistrict" />
                             </div>
+
+                            <!-- WARD -->
                             <div class="col-md-4">
                                 <label class="form-label">Phường / Xã</label>
-                                <select id="ward" class="form-control">
+                                <select id="ward" class="form-control" data-selected="3">
                                     <option value="">-- Chọn xã --</option>
                                 </select>
+                                <div id="wardError" class="text-danger small mt-1 d-none">Vui lòng chọn Phường / Xã</div>
+                                <input type="hidden" name="ward" id="wardText" />
+                                <input type="hidden" name="hiddenWard" id="hiddenWard" />
                             </div>
                         </div>
 
-                       @*  <div class="mb-3">
-                            <label class="form-label">Địa chỉ</label>
-                            <input asp-for="Discription" class="form-control" readonly />
-                        </div> *@
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">Mô tả</label>
+                            <input asp-for="Description" class="form-control" placeholder="Nhập mô tả..." />
+                            <div id="descriptionError" class="text-danger small mt-1"> Vui lòng nhập tên mô tả </div>
+                        </div>
 
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <input type="hidden" asp-for="Latitude" class="form-control" />
+                                <input type="hidden" asp-for="Latitude" />
                                 <span asp-validation-for="Latitude" class="text-danger"></span>
                             </div>
                             <div class="col-md-6">
-                                <input type="hidden" asp-for="Longitude" class="form-control" />
+                                <input type="hidden" asp-for="Longitude" />
                                 <span asp-validation-for="Longitude" class="text-danger"></span>
                             </div>
                         </div>
 
-                        <div class="d-flex justify-content-between mt-4">
-                            <a asp-action="Address" class="btn btn-secondary">
-                                <i class="bi bi-arrow-left"></i> Quay về danh sách
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-save"></i> Lưu thay đổi
+                        <div class="d-flex justify-content-center mt-4">
+                            <button id="submitBtn" type="submit" class="btn btn-outline-danger" style="text-transform: capitalize;">
+                                <span class="spinner-border spinner-border-sm d-none" id="loadingSpinner" role="status" aria-hidden="true"></span>
+                                <span id="btnText"><i class="bi bi-save"></i> Lưu thay đổi</span>
                             </button>
                         </div>
-
-
                     </form>
                 </div>
             </div>
 
-            <!-- Map -->
-            <div id="map" class="mt-4 rounded border shadow-sm" style="height: 400px;"></div>
+            <!-- Bản đồ -->
+            <div id="map" class="mt-4 border border-2 rounded-3" style="height: 400px;"></div>
         </div>
     </div>
 </div>
@@ -134,7 +172,6 @@
 </div>
 
 
-
 <!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
@@ -142,138 +179,274 @@
 <script>
     mapboxgl.accessToken = 'pk.eyJ1IjoiaG9hbmdraGFuZzE2MDIiLCJhIjoiY21hYXViNTcyMDdwODJrc2N1bmVwY3h6eiJ9.MgDmLsya34LTrqNPE7WiLw';
 
-    let map;
-    let marker;
+    let map, marker;
+    let allCities = [];
+    let isValid = true;
+    $(document).ready(async function () {
+        await loadAllLocations(); 
+        const cityId = parseInt($('#city').data('selected')) || 0;
+        const districtId = parseInt($('#district').data('selected')) || 0;
+        const wardId = parseInt($('#ward').data('selected')) || 0;
+
+        if (cityId) {
+            await loadCities(cityId);
+            const city = allCities.find(c => c.id === cityId);
+            if (city) {
+                await loadDistricts(city, districtId);
+                const district = city.districts.find(d => d.id === districtId);
+                if (district) {
+                    await loadWards(district, wardId);
+                    const ward = district.wards.find(w => w.id === wardId);
+
+                    if (city && district && ward) {
+                        $('#cityText').val(city.cityName);
+                        $('#districtText').val(district.districtName);
+                        $('#wardText').val(ward.wardName);
+                    }
+                }
+            }
+        } else {
+            await loadCities(0);
+        }
+
+
+        $('#city').on('change', function () {
+            const selectedCityId = parseInt($(this).val()) || 0;
+            const city = allCities.find(c => c.id === selectedCityId);
+
+            $('#CityId').val(selectedCityId);
+            $('#cityText').val($('#city option:selected').text());
+            $('#hiddenCity').val($('#city option:selected').text());
+
+            resetDropdown('#district', '-- Chọn huyện --');
+            resetDropdown('#ward', '-- Chọn xã --');
+            $('#districtText, #wardText, #hiddenDistrict, #hiddenWard').val('');
+            $('#DistrictId, #WardId').val('');
+
+            if (city) loadDistricts(city, 0);
+        });
+
+        $('#district').on('change', function () {
+            const selectedCityId = parseInt($('#city').val()) || 0;
+            const selectedDistrictId = parseInt($(this).val()) || 0;
+            const city = allCities.find(c => c.id === selectedCityId);
+            const district = city?.districts.find(d => d.id === selectedDistrictId);
+
+            $('#DistrictId').val(selectedDistrictId);
+            $('#districtText').val($('#district option:selected').text());
+            $('#hiddenDistrict').val($('#district option:selected').text());
+
+            $('#wardText, #WardId, #hiddenWard').val('');
+            resetDropdown('#ward', '-- Chọn xã --');
+
+            if (district) loadWards(district, 0);
+        });
+
+        $('#ward').on('change', function () {
+            const selectedWardId = parseInt($(this).val()) || 0;
+            const wardText = $('#ward option:selected').text();
+            const districtText = $('#district option:selected').text();
+            const cityText = $('#city option:selected').text();
+
+            $('#WardId').val(selectedWardId);
+            $('#wardText').val(wardText);
+            $('#districtText').val(districtText);
+            $('#cityText').val(cityText);
+
+            $('#hiddenWard').val(wardText);
+            $('#hiddenDistrict').val(districtText);
+            $('#hiddenCity').val(cityText);
+
+            if (wardText && districtText && cityText) {
+                const full = `${wardText}, ${districtText}, ${cityText}`;
+                getCoordinatesFromAddress(full);
+            }
+        });
+
+        const defaultLat = 10.762622;
+        const defaultLon = 106.660172;
+        $('#Latitude').val(defaultLat);
+        $('#Longitude').val(defaultLon);
+        updateMap(defaultLat, defaultLon);
+
+        // 👉 Validate real-time + submit
+        $('.text-danger').hide();
+
+        const validateField = (selector, errorId, options = {}) => {
+            const $field = $(selector);
+            let val = $field.val()?.trim();
+            let error = "";
+
+            if (!val) error = options.emptyMsg || "Trường này là bắt buộc";
+
+            if (options.type === 'phone' && val) {
+                const phoneRegex = /^(0|\+84)[1-9][0-9]{8,9}$/;
+                if (!phoneRegex.test(val)) error = "Số điện thoại không hợp lệ";
+            }
+
+            if (options.type === 'description' && val) {
+                if (val.length < 6) error = "Mô tả phải có ít nhất 6 ký tự";
+                else if (/[^a-zA-Z0-9À-ỹà-ỹ\s.,!?()\-]/g.test(val)) error = "Mô tả không được chứa ký tự đặc biệt";
+            }
+
+            if (error) {
+                $(errorId).text(error).removeClass('d-none').show();
+                isValid = false;
+
+                $field.off('.realtime').on('input.realtime change.realtime', () => {
+                    validateField(selector, errorId, options);
+                });
+            } else {
+                $(errorId).hide().addClass('d-none');
+                $field.off('.realtime');
+            }
+        };
+
+        $('form').on('submit', function (e) {
+            isValid = true;
+
+            validateField('input[name="Name"]', '#nameError', {
+                emptyMsg: 'Vui lòng nhập tên người nhận'
+            });
+
+            validateField('input[name="Phone"]', '#phoneError', {
+                emptyMsg: 'Vui lòng nhập số điện thoại',
+                type: 'phone'
+            });
+
+            validateField('#Description', '#descriptionError', {
+                emptyMsg: 'Vui lòng nhập mô tả',
+                type: 'description'
+            });
+
+            validateField('#city', '#cityError', {
+                emptyMsg: 'Vui lòng chọn Tỉnh / Thành phố'
+            });
+
+            validateField('#district', '#districtError', {
+                emptyMsg: 'Vui lòng chọn Quận / Huyện'
+            });
+
+            validateField('#ward', '#wardError', {
+                emptyMsg: 'Vui lòng chọn Phường / Xã'
+            });
+
+            if (!isValid) {
+                e.preventDefault();
+                return;
+            }
+
+            $('#CityName').val($('#hiddenCity').val());
+            $('#DistrictName').val($('#hiddenDistrict').val());
+            $('#WardName').val($('#hiddenWard').val());
+
+            $('#submitBtn').prop('disabled', true);
+            $('#loadingSpinner').removeClass('d-none');
+            $('#btnText').text(" Đang lưu...");
+        });
+    });
+
+    // Helpers
+    async function loadAllLocations() {
+        const res = await fetch('/data/locations.json');
+        if (!res.ok) return console.error("❌ Không thể load locations.json");
+
+        const rawData = await res.json();
+
+        allCities = rawData.map((c, i) => ({
+            id: i + 1,
+            cityName: c.CityName,
+            districts: c.Districts.map((d, j) => ({
+                id: j + 1,
+                districtName: d.DistrictName,
+                wards: d.Wards.map((w, k) => ({
+                    id: k + 1,
+                    wardName: w.WardName
+                }))
+            }))
+        }));
+    }
+
+    async function loadCities(selectedId) {
+        resetDropdown('#city', '-- Chọn tỉnh --');
+        allCities.forEach(c => {
+            const selected = c.id === selectedId ? 'selected' : '';
+            $('#city').append(`<option value="${c.id}" ${selected}>${c.cityName}</option>`);
+        });
+
+        const selectedCity = allCities.find(c => c.id === selectedId);
+        if (selectedCity) {
+            $('#cityText').val(selectedCity.cityName);
+            $('#hiddenCity').val(selectedCity.cityName);
+        }
+    }
+
+    async function loadDistricts(city, selectedId) {
+        resetDropdown('#district', '-- Chọn huyện --');
+        city.districts.forEach(d => {
+            const selected = d.id === selectedId ? 'selected' : '';
+            $('#district').append(`<option value="${d.id}" ${selected}>${d.districtName}</option>`);
+        });
+
+        const selectedDistrict = city.districts.find(d => d.id === selectedId);
+        if (selectedDistrict) {
+            $('#districtText').val(selectedDistrict.districtName);
+            $('#hiddenDistrict').val(selectedDistrict.districtName);
+        }
+    }
+
+    async function loadWards(district, selectedId) {
+        resetDropdown('#ward', '-- Chọn xã --');
+        district.wards.forEach(w => {
+            const selected = w.id === selectedId ? 'selected' : '';
+            $('#ward').append(`<option value="${w.id}" ${selected}>${w.wardName}</option>`);
+        });
+
+        const selectedWard = district.wards.find(w => w.id === selectedId);
+        if (selectedWard) {
+            $('#wardText').val(selectedWard.wardName);
+            $('#hiddenWard').val(selectedWard.wardName);
+        }
+    }
 
     function resetDropdown(selector, placeholder) {
         $(selector).html(`<option value="">${placeholder}</option>`);
     }
 
     function getCoordinatesFromAddress(address) {
-        const encoded = encodeURIComponent(address);
-        const url = `https://nominatim.openstreetmap.org/search?q=${encoded}&format=json`;
-
+        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json`;
         fetch(url)
             .then(res => res.json())
             .then(data => {
                 if (data.length > 0) {
-                    const lat = data[0].lat;
-                    const lon = data[0].lon;
+                    const lat = parseFloat(data[0].lat);
+                    const lon = parseFloat(data[0].lon);
                     $('#Latitude').val(lat);
                     $('#Longitude').val(lon);
                     updateMap(lat, lon);
-                } else {
-                    alert("Không tìm thấy tọa độ.");
                 }
             });
     }
 
     function updateMap(lat, lon) {
-        const lng = parseFloat(lon);
-        const latitude = parseFloat(lat);
+        lat = parseFloat(lat);
+        lon = parseFloat(lon);
 
         if (!map) {
             map = new mapboxgl.Map({
                 container: 'map',
                 style: 'mapbox://styles/mapbox/streets-v12',
-                center: [lng, latitude],
-                zoom: 15,
-                pitch: 60,
-                bearing: -45,
-                antialias: true
+                center: [lon, lat],
+                zoom: 15
             });
             map.addControl(new mapboxgl.NavigationControl());
         } else {
-            map.flyTo({ center: [lng, latitude], essential: true });
+            map.flyTo({ center: [lon, lat], essential: true });
         }
 
         if (marker) marker.remove();
-
-        marker = new mapboxgl.Marker({ color: 'red' })
-            .setLngLat([lng, latitude])
-            .addTo(map);
+        marker = new mapboxgl.Marker({ color: 'red' }).setLngLat([lon, lat]).addTo(map);
     }
 
-    $(document).ready(function () {
-        const discription = $('#Discription').val() || "";
-        const parts = discription.split(',').map(s => s.trim());
 
-        const selectedWard = parts[0];
-        const selectedDistrict = parts[1];
-        const selectedCity = parts[2];
-
-        // Load JSON từ file
-        $.getJSON("/data/locations.json", function (data) {
-            data.forEach(city => {
-                const isSelected = city.CityName === selectedCity ? "selected" : "";
-                $('#city').append(`<option value="${city.CityName}" ${isSelected}>${city.CityName}</option>`);
-            });
-
-            const city = data.find(c => c.CityName === selectedCity);
-            if (city && city.Districts) {
-                city.Districts.forEach(d => {
-                    const isSelected = d.DistrictName === selectedDistrict ? "selected" : "";
-                    $('#district').append(`<option value="${d.DistrictName}" ${isSelected}>${d.DistrictName}</option>`);
-                });
-
-                const district = city.Districts.find(d => d.DistrictName === selectedDistrict);
-                if (district && district.Wards) {
-                    district.Wards.forEach(w => {
-                        const isSelected = w.WardName === selectedWard ? "selected" : "";
-                        $('#ward').append(`<option value="${w.WardName}" ${isSelected}>${w.WardName}</option>`);
-                    });
-                }
-            }
-        });
-
-        $('#city').on('change', function () {
-            const selectedCity = $(this).val();
-            resetDropdown('#district', '-- Chọn huyện --');
-            resetDropdown('#ward', '-- Chọn xã --');
-
-            $.getJSON("/data/locations.json", function (data) {
-                const city = data.find(c => c.CityName === selectedCity);
-                if (city?.Districts) {
-                    city.Districts.forEach(d => {
-                        $('#district').append(`<option value="${d.DistrictName}">${d.DistrictName}</option>`);
-                    });
-                }
-            });
-        });
-
-        $('#district').on('change', function () {
-            const selectedCity = $('#city').val();
-            const selectedDistrict = $(this).val();
-            resetDropdown('#ward', '-- Chọn xã --');
-
-            $.getJSON("/data/locations.json", function (data) {
-                const city = data.find(c => c.CityName === selectedCity);
-                const district = city?.Districts.find(d => d.DistrictName === selectedDistrict);
-
-                if (district?.Wards) {
-                    district.Wards.forEach(w => {
-                        $('#ward').append(`<option value="${w.WardName}">${w.WardName}</option>`);
-                    });
-                }
-            });
-        });
-
-        $('#ward').on('change', function () {
-            const ward = $('#ward').val();
-            const district = $('#district').val();
-            const city = $('#city').val();
-
-            const full = `${ward}, ${district}, ${city}`;
-            $('#Discription').val(full);
-            getCoordinatesFromAddress(full);
-        });
-
-        // Load bản đồ
-        const lat = $('#Latitude').val();
-        const lon = $('#Longitude').val();
-        if (lat && lon) {
-            updateMap(lat, lon);
-        }
-    });
 </script>
-
