@@ -16,16 +16,40 @@ namespace DATN_GO.Areas.Seller.Controllers
             _voucherService = voucherService;
             _userService = userService;
         }
+        // Kiểm tra vai trò trước khi vào area Seller
+        private async Task<bool> IsUserSeller(int userId)
+        {
+            var user = await _userService.GetUserByIdAsync(userId);
+            return user != null && user.RoleId == 2;
+        }
+
         public async Task<IActionResult> Voucher(string search, string sort, int page = 1, int pageSize = 4)
         {
             var userId = HttpContext.Session.GetString("Id");
 
             if (string.IsNullOrEmpty(userId))
             {
-                TempData["ToastMessage"] = "Vui lòng đăng nhập hoặc đăng ký trước khi truy cập trang này!";
+                TempData["ToastMessage"] = "Vui lòng đăng nhập để tiếp tục!";
                 TempData["ToastType"] = "error";
                 return RedirectToAction("Index", "Home", new { area = "" });
             }
+
+            int userIdInt = Convert.ToInt32(userId);
+
+            // Kiểm tra nếu người dùng không phải Seller
+            if (!await IsUserSeller(userIdInt))
+            {
+                TempData["ToastMessage"] = "Bạn không có quyền truy cập vào trang này!";
+                TempData["ToastType"] = "error";
+                return RedirectToAction("Index", "Home", new { area = "" });
+            }
+
+            // Lấy StoreId và StoreName của người dùng đang đăng nhập
+            var storeInfo = await _voucherService.GetStoreInfoByUserIdAsync(userIdInt);
+
+            // Gán StoreId và StoreName vào ViewBag
+            ViewBag.StoreId = storeInfo.StoreId;
+            ViewBag.StoreName = storeInfo.StoreName;
 
             // Lấy toàn bộ voucher
             var vouchers = await _voucherService.GetAllVouchersAsync();
@@ -39,10 +63,6 @@ namespace DATN_GO.Areas.Seller.Controllers
                                 v.Quantity.ToString().Contains(search, StringComparison.OrdinalIgnoreCase))
                     .ToList();
             }
-
-            // 👤 Gán store name
-            var user = await _voucherService.GetUserByIdAsync(userId);
-            ViewBag.StoreName = user?.Store?.Name ?? "Huan Store";
 
             // 📦 Gán danh mục và store
             ViewBag.Categories = await _voucherService.GetAllCategoriesAsync();
@@ -65,16 +85,19 @@ namespace DATN_GO.Areas.Seller.Controllers
             int totalItems = vouchers.Count;
             int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
 
+            // Thay vì chuyển thành AnonymousType, bạn trả về danh sách Vouchers đã chuyển đổi
             var paginatedVouchers = vouchers
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToList();
 
+            // Cập nhật ViewBag cho các giá trị cần thiết
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = totalPages;
             ViewBag.Search = search;
             ViewBag.Sort = sort;
 
+            // Trả về danh sách Vouchers
             return View(paginatedVouchers);
         }
 
@@ -83,6 +106,13 @@ namespace DATN_GO.Areas.Seller.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddVoucher(Vouchers model)
         {
+            if (model == null)
+            {
+                TempData["Error"] = "Dữ liệu không hợp lệ!";
+                return RedirectToAction("Voucher");
+            }
+
+            // Gọi service để tạo voucher
             var result = await _voucherService.CreateVoucherAsync(model);
 
             if (result)
@@ -91,11 +121,12 @@ namespace DATN_GO.Areas.Seller.Controllers
             }
             else
             {
-                TempData["Error"] = "Thêm voucher thất bại!";
+                TempData["Error"] = "Vui lòng nhập đầy đủ thông tin và định dạng!";
             }
 
             return RedirectToAction("Voucher");
         }
+
 
         // GET: Lấy danh sách categories và stores
         public async Task<IActionResult> CreateVoucherModal()
@@ -142,6 +173,19 @@ namespace DATN_GO.Areas.Seller.Controllers
 
             return RedirectToAction("Voucher");
         }
+
+        // Logout
+        [HttpGet]
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+
+            TempData["ToastMessage"] = "Bạn đã đăng xuất thành công!";
+            TempData["ToastType"] = "success";
+
+            return RedirectToAction("Index", "Home", new { area = "" });
+        }
+
 
     }
 }

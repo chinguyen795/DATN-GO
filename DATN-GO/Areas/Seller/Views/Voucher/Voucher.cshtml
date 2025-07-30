@@ -6,7 +6,6 @@
     var currentPage = ViewBag.CurrentPage ?? 1;
     var totalPages = ViewBag.TotalPages ?? 1;
 }
-<!-- Custom Voucher Styles -->
 <style>
     .card.hover-shadow-lg {
         transition: all 0.3s ease;
@@ -289,33 +288,33 @@
 
                 <ul class="nav navbar-nav">
                     <li class="custom-dropdown">
-                        <a class="notify-toggler custom-dropdown-toggler" href="Notification.html">
+                        <a class="notify-toggler custom-dropdown-toggler" asp-controller="Notification" asp-action="Notification">
                             <i class="mdi mdi-bell-outline icon"></i>
                         </a>
                     </li>
                     <!-- User Account -->
                     <li class="dropdown user-menu">
                         <button class="dropdown-toggle nav-link" data-toggle="dropdown">
-                            <img src="~/images/avt-user.jpg" alt="User Profile" width="32" height="32"
-                                 style="object-fit: cover;" loading="lazy">
-                            <span class="d-none d-lg-inline-block">@ViewBag.StoreName</span> 
+                            <img src="~/images/avt-user.jpg" alt="User Profile" width="32" height="32" style="object-fit: cover;" loading="lazy">
+                            <span class="d-none d-lg-inline-block">@ViewBag.StoreName</span>  
                         </button>
                         <ul class="dropdown-menu dropdown-menu-right">
                             <li>
-                                <a class="dropdown-link-item" href="user-profile.html">
+                                <a class="dropdown-link-item" asp-controller="Profile" asp-action="Index" asp-area="">
                                     <i class="mdi mdi-account-outline"></i>
-                                    <span class="nav-text">Hồ Sơ</span>
+                                    <span class="nav-text">Hồ Sơ</span>
                                 </a>
                             </li>
+
                             <li class="dropdown-footer">
-                                <a class="dropdown-link-item" href="sign-in.html">
+                                <a class="dropdown-link-item" href="/Seller/Voucher/Logout">
                                     <i class="mdi mdi-logout"></i> Đăng Xuất
                                 </a>
                             </li>
                         </ul>
                     </li>
-
                 </ul>
+
             </div>
         </nav>
 
@@ -396,8 +395,8 @@
                                             <div class="p-3 flex-grow-1">
                                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                                     <div>
-                                                        <h5 class="card-title mb-1">Giảm @voucher.Reduce.ToString("N0")</h5>
-                                                        <p class="card-text text-muted mb-0">Đơn tối thiểu @voucher.MinOrder.ToString("N0")</p>
+                                                        <h5 class="card-title mb-1">Giảm @voucher.Reduce.ToString("#,0", new System.Globalization.CultureInfo("vi-VN"))</h5>
+                                                        <p class="card-text text-muted mb-0">Đơn tối thiểu @voucher.MinOrder.ToString("#,0", new System.Globalization.CultureInfo("vi-VN"))</p>
                                                     </div>
                                                     <div class="voucher-action d-flex gap-2">
                                                         <button type="button"
@@ -502,9 +501,9 @@
                         <label class="form-label" for="discountAmount">Mức Giảm Giá (VNĐ)</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-cash-coin"></i></span>
-                            <input type="number" class="form-control" id="discountAmount" name="Reduce" min="1000" required placeholder="Nhập số tiền giảm">
+                            <input type="number" class="form-control" id="discountAmount" name="Reduce" min="1000" placeholder="Nhập số tiền giảm">
                         </div>
-                        <div class="text-danger small mt-1" id="discountAmountError"></div>
+                        <div class="text-danger small mt-1" id="discountAmountError"></div> 
                     </div>
 
                     <!-- Đơn Hàng Tối Thiểu -->
@@ -512,9 +511,9 @@
                         <label class="form-label" for="minOrder">Đơn Hàng Tối Thiểu (VNĐ)</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-bag-check"></i></span>
-                            <input type="number" class="form-control" id="minOrder" name="MinOrder" min="0" required placeholder="Nhập giá trị đơn tối thiểu">
+                            <input type="number" class="form-control" id="minOrder" name="MinOrder" min="0" placeholder="Nhập giá trị đơn tối thiểu">
                         </div>
-                        <div class="text-danger small mt-1" id="minOrderError"></div>
+                        <div class="text-danger small mt-1" id="minOrderError"></div> 
                     </div>
 
                     <!-- Số Lượng -->
@@ -522,9 +521,9 @@
                         <label class="form-label" for="quantity">Số Lượng</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-list-ol"></i></span>
-                            <input type="number" class="form-control" id="quantity" name="Quantity" min="1" required placeholder="Nhập số lượng voucher">
+                            <input type="number" class="form-control" id="quantity" name="Quantity" min="1" placeholder="Nhập số lượng voucher">
                         </div>
-                        <div class="text-danger small mt-1" id="quantityError"></div>
+                        <div class="text-danger small mt-1" id="quantityError"></div> 
                     </div>
 
                     <!-- Thời Gian -->
@@ -533,30 +532,24 @@
                             <label class="form-label" for="startDate">Ngày Bắt Đầu</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
-                                <input type="date" class="form-control" id="startDate" name="StartDate" required>
+                                <input type="date" class="form-control" id="startDate" name="StartDate">
                             </div>
+                            <div class="text-danger small mt-1" id="startDateError"></div> 
                         </div>
                         <div class="col-md-6 mb-4">
                             <label class="form-label" for="endDate">Ngày Hết Hạn</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-calendar-x"></i></span>
-                                <input type="date" class="form-control" id="endDate" name="EndDate" required>
+                                <input type="date" class="form-control" id="endDate" name="EndDate">
                             </div>
+                            <div class="text-danger small mt-1" id="endDateError"></div> 
                         </div>
                     </div>
 
                     <!-- Trạng thái -->
-                    <div class="mb-4">
+                    <div class="mb-4" style="display: none;">
                         <label class="form-label" for="status">Trạng Thái</label>
-                        <div class="input-group status-toggle">
-                            <span class="input-group-text">
-                                <i id="statusIcon" class="bi bi-toggle-on"></i>
-                            </span>
-                            <select class="form-control" id="status" name="Status" onchange="updateStatusIcon()" required>
-                                <option value="1">Còn hạn</option>
-                                <option value="0">Hết hạn</option>
-                            </select>
-                        </div>
+                        <input type="hidden" id="status" name="Status" value="0" />
                     </div>
 
                     <!-- Danh mục -->
@@ -572,8 +565,12 @@
                                 }
                             </select>
                         </div>
-                        <div class="text-danger small mt-1" id="categoryIdError"></div>
+                        <div class="text-danger small mt-1" id="categoryIdError"></div> 
                     </div>
+
+                    <!-- Trường Ẩn VoucherType -->
+                    <input type="hidden" id="voucherType" name="Type" value="0" />
+                    <input type="hidden" name="StoreId" value="@ViewBag.StoreId" />
                 </div>
 
                 <div class="modal-footer">
@@ -581,6 +578,7 @@
                     <button type="submit" class="btn btn-danger btn-pill" style="text-transform: capitalize;">Thêm Voucher</button>
                 </div>
             </form>
+
         </div>
     </div>
 </div>
@@ -588,7 +586,7 @@
 
 
 
-<!-- Modal Chỉnh Sửa Voucher -->
+<!-- Modal Sửa Voucher -->
 <div class="modal fade" id="editVoucherModal" tabindex="-1" aria-labelledby="editVoucherModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -608,13 +606,11 @@
                     <div class="mb-4">
                         <label class="form-label" for="editDiscountAmount">
                             Mức Giảm Giá (VNĐ)
-                            <i class="bi bi-question-circle text-muted" data-bs-toggle="tooltip"
-                               title="Số tiền sẽ được giảm trừ từ tổng giá trị đơn hàng"></i>
                         </label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-cash-coin"></i></span>
                             <input type="number" name="Reduce" class="form-control" id="editDiscountAmount"
-                                   placeholder="Nhập số tiền giảm" required min="1000">
+                                   placeholder="Nhập số tiền giảm" required min="1000" step="0.01">
                         </div>
                         <div class="text-danger small mt-1" id="editDiscountAmountError"></div>
                     </div>
@@ -623,8 +619,6 @@
                     <div class="mb-4">
                         <label class="form-label" for="editMinOrder">
                             Đơn Hàng Tối Thiểu (VNĐ)
-                            <i class="bi bi-question-circle text-muted" data-bs-toggle="tooltip"
-                               title="Giá trị đơn hàng tối thiểu để áp dụng voucher"></i>
                         </label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-bag-check"></i></span>
@@ -638,8 +632,6 @@
                     <div class="mb-4">
                         <label class="form-label" for="editQuantity">
                             Số Lượng
-                            <i class="bi bi-question-circle text-muted" data-bs-toggle="tooltip"
-                               title="Số lượng voucher có thể sử dụng"></i>
                         </label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-list-ol"></i></span>
@@ -669,22 +661,12 @@
                     </div>
 
                     <!-- Trạng Thái -->
-                    <div class="mb-4">
-                        <label class="form-label" for="editStatus">Trạng Thái</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i id="editStatusIcon" class="bi bi-toggle-on"></i></span>
-                            <select class="form-control" name="Status" id="editStatus" onchange="updateEditStatusIcon()" required>
-                                <option value="1">Còn hạn</option>
-                                <option value="0">Hết hạn</option>
-                            </select>
-                        </div>
-                    </div>
-
+                    <input type="hidden" id="editStatus" name="Status" value="0" /> 
                     <!-- Danh Mục -->
                     <div class="mb-4">
                         <label class="form-label" for="editCategoryId">Danh mục</label>
                         <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-tags-fill"></i></span>
+                            <span class="input-group-text"><i class="bi bi-tags"></i></span>
                             <select class="form-control" name="CategoryId" id="editCategoryId">
                                 <option value="">-- Chọn danh mục --</option>
                                 @foreach (var cat in ViewBag.Categories)
@@ -707,6 +689,7 @@
                     </button>
                 </div>
             </form>
+
         </div>
     </div>
 </div>
@@ -862,70 +845,82 @@
              });
          });
 
-        // 🟢 THÊM VOUCHER
-        async function submitProductEdit() {
-            const voucher = {
-                Reduce: parseFloat(document.getElementById("discountAmount").value),
-                MinOrder: parseFloat(document.getElementById("minOrder").value),
-                Quantity: parseInt(document.getElementById("quantity").value),
-                StartDate: document.getElementById("startDate").value,
-                EndDate: document.getElementById("endDate").value,
-                Type: parseInt(document.getElementById("voucherType").value),
-                CategoryId: parseInt(document.getElementById("categoryId").value) || null,
-                StoreId: parseInt(document.getElementById("storeId").value) || null,
-                Status: parseInt(document.getElementById("status").value)
-            };
+    // 🟢 THÊM VOUCHER
+    async function submitProductEdit() {
+        const voucherType = 0; 
 
-            const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
-            const token = tokenInput ? tokenInput.value : "";
+        // Lấy giá trị từ các trường input
+        const discountAmount = parseFloat(document.getElementById("discountAmount").value);
+        const minOrder = parseFloat(document.getElementById("minOrder").value);
+        const quantity = parseInt(document.getElementById("quantity").value);
+        const startDate = document.getElementById("startDate").value;
+        const endDate = document.getElementById("endDate").value;
+        const categoryId = parseInt(document.getElementById("categoryId").value) || null;
+        const storeId = parseInt(document.getElementById("storeId").value) || null;
+        const status = 1; // Trạng thái luôn set là "Còn hạn"
 
-            try {
-                const response = await fetch('/Seller/Voucher/AddVoucher', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'RequestVerificationToken': token
-                    },
-                    body: JSON.stringify(voucher)
-                });
-
-                if (response.ok) {
-                    // Cố gắng parse JSON và xử lý theo success
-                    try {
-                        const result = await response.json();
-
-                        if (result && result.success) {
-                            showToast("success", result.message || "Thêm voucher thành công!");
-
-                            const modal = bootstrap.Modal.getInstance(document.getElementById('addVoucherModal'));
-                            if (modal) {
-                                modal.hide();
-                                setTimeout(() => location.reload(), 1000);
-                            }
-                        } else {
-                            showToast("error", result.message || "Thêm voucher thất bại.");
-                        }
-                    } catch (jsonError) {
-                        // Nếu response không phải JSON
-                        const fallbackText = await response.text();
-                        showToast("error", fallbackText || "Đã xảy ra lỗi không xác định.");
-                    }
-                } else {
-                    // Nếu response không thành công (HTTP status != 200-299)
-                    const errorText = await response.text();
-                    showToast("error", errorText || "Có lỗi xảy ra khi gửi dữ liệu.");
-                }
-            } catch (e) {
-                console.error("❌ Lỗi khi gửi dữ liệu:", e);
-                showToast("error", "Có lỗi xảy ra khi gửi dữ liệu.");
-            }
+        // Kiểm tra tất cả các giá trị có hợp lệ không
+        if (isNaN(discountAmount) || isNaN(minOrder) || isNaN(quantity) || !startDate || !endDate || isNaN(status)) {
+            showToast("error", "Vui lòng kiểm tra lại thông tin trước khi gửi.");
+            return;
         }
 
+        const voucher = {
+            Reduce: discountAmount,
+            MinOrder: minOrder,
+            Quantity: quantity,
+            StartDate: startDate,
+            EndDate: endDate,
+            Type: voucherType,  // Set VoucherType là Platform (mã 0)
+            CategoryId: categoryId,
+            StoreId: storeId,
+            Status: status  // Trạng thái luôn là "Còn hạn"
+        };
+
+        const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+        const token = tokenInput ? tokenInput.value : "";
+
+        try {
+            const response = await fetch('/Seller/Voucher/AddVoucher', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': token
+                },
+                body: JSON.stringify(voucher)
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result && result.success) {
+                    showToast("success", result.message || "Thêm voucher thành công!");
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addVoucherModal'));
+                    if (modal) {
+                        modal.hide();
+                        setTimeout(() => location.reload(), 1000);
+                    }
+                } else {
+                    showToast("error", result.message || "Thêm voucher thất bại.");
+                }
+            } else {
+                const errorText = await response.text();
+                showToast("error", errorText || "Có lỗi xảy ra khi gửi dữ liệu.");
+            }
+        } catch (e) {
+            console.error("❌ Lỗi khi gửi dữ liệu:", e);
+            showToast("error", "Có lỗi xảy ra khi gửi dữ liệu.");
+        }
+    }
+
+
+
+
         // 🔄 ĐỔ DỮ LIỆU VÀO MODAL SỬA & XOÁ
-        document.addEventListener('DOMContentLoaded', () => {
-            // Sửa
+    document.addEventListener('DOMContentLoaded', () => {
+        // Khi mở modal sửa
         document.querySelectorAll('.btn-edit-voucher').forEach(button => {
             button.addEventListener('click', () => {
+                // Đổ dữ liệu vào các trường
                 document.getElementById("editVoucherId").value = button.dataset.id;
                 document.getElementById("editDiscountAmount").value = button.dataset.discount;
                 document.getElementById("editMinOrder").value = button.dataset.minorder;
@@ -933,57 +928,73 @@
                 document.getElementById("editStartDate").value = button.dataset.start;
                 document.getElementById("editEndDate").value = button.dataset.end;
 
-                // ➕ binding dropdowns
+                // Cập nhật dropdown Danh mục
+                updateCategoryDropdown(button.dataset.categoryid);  // Cập nhật đúng categoryId khi sửa
+
                 document.getElementById("editVoucherType").value = button.dataset.type;
-                document.getElementById("editCategoryId").value = button.dataset.categoryid || "";
                 document.getElementById("editStoreId").value = button.dataset.storeid || "";
-                        document.getElementById("editStatus").value = button.dataset.status || "1";
-            updateEditStatusIcon();
+                document.getElementById("editStatus").value = button.dataset.status || "1";
+                updateEditStatusIcon();
             });
         });
 
-
-            // Xoá
-            document.querySelectorAll('.btn-delete-voucher').forEach(button => {
-                button.addEventListener('click', () => {
-                    const voucherId = button.getAttribute("data-id");
-                    document.getElementById("deleteVoucherId").value = voucherId;
-                });
+        // Xoá
+        document.querySelectorAll('.btn-delete-voucher').forEach(button => {
+            button.addEventListener('click', () => {
+                const voucherId = button.getAttribute("data-id");
+                document.getElementById("deleteVoucherId").value = voucherId;
             });
         });
+    });
+
+    // Cập nhật giá trị danh mục trong dropdown khi sửa
+    function updateCategoryDropdown(selectedCategoryId) {
+        const categoryDropdown = document.getElementById("editCategoryId");
+        // Lặp qua tất cả các option trong dropdown và chọn option trùng với selectedCategoryId
+        Array.from(categoryDropdown.options).forEach(option => {
+            if (option.value === selectedCategoryId) {
+                option.selected = true; // Chọn option đúng
+            }
+        });
+    }
+
+
+
 
         // 📝 SỬA VOUCHER
-        async function submitVoucherUpdate() {
-            const voucher = {
-                Id: parseInt(document.getElementById("editVoucherId").value),
-                Reduce: parseFloat(document.getElementById("editDiscountAmount").value),
-                MinOrder: parseFloat(document.getElementById("editMinOrder").value),
-                Quantity: parseInt(document.getElementById("editQuantity").value),
-                StartDate: document.getElementById("editStartDate").value,
-                EndDate: document.getElementById("editEndDate").value,
-                Status: 0
-            };
+    async function submitVoucherUpdate() {
+        const voucher = {
+            Id: parseInt(document.getElementById("editVoucherId").value),
+            Reduce: parseFloat(document.getElementById("editDiscountAmount").value),
+            MinOrder: parseFloat(document.getElementById("editMinOrder").value),
+            Quantity: parseInt(document.getElementById("editQuantity").value),
+            StartDate: document.getElementById("editStartDate").value,
+            EndDate: document.getElementById("editEndDate").value,
+            Status: 0,  
+            Type: 0  
+        };
 
-            try {
-                const response = await fetch('/Seller/Voucher/UpdateVoucher', {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(voucher)
-                });
+        try {
+            const response = await fetch('/Seller/Voucher/UpdateVoucher', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(voucher)
+            });
 
-                if (response.ok) {
-                    location.reload();
-                } else {
-                    const err = await response.text();
-                    alert("Sửa thất bại: " + err);
-                }
-            } catch (e) {
-                console.error("Lỗi cập nhật:", e);
-                alert("Có lỗi xảy ra khi cập nhật dữ liệu.");
+            if (response.ok) {
+                location.reload();
+            } else {
+                const err = await response.text();
+                alert("Sửa thất bại: " + err);
             }
+        } catch (e) {
+            console.error("Lỗi cập nhật:", e);
+            alert("Có lỗi xảy ra khi cập nhật dữ liệu.");
         }
+    }
+
 
 
         // ❌ XOÁ VOUCHER
@@ -1119,155 +1130,212 @@
 
     // Bắt lỗi
 
-         // Real-time Validation - add
+    document.addEventListener('DOMContentLoaded', function() {
+        // Kích hoạt validation ngay khi trang được tải
+        validateDiscountAmount();
+        validateMinOrder();
+        validateQuantity();
+        validateCategoryId();
+        validateStartDate();
+        validateEndDate();
+    });
+
+    // Validation theo thời gian thực - add
     document.getElementById('discountAmount').addEventListener('input', validateDiscountAmount);
     document.getElementById('minOrder').addEventListener('input', validateMinOrder);
     document.getElementById('quantity').addEventListener('input', validateQuantity);
     document.getElementById('categoryId').addEventListener('change', validateCategoryId);
+    document.getElementById('startDate').addEventListener('input', validateStartDate);
+    document.getElementById('endDate').addEventListener('input', validateEndDate);
 
+    // Kiểm tra Mức Giảm Giá
     function validateDiscountAmount() {
-      const discountAmount = document.getElementById('discountAmount').value;
-      const discountError = document.getElementById('discountAmountError');
+        const discountAmount = document.getElementById('discountAmount').value;
+        const discountError = document.getElementById('discountAmountError');
 
-      if (discountAmount === '') {
-        discountError.innerText = 'Mức giảm giá không được để trống.';
-        discountError.classList.add('text-danger');
-        discountError.classList.remove('text-success');
-      } else if (discountAmount < 1000 || isNaN(discountAmount)) {
-        discountError.innerText = 'Mức giảm giá phải lớn hơn hoặc bằng 1000 VNĐ.';
-        discountError.classList.add('text-danger');
-        discountError.classList.remove('text-success');
-      } else {
-        discountError.innerText = 'Hợp lệ!';
-        discountError.classList.add('text-success');
-        discountError.classList.remove('text-danger');
-      }
+        if (discountAmount === '') {
+            discountError.innerText = 'Mức giảm giá không được để trống';
+            discountError.classList.add('text-danger');
+        } else if (discountAmount < 1000 || isNaN(discountAmount)) {
+            discountError.innerText = 'Mức giảm giá phải lớn hơn hoặc bằng 1000 VNĐ';
+            discountError.classList.add('text-danger');
+        } else {
+            discountError.innerText = '';
+            discountError.classList.remove('text-danger');
+        }
     }
 
+    // Kiểm tra Đơn Hàng Tối Thiểu
     function validateMinOrder() {
-      const minOrder = document.getElementById('minOrder').value;
-      const minOrderError = document.getElementById('minOrderError');
+        const minOrder = document.getElementById('minOrder').value;
+        const minOrderError = document.getElementById('minOrderError');
 
-      if (minOrder === '') {
-        minOrderError.innerText = 'Đơn hàng tối thiểu không được để trống.';
-        minOrderError.classList.add('text-danger');
-        minOrderError.classList.remove('text-success');
-      } else if (minOrder < 1 || isNaN(minOrder)) {
-        minOrderError.innerText = 'Đơn hàng tối thiểu phải là số và không nhỏ hơn 1.';
-        minOrderError.classList.add('text-danger');
-        minOrderError.classList.remove('text-success');
-      } else {
-        minOrderError.innerText = 'Hợp lệ!';
-        minOrderError.classList.add('text-success');
-        minOrderError.classList.remove('text-danger');
-      }
+        if (minOrder === '') {
+            minOrderError.innerText = 'Đơn hàng tối thiểu không được để trống';
+            minOrderError.classList.add('text-danger');
+        } else if (minOrder < 1 || isNaN(minOrder)) {
+            minOrderError.innerText = 'Đơn hàng tối thiểu phải là số và không nhỏ hơn 1';
+            minOrderError.classList.add('text-danger');
+        } else {
+            minOrderError.innerText = '';
+            minOrderError.classList.remove('text-danger');
+        }
     }
 
+    // Kiểm tra Số Lượng
     function validateQuantity() {
-      const quantity = document.getElementById('quantity').value;
-      const quantityError = document.getElementById('quantityError');
+        const quantity = document.getElementById('quantity').value;
+        const quantityError = document.getElementById('quantityError');
 
-      if (quantity === '') {
-        quantityError.innerText = 'Số lượng không được để trống.';
-        quantityError.classList.add('text-danger');
-        quantityError.classList.remove('text-success');
-      } else if (quantity < 1 || isNaN(quantity)) {
-        quantityError.innerText = 'Số lượng phải là số và không nhỏ hơn 1.';
-        quantityError.classList.add('text-danger');
-        quantityError.classList.remove('text-success');
-      } else {
-        quantityError.innerText = 'Hợp lệ!';
-        quantityError.classList.add('text-success');
-        quantityError.classList.remove('text-danger');
-      }
+        if (quantity === '') {
+            quantityError.innerText = 'Số lượng không được để trống';
+            quantityError.classList.add('text-danger');
+        } else if (quantity < 1 || isNaN(quantity)) {
+            quantityError.innerText = 'Số lượng phải là số và không nhỏ hơn 1';
+            quantityError.classList.add('text-danger');
+        } else {
+            quantityError.innerText = '';
+            quantityError.classList.remove('text-danger');
+        }
     }
 
+    // Kiểm tra Danh Mục
     function validateCategoryId() {
-      const categoryId = document.getElementById('categoryId').value;
-      const categoryError = document.getElementById('categoryIdError');
+        const categoryId = document.getElementById('categoryId').value;
+        const categoryError = document.getElementById('categoryIdError');
 
-      if (categoryId === '') {
-        categoryError.innerText = 'Vui lòng chọn danh mục.';
-        categoryError.classList.add('text-danger');
-        categoryError.classList.remove('text-success');
-      } else {
-        categoryError.innerText = 'Hợp lệ!';
-        categoryError.classList.add('text-success');
-        categoryError.classList.remove('text-danger');
-      }
+        if (categoryId === '') {
+            categoryError.innerText = 'Vui lòng chọn danh mục.';
+            categoryError.classList.add('text-danger');
+        } else {
+            categoryError.innerText = '';
+            categoryError.classList.remove('text-danger');
+        }
+    }
+
+    // Kiểm tra Ngày Bắt Đầu
+    function validateStartDate() {
+        const startDate = document.getElementById('startDate').value;
+        const startDateError = document.getElementById('startDateError');
+
+        if (startDate === '') {
+            startDateError.innerText = 'Ngày bắt đầu không được để trống';
+            startDateError.classList.add('text-danger');
+        } else {
+            startDateError.innerText = '';
+            startDateError.classList.remove('text-danger');
+        }
+    }
+
+    // Kiểm tra Ngày Hết Hạn
+    function validateEndDate() {
+        const endDate = document.getElementById('endDate').value;
+        const endDateError = document.getElementById('endDateError');
+
+        if (endDate === '') {
+            endDateError.innerText = 'Ngày hết hạn không được để trống';
+            endDateError.classList.add('text-danger');
+        } else {
+            endDateError.innerText = '';
+            endDateError.classList.remove('text-danger');
+        }
     }
 
 
 
+    // Real-time Validation for Edit Modal
+    document.getElementById('editDiscountAmount').addEventListener('input', validateEditDiscountAmount);
+    document.getElementById('editMinOrder').addEventListener('input', validateEditMinOrder);
+    document.getElementById('editQuantity').addEventListener('input', validateEditQuantity);
+    document.getElementById('editCategoryId').addEventListener('change', validateEditCategoryId);
+    document.getElementById('editStartDate').addEventListener('input', validateEditStartDate);  // Kiểm tra Ngày Bắt Đầu (edit)
+    document.getElementById('editEndDate').addEventListener('input', validateEditEndDate);  // Kiểm tra Ngày Hết Hạn (edit)
 
-                // Real-time Validation for Edit Modal
-          document.getElementById('editDiscountAmount').addEventListener('input', validateEditDiscountAmount);
-          document.getElementById('editMinOrder').addEventListener('input', validateEditMinOrder);
-          document.getElementById('editQuantity').addEventListener('input', validateEditQuantity);
-          document.getElementById('editCategoryId').addEventListener('change', validateEditCategoryId);
+    function validateEditDiscountAmount() {
+        const discountAmount = document.getElementById('editDiscountAmount').value;
+        const discountError = document.getElementById('editDiscountAmountError');
 
-          function validateEditDiscountAmount() {
-            const discountAmount = document.getElementById('editDiscountAmount').value;
-            const discountError = document.getElementById('editDiscountAmountError');
+        if (discountAmount === '') {
+            discountError.innerText = 'Mức giảm giá không được để trống';
+            discountError.classList.add('text-danger');
+        } else if (discountAmount < 1000 || isNaN(discountAmount)) {
+            discountError.innerText = 'Mức giảm giá phải lớn hơn hoặc bằng 1000 VNĐ';
+            discountError.classList.add('text-danger');
+        } else {
+            discountError.innerText = '';
+            discountError.classList.remove('text-danger');
+        }
+    }
 
-            if (discountAmount === '') {
-              discountError.innerText = 'Mức giảm giá không được để trống.';
-              discountError.classList.add('text-danger');
-            } else if (discountAmount < 1000 || isNaN(discountAmount)) {
-              discountError.innerText = 'Mức giảm giá phải lớn hơn hoặc bằng 1000 VNĐ.';
-              discountError.classList.add('text-danger');
-            } else {
-              discountError.innerText = 'Hợp lệ!';
-              discountError.classList.add('text-success');
-              discountError.classList.remove('text-danger');
-            }
-          }
+    function validateEditMinOrder() {
+        const minOrder = document.getElementById('editMinOrder').value;
+        const minOrderError = document.getElementById('editMinOrderError');
 
-          function validateEditMinOrder() {
-            const minOrder = document.getElementById('editMinOrder').value;
-            const minOrderError = document.getElementById('editMinOrderError');
+        if (minOrder === '') {
+            minOrderError.innerText = 'Đơn hàng tối thiểu không được để trống';
+            minOrderError.classList.add('text-danger');
+        } else if (minOrder < 1 || isNaN(minOrder)) {
+            minOrderError.innerText = 'Đơn hàng tối thiểu phải là số và không nhỏ hơn 0';
+            minOrderError.classList.add('text-danger');
+        } else {
+            minOrderError.innerText = '';
+            minOrderError.classList.remove('text-danger');
+        }
+    }
 
-            if (minOrder === '') {
-              minOrderError.innerText = 'Đơn hàng tối thiểu không được để trống.';
-              minOrderError.classList.add('text-danger');
-            } else if (minOrder < 1 || isNaN(minOrder)) {
-              minOrderError.innerText = 'Đơn hàng tối thiểu phải là số và không nhỏ hơn 0.';
-              minOrderError.classList.add('text-danger');
-            } else {
-              minOrderError.innerText = 'Hợp lệ!';
-              minOrderError.classList.add('text-success');
-              minOrderError.classList.remove('text-danger');
-            }
-          }
+    function validateEditQuantity() {
+        const quantity = document.getElementById('editQuantity').value;
+        const quantityError = document.getElementById('editQuantityError');
 
-          function validateEditQuantity() {
-            const quantity = document.getElementById('editQuantity').value;
-            const quantityError = document.getElementById('editQuantityError');
+        if (quantity === '') {
+            quantityError.innerText = 'Số lượng không được để trống';
+            quantityError.classList.add('text-danger');
+        } else if (quantity < 1 || isNaN(quantity)) {
+            quantityError.innerText = 'Số lượng phải là số và không nhỏ hơn 1';
+            quantityError.classList.add('text-danger');
+        } else {
+            quantityError.innerText = '';
+            quantityError.classList.remove('text-danger');
+        }
+    }
 
-            if (quantity === '') {
-              quantityError.innerText = 'Số lượng không được để trống.';
-              quantityError.classList.add('text-danger');
-            } else if (quantity < 1 || isNaN(quantity)) {
-              quantityError.innerText = 'Số lượng phải là số và không nhỏ hơn 1.';
-              quantityError.classList.add('text-danger');
-            } else {
-              quantityError.innerText = 'Hợp lệ!';
-              quantityError.classList.add('text-success');
-              quantityError.classList.remove('text-danger');
-            }
-          }
+    function validateEditCategoryId() {
+        const categoryId = document.getElementById('editCategoryId').value;
+        const categoryError = document.getElementById('editCategoryIdError');
 
-          function validateEditCategoryId() {
-            const categoryId = document.getElementById('editCategoryId').value;
-            const categoryError = document.getElementById('editCategoryIdError');
+        if (categoryId === '') {
+            categoryError.innerText = 'Vui lòng chọn danh mục';
+            categoryError.classList.add('text-danger');
+        } else {
+            categoryError.innerText = '';
+            categoryError.classList.remove('text-danger');
+        }
+    }
 
-            if (categoryId === '') {
-              categoryError.innerText = 'Vui lòng chọn danh mục.';
-              categoryError.classList.add('text-danger');
-            } else {
-              categoryError.innerText = 'Looks good!';
-              categoryError.classList.add('text-success');
-              categoryError.classList.remove('text-danger');
-            }
-          }
+    function validateEditStartDate() {
+        const startDate = document.getElementById('editStartDate').value;
+        const startDateError = document.getElementById('editStartDateError');
+
+        if (startDate === '') {
+            startDateError.innerText = 'Ngày bắt đầu không được để trống';
+            startDateError.classList.add('text-danger');
+        } else {
+            startDateError.innerText = '';  // Xóa lỗi khi hợp lệ
+            startDateError.classList.remove('text-danger');
+        }
+    }
+
+    function validateEditEndDate() {
+        const endDate = document.getElementById('editEndDate').value;
+        const endDateError = document.getElementById('editEndDateError');
+
+        if (endDate === '') {
+            endDateError.innerText = 'Ngày hết hạn không được để trống';
+            endDateError.classList.add('text-danger');
+        } else {
+            endDateError.innerText = '';  // Xóa lỗi khi hợp lệ
+            endDateError.classList.remove('text-danger');
+        }
+    }
+
 </script>

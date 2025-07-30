@@ -64,18 +64,58 @@ namespace DATN_GO.Service
             return response.IsSuccessStatusCode;
         }
 
-        public async Task<Users?> GetUserByIdAsync(string userId)
+        public async Task<dynamic> GetStoreInfoByUserIdAsync(int userId)
         {
-            if (!int.TryParse(userId, out var id)) return null;
-
-            var response = await _httpClient.GetAsync($"{_baseUrl}Users/{id}");
+            var response = await _httpClient.GetAsync($"{_baseUrl}Stores?userId={userId}");
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<Users>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                Console.WriteLine("API Response: " + json);
+
+                try
+                {
+                    var stores = JsonSerializer.Deserialize<List<Stores>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                    var store = stores?.FirstOrDefault();
+
+                    if (store != null)
+                    {
+                        return new
+                        {
+                            StoreId = store.Id,
+                            StoreName = store.Name
+                        };
+                    }
+
+                    return new
+                    {
+                        StoreId = 0,
+                        StoreName = "Chưa có tên cửa hàng"
+                    };
+                }
+                catch (JsonException ex)
+                {
+                    Console.WriteLine("Error deserializing JSON: " + ex.Message);
+                    return new
+                    {
+                        StoreId = 0,
+                        StoreName = "Chưa có tên cửa hàng"
+                    };
+                }
             }
-            return null;
+            return new
+            {
+                StoreId = 0,
+                StoreName = "Chưa có tên cửa hàng"
+            };
         }
+
+
+
+
+
+
 
 
     }
