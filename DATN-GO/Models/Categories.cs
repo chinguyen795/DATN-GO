@@ -3,14 +3,6 @@ using System.Text.Json.Serialization;
 
 namespace DATN_GO.Models
 {
-    public enum CategoryType
-    {
-        [Display(Name = "Voucher cửa hàng")]
-        StoreVoucher,
-        [Display(Name = "Voucher sàn")]
-        PlatformVoucher
-    }
-
     public enum CategoryStatus
     {
         [Display(Name = "Ẩn")]
@@ -27,8 +19,6 @@ namespace DATN_GO.Models
         [MaxLength(50)]
         [MinLength(2, ErrorMessage = "Tên phải từ 2 đến 50 kí tự.")]
         public required string Name { get; set; }
-
-        public CategoryType Type { get; set; }
 
         [MaxLength]
         public string? Image { get; set; }
