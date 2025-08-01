@@ -60,7 +60,8 @@ builder.Services.AddScoped<IOcrService, OcrService>();
 builder.Services.AddScoped<IPostsService, PostsService>();
 builder.Services.AddScoped<IVariantCompositionService, VariantCompositionService>();
 builder.Services.AddScoped<ICartService, CartService>();
-
+builder.Services.AddScoped<IOrdersService, OrdersService>();
+builder.Services.AddScoped<ICategoriesService, CategoriesService>();
 
 
 builder.Services.AddAuthorization();
