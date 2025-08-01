@@ -1,6 +1,44 @@
-﻿@{
-    Layout = "~/Areas/Seller/Views/Shared/_LayoutSeller.cshtml";
+﻿@model List<DATN_GO.ViewModels.OrderViewModel>
+@using DATN_GO.Models
+@functions {
+    public string MapStatusToText(string status)
+    {
+        if (!Enum.TryParse<OrderStatus>(status, out var s))
+            return "Không xác định";
+
+        return s switch
+        {
+            OrderStatus.ChoXuLy => "Chờ xử lý",
+            OrderStatus.ChoLayHang => "Chờ lấy hàng",
+            OrderStatus.DangGiao => "Đang giao",
+            OrderStatus.DaHoanThanh => "Hoàn thành",
+            OrderStatus.DaHuy => "Đã hủy",
+            _ => "Không xác định"
+        };
+    }
+
+    public string MapStatusToBadgeClass(string status)
+    {
+        if (!Enum.TryParse<OrderStatus>(status, out var s))
+            return "bg-secondary text-white";
+
+        return s switch
+        {
+            OrderStatus.ChoXuLy => "bg-warning text-dark",
+            OrderStatus.ChoLayHang => "bg-info text-white",
+            OrderStatus.DangGiao => "bg-success text-white",
+            OrderStatus.DaHoanThanh => "bg-primary text-white",
+            OrderStatus.DaHuy => "bg-danger text-white",
+            _ => "bg-secondary text-white"
+        };
+    }
+
+    public string FormatCurrency(decimal amount)
+    {
+        return string.Format(new System.Globalization.CultureInfo("vi-VN"), "{0:C0}", amount);
+    }
 }
+
 <style>
     /* Giảm kích thước chữ tiêu đề tab và padding để các tab nằm trên 1 hàng, không wrap chữ trong tab */
     .nav-pills .nav-link {
@@ -108,45 +146,7 @@
     <div class="content-wrapper">
         <main class="py-5">
             <div class="container-fluid">
-                <div class="modal fade" id="rejectOrderModal" tabindex="-1"
-                     aria-labelledby="rejectOrderModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content rounded-3 shadow-lg">
-                            <div class="modal-header text-danger border-bottom border-danger">
-                                <h5 class="modal-title text-danger fw-bold" id="rejectOrderModalLabel">
-                                    Xác nhận
-                                    từ chối đơn
-                                    hàng
-                                </h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                                        aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body p-4">
-                                <form>
-                                    <div class="mb-3">
-                                        <label for="rejectReason" class="form-label fw-semibold">
-                                            Lý do từ
-                                            chối
-                                        </label>
-                                        <textarea class="form-control" id="rejectReason" rows="3"
-                                                  placeholder="Nhập lý do từ chối đơn hàng..." required></textarea>
-                                    </div>
-                                </form>
-                            </div>
-                            <div class="modal-footer justify-content-between p-3 border-top border-light">
-                                <button type="button" class="btn btn-light rounded-pill px-4"
-                                        data-bs-dismiss="modal">
-                                    Đóng
-                                </button>
-                                <button type="button" class="btn btn-danger rounded-pill px-4"
-                                        id="confirmReject">
-                                    Xác nhận từ
-                                    chối
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                
                 <div class="modal fade" id="orderDetailsModal" tabindex="-1"
                      aria-labelledby="orderDetailsModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -238,60 +238,42 @@
                                 <h4 class="mb-0 fw-bold">Quản Lý Đơn Hàng</h4>
                             </div>
                             <div class="card-body pt-0">
-                                <ul class="nav nav-pills mb-3 px-2" id="orderTabs" role="tablist"
-                                    style="gap: 0.5rem;">
+                                <ul class="nav nav-pills mb-3 px-2" id="orderTabs" role="tablist" style="gap: 0.5rem;">
                                     <li class="nav-item flex-fill text-center" role="presentation">
-                                        <a class="nav-link active fw-bold py-2 px-2 text-black"
-                                           id="allOrdersTab" data-bs-toggle="pill" href="#allOrders" role="tab"
-                                           aria-controls="allOrders" aria-selected="false">
-                                            <i class="mdi mdi-format-list-bulleted"></i>
-                                            TẤT CẢ
+                                        <a class="nav-link active fw-bold py-2 px-2 text-black" id="allOrdersTab" data-bs-toggle="pill" href="#allOrders" role="tab" aria-controls="allOrders" aria-selected="true">
+                                            <i class="mdi mdi-format-list-bulleted"></i> TẤT CẢ
                                         </a>
                                     </li>
                                     <li class="nav-item flex-fill text-center" role="presentation">
-                                        <a class="nav-link fw-bold text-black py-2 px-2" id="pendingTab"
-                                           data-bs-toggle="pill" href="#pendingOrders" role="tab"
-                                           aria-controls="pendingOrders" aria-selected="false">
-                                            <i class="mdi mdi-clock-outline"></i>
-                                            CHỜ XỬ LÝ
+                                        <a class="nav-link fw-bold text-black py-2 px-2" id="pendingTab" data-bs-toggle="pill" href="#pendingOrders" role="tab" aria-controls="pendingOrders" aria-selected="false">
+                                            <i class="mdi mdi-clock-outline"></i> CHỜ XỬ LÝ
                                         </a>
                                     </li>
                                     <li class="nav-item flex-fill text-center" role="presentation">
-                                        <a class="nav-link fw-bold text-black py-2 px-2" id="readyTab"
-                                           data-bs-toggle="pill" href="#readyOrders" role="tab"
-                                           aria-controls="readyOrders" aria-selected="false">
-                                            <i class="mdi mdi-package-variant"></i>
-                                            CHỜ LẤY HÀNG
+                                        <a class="nav-link fw-bold text-black py-2 px-2" id="readyTab" data-bs-toggle="pill" href="#readyOrders" role="tab" aria-controls="readyOrders" aria-selected="false">
+                                            <i class="mdi mdi-package-variant"></i> CHỜ LẤY HÀNG
                                         </a>
                                     </li>
                                     <li class="nav-item flex-fill text-center" role="presentation">
-                                        <a class="nav-link fw-bold text-black py-2 px-2" id="shippingTab"
-                                           data-bs-toggle="pill" href="#shippingOrders" role="tab"
-                                           aria-controls="shippingOrders" aria-selected="false">
-                                            <i class="mdi mdi-truck-delivery"></i>
-                                            ĐANG GIAO
+                                        <a class="nav-link fw-bold text-black py-2 px-2" id="shippingTab" data-bs-toggle="pill" href="#shippingOrders" role="tab" aria-controls="shippingOrders" aria-selected="false">
+                                            <i class="mdi mdi-truck-delivery"></i> ĐANG GIAO
                                         </a>
                                     </li>
                                     <li class="nav-item flex-fill text-center" role="presentation">
-                                        <a class="nav-link fw-bold text-black py-2 px-2" id="completedTab"
-                                           data-bs-toggle="pill" href="#completedOrders" role="tab"
-                                           aria-controls="completedOrders" aria-selected="false">
-                                            <i class="mdi mdi-check-circle-outline"></i>
-                                            ĐÃ HOÀN THÀNH
+                                        <a class="nav-link fw-bold text-black py-2 px-2" id="completedTab" data-bs-toggle="pill" href="#completedOrders" role="tab" aria-controls="completedOrders" aria-selected="false">
+                                            <i class="mdi mdi-check-circle-outline"></i> ĐÃ HOÀN THÀNH
                                         </a>
                                     </li>
                                     <li class="nav-item flex-fill text-center" role="presentation">
-                                        <a class="nav-link fw-bold text-black py-2 px-2" id="cancelledTab"
-                                           data-bs-toggle="pill" href="#cancelledOrders" role="tab"
-                                           aria-controls="cancelledOrders" aria-selected="false">
-                                            <i class="mdi mdi-close-circle-outline"></i>
-                                            ĐÃ HỦY
+                                        <a class="nav-link fw-bold text-black py-2 px-2" id="cancelledTab" data-bs-toggle="pill" href="#cancelledOrders" role="tab" aria-controls="cancelledOrders" aria-selected="false">
+                                            <i class="mdi mdi-close-circle-outline"></i> ĐÃ HỦY
                                         </a>
                                     </li>
                                 </ul>
+
                                 <div class="tab-content pt-3" id="orderTabsContent">
-                                    <div class="tab-pane fade show active" id="allOrders" role="tabpanel"
-                                         aria-labelledby="allOrdersTab">
+                                    <!-- TẤT CẢ -->
+                                    <div class="tab-pane fade show active" id="allOrders" role="tabpanel" aria-labelledby="allOrdersTab">
                                         <div class="table-responsive">
                                             <table class="table table-hover align-middle mb-0">
                                                 <thead class="bg-danger text-white">
@@ -304,252 +286,247 @@
                                                         <th scope="col" class="fw-bold text-white">Trạng Thái</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody id="allOrdersTable">
-                                                    <tr data-bs-toggle="modal"
-                                                        data-bs-target="#orderDetailsModal">
-                                                        <td>#12345</td>
-                                                        <td>Nguyễn Văn A</td>
-                                                        <td>2 món</td>
-                                                        <td class="fw-semibold">1.050.000đ</td>
-                                                        <td>19/04/2025</td>
-                                                        <td>
-                                                            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">
-                                                                Chờ
-                                                                xử lý
-                                                            </span>
-                                                        </td>
-                                                    </tr>
-                                                    <tr data-bs-toggle="modal"
-                                                        data-bs-target="#orderDetailsModal">
-                                                        <td>#12346</td>
-                                                        <td>Trần Thị B</td>
-                                                        <td>3 món</td>
-                                                        <td class="fw-semibold">1.500.000đ</td>
-                                                        <td>20/04/2025</td>
-                                                        <td>
-                                                            <span class="badge bg-info text-white px-3 py-2 rounded-pill">
-                                                                Chờ
-                                                                lấy hàng
-                                                            </span>
-                                                        </td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-
-                                    <div class="tab-pane fade" id="pendingOrders" role="tabpanel"
-                                         aria-labelledby="pendingTab">
-                                        <div class="table-responsive">
-                                            <table class="table table-hover align-middle mb-0">
-                                                <thead class="bg-danger text-white">
-                                                    <tr>
-                                                        <th scope="col" class="fw-bold text-white">Mã Đơn</th>
-                                                        <th scope="col" class="fw-bold text-white">
-                                                            Khách Hàng
-                                                        </th>
-                                                        <th scope="col" class="fw-bold text-white">
-                                                            Số Lượng
-                                                        </th>
-                                                        <th scope="col" class="fw-bold text-white">
-                                                            Tổng Tiền
-                                                        </th>
-                                                        <th scope="col" class="fw-bold text-white">
-                                                            Ngày Đặt
-                                                        </th>
-                                                        <th scope="col" class="fw-bold text-white">
-                                                            Thao Tác
-                                                        </th>
-                                                    </tr>
-                                                </thead>
                                                 <tbody>
-                                                    <tr data-bs-toggle="modal"
-                                                        data-bs-target="#orderDetailsModal">
-                                                        <td>#12345</td>
-                                                        <td>Nguyễn Văn A</td>
-                                                        <td>2 món</td>
-                                                        <td class="fw-semibold">1.050.000đ</td>
-                                                        <td>19/04/2025</td>
-                                                        <td>
-                                                            <button class="btn btn-sm btn-success rounded-pill me-2">
-                                                                Xác
-                                                                Nhận
-                                                            </button>
-                                                            <button class="btn btn-sm btn-danger rounded-pill"
-                                                                    data-bs-toggle="modal"
-                                                                    data-bs-target="#rejectOrderModal">
-                                                                Từ
-                                                                Chối
-                                                            </button>
-                                                        </td>
-                                                    </tr>
+                                                    @if (Model?.Any() == true)
+                                                    {
+                                                        foreach (var order in Model)
+                                                        {
+                                                            <tr data-bs-toggle="modal" data-bs-target="#orderDetailsModal" data-order-id="@order.Id">
+                                                                <td>#@order.Id</td>
+                                                                <td>@order.CustomerName</td>
+                                                                <td>@order.TotalQuantity món</td>
+                                                                <td class="fw-semibold">@FormatCurrency(order.TotalPrice)</td>
+                                                                <td>@order.CreatedAt.ToString("dd/MM/yyyy")</td>
+                                                                <td>
+                                                                    <span class="badge @MapStatusToBadgeClass(order.Status) px-3 py-2 rounded-pill">
+                                                                        @MapStatusToText(order.Status)
+                                                                    </span>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <tr><td colspan="6" class="text-center">Không có đơn hàng</td></tr>
+                                                    }
                                                 </tbody>
                                             </table>
                                         </div>
                                     </div>
 
-                                    <div class="tab-pane fade" id="readyOrders" role="tabpanel"
-                                         aria-labelledby="readyTab">
+                                    <!-- CHỜ XỬ LÝ -->
+                                    <div class="tab-pane fade" id="pendingOrders" role="tabpanel" aria-labelledby="pendingTab">
                                         <div class="table-responsive">
                                             <table class="table table-hover align-middle mb-0">
                                                 <thead class="bg-danger text-white">
                                                     <tr>
                                                         <th scope="col" class="fw-bold text-white">Mã Đơn</th>
-                                                        <th scope="col" class="fw-bold text-white">
-                                                            Khách Hàng
-                                                        </th>
+                                                        <th scope="col" class="fw-bold text-white">Khách Hàng</th>
                                                         <th scope="col" class="fw-bold text-white">Số Lượng</th>
-                                                        <th scope="col" class="fw-bold text-white">
-                                                            Tổng Tiền
-                                                        </th>
+                                                        <th scope="col" class="fw-bold text-white">Tổng Tiền</th>
                                                         <th scope="col" class="fw-bold text-white">Ngày Đặt</th>
-                                                        <th scope="col" class="fw-bold text-white">
-                                                            Trạng Thái
-                                                        </th>
+                                                        <th scope="col" class="fw-bold text-white">Thao Tác</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr data-bs-toggle="modal"
-                                                        data-bs-target="#orderDetailsModal">
-                                                        <td>#12346</td>
-                                                        <td>Trần Thị B</td>
-                                                        <td>3 món</td>
-                                                        <td class="fw-semibold">1.500.000đ</td>
-                                                        <td>20/04/2025</td>
-                                                        <td>
-                                                            <span class="badge bg-info text-white px-3 py-2 rounded-pill">
-                                                                Chờ
-                                                                lấy hàng
-                                                            </span>
-                                                        </td>
-                                                    </tr>
+                                                    @if (Model != null && Model.Any(o => o.Status == OrderStatus.ChoXuLy.ToString()))
+                                                    {
+                                                        foreach (var order in Model.Where(o => o.Status == OrderStatus.ChoXuLy.ToString()))
+                                                        {
+                                                            <tr data-order-id="@order.Id">
+
+                                                                <td>#@order.Id</td>
+                                                                <td>@order.CustomerName</td>
+                                                                <td>@order.TotalQuantity món</td>
+                                                                <td class="fw-semibold">@FormatCurrency(order.TotalPrice)</td>
+                                                                <td>@order.CreatedAt.ToString("dd/MM/yyyy")</td>
+                                                                <td>
+                                                                    <button class="btn btn-sm btn-success rounded-pill me-2" type="button">
+                                                                        Xác nhận
+                                                                    </button>
+                                                                    <button class="btn btn-sm btn-danger rounded-pill" type="button" data-bs-toggle="modal" data-bs-target="#rejectOrderModal">
+                                                                        Từ chối
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <tr><td colspan="6" class="text-center">Không có đơn hàng</td></tr>
+                                                    }
                                                 </tbody>
                                             </table>
                                         </div>
                                     </div>
 
-                                    <div class="tab-pane fade" id="shippingOrders" role="tabpanel"
-                                         aria-labelledby="shippingTab">
+                                    <!-- CHỜ LẤY HÀNG -->
+                                    <div class="tab-pane fade" id="readyOrders" role="tabpanel" aria-labelledby="readyTab">
                                         <div class="table-responsive">
                                             <table class="table table-hover align-middle mb-0">
                                                 <thead class="bg-danger text-white">
                                                     <tr>
                                                         <th scope="col" class="fw-bold text-white">Mã Đơn</th>
-                                                        <th scope="col" class="fw-bold text-white">
-                                                            Khách Hàng
-                                                        </th>
+                                                        <th scope="col" class="fw-bold text-white">Khách Hàng</th>
                                                         <th scope="col" class="fw-bold text-white">Số Lượng</th>
-                                                        <th scope="col" class="fw-bold text-white">
-                                                            Tổng Tiền
-                                                        </th>
+                                                        <th scope="col" class="fw-bold text-white">Tổng Tiền</th>
                                                         <th scope="col" class="fw-bold text-white">Ngày Đặt</th>
-                                                        <th scope="col" class="fw-bold text-white">
-                                                            Trạng Thái
-                                                        </th>
+                                                        <th scope="col" class="fw-bold text-white">Trạng Thái</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr data-bs-toggle="modal"
-                                                        data-bs-target="#orderDetailsModal">
-                                                        <td>#12347</td>
-                                                        <td>Lê Thị C</td>
-                                                        <td>5 món</td>
-                                                        <td class="fw-semibold">2.500.000đ</td>
-                                                        <td>21/04/2025</td>
-                                                        <td>
-                                                            <span class="badge bg-success text-white px-3 py-2 rounded-pill">
-                                                                Đang
-                                                                giao
-                                                            </span>
-                                                        </td>
-                                                    </tr>
+                                                    @if (Model != null && Model.Any(o => o.Status == OrderStatus.ChoLayHang.ToString()))
+                                                    {
+                                                        foreach (var order in Model.Where(o => o.Status == OrderStatus.ChoLayHang.ToString()))
+                                                        {
+                                                            <tr data-bs-toggle="modal" data-bs-target="#orderDetailsModal" data-order-id="@order.Id">
+                                                                <td>#@order.Id</td>
+                                                                <td>@order.CustomerName</td>
+                                                                <td>@order.TotalQuantity món</td>
+                                                                <td class="fw-semibold">@FormatCurrency(order.TotalPrice)</td>
+                                                                <td>@order.CreatedAt.ToString("dd/MM/yyyy")</td>
+                                                                <td>
+                                                                    <span class="badge @MapStatusToBadgeClass(order.Status) px-3 py-2 rounded-pill">@MapStatusToText(order.Status)</span>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <tr><td colspan="6" class="text-center">Không có đơn hàng</td></tr>
+                                                    }
                                                 </tbody>
                                             </table>
                                         </div>
                                     </div>
 
-                                    <div class="tab-pane fade" id="completedOrders" role="tabpanel"
-                                         aria-labelledby="completedTab">
+                                    <!-- ĐANG GIAO -->
+                                    <div class="tab-pane fade" id="shippingOrders" role="tabpanel" aria-labelledby="shippingTab">
                                         <div class="table-responsive">
                                             <table class="table table-hover align-middle mb-0">
                                                 <thead class="bg-danger text-white">
                                                     <tr>
                                                         <th scope="col" class="fw-bold text-white">Mã Đơn</th>
-                                                        <th scope="col" class="fw-bold text-white">
-                                                            Khách Hàng
-                                                        </th>
+                                                        <th scope="col" class="fw-bold text-white">Khách Hàng</th>
                                                         <th scope="col" class="fw-bold text-white">Số Lượng</th>
-                                                        <th scope="col" class="fw-bold text-white">
-                                                            Tổng Tiền
-                                                        </th>
+                                                        <th scope="col" class="fw-bold text-white">Tổng Tiền</th>
                                                         <th scope="col" class="fw-bold text-white">Ngày Đặt</th>
-                                                        <th scope="col" class="fw-bold text-white">
-                                                            Trạng Thái
-                                                        </th>
+                                                        <th scope="col" class="fw-bold text-white">Trạng Thái</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr data-bs-toggle="modal"
-                                                        data-bs-target="#orderDetailsModal">
-                                                        <td>#12344</td>
-                                                        <td>Trần Thị D</td>
-                                                        <td>2 món</td>
-                                                        <td class="fw-semibold">1.200.000đ</td>
-                                                        <td>18/04/2025</td>
-                                                        <td>
-                                                            <span class="badge bg-primary text-white px-3 py-2 rounded-pill">
-                                                                Hoàn
-                                                                Thành
-                                                            </span>
-                                                        </td>
-                                                    </tr>
+                                                    @if (Model != null && Model.Any(o => o.Status == OrderStatus.DangGiao.ToString()))
+                                                    {
+                                                        foreach (var order in Model.Where(o => o.Status == OrderStatus.DangGiao.ToString()))
+                                                        {
+                                                            <tr data-bs-toggle="modal" data-bs-target="#orderDetailsModal" data-order-id="@order.Id">
+                                                                <td>#@order.Id</td>
+                                                                <td>@order.CustomerName</td>
+                                                                <td>@order.TotalQuantity món</td>
+                                                                <td class="fw-semibold">@FormatCurrency(order.TotalPrice)</td>
+                                                                <td>@order.CreatedAt.ToString("dd/MM/yyyy")</td>
+                                                                <td>
+                                                                    <span class="badge @MapStatusToBadgeClass(order.Status) px-3 py-2 rounded-pill">@MapStatusToText(order.Status)</span>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <tr><td colspan="6" class="text-center">Không có đơn hàng</td></tr>
+                                                    }
                                                 </tbody>
                                             </table>
                                         </div>
                                     </div>
 
-                                    <div class="tab-pane fade" id="cancelledOrders" role="tabpanel"
-                                         aria-labelledby="cancelledTab">
+                                    <!-- ĐÃ HOÀN THÀNH -->
+                                    <div class="tab-pane fade" id="completedOrders" role="tabpanel" aria-labelledby="completedTab">
                                         <div class="table-responsive">
                                             <table class="table table-hover align-middle mb-0">
                                                 <thead class="bg-danger text-white">
                                                     <tr>
                                                         <th scope="col" class="fw-bold text-white">Mã Đơn</th>
-                                                        <th scope="col" class="fw-bold text-white">
-                                                            Khách Hàng
-                                                        </th>
+                                                        <th scope="col" class="fw-bold text-white">Khách Hàng</th>
                                                         <th scope="col" class="fw-bold text-white">Số Lượng</th>
-                                                        <th scope="col" class="fw-bold text-white">
-                                                            Tổng Tiền
-                                                        </th>
+                                                        <th scope="col" class="fw-bold text-white">Tổng Tiền</th>
                                                         <th scope="col" class="fw-bold text-white">Ngày Đặt</th>
-                                                        <th scope="col" class="fw-bold text-white">
-                                                            Lý Do Hủy
-                                                        </th>
+                                                        <th scope="col" class="fw-bold text-white">Trạng Thái</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr>
-                                                        <td>#12343</td>
-                                                        <td>Lê Văn E</td>
-                                                        <td>1 món</td>
-                                                        <td class="fw-semibold">580.000đ</td>
-                                                        <td>17/04/2025</td>
-                                                        <td>
-                                                            <span class="badge bg-danger text-white px-3 py-2 rounded-pill">
-                                                                Khách
-                                                                hàng hủy đơn
-                                                            </span>
-                                                        </td>
-                                                    </tr>
+                                                    @if (Model != null && Model.Any(o => o.Status == OrderStatus.DaHoanThanh.ToString()))
+                                                    {
+                                                        foreach (var order in Model.Where(o => o.Status == OrderStatus.DaHoanThanh.ToString()))
+                                                        {
+                                                            <tr data-bs-toggle="modal" data-bs-target="#orderDetailsModal" data-order-id="@order.Id">
+                                                                <td>#@order.Id</td>
+                                                                <td>@order.CustomerName</td>
+                                                                <td>@order.TotalQuantity món</td>
+                                                                <td class="fw-semibold">@FormatCurrency(order.TotalPrice)</td>
+                                                                <td>@order.CreatedAt.ToString("dd/MM/yyyy")</td>
+                                                                <td>
+                                                                    <span class="badge @MapStatusToBadgeClass(order.Status) px-3 py-2 rounded-pill">@MapStatusToText(order.Status)</span>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <tr><td colspan="6" class="text-center">Không có đơn hàng</td></tr>
+                                                    }
                                                 </tbody>
                                             </table>
                                         </div>
                                     </div>
+
+                                    <!-- ĐÃ HỦY -->
+                                    <div class="tab-pane fade" id="cancelledOrders" role="tabpanel" aria-labelledby="cancelledTab">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover align-middle mb-0">
+                                                <thead class="bg-danger text-white">
+                                                    <tr>
+                                                        <th scope="col" class="fw-bold text-white">Mã Đơn</th>
+                                                        <th scope="col" class="fw-bold text-white">Khách Hàng</th>
+                                                        <th scope="col" class="fw-bold text-white">Số Lượng</th>
+                                                        <th scope="col" class="fw-bold text-white">Tổng Tiền</th>
+                                                        <th scope="col" class="fw-bold text-white">Ngày Đặt</th>
+                                                        <th scope="col" class="fw-bold text-white">Lý Do Hủy</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @if (Model != null && Model.Any(o => o.Status == OrderStatus.DaHuy.ToString()))
+                                                    {
+                                                        foreach (var order in Model.Where(o => o.Status == OrderStatus.DaHuy.ToString()))
+                                                        {
+                                                            <tr data-bs-toggle="modal" data-bs-target="#orderDetailsModal" data-order-id="@order.Id">
+                                                                <td>#@order.Id</td>
+                                                                <td>@order.CustomerName</td>
+                                                                <td>@order.TotalQuantity món</td>
+                                                                <td class="fw-semibold">@FormatCurrency(order.TotalPrice)</td>
+                                                                <td>@order.CreatedAt.ToString("dd/MM/yyyy")</td>
+                                                                <td>
+                                                                    <span class="badge @MapStatusToBadgeClass(order.Status) px-3 py-2 rounded-pill">
+                                                                        @MapStatusToText(order.Status)
+                                                                    </span>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <tr><td colspan="6" class="text-center">Không có đơn hàng</td></tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
                     </div>
+
 
                     <div class="col-lg-4">
                         <div class="card shadow-lg h-100 rounded-4">
@@ -728,74 +705,351 @@
         </main>
     </div>
 </div>
+<!-- Modal Xác nhận đơn hàng -->
+<div class="modal fade" id="confirmOrderModal" tabindex="-1" role="dialog" aria-labelledby="confirmOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-success">
+                <h5 class="modal-title text-white" id="confirmOrderModalLabel">Xác nhận đơn hàng</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Bạn có chắc chắn muốn xác nhận đơn hàng này không?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" id="btnConfirmAccept" class="btn btn-success btn-pill">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Từ chối đơn hàng -->
+<div class="modal fade" id="rejectOrderModal" tabindex="-1" role="dialog" aria-labelledby="rejectOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger">
+                <h5 class="modal-title text-white" id="rejectOrderModalLabel">Từ chối đơn hàng</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Bạn có chắc chắn muốn từ chối đơn hàng này không?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" id="btnConfirmReject" class="btn btn-danger btn-pill">Xác nhận từ chối</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
+    const API_BASE_URL = 'https://localhost:7096/api'; // Khai báo duy nhất 1 lần
+
     document.addEventListener('DOMContentLoaded', function () {
-        // Lưu trữ các class text color gốc của các tab
+        // --- Xử lý style tab ---
         const originalColors = {};
         document.querySelectorAll('#orderTabs .nav-link').forEach(tab => {
-            // Lưu lại màu text gốc của mỗi tab
             originalColors[tab.id] = Array.from(tab.classList).find(cls => cls.startsWith('text-'));
         });
 
-        // Xử lý khi tab được click
         document.querySelectorAll('#orderTabs .nav-link').forEach(tab => {
             tab.addEventListener('shown.bs.tab', function () {
-                // Restore màu text gốc cho tất cả các tab và xóa background
                 document.querySelectorAll('#orderTabs .nav-link').forEach(t => {
                     t.classList.remove('bg-danger', 'text-white');
-                    if (originalColors[t.id]) {
-                        t.classList.add(originalColors[t.id]);
-                    }
-                });            // Thêm nền đỏ nhạt và chữ trắng cho tab active
+                    if (originalColors[t.id]) t.classList.add(originalColors[t.id]);
+                });
                 this.classList.remove(originalColors[this.id]);
                 this.classList.add('bg-danger', 'bg-opacity-25', 'text-white');
             });
         });
 
-        // Áp dụng style cho tab active mặc định khi trang load
-        const activeTab = document.querySelector('#orderTabs .nav-link.active'); if (activeTab) {
+        const activeTab = document.querySelector('#orderTabs .nav-link.active');
+        if (activeTab) {
             activeTab.classList.remove(originalColors[activeTab.id]);
             activeTab.classList.add('bg-danger', 'bg-opacity-25', 'text-white');
         }
-    });
-</script>
 
-<!-- Tab handling script -->
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Xử lý chuyển tab cho các đơn hàng
-        const triggerTabList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tab"]'));
-        triggerTabList.forEach(function (triggerEl) {
-            triggerEl.addEventListener('click', function (event) {
-                event.preventDefault();
+        // --- Modal chi tiết đơn hàng ---
+        const orderDetailsModal = new bootstrap.Modal(document.getElementById('orderDetailsModal'));
 
-                // Remove active class from all tabs
-                triggerTabList.forEach(t => {
-                    t.classList.remove('active');
-                    t.setAttribute('aria-selected', 'false');
-                });
+        function formatCurrency(value) {
+            if (typeof value !== 'number') return value;
+            return value.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+        }
 
-                // Add active class to clicked tab
-                this.classList.add('active');
-                this.setAttribute('aria-selected', 'true');
+        function mapStatus(status) {
+            const map = {
+                'ChoXuLy': ['Chờ xử lý', 'bg-warning text-dark'],
+                'ChoLayHang': ['Chờ lấy hàng', 'bg-info text-white'],
+                'DangGiao': ['Đang giao', 'bg-success text-white'],
+                'DaHoanThanh': ['Hoàn thành', 'bg-primary text-white'],
+                'DaHuy': ['Đã hủy', 'bg-danger text-white']
+            };
+            return map[status] || ['Không xác định', 'bg-secondary text-white'];
+        }
 
-                // Show corresponding content
-                const tabTarget = document.querySelector(this.getAttribute('data-bs-target'));
-                const tabContents = document.querySelectorAll('.tab-pane');
-                tabContents.forEach(content => {
-                    content.classList.remove('show', 'active');
-                });
-                if (tabTarget) {
-                    tabTarget.classList.add('show', 'active');
+        document.querySelectorAll('tr[data-order-id]').forEach(row => {
+            row.addEventListener('click', async (event) => {
+                if (event.target.closest('td:last-child')) return;
+
+                const orderId = row.getAttribute('data-order-id');
+                if (!orderId) return;
+
+                try {
+                    const resp = await fetch(`${API_BASE_URL}/orders/${orderId}`);
+                    if (!resp.ok) throw new Error('Không lấy được thông tin đơn hàng');
+                    const order = await resp.json();
+
+                    document.getElementById('modalOrderId').textContent = `#${order.id}`;
+                    document.getElementById('modalCustomerName').textContent = order.customerName || 'N/A';
+                    const createdAt = new Date(order.createdAt);
+                    document.getElementById('modalOrderDate').textContent = createdAt.toLocaleDateString('vi-VN');
+                    document.getElementById('modalQuantity').textContent = `${order.totalQuantity} món`;
+                    document.getElementById('modalTotalAmount').textContent = formatCurrency(order.grandTotal);
+
+                    const [statusText, statusClass] = mapStatus(order.status);
+                    const modalStatus = document.getElementById('modalStatus');
+                    modalStatus.textContent = statusText;
+                    modalStatus.className = '';
+                    modalStatus.classList.add('badge', ...statusClass.split(' '), 'rounded-pill', 'px-3', 'py-2');
+
+                    const tbody = document.getElementById('modalOrderItems');
+                    tbody.innerHTML = '';
+
+                    if (order.orderDetails && order.orderDetails.length > 0) {
+                        order.orderDetails.forEach(item => {
+                            const tr2 = document.createElement('tr');
+                            tr2.classList.add('bg-light');
+                            const totalPrice = item.quantity * item.unitPrice;
+                            tr2.innerHTML = `
+                                <td>${item.productName || ''}</td>
+                                <td>${item.quantity}</td>
+                                <td>${formatCurrency(item.unitPrice)}</td>
+                                <td>${formatCurrency(totalPrice)}</td>
+                            `;
+                            tbody.appendChild(tr2);
+                        });
+                    } else {
+                        tbody.innerHTML = `<tr><td colspan="4" class="text-center">Không có sản phẩm</td></tr>`;
+                    }
+
+                    orderDetailsModal.show();
+
+                } catch (error) {
+                    alert(error.message);
                 }
             });
         });
 
-        // Activate first tab by default if none is active
-        const activeTab = document.querySelector('.nav-link.active');
-        if (!activeTab && triggerTabList.length > 0) {
-            triggerTabList[0].click();
+        // --- Modal Xác nhận đơn hàng ---
+        const confirmOrderModalEl = document.getElementById('confirmOrderModal');
+        const confirmOrderModal = new bootstrap.Modal(confirmOrderModalEl);
+
+        // --- Modal Từ chối đơn hàng ---
+        const rejectOrderModalEl = document.getElementById('rejectOrderModal');
+        const rejectOrderModal = new bootstrap.Modal(rejectOrderModalEl);
+
+        // Hàm cập nhật trạng thái chung
+        async function updateOrderStatus(orderId, newStatus) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/orders/updatestatus/${orderId}?status=${newStatus}`, {
+                    method: 'PATCH'
+                });
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error(text || 'Cập nhật trạng thái thất bại');
+                }
+                alert('Cập nhật trạng thái thành công!');
+                location.reload(); // Reload trang sau khi thành công
+            } catch (error) {
+                alert('Lỗi: ' + error.message);
+            }
         }
+
+        // Gán sự kiện mở modal xác nhận khi bấm nút xác nhận (btn-success) trên bảng
+        document.querySelectorAll('.btn-success').forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const tr = this.closest('tr');
+                if (!tr) return;
+                const orderId = tr.getAttribute('data-order-id');
+                if (!orderId) return;
+
+                confirmOrderModalEl.dataset.orderId = orderId; // Lưu orderId vào dataset của modal
+                confirmOrderModal.show();
+            });
+        });
+
+        // Xử lý nút xác nhận trong modal xác nhận đơn hàng
+        document.getElementById('btnConfirmAccept').addEventListener('click', function () {
+            const orderId = confirmOrderModalEl.dataset.orderId;
+            if (!orderId) {
+                alert('Không xác định được đơn hàng');
+                return;
+            }
+            updateOrderStatus(orderId, 'ChoLayHang'); // Gọi hàm cập nhật trạng thái
+            confirmOrderModal.hide(); // Đóng modal
+        });
+
+        // Gán sự kiện mở modal từ chối khi bấm nút từ chối (btn-danger) trên bảng
+        document.querySelectorAll('.btn-danger').forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const tr = this.closest('tr');
+                if (!tr) return;
+                const orderId = tr.getAttribute('data-order-id');
+                if (!orderId) return;
+
+                rejectOrderModalEl.dataset.orderId = orderId; // Lưu orderId vào dataset của modal
+                rejectOrderModal.show();
+            });
+        });
+
+        // Xử lý nút xác nhận trong modal từ chối đơn hàng
+        document.getElementById('btnConfirmReject').addEventListener('click', function () {
+            const orderId = rejectOrderModalEl.dataset.orderId;
+            if (!orderId) {
+                alert('Không xác định được đơn hàng');
+                return;
+            }
+            updateOrderStatus(orderId, 'DaHuy'); // Gọi hàm cập nhật trạng thái
+            rejectOrderModal.hide(); // Đóng modal
+        });
+
+        // --- PHẦN QUẢN LÝ THỐNG KÊ ---
+        const storeId = window.storeId || 1; // Truyền biến storeId động từ backend nếu cần
+
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
+        const quickDateSelectButton = document.getElementById('quickDateSelectButton');
+        const dropdownItems = document.querySelectorAll('#quickDateSelectButton + .dropdown-menu .dropdown-item');
+
+        function formatNumber(num) {
+            return num.toLocaleString('vi-VN');
+        }
+
+        function formatPercentChange(value) {
+            const sign = value > 0 ? '+' : value < 0 ? '-' : '';
+            return `${sign}${Math.abs(value).toFixed(1)}%`;
+        }
+
+        async function fetchStatistics(start, end) {
+            try {
+                let url = `${API_BASE_URL}/orders/statistics?storeId=${storeId}`;
+                if (start) url += `&start=${start.toISOString()}`;
+                if (end) url += `&end=${end.toISOString()}`;
+
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(await response.text() || 'Lỗi lấy dữ liệu thống kê');
+                return await response.json();
+            } catch (error) {
+                alert('Không tải được số liệu: ' + error.message);
+                return null;
+            }
+        }
+
+        function updateStatisticsUI(data) {
+            if (!data) return;
+            const cardMap = {
+                totalOrders: '.card.bg-danger',
+                pendingOrders: '.card.bg-warning',
+                shippingOrders: '.card.bg-success',
+                completedOrders: '.card.bg-primary'
+            };
+
+            for (const key in cardMap) {
+                if (typeof data[key] !== 'undefined') {
+                    const card = document.querySelector(cardMap[key]);
+                    if (!card) continue;
+                    const h3 = card.querySelector('h3.display-6');
+                    if (h3) h3.textContent = formatNumber(data[key] || 0);
+
+                    const small = card.querySelector('small');
+                    const percentKey = key + 'PercentChange';
+                    if (small) {
+                        if (typeof data[percentKey] !== 'undefined') {
+                            let color = 'text-muted';
+                            if (data[percentKey] > 0) color = 'text-success';
+                            else if (data[percentKey] < 0) color = 'text-danger';
+                            small.innerHTML = `<span class="${color}">${formatPercentChange(data[percentKey])}</span> so với kỳ trước`;
+                        } else {
+                            small.textContent = '';
+                        }
+                    }
+                }
+            }
+        }
+
+        function handleQuickDateSelect(value) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            let start, end;
+            switch (value) {
+                case 'today':
+                    start = today;
+                    end = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+                    break;
+                case 'yesterday':
+                    start = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+                    end = today;
+                    break;
+                case 'thisWeek':
+                    start = new Date(today);
+                    start.setDate(today.getDate() - today.getDay());
+                    end = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+                    break;
+                case 'lastWeek':
+                    start = new Date(today);
+                    start.setDate(today.getDate() - today.getDay() - 7);
+                    end = new Date(start);
+                    end.setDate(start.getDate() + 7);
+                    break;
+                case 'thisMonth':
+                    start = new Date(today.getFullYear(), today.getMonth(), 1);
+                    end = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+                    break;
+                case 'lastMonth':
+                    start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                    end = new Date(today.getFullYear(), today.getMonth(), 1);
+                    break;
+                default:
+                    start = null; end = null;
+            }
+            const toInput = d =>
+                d.getFullYear() + '-' +
+                String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                String(d.getDate()).padStart(2, '0') + 'T' +
+                String(d.getHours()).padStart(2, '0') + ':' +
+                String(d.getMinutes()).padStart(2, '0');
+            if (start && end) {
+                startDateInput.value = toInput(start);
+                endDateInput.value = toInput(end);
+            } else {
+                startDateInput.value = '';
+                endDateInput.value = '';
+            }
+            const label = document.querySelector(`[data-value="${value}"]`);
+            if (label) quickDateSelectButton.textContent = label.textContent.trim();
+            loadStatistics();
+        }
+
+        async function loadStatistics() {
+            const start = startDateInput.value ? new Date(startDateInput.value) : null;
+            const end = endDateInput.value ? new Date(endDateInput.value) : null;
+            const data = await fetchStatistics(start, end);
+            updateStatisticsUI(data);
+        }
+
+        startDateInput.addEventListener('change', loadStatistics);
+        endDateInput.addEventListener('change', loadStatistics);
+        dropdownItems.forEach(item => {
+            item.addEventListener('click', function (e) {
+                e.preventDefault();
+                handleQuickDateSelect(this.getAttribute('data-value'));
+            });
+        });
+
+        loadStatistics();
     });
 </script>

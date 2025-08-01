@@ -111,7 +111,26 @@ namespace DATN_GO.Service
             };
         }
 
+        public async Task<List<Vouchers>?> GetVouchersByStoreOrAdminAsync(int? storeId)
+        {
+            var url = $"{_baseUrl}Vouchers/bystoreoradmin";
 
+            if (storeId.HasValue)
+            {
+                url += $"?storeId={storeId.Value}";
+            }
+
+            var response = await _httpClient.GetAsync(url);
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                return JsonSerializer.Deserialize<List<Vouchers>>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+            }
+            return null;
+        }
 
 
 

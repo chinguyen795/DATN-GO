@@ -22,8 +22,9 @@ namespace DATN_GO.Models
 
         public decimal TotalPrice { get; set; }
 
-        [MaxLength(50)]
-        public string Status { get; set; }
+        [Required]
+        [Column(TypeName = "nvarchar(50)")]
+        public OrderStatus Status { get; set; }
 
         [MaxLength(50)]
         public string PaymentMethod { get; set; }
@@ -50,5 +51,14 @@ namespace DATN_GO.Models
         public ICollection<OrderDetails>? OrderDetails { get; set; }
 
 
+    }
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum OrderStatus
+    {
+        ChoXuLy,
+        ChoLayHang,
+        DangGiao,
+        DaHoanThanh,
+        DaHuy
     }
 }

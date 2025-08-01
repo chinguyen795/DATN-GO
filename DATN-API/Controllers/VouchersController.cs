@@ -1,4 +1,5 @@
 ﻿using DATN_API.Data;
+using DATN_API.Interfaces;
 using DATN_API.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,10 +11,12 @@ namespace DATN_API.Controllers
     public class VouchersController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IVouchersService _vouchersService;
 
-        public VouchersController(ApplicationDbContext context)
+        public VouchersController(ApplicationDbContext context, IVouchersService vouchersService)
         {
             _context = context;
+            _vouchersService = vouchersService;
         }
 
         // GET: api/vouchers
@@ -125,6 +128,13 @@ namespace DATN_API.Controllers
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetById), new { id = model.Id }, model);
+        }
+
+        [HttpGet("bystoreoradmin")]
+        public async Task<IActionResult> GetVouchers([FromQuery] int? storeId)
+        {
+            var vouchers = await _vouchersService.GetVouchersByStoreOrAdminAsync(storeId);
+            return Ok(vouchers);
         }
     }
 }

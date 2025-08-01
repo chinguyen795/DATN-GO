@@ -48,5 +48,21 @@ namespace DATN_API.Services
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<IEnumerable<Vouchers>> GetVouchersByStoreOrAdminAsync(int? storeId)
+        {
+            if (storeId.HasValue)
+            {
+                return await _context.Vouchers
+                    .Where(v => v.StoreId == storeId.Value)
+                    .ToListAsync();
+            }
+            else
+            {
+                return await _context.Vouchers
+                    .Where(v => v.StoreId == null)
+                    .ToListAsync();
+            }
+        }
     }
 }

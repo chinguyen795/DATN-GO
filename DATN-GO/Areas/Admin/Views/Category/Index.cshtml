@@ -1,205 +1,555 @@
-﻿<!DOCTYPE html>
-<html lang="en" dir="ltr">
-<head>
-     
- <link rel="stylesheet" href="~/css/category.css" />  
-    
+﻿﻿
+@using DATN_GO.Models
+@model List<DATN_GO.Models.Categories>
+@{
+    ViewData["Title"] = "Quản lý danh mục";
+}
+<style>
+    div.dataTables_filter {
+        display: none !important;
+    }
 
-</head>
+    div.dataTables_length {
+        display: none !important;
+    }
+
+    table.table-product th,
+    table.table-product td {
+        vertical-align: middle;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+        table.table-product th:nth-child(1),
+        table.table-product td:nth-child(1) {
+            width: 15%;
+        }
+
+        table.table-product th:nth-child(2),
+        table.table-product td:nth-child(2) {
+            width: 15%;
+        }
+
+        table.table-product th:nth-child(3),
+        table.table-product td:nth-child(3) {
+            width: 10%;
+        }
+
+        table.table-product th:nth-child(4),
+        table.table-product td:nth-child(4) {
+            width: 20%;
+        }
+
+        table.table-product th:nth-child(5),
+        table.table-product td:nth-child(5) {
+            width: 15%;
+        }
+
+        table.table-product th:nth-child(6),
+        table.table-product td:nth-child(6) {
+            width: 25%;
+        }
+
+</style>
+
 <div class="page-wrapper">
-
-    <!-- Header -->
     <header class="main-header" id="header">
         <nav class="navbar navbar-expand-lg navbar-light" id="navbar">
-            <!-- Sidebar toggle button -->
             <button id="sidebar-toggler" class="sidebar-toggle">
                 <span class="sr-only">Toggle navigation</span>
             </button>
 
-            <span class="page-title">Danh Mục</span>
+            <span class="page-title">Quản lý Danh mục</span>
 
-            <div class="navbar-right ">
-                <ul class="nav navbar-nav">
-                    <!-- User Account -->
-                    <li class="dropdown user-menu">
-                        <button class="dropdown-toggle nav-link" data-toggle="dropdown">
-                            <img src="images/user/user-xs-01.jpg" alt="User Profile" width="32" height="32"
-                                 style="object-fit: cover;" loading="lazy">
-                            <span class="d-none d-lg-inline-block">Meo Meo</span>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-right">
-                            <li>
-                                <a class="dropdown-link-item" href="user-profile.html">
-                                    <i class="mdi mdi-account-outline"></i>
-                                    <span class="nav-text">Hồ Sơ</span>
-                                </a>
-                            </li>
-                            <li class="dropdown-footer">
-                                <a class="dropdown-link-item" href="sign-in.html">
-                                    <i class="mdi mdi-logout"></i> Đăng Xuất
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-        </nav>
+
     </header>
-
-    <!-- ====================================
-    ——— CONTENT WRAPPER
-    ===================================== -->
+    <div style="position: fixed; top: 20px; right: 20px; z-index: 2000; width: 360px;">
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show shadow" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show shadow" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+            </div>
+        }
+    </div>
     <div class="content-wrapper">
         <div class="content">
-            <div class="container">
-                <!-- Page Header -->
-                <div class="page-header">
-                    <div class="search-add-section">
-                        <div class="search-container">
-                            <input type="text" id="searchInput" placeholder="Search..." class="form-control">
+            <div class="card card-default">
+                <div class="card-header">
+                    <h2 class="text-danger">Danh sách Danh mục</h2>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3 mt-3">
+
+                        <div id="datatable_filter_custom" class="w-25">
+                            <input type="search" class="form-control" id="customSearchBox" placeholder="Tìm kiếm danh mục..." />
                         </div>
-                        <button class="btn-add" data-toggle="modal" data-target="#addCategoryModal">
-                            <i class="bi bi-plus-lg"></i>
-                            THÊM DANH MỤC
+
+                        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#createModal">
+                            + Thêm danh mục
                         </button>
                     </div>
-                </div>
 
-                <!-- Categories Table -->
-                <div class="categories-table">
-                    <div class="table-responsive">
-                        <table class="table" id="categoriesTable">
-                            <thead>
+
+                    <table id="categoriesTable" class="table table-hover table-product">
+
+                        <thead>
+                            <tr>
+
+                                <th>Tên</th>
+
+                                <th>Hashtag</th>
+
+                                <th>Ảnh</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < Model.Count; i++)
+                            {
+                                var item = Model[i];
                                 <tr>
-                                    <th>ID</th>
-                                    <th>HÌNH ẢNH</th>
-                                    <th>TÊN DANH MỤC</th>
-                                    <th>LOẠI DANH MỤC</th>
-                                    <th>MÔ TẢ</th>
-                                    <th>NGÀY TẠO</th>
-                                    <th>NGÀY CẬP NHẬT</th>
-                                    <th>TRẠNG THÁI</th>
-                                    <th>HIỂN THỊ</th>
-                                    <th>THAO TÁC</th>
-                                </tr>
-                            </thead>
-                            <tbody id="categoriesTableBody">
-                                <!-- Categories will be rendered here -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
 
-                <!-- Pagination -->
-                <div class="pagination-container">
-                    <div class="pagination">
-                        <button id="prevBtn" disabled>Previous</button>
-                        <button class="active">1</button>
-                        <button>2</button>
-                        <button id="nextBtn">Next</button>
-                    </div>
+                                    <td>@item.Name</td>
+                                    <td>@item.Hashtag</td>
+
+                                    <td><img src="@item.Image" width="50" height="50" style="object-fit:cover" /></td>
+                                    <td>
+                                        <button type="button"
+                                                class="btn btn-warning btn-sm"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#editModal"
+                                                data-id="@item.Id"
+                                                data-name="@item.Name"
+                                                data-status="@item.Status"
+                                                data-hashtag="@item.Hashtag"
+                                                data-description="@item.Description">
+                                            Sửa
+                                        </button>
+
+                                        <button type="button"
+                                                class="btn btn-danger btn-sm"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#deleteModal"
+                                                data-id="@item.Id"
+                                                data-name="@item.Name">
+                                            Xóa
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
                 </div>
             </div>
+
+
+
         </div>
     </div>
-</div>
+    <div class="modal fade" id="editModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-danger">
+                    <h5 class="modal-title text-white">Sửa danh mục</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
 
-<!-- Add/Edit Category Modal -->
-<div class="modal fade" id="addCategoryModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title">
-                    <i class="bi bi-plus-circle me-2"></i>
-                    <span id="modalTitle">Thêm Danh Mục Mới</span>
-                </h5>
-                <button type="button" class="close btn-close-white" data-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="categoryForm">
-                    <input type="hidden" id="categoryId">
+                <form asp-action="Edit" method="post" enctype="multipart/form-data" novalidate>
+                    <input type="hidden" name="Id" id="edit-id" />
+                    <div class="modal-body">
+                        <div class="row g-3">
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Tên Danh Mục *</label>
-                                <input type="text" id="categoryName" class="form-control" required>
+                            <div class="col-md-6 mb-4">
+                                <label for="edit-name">Tên danh mục</label>
+                                <div class="input-group has-validation">
+                                    <span class="input-group-text"><i class="bi bi-type"></i></span>
+                                    <input type="text" class="form-control" id="edit-name" name="Name" placeholder="Nhập tên" required />
+                                    <span class="input-group-text valid-icon d-none"><i class="bi bi-check-lg text-success"></i></span>
+                                </div>
+                                <div class="invalid-feedback" id="edit-name-error"></div>
                             </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Loại Danh Mục *</label>
-                                <select id="categoryType" class="form-select" required>
-                                    <option value="">Chọn loại danh mục</option>
-                                    <option value="Thức ăn">Thức ăn</option>
-                                    <option value="Đồ uống">Đồ uống</option>
-                                    <option value="Thời trang">Thời trang</option>
-                                    <option value="Điện tử">Điện tử</option>
-                                    <option value="Gia dụng">Gia dụng</option>
-                                </select>
+
+                            <div class="col-md-6 mb-4">
+                                <label for="edit-hashtag">Hashtag</label>
+                                <div class="input-group has-validation">
+                                    <span class="input-group-text">#</span>
+                                    <input type="text" class="form-control" id="edit-hashtag" name="Hashtag" placeholder="#thucpham" />
+                                    <span class="input-group-text valid-icon d-none"><i class="bi bi-check-lg text-success"></i></span>
+                                </div>
+                                <div class="invalid-feedback" id="edit-hashtag-error"></div>
                             </div>
+
+
+                            <div class="col-md-6 mb-4">
+                                <label for="edit-status">Trạng thái</label>
+                                <div class="input-group has-validation align-items-center">
+                                    <span class="input-group-text">
+                                        <i id="editStatusIcon" class="bi bi-toggle-on"></i>
+                                    </span>
+                                    <select name="Status" id="edit-status" class="form-select" onchange="updateEditStatusIcon()" required>
+                                        <option value="1">Hoạt động</option>
+                                        <option value="0">Không hoạt động</option>
+                                    </select>
+                                </div>
+                            </div>
+
+
+                            <div class="col-12 mb-4">
+                                <label for="edit-description">Mô tả</label>
+                                <div class="input-group has-validation">
+                                    <span class="input-group-text"><i class="bi bi-pencil-square"></i></span>
+                                    <textarea class="form-control" id="edit-description" name="Description" required></textarea>
+                                    <span class="input-group-text valid-icon d-none"><i class="bi bi-check-lg text-success"></i></span>
+                                </div>
+                                <div class="invalid-feedback" id="edit-desc-error"></div>
+                            </div>
+
+
+                            <div class="col-12 mb-4 d-flex align-items-center gap-2">
+                                <label for="edit-image" class="btn btn-outline-dark d-inline-flex align-items-center gap-2 mb-0" style="cursor: pointer;">
+                                    <i class="bi bi-upload"></i> Chọn ảnh mới
+                                </label>
+                                <input type="file" name="imageFile" id="edit-image" accept="image/*" style="display: none;" />
+                                <span id="edit-image-filename" class="text-muted ms-2"></span>
+                            </div>
+
+                            <div class="col-12 mb-4">
+                                <img id="edit-image-preview" class="img-thumbnail d-none" style="max-height: 150px;" />
+                            </div>
+
+
+
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Mô Tả</label>
-                        <textarea id="categoryDescription" class="form-control" rows="3"></textarea>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Hình Ảnh</label>
-                                <input type="file" id="categoryImage" class="form-control" accept="image/*">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Trạng Thái *</label>
-                                <select id="categoryStatus" class="form-select" required>
-                                    <option value="active">Hoạt động</option>
-                                    <option value="inactive">Tạm dừng</option>
-                                </select>
-                            </div>
-                        </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-danger btn-pill">Cập nhật</button>
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-light border" data-dismiss="modal" style="background-color: #6c757d; color: white;">Hủy</button>
-                <button type="button" class="btn btn-danger" id="saveCategoryBtn">
-                    <i class="bi bi-check-lg me-2"></i>
-                    Lưu Danh Mục
-                </button>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-danger">
+                    <h5 class="modal-title text-white" id="deleteModalLabel">Thông báo xóa</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Bạn có chắc chắn muốn xóa danh mục <strong id="delete-name"></strong> không? Hành động này sẽ không thể hoàn tác.
+                </div>
+                <div class="modal-footer">
+                    <input type="hidden" id="delete-id" />
+                    <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal">
+                        Đóng
+
+                    </button>
+                    <button type="button" class="btn btn-danger btn-pill" id="btn-confirm-delete">Xóa</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title">
-                    <i class="close btn-close-white"></i>
-                    Xác Nhận Xóa
-                </h5>
-                <button type="button" class="close btn-close-white" data-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Bạn có chắc chắn muốn xóa danh mục này không?</p>
-                <p class="text-muted">Hành động này không thể hoàn tác.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-light border" data-dismiss="modal" style="background-color: #6c757d; color: white;">Hủy</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
-                    <i class="bi bi-trash me-2"></i>
-                    Xóa
-                </button>
+
+    <div class="modal fade" id="createModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-danger">
+                    <h5 class="modal-title text-white">Thêm danh mục</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <form id="createForm" asp-action="Create" method="post" enctype="multipart/form-data" novalidate>
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6 mb-4">
+                                <label for="create-name">Tên danh mục</label>
+                                <div class="input-group has-validation">
+                                    <span class="input-group-text"><i class="bi bi-type"></i></span>
+                                    <input type="text" class="form-control" id="create-name" name="Name" placeholder="Nhập tên" required />
+                                    <span class="input-group-text valid-icon d-none"><i class="bi bi-check-lg text-success"></i></span>
+                                </div>
+                                <div class="invalid-feedback" id="name-error"></div>
+                            </div>
+
+                            <div class="col-md-6 mb-4">
+                                <label for="create-hashtag">Hashtag</label>
+                                <div class="input-group has-validation">
+                                    <span class="input-group-text">#</span>
+                                    <input type="text" class="form-control" id="create-hashtag" name="Hashtag" placeholder="#thucpham" />
+                                    <span class="input-group-text valid-icon d-none"><i class="bi bi-check-lg text-success"></i></span>
+                                </div>
+                                <div class="invalid-feedback" id="hashtag-error"></div>
+                            </div>
+
+
+                            <div class="col-md-6 mb-4">
+                                <label for="create-status">Trạng thái</label>
+                                <div class="input-group has-validation align-items-center">
+                                    <span class="input-group-text">
+                                        <i id="createStatusIcon" class="bi bi-toggle-on"></i>
+                                    </span>
+                                    <select name="Status" id="edit-status" class="form-control" required>
+                                        <option value="1">Hoạt động</option>
+                                        <option value="0">Không hoạt động</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-12 mb-4">
+                                <label for="create-description">Mô tả</label>
+                                <div class="input-group has-validation">
+                                    <span class="input-group-text"><i class="bi bi-pencil-square"></i></span>
+                                    <textarea class="form-control" id="create-description" name="Description" required></textarea>
+                                    <span class="input-group-text valid-icon d-none"><i class="bi bi-check-lg text-success"></i></span>
+                                </div>
+                                <div class="invalid-feedback" id="desc-error"></div>
+                            </div>
+
+                            <div class="col-12 mb-4">
+                                <label for="create-image" class="btn btn-outline-dark d-inline-flex align-items-center gap-2 mb-2">
+                                    <i class="bi bi-upload"></i> Chọn ảnh
+                                </label>
+                                <input type="file" name="imageFile" id="create-image" accept="image/*" style="display: none;" />
+                                <span id="create-image-filename" class="text-muted ms-2"> </span>
+                                <div class="mt-2">
+                                    <img id="image-preview" class="img-thumbnail d-none" style="max-height: 150px;" />
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-danger btn-pill">Lưu</button>
+                    </div>
+                </form>
             </div>
         </div>
-    </div>
-</div>
 
-</html>
+    </div>
+    @section Scripts {
+        <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+
+        <script>
+
+            // Validate functions
+            function validateName(name) {
+                return /^[\p{L} ]{2,}$/u.test(name.trim());
+            }
+
+            function validateHashtag(tag) {
+                return tag.trim() === "" || /^#[a-zA-Z0-9_]+$/.test(tag.trim());
+            }
+
+            function validateDescription(desc) {
+                return desc.trim().length >= 1 && /^[\p{L}0-9 ,.?!()%-]+$/u.test(desc.trim());
+            }
+
+            // Update validation UI & toast
+            function updateInputValidation(inputId, isValid, errorId, message) {
+                const input = document.getElementById(inputId);
+                const error = document.getElementById(errorId);
+                const validIcon = input.closest('.input-group')?.querySelector('.valid-icon');
+
+                input.classList.remove("is-valid", "is-invalid");
+                validIcon?.classList.add("d-none");
+
+                if (isValid) {
+                    input.classList.add("is-valid");
+                    error.textContent = "";
+                    validIcon?.classList.remove("d-none");
+                } else {
+                    input.classList.add("is-invalid");
+                    error.textContent = message;
+
+                    // Show toast error
+                    const toastBody = document.querySelector("#autoToast .toast-body");
+                    const toastHeader = document.querySelector("#autoToast .toast-header");
+
+                    if (toastBody && toastHeader) {
+                        toastBody.textContent = message;
+                        toastHeader.classList.remove("bg-success");
+                        toastHeader.classList.add("bg-danger");
+
+                        const toastEl = document.getElementById("autoToast");
+                        const toast = new bootstrap.Toast(toastEl, { delay: 4000 });
+                        toast.show();
+                    }
+                }
+            }
+
+            document.addEventListener("DOMContentLoaded", function () {
+                // Create modal elements
+                const nameInput = document.getElementById("create-name");
+                const tagInput = document.getElementById("create-hashtag");
+                const descInput = document.getElementById("create-description");
+                const imageInput = document.getElementById("create-image");
+                const imagePreview = document.getElementById("image-preview");
+
+                nameInput.addEventListener("input", () => {
+                    updateInputValidation("create-name", validateName(nameInput.value), "name-error", "Tên phải ≥ 2 ký tự, không có ký tự đặc biệt.");
+                });
+
+                tagInput.addEventListener("input", () => {
+                    updateInputValidation("create-hashtag", validateHashtag(tagInput.value), "hashtag-error", "Hashtag phải bắt đầu bằng #, không dấu cách.");
+                });
+
+                descInput.addEventListener("input", () => {
+                    updateInputValidation("create-description", validateDescription(descInput.value), "desc-error", "Không để trống hoặc chứa ký hiệu đặc biệt.");
+                });
+
+                imageInput.addEventListener("change", function () {
+                    if (this.files?.[0]) {
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                            imagePreview.src = e.target.result;
+                            imagePreview.classList.remove("d-none");
+                        };
+                        reader.readAsDataURL(this.files[0]);
+                    }
+                });
+
+                document.getElementById("createForm").addEventListener("submit", function (e) {
+                    const validName = validateName(nameInput.value);
+                    const validTag = validateHashtag(tagInput.value);
+                    const validDesc = validateDescription(descInput.value);
+
+                    updateInputValidation("create-name", validName, "name-error", "Tên không hợp lệ.");
+                    updateInputValidation("create-hashtag", validTag, "hashtag-error", "Hashtag không hợp lệ.");
+                    updateInputValidation("create-description", validDesc, "desc-error", "Mô tả không hợp lệ.");
+
+                    if (!validName || !validTag || !validDesc) {
+                        e.preventDefault();
+                    }
+                });
+
+                const editImageInput = document.getElementById("edit-image");
+                const editFilenameSpan = document.getElementById("edit-image-filename");
+                const editImagePreview = document.getElementById("edit-image-preview");
+
+                editImageInput?.addEventListener("change", function () {
+                    if (this.files && this.files.length > 0) {
+                        editFilenameSpan.textContent = this.files[0].name;
+
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                            editImagePreview.src = e.target.result;
+                            editImagePreview.classList.remove("d-none");
+                            editFilenameSpan.textContent = "";
+                        };
+                        reader.readAsDataURL(this.files[0]);
+                    } else {
+                        editFilenameSpan.textContent = "Chưa chọn file";
+
+                    }
+                });
+
+
+            });
+
+            // Set data and image preview when show edit modal
+            const editModal = document.getElementById('editModal');
+            editModal?.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+
+                document.getElementById('edit-id').value = button.getAttribute('data-id');
+                document.getElementById('edit-name').value = button.getAttribute('data-name');
+
+                document.getElementById('edit-status').value = button.getAttribute('data-status');
+                document.getElementById('edit-hashtag').value = button.getAttribute('data-hashtag');
+                document.getElementById('edit-description').value = button.getAttribute('data-description');
+
+                // Set image preview source from table row image
+                const imageSrc = button.closest('tr').querySelector('td img').src;
+                document.getElementById('edit-image-preview').src = imageSrc;
+
+                // Clear edit image input value (in case modal used multiple times)
+                const editImageInput = document.getElementById('edit-image');
+                if (editImageInput) editImageInput.value = "";
+            });
+
+            // Delete modal setup
+            const deleteModal = document.getElementById('deleteModal');
+            deleteModal?.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+
+                document.getElementById('delete-id').value = button.getAttribute('data-id');
+                document.getElementById('delete-name').textContent = button.getAttribute('data-name');
+            });
+
+            document.getElementById('btn-confirm-delete')?.addEventListener('click', function () {
+                const id = document.getElementById('delete-id').value;
+                const form = document.createElement('form');
+                form.method = 'post';
+                form.action = `/Admin/Category/Delete?id=${id}`;
+
+                const token = document.querySelector('input[name="__RequestVerificationToken"]');
+                if (token) {
+                    const hiddenToken = document.createElement('input');
+                    hiddenToken.type = 'hidden';
+                    hiddenToken.name = '__RequestVerificationToken';
+                    hiddenToken.value = token.value;
+                    form.appendChild(hiddenToken);
+                }
+
+                document.body.appendChild(form);
+                form.submit();
+            });
+
+            // Auto show toast
+            document.addEventListener("DOMContentLoaded", () => {
+                const toastEl = document.getElementById('autoToast');
+                if (toastEl) {
+                    const toast = new bootstrap.Toast(toastEl, {
+                        delay: 4000,
+                        autohide: true
+                    });
+                    toast.show();
+                }
+            });
+
+            // DataTables init and custom search
+            $(document).ready(function () {
+                const table = $('.table-product').DataTable({
+                    ordering: false,
+                    autoWidth: false,
+                    pageLength: 5,
+                    language: {
+                        search: "Tìm kiếm:",
+                        lengthMenu: "Hiển thị _MENU_ danh mục mỗi trang",
+                        zeroRecords: "Không tìm thấy danh mục phù hợp",
+                        info: "",
+                        infoEmpty: "Không có danh mục nào",
+                        infoFiltered: "(lọc từ _MAX_ danh mục)",
+                        paginate: {
+                            previous: "Trước",
+                            next: "Sau"
+                        }
+                    },
+                    paging: true
+                });
+
+                // Kết nối ô tìm kiếm custom
+                $('#customSearchBox').on('keyup', function () {
+                    table.search(this.value).draw();
+                });
+            });
+
+        </script>
+    }

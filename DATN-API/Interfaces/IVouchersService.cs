@@ -11,5 +11,7 @@ namespace DATN_API.Interfaces
         Task<Vouchers> CreateVoucherAsync(Vouchers voucher);
         Task<Vouchers?> UpdateVoucherAsync(int id, Vouchers voucher);
         Task<bool> DeleteVoucherAsync(int id);
+        Task<IEnumerable<Vouchers>> GetVouchersByStoreOrAdminAsync(int? storeId);
+
     }
 }

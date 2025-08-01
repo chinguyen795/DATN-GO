@@ -1,5 +1,6 @@
 ﻿using DATN_API.Data;
 using DATN_API.Models;
+using DATN_API.Services;
 using DATN_API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,7 +30,7 @@ namespace DATN_API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var order = await _service.GetByIdAsync(id);
+            var order = await _service.GetOrderDetailAsync(id);
 
             if (order == null) return NotFound();
 
@@ -67,5 +68,44 @@ namespace DATN_API.Controllers
 
             return NoContent();
         }
+        [HttpGet("all-by-user/{userId}")]
+        public async Task<IActionResult> GetAllByUser(int userId)
+            => Ok(await _service.GetOrdersByUserIdAsync(userId));
+
+
+        [HttpGet("all-by-store/{userId}")]
+        public async Task<IActionResult> GetAllByStore(int userId)
+             => Ok(await _service.GetOrdersByStoreUserAsync(userId));
+        [HttpPatch("updatestatus/{id}")]
+        public async Task<IActionResult> UpdateStatus(int id, [FromQuery] OrderStatus status)
+        {
+            var (success, message) = await _service.UpdateStatusAsync(id, status);
+
+            if (!success)
+                return NotFound(message);
+
+            return Ok(message);
+        }
+        [HttpGet("statistics")]
+        public async Task<IActionResult> GetStatistics(
+    [FromQuery] int storeId,
+    [FromQuery] DateTime? start,
+    [FromQuery] DateTime? end,
+    [FromQuery] DateTime? startCompare = null,
+    [FromQuery] DateTime? endCompare = null)
+        {
+            if (storeId <= 0)
+                return BadRequest("Thiếu hoặc sai StoreId");
+
+            var result = await _service.GetStatisticsAsync(storeId, start, end, startCompare, endCompare);
+            return Ok(result);
+        }
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetOrdersByUser(int userId)
+        {
+            var orders = await _service.GetOrdersByUserIdAsync(userId);
+            return Ok(orders);
+        }
+
     }
 }
