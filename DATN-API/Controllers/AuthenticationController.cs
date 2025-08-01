@@ -384,6 +384,87 @@ namespace DATN_API.Controllers
             return Ok(exists);
         }
 
+        [HttpPost("SendForgotPasswordOTP")]
+        public async Task<IActionResult> SendForgotPasswordOTP([FromBody] string input)
+        {
+            bool isPhone = IsPhone(input);
+
+            if (_lastCodeSentTime.TryGetValue(input, out DateTime lastSent) && (DateTime.UtcNow - lastSent) < _resendDelay)
+                return BadRequest($"Vui lòng chờ {(_resendDelay - (DateTime.UtcNow - lastSent)).Seconds} giây trước khi gửi lại mã.");
+
+            var code = new Random().Next(100000, 999999).ToString();
+            _verificationCodes[input] = code;
+            _lastCodeSentTime[input] = DateTime.UtcNow;
+
+            try
+            {
+                if (isPhone)
+                {
+                    // Gửi mã OTP qua Twilio (SMS)
+                    TwilioClient.Init(_configuration["Twilio:AccountSID"], _configuration["Twilio:AuthToken"]);
+                    await MessageResource.CreateAsync(
+                        body: $"Mã xác thực của bạn là: {code}",
+                        from: new Twilio.Types.PhoneNumber(_configuration["Twilio:Phone"]),
+                        to: new Twilio.Types.PhoneNumber(input)
+                    );
+                    return Ok("Mã OTP đã được gửi qua SMS!");
+                }
+                else
+                {
+                    // Kiểm tra nếu đây là email hợp lệ
+                    try
+                    {
+                        var mailAddress = new MailAddress(input);
+                    }
+                    catch
+                    {
+                        return BadRequest("Định dạng email không hợp lệ!");
+                    }
+
+                    // Gửi mã OTP qua email
+                    bool sent = SendEmail(input, "Mã xác thực quên mật khẩu", $"Mã xác thực của bạn là: {code}");
+                    return sent ? Ok("Mã xác thực đã được gửi qua email!") : BadRequest("Không thể gửi email!");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Đã có lỗi xảy ra khi gửi OTP: {ex.Message}");
+            }
+        }
+
+        [HttpPost("ResetPassword")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
+        {
+            string identifier = request.Identifier;
+            bool isPhone = IsPhone(identifier);
+
+            // Kiểm tra xem mã OTP đã được xác minh chưa
+            // Thực tế, ở đây bạn cần xác nhận rằng người dùng đã xác thực OTP (sử dụng cơ chế đã được xác nhận OTP của bạn, ví dụ: _verifiedAccounts)
+            if (!_verifiedAccounts.Contains(identifier)) // Bạn cần kiểm tra OTP đã xác minh ở đâu đó
+                return BadRequest("Bạn chưa xác minh mã OTP hoặc email!");
+
+            // Kiểm tra mật khẩu xác nhận
+            if (request.Password != request.ConfirmPassword)
+                return BadRequest("Mật khẩu xác nhận không khớp!");
+
+            // Kiểm tra xem tài khoản có tồn tại trong hệ thống không
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == identifier || u.Phone == identifier);
+
+            if (user == null)
+                return BadRequest("Tài khoản không tồn tại!");
+
+            // Cập nhật mật khẩu mới
+            user.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+
+            // Xóa thông tin OTP sau khi cập nhật mật khẩu thành công
+            _verifiedAccounts.Remove(identifier);
+
+            return Ok("Mật khẩu đã được thay đổi thành công!");
+        }
+
         public class ChangePasswordWithIdentifierRequest
         {
             public string Identifier { get; set; }
@@ -416,6 +497,13 @@ namespace DATN_API.Controllers
             public int UserId { get; set; }
             public string NewEmail { get; set; }
             public string OtpCode { get; set; }
+        }
+
+        public class ResetPasswordRequest
+        {
+            public string Identifier { get; set; } // Số điện thoại hoặc email của người dùng
+            public string Password { get; set; } // Mật khẩu mới
+            public string ConfirmPassword { get; set; } // Xác nhận mật khẩu mới
         }
     }
 }

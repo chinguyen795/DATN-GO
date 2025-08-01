@@ -183,7 +183,59 @@ namespace DATN_GO.Service
             return bool.TryParse(json, out var exists) && exists;
         }
 
+        // FORGOT PASSWORD
+        public async Task<(bool Success, string Message)> SendForgotPasswordOTPAsync(string identifier)
+        {
+            // API của bạn nhận một string input trực tiếp từ [FromBody]
+            // Do đó, cần serialize identifier thành một chuỗi JSON hợp lệ.
+            var content = new StringContent(JsonSerializer.Serialize(identifier), Encoding.UTF8, "application/json");
 
-        
+            // Gửi yêu cầu HTTP POST tới API để gửi mã OTP
+            var response = await _httpClient.PostAsync($"{_baseUrl}Authentication/SendForgotPasswordOTP", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Nếu gửi thành công, trả về thông điệp thành công
+                return (true, await response.Content.ReadAsStringAsync());
+            }
+            else
+            {
+                // Nếu gửi thất bại, trả về thông điệp lỗi
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                return (false, errorMessage);
+            }
+        }
+
+        public async Task<(bool Success, string Message)> ResetPasswordAsync(string identifier, string password, string confirmPassword)
+        {
+            // Tạo đối tượng ResetPasswordRequest chứa thông tin mật khẩu và xác nhận mật khẩu
+            var payload = new ResetPasswordRequest
+            {
+                Identifier = identifier,
+                Password = password,
+                ConfirmPassword = confirmPassword
+            };
+
+            // Serialize payload thành JSON
+            var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+
+            // Gửi yêu cầu POST đến API ResetPassword
+            var response = await _httpClient.PostAsync($"{_baseUrl}Authentication/ResetPassword", content);
+
+            // Kiểm tra nếu API trả về thành công
+            if (response.IsSuccessStatusCode)
+            {
+                return (true, await response.Content.ReadAsStringAsync());
+            }
+            else
+            {
+                // Lấy thông báo lỗi từ API nếu có
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                return (false, errorMessage);
+            }
+        }
+
+
+
     }
 }

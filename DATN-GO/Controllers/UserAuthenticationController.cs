@@ -388,7 +388,99 @@ namespace DATN_GO.Controllers
             return Ok(new { fullName = result.User.FullName });
 
         }
+        [HttpGet("ForgotPassword")]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
 
+        [HttpPost("ForgotPassword")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest model)
+        {
+            // Kiểm tra xem ModelState có hợp lệ không
+            if (ModelState.IsValid)
+            {
+                // Kiểm tra xem email hoặc số điện thoại có tồn tại trong hệ thống không
+                var userExists = await _AuthenticationService.IsEmailExistAsync(model.Identifier);
+
+                if (!userExists)
+                {
+                    // Thêm lỗi vào ModelState để hiển thị trên view
+                    ModelState.AddModelError("Identifier", "Email hoặc số điện thoại này không tồn tại trong hệ thống. Vui lòng kiểm tra lại");
+                    return View("ForgotPassword", model);  // Trả về view với thông báo lỗi
+                }
+
+                // Nếu email đã tồn tại, gửi mã OTP
+                var (success, message) = await _AuthenticationService.SendForgotPasswordOTPAsync(model.Identifier);
+
+                if (success)
+                {
+                    // Chuyển hướng đến trang xác nhận mã OTP
+                    return RedirectToAction("AuthenticationCode", new { identifier = model.Identifier });
+                }
+                else
+                {
+                    // Thêm lỗi vào ModelState nếu gửi OTP thất bại
+                    ModelState.AddModelError("Identifier", message);  // Cung cấp thông báo lỗi từ dịch vụ
+                    return View("ForgotPassword", model);  // Trả về lại view với thông báo lỗi
+                }
+            }
+
+            // Trả về lại view với lỗi nếu ModelState không hợp lệ
+            return View("ForgotPassword", model);
+        }
+
+        [HttpGet("ResetPassword")]
+        public IActionResult ResetPassword(string identifier)
+        {
+            // Kiểm tra nếu identifier (email hoặc số điện thoại) bị thiếu hoặc không hợp lệ
+            if (string.IsNullOrEmpty(identifier))
+            {
+                // Nếu không có identifier, chuyển hướng người dùng về trang chủ hoặc trang khác
+                return RedirectToAction("Index", "Home");
+            }
+
+            // Gán identifier vào ViewBag để có thể truy cập trong View
+            ViewBag.Identifier = identifier;
+
+            // Trả về view ResetPassword
+            return View();
+        }
+
+        [HttpPost("ResetPassword")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordRequest model)
+        {
+            // Kiểm tra tính hợp lệ của model (bao gồm mật khẩu và xác nhận mật khẩu)
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Identifier = model.Identifier;
+                return View(model);
+            }
+
+            // Kiểm tra xem mật khẩu và xác nhận mật khẩu có khớp không
+            if (model.Password != model.ConfirmPassword)
+            {
+                ModelState.AddModelError("Password", "Mật khẩu xác nhận không khớp.");
+                return View(model);
+            }
+
+            // Gọi service để reset mật khẩu
+            var (success, message) = await _AuthenticationService.ResetPasswordAsync(model.Identifier, model.Password, model.ConfirmPassword);
+
+            if (success)
+            {
+                // Thông báo thành công khi mật khẩu được reset thành công
+                TempData["ToastMessage"] = "🎉 Mật khẩu của bạn đã được thay đổi thành công!";
+                TempData["ToastType"] = "success";
+                return RedirectToAction("index", "Home");  // Chuyển hướng đến trang đăng nhập
+            }
+            else
+            {
+                // Nếu có lỗi trong quá trình reset mật khẩu, hiển thị thông báo lỗi
+                ModelState.AddModelError("Password", message);
+                return View(model);
+            }
+        }
 
 
         public class GoogleLoginResponseDto

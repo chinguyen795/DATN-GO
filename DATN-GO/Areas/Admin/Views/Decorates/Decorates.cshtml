@@ -1,0 +1,1392 @@
+﻿﻿@using Newtonsoft.Json
+@model DATN_GO.ViewModels.Decorates.DecoratesViewModel
+
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+    var decorate = ViewBag.Decorate;
+}
+
+<style>
+    body {
+    }
+
+    .page-wrapper {
+        padding-top: 60px;
+    }
+
+    .preview-box {
+        position: relative;
+        border: 2px dashed #ccc;
+        border-radius: 0.375rem;
+        background-color: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6c757d;
+        overflow: hidden;
+        width: 100%;
+    }
+
+        .preview-box img,
+        .preview-box video {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+        }
+
+    .decorate-item {
+        height: 140px;
+    }
+
+    /* Slideshow container */
+    .slideshow-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    /* Slide wrapper để bọc từng ảnh + caption */
+    .slide-wrapper {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    /* Ảnh và video slide */
+    .slide-img,
+    .slide-video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: none;
+    }
+
+        .slide-img:first-child,
+        .slide-video:first-child {
+            display: block;
+        }
+
+    /* Caption dưới chân slide */
+    .slide-caption {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        background: rgba(0, 0, 0, 0.15);
+        backdrop-filter: blur(3px);
+        color: #f1f1f1;
+        padding: 10px 12px;
+        text-align: center;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .slide-title {
+        font-size: 1rem;
+        margin-bottom: 3px;
+    }
+
+    .slide-description {
+        font-size: 0.85rem;
+        opacity: 0.9;
+    }
+
+    /* Nút chuyển slide */
+    .slide-nav-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background-color: rgba(0, 0, 0, 0.6);
+        color: white;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 18px;
+        font-weight: bold;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+        .slide-nav-btn:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .slide-nav-btn.prev {
+            left: 0 !important;
+        }
+
+        .slide-nav-btn.next {
+            right: 0 !important;
+        }
+
+    /* Indicator tùy chọn */
+    .slide-indicators {
+        position: absolute;
+        bottom: 15px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 5px;
+        z-index: 10;
+    }
+
+    /* Toast messages */
+    .toast-success {
+        background-color: #28a745 !important;
+    }
+
+    .toast-error {
+        background-color: #BD362F !important;
+    }
+
+    .toast-info {
+        background-color: #17a2b8 !important;
+    }
+
+    .toast-warning {
+        background-color: #ffc107 !important;
+    }
+
+    /* Caption cho ảnh Decorate */
+    .decorate-caption {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(4px);
+        padding: 6px 10px;
+        color: #cccccc;
+        text-align: center;
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+    }
+
+        .decorate-caption .fw-bold {
+            font-size: 0.9rem;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        .decorate-caption .text-truncate {
+            font-size: 0.8rem;
+            color: #e0e0e0;
+            line-height: 1.1;
+        }
+
+    /* Hover effect ảnh Decorate */
+    .decorate-item img {
+        transition: transform 0.3s ease;
+    }
+
+    .decorate-item:hover img {
+        transform: scale(1.02);
+    }
+</style>
+
+<div class="page-wrapper">
+    <header class="main-header" id="header">
+        <nav class="navbar navbar-expand-lg navbar-light" id="navbar">
+            <button id="sidebar-toggler" class="sidebar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+            </button>
+            <span class="page-title">TRANG TRÍ SÀN</span>
+            <div class="navbar-right">
+                <ul class="nav navbar-nav">
+                    <li class="custom-dropdown">
+                        <a class="notify-toggler custom-dropdown-toggler" asp-controller="Notification" asp-action="Index">
+                            <i class="mdi mdi-bell-outline icon"></i>
+                        </a>
+                    </li>
+                    <li class="dropdown user-menu">
+                        <button class="dropdown-toggle nav-link" data-toggle="dropdown">
+                            <img src="@(!string.IsNullOrEmpty(ViewBag.UserInfo?.Avatar) ? ViewBag.UserInfo.Avatar : "/images/avt-user.jpg")"
+                                 width="32" height="32" style="object-fit: cover;" loading="lazy" />
+                            <span class="d-none d-lg-inline-block">@ViewBag.UserInfo?.FullName</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-right">
+                            <li>
+                                <a class="dropdown-link-item" asp-controller="Profile" asp-action="Index" asp-area="">
+                                    <i class="mdi mdi-account-outline"></i>
+                                    <span class="nav-text">Hồ Sơ</span>
+                                </a>
+                            </li>
+                            <li class="dropdown-footer">
+                                <a class="dropdown-link-item" href="/Admin/Decorates/Logout">
+                                    <i class="mdi mdi-logout"></i> Đăng Xuất
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+    <div class="content-wrapper">
+        <div class="content">
+            <main>
+                <div class="container-fluid">
+                    @if (Model.Id != 0)
+                    {
+                        <div class="mb-3">
+                            <button type="button"
+                                    class="btn btn-outline-danger"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#deleteConfirmModal"
+                                    style="text-transform: capitalize;">
+                                <i class="bi bi-trash" style="margin-right: 5px"></i>Xoá Tất Cả
+                            </button>
+                        </div>
+                    }
+
+                    <form method="post" enctype="multipart/form-data" id="mainForm">
+                        <input type="hidden" id="formTitleSlide1" name="TitleSlide1" value="@Model.TitleSlide1" />
+                        <input type="hidden" id="formDescriptionSlide1" name="DescriptionSlide1" value="@Model.DescriptionSlide1" />
+                        <input type="hidden" id="formTitleSlide2" name="TitleSlide2" value="@Model.TitleSlide2" />
+                        <input type="hidden" id="formDescriptionSlide2" name="DescriptionSlide2" value="@Model.DescriptionSlide2" />
+                        <input type="hidden" id="formTitleSlide3" name="TitleSlide3" value="@Model.TitleSlide3" />
+                        <input type="hidden" id="formDescriptionSlide3" name="DescriptionSlide3" value="@Model.DescriptionSlide3" />
+
+                        <input type="hidden" id="formTitle" name="Title1" value="@Model.Title1" />
+                        <input type="hidden" id="formDescription" name="Description1" value="@Model.Description1" />
+                        <input type="hidden" id="formTitle2" name="Title2" value="@Model.Title2" />
+                        <input type="hidden" id="formDescription2" name="Description2" value="@Model.Description2" />
+
+
+                        <section class="mb-4">
+                            <div class="row align-items-stretch" style="min-height: 380px">
+
+                                <!-- Slideshow -->
+                                <div class="col-md-5 d-flex flex-column">
+                                    @if (Model.Id != 0)
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" id="decorateId" value="@Model.Id" />
+                                        <div class="d-flex justify-content-center mt-1 mb-2" style="text-transform: capitalize;">
+                                            <button type="button" class="btn btn-outline-danger btn-sm" style="text-transform: capitalize;" data-bs-toggle="modal" data-bs-target="#deleteAllSlidesModal">
+                                                <i class="bi bi-trash" style="margin-right: 5px"></i>Xoá Slide
+                                            </button>
+                                        </div>
+                                    }
+
+                                    <div class="preview-box flex-grow-1" id="slideShowPreview">
+                                        @{
+                                            var slides = new[] { Model.Slide1Path, Model.Slide2Path, Model.Slide3Path }.Where(x => !string.IsNullOrEmpty(x)).ToList();
+                                        }
+                                        @if (slides.Any())
+                                        {
+                                            <div class="slideshow-container position-relative w-100 h-100">
+                                                @for (int i = 0; i < slides.Count; i++)
+                                                {
+                                                    var title = i == 0 ? Model.TitleSlide1 : (i == 1 ? Model.TitleSlide2 : Model.TitleSlide3);
+                                                    var desc = i == 0 ? Model.DescriptionSlide1 : (i == 1 ? Model.DescriptionSlide2 : Model.DescriptionSlide3);
+                                                    <div class="slide-wrapper @(i != 0 ? "d-none" : "")">
+                                                        <img src="@slides[i]" class="slide-img" />
+                                                        <div class="slide-caption">
+                                                            <div class="slide-title">@title</div>
+                                                            <div class="slide-description">@desc</div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                                <button type="button" id="prevBtn" class="slide-nav-btn prev">‹</button>
+                                                <button type="button" id="nextBtn" class="slide-nav-btn next">›</button>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="d-flex justify-content-center align-items-center h-100 text-muted">
+                                                <span>Chưa có ảnh slide nào</span>
+                                            </div>
+                                        }
+                                    </div>
+
+                                    <button type="button" class="btn btn-danger mt-2" data-type="slideshow" style="text-transform: capitalize;">
+                                        <i class="bi bi-plus-circle" style="margin-right: 5px"></i> Chọn ảnh slide show
+                                    </button>
+                                </div>
+
+                                <!-- Video -->
+                                <div class="col-md-5 d-flex flex-column">
+                                    @if (Model.Id != 0)
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" id="decorateId" value="@Model.Id" />
+                                        <div class="d-flex justify-content-center mt-1 mb-2" style="text-transform: capitalize;">
+                                            <button type="button" class="btn btn-outline-danger btn-sm" style="text-transform: capitalize;" data-bs-toggle="modal" data-bs-target="#deleteVideoModal">
+                                                <i class="bi bi-trash" style="margin-right: 5px"></i>Xoá Video
+                                            </button>
+                                        </div>
+                                    }
+
+                                    <div class="preview-box flex-grow-1" id="videoPreview">
+                                        @if (!string.IsNullOrEmpty(Model.VideoPath))
+                                        {
+                                            <video src="@Model.VideoPath" controls class="slide-video" style="width:100%; height:100%; object-fit:cover;"></video>
+                                        }
+                                        else
+                                        {
+                                            <span>Video</span>
+                                        }
+                                    </div>
+
+                                    <button type="button" class="btn btn-danger mt-2" data-type="video" style="text-transform: capitalize;">
+                                        <i class="bi bi-plus-circle" style="margin-right: 5px"></i> Chọn video
+                                    </button>
+                                </div>
+
+                                <!-- Ảnh Decorate -->
+                                <div class="col-md-2 d-flex flex-column justify-content-between">
+                                    <!-- Image 1 -->
+                                    <div class="d-flex flex-column h-100">
+                                        @if (Model.Id != 0)
+                                        {
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" id="decorateId" value="@Model.Id" />
+                                            <div class="d-flex justify-content-center mt-1 mb-2">
+                                                <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteDecorate1Modal" style="text-transform: capitalize;">
+                                                    <i class="bi bi-trash me-2" style="margin-right: 6px"></i>Xoá Ảnh 1
+                                                </button>
+                                            </div>
+                                        }
+
+                                        <div class="preview-box flex-grow-1 decorate-item position-relative overflow-hidden" id="decoratePreview1">
+                                            @if (!string.IsNullOrEmpty(Model.Image1Path))
+                                            {
+                                                <img src="@Model.Image1Path" style="width: 100%; height: 100%; object-fit: cover;" />
+                                                <div class="decorate-caption position-absolute bottom-0 start-0 w-100 px-2 py-2 text-white">
+                                                    <div class="fw-bold">@Model.Title1</div>
+                                                    <div class="text-truncate">@Model.Description1</div>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="d-flex justify-content-center align-items-center h-100 bg-light text-muted rounded">
+                                                    Chưa có ảnh 1
+                                                </div>
+                                            }
+                                        </div>
+                                        <button type="button" class="btn btn-danger btn-sm mt-2" data-type="decorate" data-target="1" style="text-transform: capitalize;">
+                                            <i class="bi bi-plus-circle" style="margin-right: 5px"></i> Chọn ảnh 1
+                                        </button>
+                                    </div>
+
+                                    <!-- Image 2 -->
+                                    <div class="d-flex flex-column h-100 mt-3">
+                                        @if (Model.Id != 0)
+                                        {
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" id="decorateId" value="@Model.Id" />
+                                            <div class="d-flex justify-content-center mt-1 mb-2">
+                                                <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteDecorate2Modal" style="text-transform: capitalize;">
+                                                    <i class="bi bi-trash" style="margin-right: 5px"></i>Xoá Ảnh 2
+                                                </button>
+                                            </div>
+                                        }
+
+                                        <div class="preview-box flex-grow-1 decorate-item position-relative overflow-hidden" id="decoratePreview2">
+                                            @if (!string.IsNullOrEmpty(Model.Image2Path))
+                                            {
+                                                <img src="@Model.Image2Path" style="width: 100%; height: 100%; object-fit: cover;" />
+                                                <div class="decorate-caption position-absolute bottom-0 start-0 w-100 px-2 py-2 text-white">
+                                                    <div class="fw-bold">@Model.Title2</div>
+                                                    <div class="text-truncate">@Model.Description2</div>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="d-flex justify-content-center align-items-center h-100 bg-light text-muted rounded">
+                                                    Chưa có ảnh 2
+                                                </div>
+                                            }
+                                        </div>
+                                        <button type="button" class="btn btn-danger btn-sm mt-2" data-type="decorate" data-target="2" style="text-transform: capitalize;">
+                                            <i class="bi bi-plus-circle" style="margin-right: 5px"></i> Chọn ảnh 2
+                                        </button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </section>
+
+                        <div class="text-center my-4">
+                            <button type="submit" class="btn btn-outline-success px-5 py-2 fs-5" style="text-transform: capitalize;">
+                                <i class="bi bi-save" style="margin-right: 6px"></i>Lưu thay đổi
+                            </button>
+                        </div>
+                    </form>
+
+
+                </div>
+            </main>
+        </div>
+    </div>
+</div>
+
+<!-- Modal thêm -->
+<div class="modal fade" id="uploadModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="modalUploadForm">
+                <div class="modal-header bg-danger">
+                    <h5 class="modal-title text-white" id="uploadModalLabel">Tải lên</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="uploadType" />
+                    <input type="hidden" id="uploadTarget" />
+
+                    <!-- Chủ đề (chỉ dùng cho ảnh trang trí) -->
+                    <div class="mb-4" id="modalTopicGroup">
+                        <label for="modalTopic" class="form-label">Chủ đề</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-pencil"></i></span>
+                            <input type="text" class="form-control" id="modalTopic" />
+                        </div>
+                        <div class="text-danger small mt-1 modal-error-msg" id="modalTopicError"></div>
+                    </div>
+
+                    <!-- Miêu tả (chỉ dùng cho ảnh trang trí) -->
+                    <div class="mb-4" id="modalDescriptionGroup">
+                        <label for="modalDescription" class="form-label">Mô tả</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-card-text"></i></span>
+                            <textarea class="form-control" id="modalDescription" rows="3"></textarea>
+                        </div>
+                        <div class="text-danger small mt-1 modal-error-msg" id="modalDescriptionError"></div>
+                    </div>
+
+                    <!-- 3 input ảnh slideshow -->
+                    <div class="mb-4 slideshow-inputs">
+                        <label class="form-label">Ảnh Slide Show</label>
+                        <div id="slideContainer">
+                            <!-- Slide đầu tiên -->
+                            <div class="slide-block mb-3">
+                                <input type="file" class="form-control slide-file" name="slideFile" accept="image/*" />
+                                <div class="text-danger small mt-1 modal-error-msg"></div>
+
+                                <label class="form-label mt-2">Tiêu đề</label>
+                                <input type="text" class="form-control slide-title" name="slideTitle" />
+                                <div class="text-danger small mt-1 modal-error-msg"></div>
+
+                                <label class="form-label mt-2">Mô tả</label>
+                                <textarea class="form-control slide-description" name="slideDescription" rows="3"></textarea>
+                                <div class="text-danger small mt-1 modal-error-msg"></div>
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-outline-danger mt-2" id="addSlideBtn" style="text-transform: capitalize;">
+                            <i class="bi bi-plus-circle"></i> Thêm Slide
+                        </button>
+                    </div>
+
+                    <!-- File input cho video và decorate -->
+                    <div class="mb-4 d-none" id="modalFileGroup">
+                        <label for="modalFile" class="form-label">Chọn tệp</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-upload"></i></span>
+                            <input type="file" class="form-control" id="modalFile" />
+                        </div>
+                        <div class="text-danger small mt-1 modal-error-msg" id="modalFileError"></div>
+                    </div>
+
+                    <!-- Preview ảnh/video -->
+                    <div id="modalPreview" class="mt-3 text-center"></div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light btn-pill" data-dismiss="modal" style="text-transform: capitalize;">
+                        Đóng
+                    </button>
+                    <button type="button" class="btn btn-danger btn-pill" id="modalSaveBtn" style="text-transform: capitalize;">
+                        Lưu
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Modal xóa tất cả -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="deleteForm" method="post" action="/Admin/Decorates/DeleteConfirmed">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" id="deleteId" value="@Model.Id" />
+                <div class="modal-header bg-danger">
+                    <h5 class="modal-title text-white" id="deleteConfirmModalLabel">Xác nhận xoá</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    Bạn có chắc chắn muốn xoá trang trí này không? Hành động này sẽ không thể hoàn tác.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light btn-pill" style="text-transform: capitalize;" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-danger btn-pill" style="text-transform: capitalize;">Xoá</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal xoá toàn bộ Slide -->
+<div class="modal fade" id="deleteAllSlidesModal" tabindex="-1" aria-labelledby="deleteAllSlidesModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger">
+                <h5 class="modal-title text-white" id="deleteAllSlidesModalLabel">Xác nhận xoá</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                Bạn có chắc chắn muốn xoá <strong>toàn bộ 5 slide</strong>? Hành động này không thể hoàn tác.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal" style="text-transform: capitalize;">Đóng</button>
+                <button type="button" class="btn btn-danger btn-pill" id="confirmDeleteAllSlidesBtn" style="text-transform: capitalize;">Xoá</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal xoá video -->
+<div class="modal fade" id="deleteVideoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger">
+                <h5 class="modal-title text-white">Xác nhận xoá</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                Bạn có chắc chắn muốn xoá <strong>Video</strong> này không? Hành động này không thể hoàn tác.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal" style="text-transform: capitalize;">Đóng</button>
+                <button type="button" class="btn btn-danger btn-pill" id="confirmDeleteVideoBtn" style="text-transform: capitalize;">Xoá</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal xoá Decorate 1 -->
+<div class="modal fade" id="deleteDecorate1Modal" tabindex="-1" aria-labelledby="deleteDecorate1ModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger">
+                <h5 class="modal-title text-white" id="deleteDecorate1ModalLabel">Xác nhận xoá</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                Bạn có chắc chắn muốn <strong>xóa ảnh Decorate 1</strong>? Hành động này không thể hoàn tác.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal" style="text-transform: capitalize;">Đóng</button>
+                <button type="button" id="confirmDeleteDecorate1Btn" class="btn btn-danger btn-pill" style="text-transform: capitalize;">Xoá</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal xoá Decorate 2 -->
+<div class="modal fade" id="deleteDecorate2Modal" tabindex="-1" aria-labelledby="deleteDecorate2ModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger">
+                <h5 class="modal-title text-white" id="deleteDecorate2ModalLabel">Xác nhận xoá</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                Bạn có chắc chắn muốn <strong>xóa ảnh Decorate 2</strong>? Hành động này không thể hoàn tác.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal" style="text-transform: capitalize;">Đóng</button>
+                <button type="button" id="confirmDeleteDecorate2Btn" class="btn btn-danger btn-pill" style="text-transform: capitalize;">Xoá</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let currentSlideIndex = 0;
+        const uploadModalEl = document.getElementById("uploadModal");
+        const uploadModal = uploadModalEl ? new bootstrap.Modal(uploadModalEl) : null;
+
+        const modalForm = document.getElementById("modalUploadForm");
+        const modalTopicGroup = document.getElementById("modalTopicGroup");
+        const modalDescriptionGroup = document.getElementById("modalDescriptionGroup");
+        const modalPreview = document.getElementById("modalPreview");
+        const modalFileGroup = document.getElementById("modalFileGroup");
+        const modalFile = document.getElementById("modalFile");
+
+        window.uploadedSlides = [];
+        window.selectedVideoFile = null;
+        window.selectedDecorate1 = null;
+        window.selectedDecorate2 = null;
+
+        function updateSlidePreview(files) {
+            const container = document.getElementById("slideShowPreview");
+            if (!container || files.length === 0) {
+                container.innerHTML = "";
+                return;
+            }
+
+            // Reset nội dung slide
+            container.innerHTML = files.map((file, i) => {
+                const url = URL.createObjectURL(file);
+                return `
+                        <img src="${url}" class="slide-img ${i === 0 ? "" : "d-none"}"
+                            style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">
+                    `;
+            }).join("") + `
+                    <button type="button" id="prevBtn" class="slide-nav-btn prev"
+                        style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+                        background: rgba(0,0,0,0.5); color: white; border: none; padding: 10px; border-radius: 50%;">‹</button>
+
+                    <button type="button" id="nextBtn" class="slide-nav-btn next"
+                        style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+                        background: rgba(0,0,0,0.5); color: white; border: none; padding: 10px; border-radius: 50%;">›</button>
+                `;
+
+            currentSlideIndex = 0;
+            showSlide(currentSlideIndex);
+            attachSlideNavEvents(); // 👈 Gọi lại nav events ở đây
+        }
+
+        function attachSlideNavEvents() {
+            const prevBtn = document.getElementById("prevBtn");
+            const nextBtn = document.getElementById("nextBtn");
+
+            if (prevBtn) {
+                const newPrev = prevBtn.cloneNode(true);
+                prevBtn.replaceWith(newPrev);
+                newPrev.addEventListener("click", () => showSlide(currentSlideIndex - 1));
+            }
+
+            if (nextBtn) {
+                const newNext = nextBtn.cloneNode(true);
+                nextBtn.replaceWith(newNext);
+                newNext.addEventListener("click", () => showSlide(currentSlideIndex + 1));
+            }
+        }
+
+
+        function showSlide(index) {
+            const slides = document.querySelectorAll('#slideShowPreview .slide-img');
+            if (!slides.length) return;
+            if (index < 0) index = slides.length - 1;
+            if (index >= slides.length) index = 0;
+
+            currentSlideIndex = index;
+            slides.forEach((img, i) => {
+                img.classList.toggle('d-none', i !== index);
+                img.style.display = i === index ? 'block' : 'none';
+            });
+        }
+
+
+
+        // ✅ Mở modal tương ứng
+        document.querySelectorAll("button[data-type]").forEach(button => {
+            button.addEventListener("click", () => {
+                const type = button.getAttribute("data-type");
+                const target = button.getAttribute("data-target");
+
+                modalForm.reset();
+                modalPreview.innerHTML = "";
+                document.getElementById("uploadType").value = type;
+                document.getElementById("uploadTarget").value = target || "";
+
+                // Reset slideshow
+                const slideshowInputs = document.querySelector(".slideshow-inputs");
+                slideshowInputs.classList.add("d-none");
+                slideshowInputs.innerHTML = `
+                        <label class="form-label">Chọn ảnh slideshow</label>
+                        <div class="slide-block mb-3">
+                            <input type="file" class="form-control slide-file" accept="image/*" />
+                            <div class="text-danger small mt-1 modal-error-msg"></div>
+
+                            <label class="form-label mt-2">Tiêu đề</label>
+                            <input type="text" class="form-control slide-title" />
+                            <div class="text-danger small mt-1 modal-error-msg"></div>
+
+                            <label class="form-label mt-2">Mô tả</label>
+                            <textarea class="form-control slide-description" rows="3"></textarea>
+                            <div class="text-danger small mt-1 modal-error-msg"></div>
+                        </div>
+                        <button type="button" id="addSlideBtn" class="btn btn-outline-danger btn-sm mt-2" style="text-transform: capitalize;">
+                            <i class="bi bi-plus-circle"></i> Thêm Slide
+                        </button>
+                    `;
+
+
+                if (type === "slideshow") {
+                    slideshowInputs.classList.remove("d-none");
+
+                    document.getElementById("addSlideBtn").addEventListener("click", () => {
+                        const newBlock = document.createElement("div");
+                        newBlock.className = "slide-block mb-2";
+                        newBlock.innerHTML = `
+                                <input type="file" class="form-control slide-file" accept="image/*" />
+                                <div class="text-danger small mt-1 modal-error-msg"></div>
+
+                                <label class="form-label mt-2">Tiêu đề</label>
+                                <input type="text" class="form-control slide-title" />
+                                <div class="text-danger small mt-1 modal-error-msg"></div>
+
+                                <label class="form-label mt-2">Mô tả</label>
+                                <textarea class="form-control slide-description" rows="3"></textarea>
+                                <div class="text-danger small mt-1 modal-error-msg"></div>
+                            `;
+
+                        slideshowInputs.insertBefore(newBlock, document.getElementById("addSlideBtn"));
+                    });
+                }
+
+                modalFileGroup.classList.toggle("d-none", type !== "video" && type !== "decorate");
+                modalTopicGroup.style.display = type === "decorate" ? "block" : "none";
+                modalDescriptionGroup.style.display = type === "decorate" ? "block" : "none";
+                modalFile.accept = type === "video" ? "video/*" : "image/*";
+                uploadModal?.show();
+            });
+        });
+
+        // ✅ Slide preview
+        modalForm.addEventListener("change", function () {
+            const slideFiles = modalForm.querySelectorAll(".slide-file");
+            modalPreview.innerHTML = "";
+
+            slideFiles.forEach(input => {
+                const file = input.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = document.createElement("img");
+                    img.src = e.target.result;
+                    img.className = "img-fluid rounded m-1";
+                    img.style.maxHeight = "150px";
+                    modalPreview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        modalFile.addEventListener("change", function () {
+            modalPreview.innerHTML = "";
+            const file = modalFile.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                if (file.type.startsWith("image/")) {
+                    const img = document.createElement("img");
+                    img.src = e.target.result;
+                    img.className = "img-fluid rounded m-1";
+                    img.style.maxHeight = "150px";
+                    modalPreview.appendChild(img);
+                } else if (file.type.startsWith("video/")) {
+                    const video = document.createElement("video");
+                    video.src = e.target.result;
+                    video.controls = true;
+                    video.className = "img-fluid rounded m-1";
+                    video.style.maxHeight = "150px";
+                    modalPreview.appendChild(video);
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // ✅ Gắn lại slide show preview sau khi thêm
+        function updateSlidePreview(files) {
+            const container = document.getElementById("slideShowPreview");
+            if (!container || files.length === 0) {
+                container.innerHTML = "";
+                return;
+            }
+
+            // Reset & tạo slide DOM
+            container.innerHTML = files.map((file, i) => {
+                const url = URL.createObjectURL(file);
+                return `
+                       <img src="${url}" class="slide-img ${i === 0 ? "" : "d-none"}"
+                           style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">
+                   `;
+            }).join("") + `
+                   <button type="button" id="prevBtn" class="slide-nav-btn prev"
+                       style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+                       background: rgba(0,0,0,0.5); color: white; border: none; padding: 10px; border-radius: 50%;">‹</button>
+
+                   <button type="button" id="nextBtn" class="slide-nav-btn next"
+                       style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+                       background: rgba(0,0,0,0.5); color: white; border: none; padding: 10px; border-radius: 50%;">›</button>
+               `;
+
+            let currentIndex = 0;
+            const slides = container.querySelectorAll(".slide-img");
+
+            function showSlide(index) {
+                slides.forEach((img, i) => {
+                    img.classList.toggle("d-none", i !== index);
+                });
+                currentIndex = index;
+            }
+
+            document.getElementById("prevBtn").onclick = () => {
+                const newIndex = (currentIndex - 1 + slides.length) % slides.length;
+                showSlide(newIndex);
+            };
+
+            document.getElementById("nextBtn").onclick = () => {
+                const newIndex = (currentIndex + 1) % slides.length;
+                showSlide(newIndex);
+            };
+        }
+
+
+
+
+
+        // ✅ Save
+        document.getElementById("modalSaveBtn").addEventListener("click", () => {
+            const type = document.getElementById("uploadType").value;
+            const targetId = document.getElementById("uploadTarget").value;
+            const title = document.getElementById("modalTopic").value.trim();
+            const desc = document.getElementById("modalDescription").value.trim();
+
+            let hasError = false;
+
+            // ===== Slideshow validate =====
+            if (type === "slideshow") {
+                const slideBlocks = document.querySelectorAll(".slide-block");
+
+                const files = [];
+                const titles = [];
+                const descs = [];
+
+                slideBlocks.forEach((block) => {
+                    const fileInput = block.querySelector(".slide-file");
+                    const titleInput = block.querySelector(".slide-title");
+                    const descInput = block.querySelector(".slide-description");
+
+                    const errorEls = block.querySelectorAll(".modal-error-msg");
+                    const [fileError, titleError, descError] = errorEls;
+
+                    // Reset
+                    fileError.textContent = "";
+                    titleError.textContent = "";
+                    descError.textContent = "";
+
+                    const file = fileInput?.files?.[0] || null;
+                    const title = titleInput?.value.trim() || "";
+                    const desc = descInput?.value.trim() || "";
+
+                    if (!file) {
+                        fileError.textContent = "Vui lòng chọn đầy đủ thông tin";
+                        hasError = true;
+                    }
+
+                    if (!title) {
+                        titleError.textContent = "Vui lòng nhập tiêu đề";
+                        hasError = true;
+                    }
+
+                    if (!desc) {
+                        descError.textContent = "Vui lòng nhập mô tả";
+                        hasError = true;
+                    }
+
+                    files.push(file);
+                    titles.push(title);
+                    descs.push(desc);
+                });
+
+                if (hasError) return;
+
+                window.uploadedSlides = files;
+                window.uploadedSlideTitles = titles;
+                window.uploadedSlideDescs = descs;
+
+                updateSlidePreview(files);
+                attachSlideNavEvents();
+
+                for (let i = 0; i < 3; i++) {
+                    const t = titles[i] || "";
+                    const d = descs[i] || "";
+                    const titleInput = document.getElementById(`formTitleSlide${i + 1}`);
+                    const descInput = document.getElementById(`formDescriptionSlide${i + 1}`);
+                    if (titleInput) titleInput.value = t;
+                    if (descInput) descInput.value = d;
+                }
+            }
+
+            // ===== Video validate =====
+            if (type === "video") {
+                const fileInput = document.getElementById("modalFile");
+                const file = fileInput.files[0];
+                const errorEl = document.getElementById("modalFileError");
+
+                errorEl.textContent = ""; // reset
+                if (!file) {
+                    errorEl.textContent = "Vui lòng chọn đầy đủ thông tin";
+                    return;
+                }
+
+                window.selectedVideoFile = file;
+                const videoUrl = URL.createObjectURL(file);
+                document.getElementById("videoPreview").innerHTML = `
+                    <video src="${videoUrl}" controls class="slide-video"
+                           style="width: 100%; height: 100%; object-fit: cover;"></video>
+                `;
+            }
+
+            // ===== Decorate validate =====
+            if (type === "decorate") {
+                const fileInput = document.getElementById("modalFile");
+                const file = fileInput.files[0];
+
+                const topicErr = document.getElementById("modalTopicError");
+                const descErr = document.getElementById("modalDescriptionError");
+                const fileErr = document.getElementById("modalFileError");
+
+                // Reset
+                topicErr.textContent = "";
+                descErr.textContent = "";
+                fileErr.textContent = "";
+
+                if (!title) {
+                    topicErr.textContent = "Vui lòng nhập chủ đề";
+                    hasError = true;
+                }
+
+                if (!desc) {
+                    descErr.textContent = "Vui lòng nhập mô tả";
+                    hasError = true;
+                }
+
+                if (!file) {
+                    fileErr.textContent = "Vui lòng chọn đầy đủ thông tin";
+                    hasError = true;
+                }
+
+                if (hasError) return;
+
+                const container = document.getElementById(`decoratePreview${targetId}`);
+                const imageUrl = URL.createObjectURL(file);
+                container.innerHTML = `<img src="${imageUrl}" style="width: 100%; height: 100%; object-fit: cover;">`;
+
+                if (targetId === "1") {
+                    window.selectedDecorate1 = file;
+                    document.getElementById("formTitle").value = title;
+                    document.getElementById("formDescription").value = desc;
+                } else if (targetId === "2") {
+                    window.selectedDecorate2 = file;
+                    document.getElementById("formTitle2").value = title;
+                    document.getElementById("formDescription2").value = desc;
+                }
+            }
+
+            // ✅ Nếu mọi thứ đều ok, đóng modal
+            if (!hasError) uploadModal?.hide();
+        });
+
+        // 🔥 Submit form lên API
+        document.getElementById("mainForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const formData = new FormData();
+
+            const userId = document.getElementById("userId")?.value;
+            if (userId) {
+                formData.append("UserId", userId);
+            }
+
+            // 🎲 Gọi API lấy danh sách AdminSettingId có thật trong DB
+            let adminSettingId = 1; // fallback nếu gọi API fail
+            try {
+                const res = await fetch("/api/AdminSettings"); // 👉 Đổi URL nếu API bạn khác nha
+                if (!res.ok) throw new Error("API AdminSetting fail");
+
+                const settings = await res.json();
+                const ids = settings.map(s => s.id);
+                if (ids.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * ids.length);
+                    adminSettingId = ids[randomIndex];
+                }
+            } catch (err) {
+                console.warn("Không thể lấy AdminSettingId từ API:", err);
+            }
+
+            formData.append("AdminSettingId", adminSettingId);
+
+            formData.append("Title1", document.getElementById("formTitle")?.value?.trim() || "");
+            formData.append("Description1", document.getElementById("formDescription")?.value?.trim() || "");
+            formData.append("Title2", document.getElementById("formTitle2")?.value?.trim() || "");
+            formData.append("Description2", document.getElementById("formDescription2")?.value?.trim() || "");
+
+            for (let i = 0; i < 3; i++) {
+                const file = window.uploadedSlides?.[i] || null;
+                const title = window.uploadedSlideTitles?.[i] || document.getElementById(`formTitleSlide${i + 1}`)?.value?.trim() || "";
+                const desc = window.uploadedSlideDescs?.[i] || document.getElementById(`formDescriptionSlide${i + 1}`)?.value?.trim() || "";
+
+                if (file) {
+                    formData.append(`Slide${i + 1}`, file);
+                } else {
+                    formData.append(`ClearSlide${i + 1}`, "true");
+                }
+
+                formData.append(`TitleSlide${i + 1}`, title);
+                formData.append(`DescriptionSlide${i + 1}`, desc);
+            }
+
+            if (window.selectedDecorate1) formData.append("Image1", window.selectedDecorate1);
+            if (window.selectedDecorate2) formData.append("Image2", window.selectedDecorate2);
+            if (window.selectedVideoFile) formData.append("Video", window.selectedVideoFile);
+
+            try {
+                const isUpdate = !!window.decorate?.id;
+                const url = isUpdate
+                    ? `/Admin/Decorates/Update/${window.decorate.id}`
+                    : `/Admin/Decorates/Create`;
+
+                const res = await fetch(url, {
+                    method: "POST",
+                    body: formData
+                });
+
+                const text = await res.text();
+                let result;
+                try {
+                    result = JSON.parse(text);
+                } catch {
+                    result = { success: false, message: text };
+                }
+
+                if (!result.success) {
+                    (result.errors || [result.message || "Gửi thất bại"]).forEach(msg => toastr.error(msg));
+                } else {
+                    toastr.success(result.message || "✅ Cập nhật thành công!");
+                    setTimeout(() => location.reload(), 1000);
+                }
+            } catch (err) {
+                console.error("🔥 Gửi thất bại:", err);
+                toastr.error("❌ Có lỗi xảy ra khi gửi!");
+            }
+        });
+
+
+
+
+
+
+
+        // Xóa Trang Trí
+        document.getElementById("deleteForm")?.addEventListener("submit", async function (e) {
+            e.preventDefault(); // Ngừng submit mặc định
+
+            const form = e.target;
+            const token = form.querySelector('input[name="__RequestVerificationToken"]').value;
+            const id = form.querySelector('input[name="id"]').value;
+            console.log("Submitting form with ID:", id);
+
+            // Kiểm tra token và ID
+            if (!id || !token) {
+                toastr.error("Không tìm thấy ID hoặc token xác thực.");
+                return;
+            }
+
+            try {
+                const res = await fetch(form.action, {
+                    method: "POST",
+                    headers: {
+                        "RequestVerificationToken": token,
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: new URLSearchParams({ id })
+                });
+
+                // Kiểm tra lỗi HTTP trước khi xử lý JSON
+                if (!res.ok) {
+                    const text = await res.text();
+                    toastr.error(`Lỗi HTTP: ${res.status} - ${text}`);
+                    throw new Error("Lỗi HTTP: " + res.status + " - " + text);
+                }
+
+                const result = await res.json();
+
+                if (!result.success) {
+                    toastr.error(result.message || "Xoá thất bại");
+                } else {
+                    toastr.success(result.message || "Xoá trang trí thành công!");
+
+                    // Đóng modal sau khi xóa thành công
+                    const modalEl = document.getElementById("deleteConfirmModal");
+                    let modal;
+                    try {
+                        modal = bootstrap.Modal.getInstance(modalEl);
+                        if (!modal) {
+                            modal = new bootstrap.Modal(modalEl);
+                        }
+                        modal.hide(); // Đảm bảo đóng modal sau khi xoá
+                    } catch (modalErr) {
+                        console.warn("Modal chưa khởi tạo, tạo mới để đóng.");
+                        try {
+                            modal = new bootstrap.Modal(modalEl);
+                            modal.hide();
+                        } catch (finalErr) {
+                            console.error("Không thể đóng modal:", finalErr);
+                            toastr.error("Không thể đóng modal.");
+                        }
+                    }
+
+                    setTimeout(() => location.reload(), 1000);
+                }
+            } catch (err) {
+                console.error("Lỗi xoá:", err);
+                toastr.error("Có lỗi xảy ra khi xoá. " + (err.message || ""));
+            }
+        });
+
+
+        // Xoá toàn bộ Slide
+        document.getElementById("confirmDeleteAllSlidesBtn")?.addEventListener("click", async () => {
+            const decorateId = document.getElementById("decorateId")?.value;
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+            if (!decorateId) {
+                toastr.error("❌ Không tìm thấy ID trang trí!");
+                return;
+            }
+
+            if (!token) {
+                toastr.error("❌ Không tìm thấy token xác thực!");
+                return;
+            }
+
+            try {
+                const res = await fetch("/Admin/Decorates/DeleteAllSlides", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                        "RequestVerificationToken": token
+                    },
+                    body: new URLSearchParams({ id: decorateId })
+                });
+
+                const text = await res.text();
+                const result = text ? JSON.parse(text) : null;
+
+                if (!res.ok) {
+                    throw new Error(result?.message || `HTTP ${res.status}`);
+                }
+
+                // ✅ Đóng modal trước
+                const modalEl = document.getElementById("deleteAllSlidesModal");
+                try {
+                    const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                    modal.hide();
+                } catch (err) {
+                    console.warn("Không thể đóng modal:", err);
+                }
+
+                // ✅ Rồi mới hiện toast
+                setTimeout(() => {
+                    if (result?.success) {
+                        toastr.success(result.message || "✅ Đã xoá toàn bộ slide!");
+                    } else {
+                        toastr.error(result?.message || "❌ Xoá thất bại!");
+                    }
+
+                    // ✅ Reload sau 1 giây
+                    setTimeout(() => location.reload(), 1000);
+                }, 300); // delay chút để modal kịp hide
+            } catch (err) {
+                console.error("🔥 Lỗi khi gọi API xoá slide:", err);
+                toastr.error("❌ Lỗi hệ thống: " + err.message);
+            }
+        });
+
+
+
+
+
+        // Xoá video
+        document.getElementById("confirmDeleteVideoBtn")?.addEventListener("click", async () => {
+            const decorateId = document.getElementById("decorateId")?.value;
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+            if (!decorateId) {
+                toastr.error("❌ Không tìm thấy ID trang trí!");
+                return;
+            }
+
+            if (!token) {
+                toastr.error("❌ Không tìm thấy token xác thực!");
+                return;
+            }
+
+            try {
+                const res = await fetch("/Admin/Decorates/DeleteVideo", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                        "RequestVerificationToken": token
+                    },
+                    body: new URLSearchParams({ id: decorateId })
+                });
+
+                // ✅ Trường hợp response không có nội dung
+                const text = await res.text();
+                const result = text ? JSON.parse(text) : null;
+
+                if (!res.ok) {
+                    throw new Error(result?.message || `HTTP ${res.status}`);
+                }
+
+                if (result?.success) {
+                    toastr.success(result.message || "✅ Đã xoá video!");
+                } else {
+                    toastr.error(result?.message || "❌ Xoá video thất bại!");
+                }
+
+                // ✅ Đóng modal
+                const modalEl = document.getElementById("deleteVideoModal");
+                try {
+                    const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                    modal.hide();
+                } catch (err) {
+                    console.warn("Không thể đóng modal:", err);
+                }
+
+                setTimeout(() => location.reload(), 1000);
+
+            } catch (err) {
+                console.error("🔥 Lỗi khi gọi API xoá video:", err);
+                toastr.error("❌ Lỗi hệ thống: " + err.message);
+            }
+        });
+
+        // Xoá Decorate 1
+        document.getElementById("confirmDeleteDecorate1Btn")?.addEventListener("click", async () => {
+            const decorateId = document.getElementById("decorateId")?.value;
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+            if (!decorateId) {
+                toastr.error("❌ Không tìm thấy ID trang trí!");
+                return;
+            }
+
+            if (!token) {
+                toastr.error("❌ Không tìm thấy token xác thực!");
+                return;
+            }
+
+            try {
+                const res = await fetch("/Admin/Decorates/DeleteDecorate1", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                        "RequestVerificationToken": token
+                    },
+                    body: new URLSearchParams({ id: decorateId }) // ✅ FIX ở đây
+                });
+
+                const text = await res.text();
+                const result = text ? JSON.parse(text) : null;
+
+                if (!res.ok) {
+                    throw new Error(result?.message || `HTTP ${res.status}`);
+                }
+
+                if (result?.success) {
+                    toastr.success(result.message || "✅ Đã xoá ảnh Decorate 1!");
+                } else {
+                    toastr.error(result?.message || "❌ Xoá ảnh thất bại!");
+                }
+
+                // Đóng modal
+                const modalEl = document.getElementById("deleteDecorate1Modal");
+                try {
+                    const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                    modal.hide();
+                } catch (err) {
+                    console.warn("Không thể đóng modal:", err);
+                }
+
+                setTimeout(() => location.reload(), 1000);
+            } catch (err) {
+                console.error("🔥 Lỗi khi gọi API xoá Decorate 1:", err);
+                toastr.error("❌ Lỗi hệ thống: " + err.message);
+            }
+        });
+
+
+        // Xoá Decorate 2
+        document.getElementById("confirmDeleteDecorate2Btn")?.addEventListener("click", async () => {
+            const decorateId = document.getElementById("decorateId")?.value;
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+            if (!decorateId) {
+                toastr.error("❌ Không tìm thấy ID trang trí!");
+                return;
+            }
+
+            if (!token) {
+                toastr.error("❌ Không tìm thấy token xác thực!");
+                return;
+            }
+
+            try {
+                const res = await fetch("/Admin/Decorates/DeleteDecorate2", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                        "RequestVerificationToken": token
+                    },
+                    body: new URLSearchParams({ id: decorateId })
+                });
+
+                // ✅ Trường hợp response không có nội dung
+                const text = await res.text();
+                const result = text ? JSON.parse(text) : null;
+
+                if (!res.ok) {
+                    throw new Error(result?.message || `HTTP ${res.status}`);
+                }
+
+                if (result?.success) {
+                    toastr.success(result.message || "✅ Đã xoá ảnh Decorate 2!");
+                } else {
+                    toastr.error(result?.message || "❌ Xoá ảnh Decorate 2 thất bại!");
+                }
+
+                // ✅ Đóng modal
+                const modalEl = document.getElementById("deleteDecorate2Modal");
+                try {
+                    const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                    modal.hide();
+                } catch (err) {
+                    console.warn("Không thể đóng modal:", err);
+                }
+
+                setTimeout(() => location.reload(), 1000);
+            } catch (err) {
+                console.error("🔥 Lỗi khi gọi API xoá Decorate 2:", err);
+                toastr.error("❌ Lỗi hệ thống: " + err.message);
+            }
+        });
+
+    });
+</script>

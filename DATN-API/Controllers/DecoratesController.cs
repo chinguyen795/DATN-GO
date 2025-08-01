@@ -46,6 +46,13 @@ namespace DATN_API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            // 🔐 Kiểm tra nếu user đã có decorate
+            var exists = await _context.Decorates
+                .AnyAsync(d => d.UserId == model.UserId);
+
+            if (exists)
+                return Conflict("❌ Người dùng này đã có decorate!");
+
             _context.Decorates.Add(model);
             await _context.SaveChangesAsync();
 
@@ -60,13 +67,38 @@ namespace DATN_API.Controllers
                 return BadRequest("ID không khớp");
 
             var decorate = await _context.Decorates.FindAsync(id);
-            if (decorate == null) return NotFound();
+            if (decorate == null)
+                return NotFound();
 
-            decorate.UserId = model.UserId;
-            decorate.Title = model.Title;
-            decorate.Image = model.Image;
+            // ✅ Chỉ cập nhật nếu có dữ liệu
+            if (model.UserId != 0) decorate.UserId = model.UserId;
+            if (!string.IsNullOrEmpty(model.Video)) decorate.Video = model.Video;
+
+            // 🎯 Cập nhật slide
+            if (!string.IsNullOrEmpty(model.Slide1)) decorate.Slide1 = model.Slide1;
+            if (!string.IsNullOrEmpty(model.TitleSlide1)) decorate.TitleSlide1 = model.TitleSlide1;
+            if (!string.IsNullOrEmpty(model.DescriptionSlide1)) decorate.DescriptionSlide1 = model.DescriptionSlide1;
+
+            if (!string.IsNullOrEmpty(model.Slide2)) decorate.Slide2 = model.Slide2;
+            if (!string.IsNullOrEmpty(model.TitleSlide2)) decorate.TitleSlide2 = model.TitleSlide2;
+            if (!string.IsNullOrEmpty(model.DescriptionSlide2)) decorate.DescriptionSlide2 = model.DescriptionSlide2;
+
+            if (!string.IsNullOrEmpty(model.Slide3)) decorate.Slide3 = model.Slide3;
+            if (!string.IsNullOrEmpty(model.TitleSlide3)) decorate.TitleSlide3 = model.TitleSlide3;
+            if (!string.IsNullOrEmpty(model.DescriptionSlide3)) decorate.DescriptionSlide3 = model.DescriptionSlide3;
+
+            // 🎯 Cập nhật ảnh decorate 1
+            if (!string.IsNullOrEmpty(model.Image1)) decorate.Image1 = model.Image1;
+            if (!string.IsNullOrEmpty(model.Title1)) decorate.Title1 = model.Title1;
+            if (!string.IsNullOrEmpty(model.Description1)) decorate.Description1 = model.Description1;
+
+            // 🎯 Cập nhật ảnh decorate 2
+            if (!string.IsNullOrEmpty(model.Image2)) decorate.Image2 = model.Image2;
+            if (!string.IsNullOrEmpty(model.Title2)) decorate.Title2 = model.Title2;
+            if (!string.IsNullOrEmpty(model.Description2)) decorate.Description2 = model.Description2;
 
             await _context.SaveChangesAsync();
+
             return NoContent();
         }
 
@@ -82,5 +114,85 @@ namespace DATN_API.Controllers
 
             return NoContent();
         }
+
+        // GET: api/decorates/user/5
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetByUserId(int userId)
+        {
+            var decorate = await _context.Decorates
+                .Include(d => d.User)
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (decorate == null)
+                return NotFound($"Không tìm thấy decorate cho userId = {userId}");
+
+            return Ok(decorate);
+        }
+
+        // HÀM HỖ TRỢ XÓA TỪNG MỤC
+
+        // XÓA SLIDES
+        [HttpPatch("{id}/clear-slides")]
+        public async Task<IActionResult> ClearSlides(int id)
+        {
+            var decorate = await _context.Decorates.FindAsync(id);
+            if (decorate == null)
+                return NotFound("Không tìm thấy trang trí");
+
+            decorate.Slide1 = decorate.TitleSlide1 = decorate.DescriptionSlide1 = null;
+            decorate.Slide2 = decorate.TitleSlide2 = decorate.DescriptionSlide2 = null;
+            decorate.Slide3 = decorate.TitleSlide3 = decorate.DescriptionSlide3 = null;
+            decorate.Slide4 = decorate.TitleSlide4 = decorate.DescriptionSlide4 = null;
+            decorate.Slide5 = decorate.TitleSlide5 = decorate.DescriptionSlide5 = null;
+
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        // XÓA VIDEO
+        [HttpPatch("{id}/clear-video")]
+        public async Task<IActionResult> ClearVideo(int id)
+        {
+            var decorate = await _context.Decorates.FindAsync(id);
+            if (decorate == null)
+                return NotFound("Không tìm thấy trang trí");
+
+            decorate.Video = null;
+
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+
+        // XÓA ẢNH 1
+        [HttpPatch("{id}/clear-decorate1")]
+        public async Task<IActionResult> ClearDecorate1(int id)
+        {
+            var decorate = await _context.Decorates.FindAsync(id);
+            if (decorate == null)
+                return NotFound("Không tìm thấy trang trí");
+
+            decorate.Image1 = decorate.Title1 = decorate.Description1 = null;
+
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        // XÓA ẢNH 2
+        [HttpPatch("{id}/clear-decorate2")]
+        public async Task<IActionResult> ClearDecorate2(int id)
+        {
+            var decorate = await _context.Decorates.FindAsync(id);
+            if (decorate == null)
+                return NotFound("Không tìm thấy trang trí");
+
+            decorate.Image2 = decorate.Title2 = decorate.Description2 = null;
+
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+
+
     }
 }

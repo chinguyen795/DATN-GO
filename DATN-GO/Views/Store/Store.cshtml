@@ -1,6 +1,27 @@
-﻿﻿@{
-    ViewData["Title"] = "Diner Page";
+﻿@model List<DATN_GO.Models.Stores>
+
+@{
+    ViewData["Title"] = "Store Page";
+    var quantityByStore = ViewBag.QuantityByStore as Dictionary<int, int> ?? new();
+    var cartQuantityByStore = ViewBag.CartQuantityByStore as Dictionary<int, int> ?? new();
 }
+<style>
+    .rating-filter.active,
+    .orders-filter.active {
+        background-color: #dc3545 !important;
+        color: white !important;
+        border-color: #dc3545 !important;
+    }
+
+    .filter-btn-hover.active {
+        background-color: white !important;
+        color: #dc3545 !important;
+    }
+
+</style>
+
+
+
 
 <!-- Filter bar -->
 <div class="bg-danger rounded-3 mt-3 mb-5 py-3">
@@ -27,13 +48,11 @@
                 <i class="bi bi-clock-history me-1"></i>
                 <span>Mới nhất</span>
             </button>
-            <select class="form-select bg-danger text-white fw-bold border-0 border-bottom"
+            <select class="form-select fw-bold border-0 border-bottom bg-danger text-white"
                     style="width: auto; min-width: 150px;" id="statusFilter">
-                <option value="">
-                    <i class="bi bi-clock"></i> Trạng thái
-                </option>
-                <option value="open">Đang mở cửa</option>
-                <option value="closed">Đã đóng cửa</option>
+                <option class="text-dark" value="">Trạng thái</option>
+                <option class="text-dark" value="active">Đang hoạt động</option>
+                <option class="text-dark" value="inactive">Ngừng hoạt động</option>
             </select>
         </div>
     </div>
@@ -103,22 +122,34 @@
     <div class="col-lg-3 col-md-12">
         <!-- Store Filter -->
         <h5 class="mb-3">Lọc cửa hàng</h5>
+
         <!-- Search Filter -->
-        <div class="mb-3">
-            <label for="searchInput" class="form-label">
-                <i class="bi bi-search"></i> Tìm kiếm
-            </label>
-            <input type="text" id="searchInput" class="form-control"
-                   placeholder="Tìm theo tên cửa hàng..." />
-        </div>
+        <form method="get" asp-action="Store" asp-controller="Store" id="searchForm">
+            <div class="mb-3 d-flex">
+                <input type="text" class="form-control" name="search" id="searchInput"
+                       value="@ViewBag.Search" placeholder="Tìm theo tên cửa hàng..." autocomplete="off" />
+                <button type="submit" class="btn btn-danger ms-2" id="searchBtn">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </form>
+
+
+
+
+
+
 
         <!-- Province Filter -->
         <div class="mb-3">
             <label for="provinceSelect" class="form-label">
-                <i class="bi bi-geo-alt"></i> Tỉnh/Thành phố
+                <i class="bi bi-geo-alt-fill me-1 text-danger"></i> Tỉnh/Thành phố
             </label>
-            <select class="selectpicker w-100" id="provinceSelect" data-live-search="true"
-                    data-width="auto">
+            <select class="form-select"
+                    id="provinceSelect"
+                    data-live-search="true"
+                    data-style="btn-outline-danger"
+                    data-width="100%">
                 <option value="">Tất cả địa điểm</option>
                 <option value="can-tho">Cần Thơ</option>
                 <option value="hcm">TP. Hồ Chí Minh</option>
@@ -127,22 +158,20 @@
                 <option value="other">Tỉnh/TP khác</option>
             </select>
         </div>
+
         <!-- Rating Filter -->
         <div class="mb-3">
             <label class="form-label">
                 <i class="bi bi-star"></i> Đánh giá
             </label>
             <div class="d-grid gap-2">
-                <button class="btn btn-outline-danger rating-filter" type="button" data-rating="4.5"
-                        onclick="toggleRatingFilter(this)">
+                <button class="btn btn-outline-danger rating-filter" type="button" data-rating="4.5">
                     Từ 4.5 <i class="bi bi-star-fill"></i>
                 </button>
-                <button class="btn btn-outline-danger rating-filter" type="button" data-rating="4.0"
-                        onclick="toggleRatingFilter(this)">
+                <button class="btn btn-outline-danger rating-filter" type="button" data-rating="4.0">
                     Từ 4.0 <i class="bi bi-star-fill"></i>
                 </button>
-                <button class="btn btn-outline-danger rating-filter" type="button" data-rating="3.5"
-                        onclick="toggleRatingFilter(this)">
+                <button class="btn btn-outline-danger rating-filter" type="button" data-rating="3.5">
                     Từ 3.5 <i class="bi bi-star-fill"></i>
                 </button>
             </div>
@@ -154,10 +183,6 @@
                 <i class="bi bi-cart-check"></i> Lượt đặt hàng
             </label>
             <div class="d-grid gap-2">
-                <button class="btn btn-outline-danger orders-filter" type="button" data-orders="15000"
-                        onclick="toggleOrdersFilter(this)">
-                    Trên 15k <i class="bi bi-cart-check-fill text-danger ms-1"></i>
-                </button>
                 <button class="btn btn-outline-danger orders-filter" type="button" data-orders="10000"
                         onclick="toggleOrdersFilter(this)">
                     Trên 10k <i class="bi bi-cart-check-fill text-danger ms-1"></i>
@@ -166,32 +191,50 @@
                         onclick="toggleOrdersFilter(this)">
                     Trên 5k <i class="bi bi-cart-check-fill text-danger ms-1"></i>
                 </button>
+                <button class="btn btn-outline-danger orders-filter" type="button" data-orders="1"
+                        onclick="toggleOrdersFilter(this)">
+                    Dưới 5k <i class="bi bi-cart-check-fill text-danger ms-1"></i>
+                </button>
             </div>
         </div>
 
 
-        <button class="btn btn-danger w-100 mb-4" onclick="applyFilters()">
+        <button class="btn btn-danger w-100 mb-2" onclick="applyFilters()">
             <i class="bi bi-search"></i> Tìm kiếm
         </button>
-
         <!-- End of Store Filter -->
     </div>
-
+    <!-- Card 9 -->
     <div class="col-lg-9 col-md-12">
         <div class="row">
-            <!-- Card template -->
-            <!-- Card 1 -->
             @foreach (var store in Model)
             {
+                var statusValue = (int)store.Status;
+                var (statusText, statusClass, statusKey) = statusValue switch
+                {
+                    1 => ("Đang hoạt động", "bg-success", "active"),
+                    0 => ("Ngừng hoạt động", "bg-danger", "inactive"),
+                    _ => ("Không rõ", "bg-secondary", "unknown")
+                };
 
-                <div class="col-lg-4 col-md-6 col-sm-6 mb-3">
-                    <div class="card h-100">
-                        <a href="DetailsDiner.html" class="text-decoration-none text-dark">
+                var quantity = quantityByStore?.GetValueOrDefault(store.Id) ?? 0;
+                var cartQuantity = cartQuantityByStore?.GetValueOrDefault(store.Id) ?? 0;
+
+                <div class="col-lg-4 col-md-6 col-sm-6 mb-3 store-wrapper">
+                    <div class="card h-100 store-card"
+                         data-name="@store.Name?.ToLower()"
+                         data-address="@store.Address?.ToLower()"
+                         data-status="@statusText.ToLower()"
+                         data-status-key="@statusKey"
+                         data-rating="@store.Rating.ToString("0.0")"
+                         data-quantity="@quantity"
+                         data-cart="@cartQuantity"
+                         data-created-at="@store.CreateAt.ToString("yyyy-MM-ddTHH:mm:ss")">
+                        <a href="@Url.Action("Detail", "Store", new { storeId = store.Id })" class="text-decoration-none text-dark">
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-4 align-items-center pt-2">
-                                        <img src="@store.Avatar"
-                                             alt="" height="70" width="70"
+                                        <img src="@store.Avatar" alt="@store.Name" height="70" width="70"
                                              class="rounded-circle object-fit-cover border">
                                     </div>
                                     <div class="col-8">
@@ -202,23 +245,19 @@
                                         </div>
                                         <div class="d-flex align-items-center mb-2">
                                             <i class="bi bi-shop text-danger me-1"></i>
-                                            <span class="badge @(store.Status == StoreStatus.Active ? "bg-success" : "bg-secondary") ms-2">
-                                                @(store.Status == StoreStatus.Active ? "Đang hoạt động" : "Đã đóng cửa")
-                                            </span>
-
-
+                                            <span class="badge @statusClass ms-2">@statusText</span>
                                         </div>
                                         <div class="row text-nowrap">
                                             <div class="col-4 d-flex align-items-center">
-                                                <span class="fw-bold">4.8</span>
+                                                <span class="fw-bold">@store.Rating.ToString("0.0")</span>
                                                 <i class="bi bi-star-fill text-danger ms-1"></i>
                                             </div>
                                             <div class="col-4 d-flex align-items-center">
-                                                <span>15k</span>
+                                                <span>@cartQuantity</span>
                                                 <i class="bi bi-cart-check-fill text-danger ms-1"></i>
                                             </div>
                                             <div class="col-4 d-flex align-items-center">
-                                                <span>30+</span>
+                                                <span>@quantity</span>
                                                 <i class="bi bi-box text-danger ms-1"></i>
                                             </div>
                                         </div>
@@ -227,44 +266,187 @@
                             </div>
                         </a>
                         <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center p-3">
-                            <a href="Chat.html" class="btn btn-outline-danger btn-sm">
+                            <a href="@Url.Action("Chat", "Chat", new { storeId = store.Id })" class="btn btn-outline-danger btn-sm">
                                 <i class="bi bi-chat-dots"></i>
                             </a>
-                            <a asp-controller="Store" asp-action="Detail" asp-route-id="@store.Id" class="btn btn-danger flex-grow-1 ms-2">
+                            <a href="@Url.Action("Detail", "Store", new { storeId = store.Id })" class="btn btn-danger flex-grow-1 ms-2">
                                 <i class="bi bi-shop me-2"></i>Xem cửa hàng
                             </a>
                         </div>
                     </div>
                 </div>
             }
-
         </div>
-
-
     </div>
-
-
 </div>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
 <script>
-    // Desktop Search
-    document.getElementById("searchInput").addEventListener("keypress", function (e) {
-        if (e.key === "Enter") {
-            const keyword = this.value;
-            window.location.href = `@Url.Action("Diner", "Diner")?search=${encodeURIComponent(keyword)}`;
-        }
-    });
+    $(document).ready(function () {
+        const $input = $('#searchInput');
+        const $form = $('#searchForm');
+        let currentSort = "";
+        let lastValue = $input.val().trim();
 
-    // Mobile Search
-    document.getElementById("searchInputMobile").addEventListener("keypress", function (e) {
-        if (e.key === "Enter") {
-            const keyword = this.value;
-            window.location.href = `@Url.Action("Diner", "Diner")?search=${encodeURIComponent(keyword)}`;
+        // 🔧 Hàm loại bỏ dấu tiếng Việt để lọc tỉnh thành
+        function removeDiacritics(str) {
+            return str.normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/đ/g, "d")
+                .replace(/Đ/g, "D");
         }
-    });
 
-    // Optional: Nút "Tìm kiếm" có thể gọi function applyFilters()
-    function applyFilters() {
-        const keyword = document.getElementById("searchInput").value;
-        window.location.href = `@Url.Action("Diner", "Diner")?search=${encodeURIComponent(keyword)}`;
-    }
+        // 🔍 Khi người dùng gõ trong input
+        $input.on('input', function () {
+            const keyword = $input.val().trim();
+
+            const selectedProvince = $('#provinceSelect').val()?.toLowerCase();
+            const selectedRating = $('.rating-filter.active').data('rating');
+            const selectedOrders = $('.orders-filter.active').data('orders');
+            const selectedStatus = $('#statusFilter').val()?.toLowerCase();
+
+            const noFilter =
+                (!selectedProvince || selectedProvince === "tất cả địa điểm") &&
+                !selectedRating &&
+                !selectedOrders &&
+                (!selectedStatus || selectedStatus === "") &&
+                (!currentSort || currentSort === "");
+
+            if (lastValue !== '' && keyword === '' && noFilter) {
+                $form.length ? $form.submit() : window.location.reload();
+                return;
+            }
+
+            lastValue = keyword;
+        });
+
+        // ⭐ Toggle đánh giá
+        $('.rating-filter').on('click', function () {
+            $(this).toggleClass('active').siblings().removeClass('active');
+        });
+
+        // 🛒 Toggle đơn hàng
+        $('.orders-filter').on('click', function () {
+            $(this).toggleClass('active').siblings().removeClass('active');
+        });
+
+        // 🔀 Toggle sắp xếp
+        $('.filter-btn-hover').on('click', function () {
+            const $btn = $(this);
+            const value = $btn.data('value');
+
+            if (currentSort === value) {
+                currentSort = "";
+                $btn.removeClass('active');
+            } else {
+                currentSort = value;
+                $('.filter-btn-hover').removeClass('active');
+                $btn.addClass('active');
+            }
+
+            applyFilters();
+        });
+
+        // 🧭 Lọc lại khi đổi trạng thái
+        $('#statusFilter').on('change', function () {
+            applyFilters();
+        });
+
+        // 🌍 Lọc lại khi đổi tỉnh thành
+        $('#provinceSelect').on('change', function () {
+            applyFilters();
+        });
+
+        // 🔥 Lọc & Sắp xếp
+        window.applyFilters = function () {
+            const selectedProvince = $('#provinceSelect').val()?.toLowerCase();
+            const selectedRating = $('.rating-filter.active').data('rating');
+            const selectedOrders = $('.orders-filter.active').data('orders');
+            const selectedStatus = $('#statusFilter').val()?.toLowerCase();
+            const keyword = $('#searchInput').val()?.toLowerCase();
+
+            const $allWrappers = $('.store-wrapper');
+            const $allCards = $allWrappers.find('.store-card');
+
+            const noFilter =
+                (!selectedProvince || selectedProvince === "tất cả địa điểm") &&
+                !selectedRating &&
+                !selectedOrders &&
+                (!selectedStatus || selectedStatus === "") &&
+                (!keyword || keyword === "") &&
+                (!currentSort || currentSort === "");
+
+            if (noFilter) {
+                window.location.reload();
+                return;
+            }
+
+            $allWrappers.hide();
+
+            const $matchedCards = $allCards.filter(function () {
+                const $card = $(this);
+                const address = ($card.data('address') || '').toLowerCase();
+                const normalizedAddress = removeDiacritics(address);
+
+                const rating = parseFloat($card.data('rating')) || 0;
+                const cart = parseInt($card.data('cart')) || 0;
+                const statusKey = ($card.data('status-key') || '').toLowerCase();
+                const textContent = $card.text().toLowerCase();
+
+                let match = true;
+                if (selectedProvince && !normalizedAddress.includes(selectedProvince)) match = false;
+                if (selectedRating && rating < selectedRating) match = false;
+                if (selectedOrders && cart < selectedOrders) match = false;
+                if (selectedStatus && statusKey !== selectedStatus) match = false;
+                if (keyword && !textContent.includes(keyword)) match = false;
+
+                return match;
+            });
+
+            const sorted = $matchedCards.closest('.store-wrapper').sort(function (a, b) {
+                const $a = $(a).find('.store-card');
+                const $b = $(b).find('.store-card');
+
+                if (currentSort === "rating-desc") {
+                    return parseFloat($b.data('rating')) - parseFloat($a.data('rating'));
+                }
+
+                if (currentSort === "orders-desc") {
+                    return parseInt($b.data('cart')) - parseInt($a.data('cart'));
+                }
+
+                // Sắp xếp theo trạng thái
+                const selectedStatus = $('#statusFilter').val()?.toLowerCase();
+                if (selectedStatus === "đang hoạt động") {
+                    const aStatus = ($a.data('status-key') || '').toLowerCase();
+                    const bStatus = ($b.data('status-key') || '').toLowerCase();
+                    if (aStatus === "active" && bStatus !== "active") return -1;
+                    if (aStatus !== "active" && bStatus === "active") return 1;
+                }
+
+                if (selectedStatus === "ngừng hoạt động") {
+                    const aStatus = ($a.data('status-key') || '').toLowerCase();
+                    const bStatus = ($b.data('status-key') || '').toLowerCase();
+                    if (aStatus === "inactive" && bStatus !== "inactive") return -1;
+                    if (aStatus !== "inactive" && bStatus === "inactive") return 1;
+                }
+
+                // 🕒 Sắp xếp theo ngày tạo nếu có
+                if (currentSort === "newest") {
+                    const aDate = new Date($a.data('created-at'));
+                    const bDate = new Date($b.data('created-at'));
+                    return bDate - aDate;
+                }
+
+                return 0;
+            });
+
+            sorted.show().each(function () {
+                $(this).parent().append(this);
+            });
+        };
+    });
 </script>
