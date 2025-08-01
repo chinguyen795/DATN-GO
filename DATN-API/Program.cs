@@ -14,6 +14,15 @@ var builder = WebApplication.CreateBuilder(args);
 // Cấu hình DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("https://localhost:7180") // Razor MVC
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
 // Thêm Authentication & Authorization
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -58,10 +67,7 @@ builder.Services.AddScoped<IVariantsService, VariantsService>();
 builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IOcrService, OcrService>();
 builder.Services.AddScoped<IPostsService, PostsService>();
-builder.Services.AddScoped<IVariantCompositionService, VariantCompositionService>();
-builder.Services.AddScoped<ICartService, CartService>();
-builder.Services.AddScoped<IOrdersService, OrdersService>();
-builder.Services.AddScoped<ICategoriesService, CategoriesService>();
+
 
 
 builder.Services.AddAuthorization();
@@ -78,10 +84,11 @@ var app = builder.Build();
 // Cấu hình middleware
 if (app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage(); 
+    app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseCors("AllowFrontend");
 
 app.UseHttpsRedirection();
 app.UseAuthentication();  // xxác thực

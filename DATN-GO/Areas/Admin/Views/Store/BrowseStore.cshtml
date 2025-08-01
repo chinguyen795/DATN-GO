@@ -1,6 +1,7 @@
-﻿<div class="page-wrapper">
+﻿@model List<DATN_GO.ViewModels.Store.StoreAdminViewModel>
 
-    <!-- Header -->
+<div class="page-wrapper">
+
     <header class="main-header" id="header">
         <nav class="navbar navbar-expand-lg navbar-light" id="navbar">
             <!-- Sidebar toggle button -->
@@ -14,15 +15,7 @@
 
                 <!-- search form -->
                 <div class="search-form">
-                    <form action="index.html" method="get">
-                        <div class="input-group input-group-sm" id="input-group-search">
-                            <input type="text" autocomplete="off" name="query" id="search-input" class="form-control"
-                                   placeholder="Search..." />
-                            <div class="input-group-append">
-                                <button class="btn" type="button">/</button>
-                            </div>
-                        </div>
-                    </form>
+
                     <ul class="dropdown-menu dropdown-menu-search">
 
                         <li class="nav-item">
@@ -365,126 +358,366 @@
 
     </header>
 
-    <!-- ====================================
-        ——— CONTENT WRAPPER
-        ===================================== -->
+
+    <!-- CONTENT WRAPPER -->
     <div class="content-wrapper">
         <div class="content">
-
-
-
-            <!-- Table Product -->
             <div class="row">
                 <div class="col-12">
                     <div class="card card-default">
                         <div class="card-header">
                             <h2 class="text-danger">Duyệt cửa hàng</h2>
-
-
+                            <div class="mb-3 d-flex justify-content-end" id="bulkStoreButtons" style="display: none; gap: 12px;">
+                                <button class="btn btn-success btn-approve-all-store">Duyệt tất cả</button>
+                                <button class="btn btn-danger btn-reject-all-store">Từ chối tất cả</button>
+                            </div>
                         </div>
                         <div class="card-body">
+
+
                             <table id="productsTable" class="table table-hover table-product" style="width:100%">
                                 <thead>
                                     <tr>
+                                        <th><input type="checkbox" id="checkAllStores" /></th>
 
                                         <th>Id</th>
                                         <th></th>
                                         <th>Tên cửa hàng</th>
-
                                         <th>Chủ sở hữu</th>
                                         <th>Ngày đăng ký</th>
                                         <th>Người đại diện</th>
-
                                         <th>Thao tác</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>1</td>
-                                        <td>
-                                            <img src="images/products/nenshop.png" class="clickable-image"
-                                                 data-src="images/products/nenshop.png" style="cursor: pointer;" alt="Ảnh cửa hàng">
-
-                                        </td>
-                                        <td> Shop bán thức ăn nhanh</td>
-
-                                        <td>Nguyễn Văn A</td>
-                                        <td>01/01/2025</td>
-                                        <td>
-                                            NGuyễn văn a
-                                        </td>
-                                        <td>
-
-                                            <button class="btn btn-sm btn-success" onclick="showAlert('success')" title="Duyệt"
-                                                    aria-label="Duyệt">
-                                                <i class="bi bi-check-circle-fill"></i> Duyệt
-
-                                            </button>
-                                            <button class="btn btn-sm btn-danger" onclick="showAlert('danger')" title="Từ chối"
-                                                    aria-label="Từ chối">
-                                                <i class="mdi mdi-close-circle-outline"></i></i> Từ chối
-
-                                            </button>
-
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td>2</td>
-                                        <td>
-                                            <img src="images/products/nenshop.png" class="clickable-image"
-                                                 data-src="images/products/nenshop.png" style="cursor: pointer;" alt="Ảnh cửa hàng">
-
-                                        </td>
-                                        <td> Shop quần áo</td>
-
-                                        <td>Nguyễn Văn B</td>
-                                        <td>02/01/2021</td>
-                                        <td>
-                                            Nguyễn văn B
-                                        </td>
-                                        <td>
-                                            <button class="btn btn-sm btn-success" onclick="showAlert('success')" title="Duyệt"
-                                                    aria-label="Duyệt">
-                                                <i class="bi bi-check-circle-fill"></i> Duyệt
-
-                                            </button>
-                                            <button class="btn btn-sm btn-danger" onclick="showAlert('danger')" title="Từ chối"
-                                                    aria-label="Từ chối">
-                                                <i class="mdi mdi-close-circle-outline"></i></i> Từ chối
-
-                                            </button>
-                                        </td>
-                                    </tr>
+                                    @foreach (var store in Model)
+                                    {
+                                        <tr>
+                                            <td><input type="checkbox" class="store-checkbox" value="@store.Id" /></td>
+                                            <td>@store.Id</td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(store.Avatar))
+                                                {
+                                                    <img src="@store.Avatar" class="clickable-image" data-src="@store.Avatar"
+                                                         alt="Ảnh cửa hàng" width="60" style="cursor: pointer;" />
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">Không có ảnh</span>
+                                                }
+                                            </td>
+                                            <td>@store.Name</td>
+                                            <td>@store.OwnerName</td>
+                                            <td>@store.CreateAt.ToString("dd/MM/yyyy")</td>
+                                            <td>@store.OwnerName </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-success btn-approve" data-id="@store.Id">
+                                                    <i class="bi bi-check-circle-fill"></i> Duyệt
+                                                </button>
+                                                <button class="btn btn-sm btn-danger btn-reject" data-id="@store.Id">
+                                                    <i class="mdi mdi-close-circle-outline"></i> Từ chối
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
                                 </tbody>
-
                             </table>
-
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+    <!-- Modal xem chi tiết -->
+    <div class="modal fade" id="storeModal" tabindex="-1" role="dialog" aria-labelledby="storeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="storeModalLabel">Chi tiết cửa hàng</h5>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Đóng">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
 
-
-            <div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered" role="document">
-                    <div class="modal-content text-center p-4 rounded shadow"
-                         style="background-color: #fff; border: 1px solid #ddd;">
-                        <!-- Close button -->
-                        <button type="button" class="close ml-auto mb-2 mr-1 mt-1" data-dismiss="modal" aria-label="Đóng"
-                                style="position: absolute; top: 10px; right: 15px; z-index: 10;">
-                            <span aria-hidden="true" style="font-size: 2rem;">&times;</span>
-                        </button>
-
-                        <!-- Image content -->
-                        <img id="modalImage" src="" class="img-fluid rounded"
-                             style="max-height: 75vh; max-width: 100%; object-fit: contain; border: 4px solid #f1f1f1; padding: 10px; background: #fafafa;"
-                             alt="Zoom ảnh">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-xl-4">
+                            <p class="text-dark font-weight-medium pt-4 mb-2">Tên cửa hàng:</p>
+                            <p><span id="storeName">...</span></p>
+                        </div>
+                        <div class="col-xl-4">
+                            <p class="text-dark font-weight-medium pt-4 mb-2">Chủ sở hữu:</p>
+                            <p><span id="storeOwner">...</span></p>
+                        </div>
+                        <div class="col-xl-4">
+                            <p class="text-dark font-weight-medium pt-4 mb-2">Ngày đăng ký:</p>
+                            <p><span id="storeDate">...</span></p>
+                        </div>
+                        <div class="col-xl-4">
+                            <p class="text-dark font-weight-medium pt-4 mb-2">Trạng thái:</p>
+                            <p><span id="storeStatus">...</span></p>
+                        </div>
+                        <div class="col-xl-4">
+                            <p class="text-dark font-weight-medium pt-4 mb-2">Ảnh đại diện:</p>
+                            <div class="border rounded p-2 bg-white d-inline-block">
+                                <img id="storeImage" src="" alt="Ảnh cửa hàng"
+                                     class="img-thumbnail"
+                                     style="width: 100px; height: 100px; object-fit: cover;">
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger btn-pill" data-bs-dismiss="modal">Đóng</button>
+                </div>
             </div>
-
         </div>
+    </div>
 
+
+    <!-- Modal ảnh phóng to -->
+    <div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content text-center p-4 rounded shadow" style="background-color: #fff;">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Đóng"
+                        style="position: absolute; top: 10px; right: 15px;">
+                    <span aria-hidden="true" style="font-size: 2rem;">&times;</span>
+                </button>
+                <img id="modalImage" src="" class="img-fluid rounded"
+                     style="max-height: 75vh; max-width: 100%; object-fit: contain;" alt="Zoom ảnh">
+            </div>
+        </div>
     </div>
 </div>
+    </div>
+</div>
+<!-- Modal xác nhận duyệt cửa hàng -->
+<div class="modal fade" id="approveModal" tabindex="-1" role="dialog" aria-labelledby="approveModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger">
+                <h5 class="modal-title text-white" id="approveModalLabel">Thông báo duyệt cửa hàng</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Bạn có chắc chắn muốn duyệt cửa hàng này? Hành động này không thể hoàn tác.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light btn-pill" data-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-danger btn-pill" id="confirmApproveBtn">Duyệt</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal xác nhận từ chối cửa hàng -->
+<div class="modal fade" id="rejectModal" tabindex="-1" role="dialog" aria-labelledby="rejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger">
+                <h5 class="modal-title text-white" id="rejectModalLabel">Thông báo từ chối cửa hàng</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Bạn có chắc chắn muốn từ chối cửa hàng này? Hành động này không thể hoàn tác.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light btn-pill" data-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-danger btn-pill" id="confirmRejectBtn">Từ chối</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal duyệt tất cả -->
+<div class="modal fade" id="bulkApproveStoreModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Xác nhận duyệt tất cả</h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">Bạn chắc chắn muốn duyệt tất cả cửa hàng đã chọn?</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-dismiss="modal">Huỷ</button>
+                <button type="button" class="btn btn-success" id="confirmBulkApproveStoreBtn">Duyệt</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal từ chối tất cả -->
+<div class="modal fade" id="bulkRejectStoreModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Xác nhận từ chối tất cả</h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">Bạn chắc chắn muốn từ chối tất cả cửa hàng đã chọn?</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-dismiss="modal">Huỷ</button>
+                <button type="button" class="btn btn-danger" id="confirmBulkRejectStoreBtn">Từ chối</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    let storeIdToHandle = null;
+    let currentRow = null;
+
+    // ========== CUSTOM TOAST ==========
+    function showToast(message, isSuccess = true) {
+        const iconUrl = isSuccess ? "/icons/happy.gif" : "/icons/sad.gif";
+        const title = isSuccess ? "Thành công" : "Lỗi";
+
+        const toastHtml = `
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" id="dynamicToast"
+                style="position: fixed; top: 1rem; right: 1rem; z-index: 9999; min-width: 320px;">
+                <div class="toast-header d-flex align-items-center ${isSuccess ? "bg-success" : "bg-danger"} text-white">
+                    <img src="${iconUrl}" alt="icon" width="20" height="20" class="me-2" />
+                    <strong class="me-auto">${title}</strong>
+                    <small class="text-white">Vừa xong</small>
+                    <button type="button" class="btn-close btn-close-white ms-2" onclick="this.closest('.toast').remove()" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">${message}</div>
+            </div>`;
+        document.body.insertAdjacentHTML('beforeend', toastHtml);
+        setTimeout(() => document.getElementById('dynamicToast')?.remove(), 3000);
+    }
+
+    // ========== DUYỆT ==========
+    document.querySelectorAll('.btn-approve').forEach(btn => {
+        btn.addEventListener('click', function () {
+            storeIdToHandle = this.dataset.id;
+            currentRow = this.closest('tr');
+            $('#approveModal').modal('show');
+        });
+    });
+
+    document.getElementById('confirmApproveBtn').addEventListener('click', async function () {
+        if (storeIdToHandle) {
+            const res = await fetch(`/Admin/Store/Approve?id=${storeIdToHandle}`, { method: 'POST' });
+            const data = await res.json();
+            $('#approveModal').modal('hide');
+            showToast(data.message, data.success);
+            if (data.success) {
+                currentRow.remove();
+            }
+        }
+    });
+
+    // ========== TỪ CHỐI ==========
+    document.querySelectorAll('.btn-reject').forEach(btn => {
+        btn.addEventListener('click', function () {
+            storeIdToHandle = this.dataset.id;
+            currentRow = this.closest('tr');
+            $('#rejectModal').modal('show');
+        });
+    });
+
+    document.getElementById('confirmRejectBtn').addEventListener('click', async function () {
+        if (storeIdToHandle) {
+            const res = await fetch(`/Admin/Store/Reject?id=${storeIdToHandle}`, { method: 'POST' });
+            const data = await res.json();
+            $('#rejectModal').modal('hide');
+            showToast(data.message, data.success);
+            if (data.success) {
+                currentRow.remove();
+            }
+        }
+    });
+
+    // ========== MODAL CLOSE ==========
+    document.querySelectorAll('[data-dismiss="modal"]').forEach(btn => {
+        btn.addEventListener('click', function () {
+            $('#approveModal, #rejectModal, #imageModal').modal('hide');
+        });
+    });
+
+    // ========== IMAGE PREVIEW ==========
+    document.querySelectorAll('.clickable-image').forEach(img => {
+        img.addEventListener('click', function () {
+            document.getElementById('modalImage').src = this.dataset.src;
+            $('#imageModal').modal('show');
+        });
+    });
+        // ===== CHECK/UNCHECK ALL STORE =====
+    document.getElementById('checkAllStores').addEventListener('change', function () {
+        const checked = this.checked;
+        document.querySelectorAll('.store-checkbox').forEach(cb => cb.checked = checked);
+        toggleStoreBulkButtons();
+    });
+
+    document.querySelectorAll('.store-checkbox').forEach(cb => {
+        cb.addEventListener('change', toggleStoreBulkButtons);
+    });
+
+    function toggleStoreBulkButtons() {
+        const count = document.querySelectorAll('.store-checkbox:checked').length;
+        document.getElementById('bulkStoreButtons').style.display = count > 0 ? 'flex' : 'none';
+    }
+
+    // ===== SHOW MODALS =====
+    document.querySelector('.btn-approve-all-store').addEventListener('click', function () {
+        const count = document.querySelectorAll('.store-checkbox:checked').length;
+        if (count === 0) {
+            showToast("⚠️ Bạn chưa chọn cửa hàng nào để duyệt.", false);
+            return;
+        }
+        $('#bulkApproveStoreModal').modal('show');
+    });
+
+    document.querySelector('.btn-reject-all-store').addEventListener('click', function () {
+        const count = document.querySelectorAll('.store-checkbox:checked').length;
+        if (count === 0) {
+            showToast("⚠️ Bạn chưa chọn cửa hàng nào để từ chối.", false);
+            return;
+        }
+        $('#bulkRejectStoreModal').modal('show');
+    });
+
+    // ===== BULK APPROVE STORE =====
+    document.getElementById('confirmBulkApproveStoreBtn').addEventListener('click', async function () {
+        const ids = Array.from(document.querySelectorAll('.store-checkbox:checked')).map(cb => cb.value);
+        let allSuccess = true;
+
+        for (const id of ids) {
+            const res = await fetch(`/Admin/Store/Approve?id=${id}`, { method: 'POST' });
+            const data = await res.json();
+            showToast(data.message, data.success);
+            if (!data.success) allSuccess = false;
+        }
+
+        $('#bulkApproveStoreModal').modal('hide');
+        if (allSuccess) setTimeout(() => location.reload(), 1500);
+    });
+
+    // ===== BULK REJECT STORE =====
+    document.getElementById('confirmBulkRejectStoreBtn').addEventListener('click', async function () {
+        const ids = Array.from(document.querySelectorAll('.store-checkbox:checked')).map(cb => cb.value);
+        let allSuccess = true;
+
+        for (const id of ids) {
+            const res = await fetch(`/Admin/Store/Reject?id=${id}`, { method: 'POST' });
+            const data = await res.json();
+            showToast(data.message, data.success);
+            if (!data.success) allSuccess = false;
+        }
+
+        $('#bulkRejectStoreModal').modal('hide');
+        if (allSuccess) setTimeout(() => location.reload(), 1500);
+    });
+
+
+    $('.close').on('click', function () {
+        $('#imageModal').modal('hide');
+    });
+</script>

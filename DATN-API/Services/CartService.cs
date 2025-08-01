@@ -136,7 +136,7 @@ namespace DATN_API.Services
             return true;
         }
 
-        public async Task<List<CartItemViewModel>> GetCartByUserIdAsync(int userId)
+        public async Task<CartSummaryViewModel> GetCartByUserIdAsync(int userId)
         {
             var carts = await _context.Carts
                 .Where(c => c.UserId == userId)
@@ -155,7 +155,6 @@ namespace DATN_API.Services
 
                 var variantValueIds = variants.Select(v => v.VariantValueId).OrderBy(id => id).ToList();
                 decimal price = 0;
-
                 int maxQuantity = 0;
 
                 if (variantValueIds.Any())
@@ -195,7 +194,6 @@ namespace DATN_API.Services
                     maxQuantity = product?.Quantity ?? 0;
                 }
 
-
                 var variantTexts = variants
                     .Select(v => $"{v.VariantValue?.Variant?.VariantName}: {v.VariantValue?.ValueName}")
                     .ToList();
@@ -211,10 +209,58 @@ namespace DATN_API.Services
                     MaxQuantity = maxQuantity,
                     Variants = variantTexts
                 });
-
             }
 
-            return result;
+            // ✅ Lấy địa chỉ mặc định mới nhất
+            var address = await _context.Addresses
+                .Include(a => a.City)
+                .Where(a => a.UserId == userId)
+                .OrderByDescending(a => a.UpdateAt)
+                .FirstOrDefaultAsync();
+
+            string? fullAddress = null;
+
+            if (address != null)
+            {
+                var district = await _context.Districts.FirstOrDefaultAsync(d => d.CityId == address.City.Id);
+                var ward = district != null
+                    ? await _context.Wards.FirstOrDefaultAsync(w => w.DistrictId == district.Id)
+                    : null;
+
+                fullAddress = string.Join(", ", new[]
+                {
+            $"{address.Name} - {address.Phone}",
+            address.Description,
+            ward?.WardName,
+            district?.DistrictName,
+            address.City?.CityName
+        }.Where(s => !string.IsNullOrWhiteSpace(s)));
+            }
+
+            // ✅ Lấy danh sách voucher đã lưu, còn hạn, chưa dùng
+            var now = DateTime.Now;
+            var userVouchers = await _context.UserVouchers
+                .Where(uv => uv.UserId == userId && !uv.IsUsed && uv.Voucher.EndDate >= now)
+                .Include(uv => uv.Voucher)
+                .ThenInclude(v => v.Store)
+                .ToListAsync();
+
+            var vouchers = userVouchers.Select(uv => new UserVoucherViewModel
+            {
+                Id = uv.Id,
+                VoucherId = uv.VoucherId,
+                Reduce = uv.Voucher.Reduce,
+                MinOrder = uv.Voucher.MinOrder,
+                EndDate = uv.Voucher.EndDate,
+                StoreName = uv.Voucher.Store?.Name ?? "Sàn TMĐT"
+            }).ToList();
+
+            return new CartSummaryViewModel
+            {
+                CartItems = result,
+                FullAddress = fullAddress,
+                Vouchers = vouchers
+            };
         }
 
         public async Task<bool> RemoveFromCartAsync(int cartId)

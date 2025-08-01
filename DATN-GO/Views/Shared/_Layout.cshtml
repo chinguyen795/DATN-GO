@@ -1,5 +1,5 @@
-﻿@{
-	var useContainer = ViewData["UseContainer"] as bool? ?? true;
+﻿﻿@{
+    var useContainer = ViewData["UseContainer"] as bool? ?? true;
 }
 <!doctype html>
 <html lang="en">
@@ -13,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital@0;1&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
 
 
     <link rel="stylesheet" href="" />
@@ -21,7 +21,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
-    <!-- Google Fonts -->
+    <!-- Google Fonts
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
     <!-- MDB -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/9.0.0/mdb.min.css" rel="stylesheet" />
@@ -52,7 +52,7 @@
                     <div class="col flex-grow-1 d-none d-lg-block">
                         <form class="d-flex" style="max-width: 400px; margin: 0 auto;">
                             <input class="form-control form-control-sm rounded-pill w-100" type="search"
-                                placeholder="Tìm kiếm" aria-label="Search">
+                                   placeholder="Tìm kiếm" aria-label="Search">
                         </form>
                     </div>
                     <!-- Menu, Cart, Account (desktop only) -->
@@ -63,25 +63,25 @@
                                 <ul class="navbar-nav mb-2 mb-lg-0 fw-bold flex-row gap-3 align-items-center">
                                     <li class="nav-item">
                                         <a class="nav-link active text-crimson d-flex align-items-center gap-1"
-                                            aria-current="page" href="./Home.html">
+                                           aria-current="page" href="./Home.html">
                                             Trang chủ
                                         </a>
                                     </li>
                                     <li class="nav-item">
                                         <a class="nav-link text-crimson d-flex align-items-center gap-1"
-                                            href="./Diner.html">
+                                           asp-controller="Store" asp-action="Store">
                                             Cửa hàng
                                         </a>
                                     </li>
                                     <li class="nav-item">
                                         <a class="nav-link text-crimson d-flex align-items-center gap-1"
-                                            href="Products.html">
+                                           href="Products.html">
                                             Sản phẩm
                                         </a>
                                     </li>
                                     <li class="nav-item">
                                         <a class="nav-link text-crimson d-flex align-items-center gap-1"
-                                            href="./Blog.html">
+                                           href="./Blog.html">
                                             Bài viết
                                         </a>
                                     </li>
@@ -91,18 +91,16 @@
                         <!-- Cart -->
                         <a href="./Cart.html" class="nav-link position-relative align-items-center p-0">
                             <i class="bi bi-cart-fill text-white icon-md header-icon"></i>
-                            <span
-                                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-white text-crimson"
-                                style="font-size:0.7rem;">99</span>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-white text-crimson"
+                                  style="font-size:0.7rem;">99</span>
                         </a>
                         <!-- Account -->
                         @{
                             var fullName = Context.Session.GetString("FullName");
                         }
                         <div class="dropdown d-none d-lg-flex align-items-center gap-1 mx-2">
-                            <button
-                                class="account btn btn-crimson dropdown-toggle text-white border-bottom d-flex align-items-center gap-1 py-1 px-2"
-                                type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                            <button class="account btn btn-crimson dropdown-toggle text-white border-bottom d-flex align-items-center gap-1 py-1 px-2"
+                                    type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="bi bi-person-circle icon-md header-icon"></i> Tài khoản
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
@@ -112,23 +110,37 @@
                                     <li>
                                         <a class="dropdown-item d-flex align-items-center gap-2" asp-action="Login" asp-controller="UserAuthentication">
                                             <i class="bi bi-person-circle icon-sm"></i> Đăng
-                                            nhập</a></li>
+                                            nhập
+                                        </a>
+                                    </li>
                                     <li>
                                         <a class="dropdown-item d-flex align-items-center gap-2" asp-action="Register" asp-controller="UserAuthentication">
                                             <i class="bi bi-person-plus-fill icon-sm"></i> Đăng
-                                            ký</a></li>
+                                            ký
+                                        </a>
+                                    </li>
                                 }
                                 else
                                 {
                                     <!-- Đã đăng nhập -->
-                                    <li><span class="dropdown-item text-muted d-flex align-items-center gap-2"><i
-                                                class="bi bi-person-check icon-sm"></i> Xin chào, @fullName</span></li>
-                                    <li><a class="dropdown-item d-flex align-items-center gap-2" asp-controller="Profile"
-                                            asp-action="Index"><i class="bi bi-person-square icon-sm"></i> Thông tin cá
-                                            nhân</a></li>
-                                    <li><a class="dropdown-item d-flex align-items-center gap-2"
-                                            asp-controller="UserAuthentication" asp-action="Logout"><i
-                                                class="bi bi-box-arrow-right icon-sm"></i> Đăng xuất</a></li>
+                                    <li>
+                                        <span class="dropdown-item text-muted d-flex align-items-center gap-2">
+                                            <i class="bi bi-person-check icon-sm"></i> Xin chào, @fullName
+                                        </span>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center gap-2" asp-controller="Profile"
+                                           asp-action="Index">
+                                            <i class="bi bi-person-square icon-sm"></i> Thông tin cá
+                                            nhân
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center gap-2"
+                                           asp-controller="UserAuthentication" asp-action="Logout">
+                                            <i class="bi bi-box-arrow-right icon-sm"></i> Đăng xuất
+                                        </a>
+                                    </li>
                                 }
                             </ul>
                         </div>
@@ -136,8 +148,8 @@
                     <!-- Nút menu hamburger chỉ hiện ở mobile, luôn nằm bên phải -->
                     <div class="col-auto d-block d-lg-none ms-auto">
                         <button class="navbar-toggler text-white p-2" type="button" data-bs-toggle="offcanvas"
-                            data-bs-target="#offcanvasExample" aria-controls="offcanvasExample"
-                            aria-label="Toggle navigation">
+                                data-bs-target="#offcanvasExample" aria-controls="offcanvasExample"
+                                aria-label="Toggle navigation">
                             <i class="bi bi-list icon-lg"></i>
                         </button>
                     </div>
@@ -159,12 +171,11 @@
                     <div class="d-flex align-items-center">
                         <form class="d-flex flex-grow-1">
                             <input class="form-control me-2 rounded-pill" type="search" placeholder="Tìm kiếm"
-                                aria-label="Search">
+                                   aria-label="Search">
                         </form>
                         <a href="./Cart.html" class="nav-link text-crimson position-relative ms-2">
                             <i class="fas fa-cart-shopping icon-md"></i>
-                            <span
-                                class="badge rounded-pill badge-notification bg-crimson position-absolute top-0 start-100 translate-middle text-white">99</span>
+                            <span class="badge rounded-pill badge-notification bg-crimson position-absolute top-0 start-100 translate-middle text-white">99</span>
                         </a>
                     </div>
                 </div>
@@ -301,6 +312,7 @@
     <script src="~/js/NotificationToast.js"></script>
     <script src="~/js/Orders.js"></script>
     <script src="~/js/Profile.js"></script>
+    <script src="~/js/Repassword.js"></script>
     <script src="~/js/SalesRegistration.js"></script>
     <script src="~/js/Vouchers.js"></script>
 
@@ -311,11 +323,10 @@
 
 
     <!-- Bootstrap JavaScript Libraries -->
-
     <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"
-   integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+"
-   crossorigin="anonymous">
- </script> -->
+      integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+"
+      crossorigin="anonymous">
+    </script> -->
 
     <script src="./Scripts/Carousel.js"></script>
 
@@ -403,14 +414,14 @@
             var toastType = TempData["ToastType"].ToString();
             var isSuccess = toastType == "success";
             <div class="toast @(isSuccess ? "" : "mt-3")" role="alert" aria-live="assertive" aria-atomic="true"
-                id="autoToast">
+                 id="autoToast">
                 <div class="toast-header @(isSuccess ? "bg-success" : "bg-danger") text-white">
                     <img src="@(isSuccess ? "/icons/happy.gif" : "/icons/sad.gif")" class="rounded me-2"
-                        alt="@(isSuccess ? "Success" : "Error")" width="20" height="20">
+                         alt="@(isSuccess ? "Success" : "Error")" width="20" height="20">
                     <strong class="me-auto">@((isSuccess) ? "Thành công" : "Lỗi")</strong>
                     <small>Vừa xong</small>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"
-                        aria-label="Close"></button>
+                            aria-label="Close"></button>
                 </div>
                 <div class="toast-body">
                     @TempData["ToastMessage"]
@@ -423,3 +434,78 @@
 
 
 </html>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
+<script>
+    window.onload = function () {
+        google.accounts.id.initialize({
+            client_id: "185130462575-kq61q46pbt3dggk8f6sgaes2hc321lgq.apps.googleusercontent.com",
+            callback: handleGoogleLogin,
+            auto_select: false, // không tự đăng nhập
+            ux_mode: "popup"    // bật popup chọn tài khoản
+        });
+
+        // Kiểm tra element tồn tại trước khi thêm event listener
+        const googleLoginBtn = document.getElementById("googleLoginBtn");
+        if (googleLoginBtn) {
+            googleLoginBtn.addEventListener("click", function () {
+                google.accounts.id.prompt(); // gọi popup chọn tài khoản
+            });
+        }
+    };
+
+    function handleGoogleLogin(response) {
+        const id_token = response.credential;
+
+        fetch('/UserAuthentication/LoginWithGoogle', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ idToken: id_token })
+        })
+            .then(async res => {
+                if (res.ok) {
+                    const data = await res.json();
+                    localStorage.setItem("toastMessage", `Chào mừng ${data.fullName}, bạn đã đăng nhập bằng Google thành công!`);
+                    localStorage.setItem("toastType", "success");
+                    window.location.href = '/';
+                } else {
+                    alert("Đăng nhập bằng Google thất bại!");
+                }
+            })
+            .catch(err => {
+                console.error("Google login error:", err);
+            });
+    }
+
+    function showToast(message, isSuccess = true) {
+        const iconUrl = isSuccess ? "/icons/happy.gif" : "/icons/sad.gif";
+        const title = isSuccess ? "Thành công" : "Lỗi";
+
+        const toastHtml = `
+                <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" id="dynamicToast"
+                     style="position: fixed; top: 1rem; right: 1rem; z-index: 1060; min-width: 320px;">
+                    <div class="toast-header d-flex align-items-center ${isSuccess ? "bg-success" : "bg-danger"} text-white">
+                        <img src="${iconUrl}" alt="icon" width="20" height="20" class="me-2" />
+                        <strong class="me-auto">${title}</strong>
+                        <small class="text-white">Vừa xong</small>
+                        <button type="button" class="btn-close btn-close-white ms-2" onclick="this.closest('.toast').remove()" aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body">${message}</div>
+                </div>
+            `;
+        document.body.insertAdjacentHTML('beforeend', toastHtml);
+        setTimeout(() => document.getElementById('dynamicToast')?.remove(), 3000);
+    }
+
+    window.addEventListener('DOMContentLoaded', function () {
+        const message = localStorage.getItem("toastMessage");
+        const type = localStorage.getItem("toastType");
+
+        if (message && type) {
+            showToast(message, type === "success");
+            localStorage.removeItem("toastMessage");
+            localStorage.removeItem("toastType");
+        }
+    });
+</script>
