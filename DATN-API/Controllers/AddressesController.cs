@@ -136,7 +136,6 @@ namespace DATN_API.Controllers
 
 
 
-        // GET: api/addresses/full-address/5
         [HttpGet("full-address/{addressId}")]
         public async Task<IActionResult> GetFullAddress(int addressId)
         {
@@ -147,7 +146,6 @@ namespace DATN_API.Controllers
             if (address == null)
                 return NotFound("Không tìm thấy địa chỉ.");
 
-            // 🔍 Lấy district và ward theo ID address (nếu có)
             var district = await _context.Districts
                 .FirstOrDefaultAsync(d => d.CityId == address.City.Id);
 
@@ -157,7 +155,8 @@ namespace DATN_API.Controllers
 
             var fullAddress = string.Join(", ", new[]
             {
-        address.Description,
+        $"{address.Name} - {address.Phone}",   
+        address.Description,                      
         ward?.WardName,
         district?.DistrictName,
         address.City?.CityName
