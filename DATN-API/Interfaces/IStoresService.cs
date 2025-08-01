@@ -18,7 +18,8 @@ namespace DATN_API.Interfaces
         Task<int> GetTotalActiveStoresAsync();
         Task<int> GetStoreCountByMonthYearAsync(int month, int year);
         Task<Dictionary<int, int>> GetStoreCountByMonthAsync(int year);
-        
 
+        Task<IEnumerable<Stores>> GetByStatusAsync(string status);
+        Task<bool> UpdateStatusAsync(int id, string status);
     }
 }

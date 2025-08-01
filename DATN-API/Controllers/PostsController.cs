@@ -65,5 +65,6 @@ namespace DATN_API.Controllers
             var posts = await _postsService.GetByUserIdAsync(userId);
             return Ok(posts);
         }
+
     }
 }

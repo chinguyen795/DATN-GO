@@ -1,6 +1,7 @@
 using DATN_API.Interfaces;
 using DATN_API.Models;
 using DATN_API.Services;
+using DATN_API.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
@@ -103,6 +104,52 @@ namespace DATN_API.Controllers
         {
             var data = await _service.GetStoreCountByMonthAsync(year);
             return Ok(data);
+        }
+
+        // GET: api/stores/pending
+        [HttpGet("PendingApproval")]
+        public async Task<IActionResult> GetPendingStores()
+        {
+            var stores = await _service.GetByStatusAsync("PendingApproval");
+
+            var result = stores.Select(store => new StoreAdminViewModel
+            {
+                Id = store.Id,
+                Name = store.Name,
+                Avatar = store.Avatar,
+                CoverPhoto = store.CoverPhoto,
+                Address = store.Address,
+                Latitude = store.Latitude,
+                Longitude = store.Longitude,
+                Rating = store.Rating,
+                Status = store.Status,
+                Bank = store.Bank,
+                BankAccount = store.BankAccount,
+                CreateAt = store.CreateAt,
+                UpdateAt = store.UpdateAt,
+                OwnerName = store.User?.FullName,
+                OwnerEmail = store.User?.Email
+            });
+
+            return Ok(result);
+        }
+        // PUT: api/stores/approve/5
+        [HttpPut("approve/{id}")]
+        public async Task<IActionResult> ApproveStore(int id)
+        {
+            var result = await _service.UpdateStatusAsync(id, "Active"); // Use "Active" instead of "Approved"
+            if (!result)
+                return NotFound("Không tìm thấy cửa hàng.");
+            return Ok("Cửa hàng đã được duyệt.");
+        }
+
+        [HttpPut("reject/{id}")]
+        public async Task<IActionResult> RejectStore(int id)
+        {
+            var result = await _service.UpdateStatusAsync(id, "Rejected");
+            if (!result)
+                return NotFound("Không tìm thấy cửa hàng.");
+            return Ok("Cửa hàng đã bị từ chối.");
         }
 
     }

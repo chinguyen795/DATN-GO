@@ -104,5 +104,30 @@ namespace DATN_API.Services
             return await _context.Stores.FirstOrDefaultAsync(s => s.UserId == userId);
         }
 
+        public async Task<IEnumerable<Stores>> GetByStatusAsync(string status)
+        {
+            if (!Enum.TryParse<StoreStatus>(status, true, out var parsedStatus))
+                return Enumerable.Empty<Stores>();
+
+            return await _context.Stores
+                .Where(s => s.Status == parsedStatus)
+                .Include(s => s.User)
+                .ToListAsync();
+        }
+
+        public async Task<bool> UpdateStatusAsync(int id, string status)
+        {
+            var store = await _context.Stores.FindAsync(id);
+            if (store == null) return false;
+
+            if (!Enum.TryParse<StoreStatus>(status, true, out var parsedStatus))
+                return false;
+
+            store.Status = parsedStatus;
+            store.UpdateAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }

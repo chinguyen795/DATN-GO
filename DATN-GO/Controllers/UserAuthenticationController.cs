@@ -203,65 +203,54 @@ namespace DATN_GO.Controllers
             return RedirectToAction("AuthenticationCode", new { identifier });
         }
 
-       
+
         [HttpGet("ChangePassword")]
         public IActionResult ChangePassword()
         {
             string? identifier = HttpContext.Session.GetString("Identifier");
-            ViewBag.Identifier = identifier;
-            return View();
+
+            var model = new ChangePasswordWithIdentifierRequest
+            {
+                Identifier = identifier ?? ""
+            };
+
+            return View(model);
         }
+
 
         [HttpPost("ChangePassword")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ChangePassword(string currentPassword, string newPassword, string confirmPassword)
+        public async Task<IActionResult> ChangePassword(ChangePasswordWithIdentifierRequest model)
         {
-            string? identifier = HttpContext.Session.GetString("Identifier");
-
-            if (string.IsNullOrEmpty(identifier))
+            if (!ModelState.IsValid)
             {
-                _logger.LogWarning("Identifier not found in session for ChangePassword. Redirecting to Login.");
-                TempData["ToastMessage"] = "Không tìm thấy thông tin tài khoản. Vui lòng đăng nhập lại.";
-                TempData["ToastType"] = "danger";
-                return RedirectToAction("Login");
+                ViewBag.Identifier = model.Identifier;
+                return View(model);
             }
 
-            if (string.IsNullOrEmpty(currentPassword) || string.IsNullOrEmpty(newPassword) || string.IsNullOrEmpty(confirmPassword))
-            {
-                TempData["ToastMessage"] = "Vui lòng nhập đầy đủ thông tin.";
-                TempData["ToastType"] = "danger";
-                ViewBag.Identifier = identifier; 
-                return View();
-            }
-
-            if (newPassword != confirmPassword)
-            {
-                TempData["ToastMessage"] = "Mật khẩu mới và mật khẩu xác nhận không khớp.";
-                TempData["ToastType"] = "danger";
-                ViewBag.Identifier = identifier; 
-                return View();
-            }
-
-            var (success, message) = await _AuthenticationService.ChangePasswordAsync(identifier, currentPassword, newPassword, confirmPassword);
+            var (success, message) = await _AuthenticationService.ChangePasswordAsync(
+                model.Identifier,
+                model.CurrentPassword,
+                model.NewPassword,
+                model.ConfirmNewPassword
+            );
 
             if (success)
             {
-                TempData["ToastMessage"] = message;
-                TempData["ToastType"] = "success";
-
-                HttpContext.Session.Clear();
                 TempData["ToastMessage"] = "Đổi mật khẩu thành công. Vui lòng đăng nhập lại.";
                 TempData["ToastType"] = "success";
+                HttpContext.Session.Clear();
                 return RedirectToAction("Index", "Home");
             }
             else
             {
                 TempData["ToastMessage"] = message;
                 TempData["ToastType"] = "danger";
-                ViewBag.Identifier = identifier; 
-                return View();
+                ViewBag.Identifier = model.Identifier;
+                return View(model);
             }
         }
+
         [HttpGet("Logout")]
         public IActionResult Logout()
         {
@@ -373,6 +362,51 @@ namespace DATN_GO.Controllers
                 ViewBag.UserId = userId;
                 return View();
             }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> LoginWithGoogle([FromBody] GoogleLoginDto dto)
+        {
+            if (string.IsNullOrEmpty(dto.IdToken))
+                return BadRequest("Token không hợp lệ");
+
+            var apiUrl = "https://localhost:7096/api/users/google-login";
+            using var httpClient = new HttpClient();
+            var response = await httpClient.PostAsJsonAsync(apiUrl, dto);
+
+            if (!response.IsSuccessStatusCode)
+                return BadRequest("Google login thất bại");
+
+            var result = await response.Content.ReadFromJsonAsync<GoogleLoginResponseDto>();
+
+            HttpContext.Session.SetString("JwtToken", result.Token);
+            HttpContext.Session.SetString("Id", result.User.Id.ToString());
+            HttpContext.Session.SetString("FullName", result.User.FullName);
+            HttpContext.Session.SetString("Email", result.User.Email);
+            HttpContext.Session.SetString("Role", result.User.Roles.ToString());
+
+            return Ok(new { fullName = result.User.FullName });
+
+        }
+
+
+
+        public class GoogleLoginResponseDto
+        {
+            public string Token { get; set; }
+            public GoogleUserDto User { get; set; }
+        }
+
+        public class GoogleUserDto
+        {
+            public int Id { get; set; }
+            public string FullName { get; set; }
+            public string Email { get; set; }
+            public int Roles { get; set; }
+        }
+        public class GoogleLoginDto
+        {
+            public string IdToken { get; set; }
         }
     }
 }

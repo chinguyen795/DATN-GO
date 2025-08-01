@@ -1,14 +1,14 @@
-﻿@{
+﻿﻿@using DATN_GO.ViewModels.Store
+@model StoreAdminViewModel
+
+@{
     ViewData["Title"] = "Detail Diner Page";
 }
 
-
 <!-- Store Banner Section -->
-<section class="store-banner position-relative mb-3">
+<section class="store-banner position-relative">
     <div style="height: 400px; overflow: hidden;">
-        <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4"
-             alt="Store Banner"
-             class="w-100 h-100 object-fit-cover opacity-75">
+        <img src="@Model.CoverPhoto" alt="Store Banner" class="w-100 h-100 object-fit-cover opacity-75">
     </div>
 
     <!-- Store Info Overlay -->
@@ -19,15 +19,12 @@
                     <div class="card-body">
                         <!-- Store Header -->
                         <div class="d-flex align-items-center mb-4">
-                            <img src="image/logo.png"
-                                 alt="Meo Meo"
-                                 class="rounded-circle border border-3 border-white shadow-sm"
-                                 style="width: 100px; height: 100px; object-fit: cover;">
+                            <img src="@Model.Avatar" alt="@Model.Name" class="rounded-circle border border-3 border-white shadow-sm" style="width: 100px; height: 100px; object-fit: cover;">
                             <div class="ms-3">
-                                <h2 class="mb-1 text-danger">Meo Meo</h2>
+                                <h2 class="mb-1 text-danger">@Model.Name</h2>
                                 <p class="text-muted mb-0">
                                     <i class="bi bi-geo-alt-fill"></i>
-                                    Thường Thạnh, Cái Răng, Cần Thơ
+                                    @Model.Address
                                 </p>
                             </div>
                         </div>
@@ -36,7 +33,7 @@
                         <div class="row g-3 text-center mb-4">
                             <div class="col">
                                 <div class="border rounded p-3 bg-light">
-                                    <div class="text-danger h4 mb-0">0</div>
+                                    <div class="text-danger h4 mb-0">@Model.Products?.Count</div>
                                     <small class="text-muted">Sản phẩm</small>
                                 </div>
                             </div>
@@ -73,10 +70,10 @@
                                 <i class="bi bi-heart me-1"></i>
                                 Theo dõi
                             </button>
-                            <button class="btn btn-danger w-100">
+                            <a class="btn btn-danger w-100 text-decoration-none text-white" asp-controller="Chat" asp-action="Chat">
                                 <i class="bi bi-chat-dots me-1"></i>
                                 Chat ngay
-                            </button>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -85,115 +82,15 @@
     </div>
 </section>
 
-<!-- Store Content Section -->
-<section class="container mb-3 p-0">
+<section class="container mt-4">
     <div class="card">
         <div class="card-header bg-white p-3">
             <h5 class="mb-0 text-danger">Voucher của Shop</h5>
         </div>
         <div class="card-body position-relative px-3">
-            <div class="voucher-container py-2 p-1">
-                <div class="voucher-scroll d-flex gap-2 p-2">
-                    <!-- Voucher Item -->
-                    <div class="voucher-item">
-                        <div class="border rounded p-3 d-flex align-items-center justify-content-between bg-light" style="min-width: 320px;">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="text-danger" style="font-size: 2rem;">
-                                    <i class="bi bi-ticket-perforated-fill"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-1">Giảm 20K</h6>
-                                    <p class="text-muted small mb-0">Đơn tối thiểu ₫150K</p>
-                                    <small class="text-danger">HSD: 30.04.2025</small>
-                                </div>
-                            </div>
-                            <button class="btn btn-outline-danger">Lưu</button>
-                        </div>
-                    </div>
-
-
-                    <div class="voucher-item">
-                        <div class="border rounded p-3 d-flex align-items-center justify-content-between bg-light" style="min-width: 320px;">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="text-danger" style="font-size: 2rem;">
-                                    <i class="bi bi-ticket-perforated-fill"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-1">Giảm 20K</h6>
-                                    <p class="text-muted small mb-0">Đơn tối thiểu ₫150K</p>
-                                    <small class="text-danger">HSD: 30.04.2025</small>
-                                </div>
-                            </div>
-                            <button class="btn btn-outline-danger">Lưu</button>
-                        </div>
-                    </div>
-
-                    <div class="voucher-item">
-                        <div class="border rounded p-3 d-flex align-items-center justify-content-between bg-light" style="min-width: 320px;">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="text-danger" style="font-size: 2rem;">
-                                    <i class="bi bi-ticket-perforated-fill"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-1">Giảm 20K</h6>
-                                    <p class="text-muted small mb-0">Đơn tối thiểu ₫150K</p>
-                                    <small class="text-danger">HSD: 30.04.2025</small>
-                                </div>
-                            </div>
-                            <button class="btn btn-outline-danger">Lưu</button>
-                        </div>
-                    </div>
-
-                    <!-- Voucher Item -->
-                    <div class="voucher-item">
-                        <div class="border rounded p-3 d-flex align-items-center justify-content-between bg-light" style="min-width: 320px;">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="text-danger" style="font-size: 2rem;">
-                                    <i class="bi bi-ticket-perforated-fill"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-1">Giảm 50K</h6>
-                                    <p class="text-muted small mb-0">Đơn tối thiểu ₫300K</p>
-                                    <small class="text-danger">HSD: 30.04.2025</small>
-                                </div>
-                            </div>
-                            <button class="btn btn-outline-danger">Lưu</button>
-                        </div>
-                    </div>
-
-                    <!-- Voucher Item -->
-                    <div class="voucher-item">
-                        <div class="border rounded p-3 d-flex align-items-center justify-content-between bg-light" style="min-width: 320px;">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="text-danger" style="font-size: 2rem;">
-                                    <i class="bi bi-ticket-perforated-fill"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-1">Freeship</h6>
-                                    <p class="text-muted small mb-0">Đơn tối thiểu ₫99K</p>
-                                    <small class="text-danger">HSD: 30.04.2025</small>
-                                </div>
-                            </div>
-                            <button class="btn btn-outline-danger">Lưu</button>
-                        </div>
-                    </div>
-
-                    <!-- Additional Voucher Items -->
-                    <div class="voucher-item">
-                        <div class="border rounded p-3 d-flex align-items-center justify-content-between bg-light" style="min-width: 320px;">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="text-danger" style="font-size: 2rem;">
-                                    <i class="bi bi-ticket-perforated-fill"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-1">Giảm 100K</h6>
-                                    <p class="text-muted small mb-0">Đơn tối thiểu ₫500K</p>
-                                    <small class="text-danger">HSD: 30.04.2025</small>
-                                </div>
-                            </div>
-                            <button class="btn btn-outline-danger">Lưu</button>
-                        </div>
-                    </div>
+            <div class="voucher-container py-2 px-1">
+                <div class="voucher-scroll d-flex gap-2 p-2" id="voucherList">
+                    <!-- Voucher sẽ được render ở đây bằng JavaScript -->
                 </div>
             </div>
         </div>
@@ -201,17 +98,21 @@
 </section>
 
 <!-- Filter Section -->
-<section class="container mb-3 p-0">
-    <div class="row g-3 p-0">
+<section class="container mt-4 mb-4">
+    <div class="row g-3">
+        <!-- Search Bar -->
+        <!-- Search Bar -->
         <!-- Search Bar -->
         <div class="col-12 col-md-3">
-            <div class="input-group" style="height: 38px;">
-                <input type="text" id="searchInput" class="form-control h-100" placeholder="Tìm kiếm món ăn..." style="height: 100%;">
-                <button class="btn btn-outline-danger h-100" style="height: 100%;">
+            <div class="input-group">
+                <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm món ăn...">
+                <button id="searchBtn" class="btn btn-outline-danger" type="button">
                     <i class="bi bi-search"></i>
                 </button>
             </div>
         </div>
+
+
 
         <!-- Category Filter -->
         <div class="col-12 col-md-3">
@@ -242,138 +143,226 @@
             <button class="btn btn-outline-danger flex-grow-1" id="discountedFilter">
                 <i class="bi bi-tag"></i> Giảm giá
             </button>
+
+
         </div>
-    </div>
 </section>
 
-<!-- Products Grid Section -->
-<section mb-3>
+<section class="mb-3">
     <div class="row g-4">
-        <!-- Product Card 1 -->
-        <div class="col-xl-3 col-lg-4 col-md-6" data-aos="fade-up">
-            <div class="product-card card h-100 border-0 shadow-sm hover-scale">
-                <div class="position-relative">
-                    <img src="https://i.pinimg.com/736x/51/67/99/51679964424ad36d8cd3f01e391e6720.jpg"
-                         class="card-img-top" style="height: 200px; object-fit: cover;" alt="Product">
-                    <div class="product-badge bg-danger text-white position-absolute top-0 end-0 m-2 px-2 py-1 rounded-pill">
-                        -30%
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="badge bg-light text-danger">Món Lẩu</span>
-                        <div class="rating text-warning">
-                            <i class="bi bi-star-fill icon-sm"></i>
-                            <span class="ms-1 text-dark">4.9</span>
-                        </div>
-                    </div>
-                    <h5 class="card-title fw-bold mb-1 text-truncate-1">Lẩu Thái Chua Cay</h5>
-                    <p class="card-text text-muted small mb-2 text-truncate-1">Nhà hàng Lẩu Thái</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="text-danger fw-bold">175.000đ</span>
-                            <span class="text-muted text-decoration-line-through small">250.000đ</span>
-                        </div>
-                        <button class="btn btn-crimson btn-sm rounded-pill">
-                            <i class="bi bi-cart-plus icon-sm"></i> Thêm
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        @foreach (var product in Model.Products)
+        {
+            var cost = product.CostPrice ?? 0;
+            var original = product.OriginalPrice > 0 ? product.OriginalPrice : cost * 1.3m; // fallback
+            var discount = original > cost ? Math.Round((original - cost) / original * 100) : 0;
 
-        <!-- Product Card 2 -->
-        <div class="col-xl-3 col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
-            <div class="product-card card h-100 border-0 shadow-sm hover-scale">
-                <div class="position-relative">
-                    <img src="https://i.pinimg.com/736x/32/c0/54/32c05405e98bf5f4e8c3a7d2e213dade.jpg"
-                         class="card-img-top" style="height: 200px; object-fit: cover;" alt="Product">
-                    <div class="product-badge bg-success text-white position-absolute top-0 end-0 m-2 px-2 py-1 rounded-pill">
-                        Mới
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="badge bg-light text-danger">Món Nướng</span>
-                        <div class="rating text-warning">
-                            <i class="bi bi-star-fill icon-sm"></i>
-                            <span class="ms-1 text-dark">4.7</span>
-                        </div>
-                    </div>
-                    <h5 class="card-title fw-bold mb-1 text-truncate-1">Sườn Nướng BBQ</h5>
-                    <p class="card-text text-muted small mb-2 text-truncate-1">Quán Nướng 68</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="text-danger fw-bold">165.000đ</span>
-                        </div>
-                        <button class="btn btn-crimson btn-sm rounded-pill">
-                            <i class="bi bi-cart-plus icon-sm"></i> Thêm
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+            <div class="col-xl-3 col-lg-4 col-md-6 product-col" data-aos="fade-up">
+                <div class="product-card card h-100 border-0 shadow-sm hover-scale">
+                    <div class="position-relative">
+                        <img src="@product.MainImage"
+                             class="card-img-top" style="height: 200px; object-fit: cover;" alt="Product" />
 
-        <!-- Product Card 3 -->
-        <div class="col-xl-3 col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
-            <div class="product-card card h-100 border-0 shadow-sm hover-scale">
-                <div class="position-relative">
-                    <img src="https://i.pinimg.com/736x/0e/0f/eb/0e0febf746d99bcdbbf7c8c688b86bb7.jpg"
-                         class="card-img-top" style="height: 200px; object-fit: cover;" alt="Product">
-                </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="badge bg-light text-danger">Món Chay</span>
-                        <div class="rating text-warning">
-                            <i class="bi bi-star-fill icon-sm"></i>
-                            <span class="ms-1 text-dark">4.8</span>
-                        </div>
-                    </div>
-                    <h5 class="card-title fw-bold mb-1 text-truncate-1">Cơm Chay Thập Cẩm</h5>
-                    <p class="card-text text-muted small mb-2 text-truncate-1">Nhà Hàng Chay An Nhiên</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="text-danger fw-bold">85.000đ</span>
-                        </div>
-                        <button class="btn btn-crimson btn-sm rounded-pill">
-                            <i class="bi bi-cart-plus icon-sm"></i> Thêm
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Product Card 4 -->
-        <div class="col-xl-3 col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
-            <div class="product-card card h-100 border-0 shadow-sm hover-scale">
-                <div class="position-relative">
-                    <img src="https://i.pinimg.com/736x/67/e9/f2/67e9f28cc9b02a92703a45a3c4c88cc9.jpg"
-                         class="card-img-top" style="height: 200px; object-fit: cover;" alt="Product">
-                    <div class="product-badge bg-danger text-white position-absolute top-0 end-0 m-2 px-2 py-1 rounded-pill">
-                        -15%
                     </div>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="badge bg-light text-danger">Món Âu</span>
-                        <div class="rating text-warning">
-                            <i class="bi bi-star-fill icon-sm"></i>
-                            <span class="ms-1 text-dark">4.6</span>
+
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge bg-light text-danger">@product.CategoryName</span>
+                            <div class="rating text-warning">
+                                <i class="bi bi-star-fill icon-sm"></i>
+                                <span class="ms-1 text-dark">@product.Rating?.ToString("0.0") </span>
+                            </div>
                         </div>
-                    </div>
-                    <h5 class="card-title fw-bold mb-1 text-truncate-1">Steak Bò Mỹ</h5>
-                    <p class="card-text text-muted small mb-2 text-truncate-1">Western Cuisine</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="text-danger fw-bold">425.000đ</span>
-                            <span class="text-muted text-decoration-line-through small">500.000đ</span>
+
+                        <h5 class="card-title fw-bold mb-1 text-truncate-1">@product.Name</h5>
+                        <p class="card-text text-muted small mb-2 text-truncate-1">@product.StoreName</p>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-danger fw-bold">
+                                    @string.Format("{0:N0} ₫", cost)
+                                </span>
+
+                            </div>
+                            <button class="btn btn-crimson btn-sm rounded-pill">
+                                <i class="bi bi-cart-plus icon-sm"></i> Thêm
+                            </button>
                         </div>
-                        <button class="btn btn-crimson btn-sm rounded-pill">
-                            <i class="bi bi-cart-plus icon-sm"></i> Thêm
-                        </button>
                     </div>
                 </div>
             </div>
-        </div>
+        }
     </div>
 </section>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        function performSearch() {
+            var searchTerm = $('#searchInput').val().toLowerCase();
+
+            $('.product-card').each(function () {
+                var card = $(this);
+                var productName = card.find('.card-title').text().toLowerCase();
+                var parentCol = card.closest('.product-col'); // dùng class an toàn hơn
+
+                if (productName.includes(searchTerm)) {
+                    parentCol.show();
+                } else {
+                    parentCol.hide();
+                }
+            });
+
+            // Scroll to the first visible product
+            var firstVisible = $('.product-card:visible').first();
+            if (firstVisible.length) {
+                $('html, body').animate({
+                    scrollTop: firstVisible.offset().top - 100
+                }, 500);
+            }
+        }
+
+        // Sự kiện click tìm kiếm
+        $('#searchBtn').click(function () {
+            performSearch();
+        });
+
+        // Sự kiện Enter trong input
+        $('#searchInput').keypress(function (event) {
+            if (event.which === 13) {
+                performSearch();
+            }
+        });
+    });
+</script>
+
+<script>
+    async function loadVouchers(storeId) {
+        try {
+            const res = await fetch(`/Store/Voucher/${storeId}`);
+            if (!res.ok) throw new Error("Không thể tải voucher");
+
+            var resJson = await res.json();
+            const vouchers = JSON.parse(resJson);
+            const container = document.getElementById("voucherList");
+
+            if (!vouchers || vouchers.length === 0) {
+                container.innerHTML = `<p class="text-muted">Hiện chưa có voucher nào từ cửa hàng này.</p>`;
+                return;
+            }
+
+            container.innerHTML = "";
+
+            // Xử lý tuần tự để tránh vấn đề với async trong forEach
+            for (const voucher of vouchers) {
+                // Xử lý hiển thị giảm giá dựa trên type
+                const reduceText = (voucher.type === "percentage" || voucher.type === "Shop")
+                    ? `Giảm ${voucher.reduce}%`
+                    : `Giảm ${Number(voucher.reduce).toLocaleString()}₫`;
+
+                const minOrder = Number(voucher.minOrder).toLocaleString();
+                const endDate = new Date(voucher.endDate).toLocaleDateString("vi-VN");
+
+                // Kiểm tra voucher đã được lưu chưa
+                let isSaved = false;
+                try {
+                    const checkUrl = `/Voucher/CheckSaved?voucherId=${voucher.id}`;
+                    const checkResponse = await fetch(checkUrl);
+
+                    if (checkResponse.ok) {
+                        const checkResult = await checkResponse.json();
+                        isSaved = checkResult.isSaved === true;
+
+                    } else {
+                        console.error(`Failed to check voucher ${voucher.id}:`, checkResponse.status);
+                    }
+                } catch (error) {
+                    console.error(`Error checking voucher ${voucher.id}:`, error);
+                }
+
+                const buttonText = isSaved ? "Đã lưu" : "Lưu";
+                const buttonClass = isSaved ? "btn btn-secondary" : "btn btn-outline-danger";
+                const buttonDisabled = isSaved ? "disabled" : "";
+
+                const html = `
+                        <div class="voucher-item">
+                            <div class="border rounded p-3 d-flex align-items-center justify-content-between bg-light" style="min-width: 320px;">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="text-danger" style="font-size: 2rem;">
+                                        <i class="bi bi-ticket-perforated-fill"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1">${reduceText}</h6>
+                                        <p class="text-muted small mb-0">Đơn tối thiểu: ${minOrder}₫</p>
+                                        <small class="text-danger">HSD: ${endDate}</small>
+                                    </div>
+                                </div>
+                                <button class="${buttonClass}" ${buttonDisabled} onclick="saveVoucher(${voucher.id}, this)">${buttonText}</button>
+                            </div>
+                        </div>`;
+
+                container.insertAdjacentHTML("beforeend", html);
+            }
+        } catch (error) {
+            console.error(error);
+            document.getElementById("voucherList").innerHTML = `<p class="text-danger">Lỗi khi tải voucher.</p>`;
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const storeId = @Model.Id;
+        loadVouchers(storeId);
+    });
+
+    async function saveVoucher(voucherId, buttonElement) {
+        try {
+            const response = await fetch('/Voucher/SaveVoucher', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    VoucherId: voucherId
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Cập nhật button thành "Đã lưu"
+                buttonElement.textContent = "Đã lưu";
+                buttonElement.className = "btn btn-secondary";
+                buttonElement.disabled = true;
+
+                // Hiển thị thông báo thành công
+                showToast("Lưu voucher thành công!", "success");
+            } else {
+                showToast(result.message || "Có lỗi xảy ra khi lưu voucher", "error");
+            }
+        } catch (error) {
+            console.error('Error saving voucher:', error);
+            showToast("Có lỗi xảy ra khi lưu voucher", "error");
+        }
+    }
+
+    function showToast(message, type) {
+        // Tạo toast notification đơn giản
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        toast.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>${message}</span>
+                    <button type="button" class="btn-close" onclick="this.parentElement.parentElement.remove()"></button>
+                </div>
+            `;
+
+        document.body.appendChild(toast);
+
+        // Tự động ẩn sau 3 giây
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.remove();
+            }
+        }, 3000);
+    }
+</script>

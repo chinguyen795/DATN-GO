@@ -1,4 +1,4 @@
-﻿@{
+﻿﻿@{
     ViewData["Title"] = "Diner Page";
 }
 
@@ -170,9 +170,10 @@
         </div>
 
 
-        <button class="btn btn-danger w-100" onclick="applyFilters()">
+        <button class="btn btn-danger w-100 mb-4" onclick="applyFilters()">
             <i class="bi bi-search"></i> Tìm kiếm
         </button>
+
         <!-- End of Store Filter -->
     </div>
 
@@ -180,454 +181,62 @@
         <div class="row">
             <!-- Card template -->
             <!-- Card 1 -->
-            <div class="col-lg-4 col-md-6 col-sm-6 mb-3">
-                <div class="card h-100">
-                    <a href="DetailsDiner.html" class="text-decoration-none text-dark">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-4 align-items-center pt-2">
-                                    <img src="https://i.pinimg.com/736x/b8/72/48/b8724874ef9210c3857a686edb981f5f.jpg"
-                                         alt="" height="70" width="70"
-                                         class="rounded-circle object-fit-cover border">
-                                </div>
-                                <div class="col-8">
-                                    <h5 class="fw-bold text-truncate">Tiệm Bánh & Trà Sữa</h5>
-                                    <div class="d-flex align-items-center mb-1">
-                                        <i class="bi bi-geo-alt text-danger me-1"></i>
-                                        <p class="text-truncate mb-0 small">TP Cần Thơ</p>
-                                    </div>
-                                    <div class="d-flex align-items-center mb-2">
-                                        <i class="bi bi-shop text-danger me-1"></i>
-                                        <span class="badge bg-success ms-2">Đang hoạt động</span>
-                                    </div>
-                                    <div class="row text-nowrap">
-                                        <div class="col-4 d-flex align-items-center">
-                                            <span class="fw-bold">4.8</span>
-                                            <i class="bi bi-star-fill text-danger ms-1"></i>
-                                        </div>
-                                        <div class="col-4 d-flex align-items-center">
-                                            <span>15k</span>
-                                            <i class="bi bi-cart-check-fill text-danger ms-1"></i>
-                                        </div>
-                                        <div class="col-4 d-flex align-items-center">
-                                            <span>30+</span>
-                                            <i class="bi bi-box text-danger ms-1"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center p-3">
-                        <a href="Chat.html" class="btn btn-outline-danger btn-sm">
-                            <i class="bi bi-chat-dots"></i>
-                        </a>
-                        <a href="DetailsDiner.html" class="btn btn-danger flex-grow-1 ms-2">
-                            <i class="bi bi-shop me-2"></i>Xem cửa hàng
-                        </a>
-                    </div>
-                </div>
-            </div>
+            @foreach (var store in Model)
+            {
 
-            <!-- Card 2 -->
-            <div class="col-lg-4 col-md-6 col-sm-6 mb-3">
-                <div class="card h-100">
-                    <a href="DetailsDiner.html" class="text-decoration-none text-dark">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-4 align-items-center pt-2">
-                                    <img src="https://i.pinimg.com/736x/b8/72/48/b8724874ef9210c3857a686edb981f5f.jpg"
-                                         alt="" height="70" width="70"
-                                         class="rounded-circle object-fit-cover border">
-                                </div>
-                                <div class="col-8">
-                                    <h5 class="fw-bold text-truncate">Tiệm Snack & Đồ Ăn Vặt</h5>
-                                    <div class="d-flex align-items-center mb-1">
-                                        <i class="bi bi-geo-alt text-danger me-1"></i>
-                                        <p class="text-truncate mb-0 small">TP Cần Thơ</p>
+                <div class="col-lg-4 col-md-6 col-sm-6 mb-3">
+                    <div class="card h-100">
+                        <a href="DetailsDiner.html" class="text-decoration-none text-dark">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-4 align-items-center pt-2">
+                                        <img src="@store.Avatar"
+                                             alt="" height="70" width="70"
+                                             class="rounded-circle object-fit-cover border">
                                     </div>
-                                    <div class="d-flex align-items-center mb-2">
-                                        <i class="bi bi-shop text-danger me-1"></i>
-                                        <span class="badge bg-success ms-2">Đang hoạt động</span>
-                                    </div>
-                                    <div class="row text-nowrap">
-                                        <div class="col-4 d-flex align-items-center">
-                                            <span class="fw-bold">4.6</span>
-                                            <i class="bi bi-star-fill text-danger ms-1"></i>
+                                    <div class="col-8">
+                                        <h5 class="fw-bold text-truncate">@store.Name</h5>
+                                        <div class="d-flex align-items-center mb-1">
+                                            <i class="bi bi-geo-alt text-danger me-1"></i>
+                                            <p class="text-truncate mb-0 small">@store.Address</p>
                                         </div>
-                                        <div class="col-4 d-flex align-items-center">
-                                            <span>12k</span>
-                                            <i class="bi bi-cart-check-fill text-danger ms-1"></i>
-                                        </div>
-                                        <div class="col-4 d-flex align-items-center">
-                                            <span>40+</span>
-                                            <i class="bi bi-box text-danger ms-1"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center p-3">
-                        <a href="Chat.html" class="btn btn-outline-danger btn-sm">
-                            <i class="bi bi-chat-dots"></i>
-                        </a>
-                        <a href="DetailsDiner.html" class="btn btn-danger flex-grow-1 ms-2">
-                            <i class="bi bi-shop me-2"></i>Xem cửa hàng
-                        </a>
-                    </div>
-                </div>
-            </div>
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="bi bi-shop text-danger me-1"></i>
+                                            <span class="badge @(store.Status == StoreStatus.Active ? "bg-success" : "bg-secondary") ms-2">
+                                                @(store.Status == StoreStatus.Active ? "Đang hoạt động" : "Đã đóng cửa")
+                                            </span>
 
-            <!-- Card 3 -->
-            <div class="col-lg-4 col-md-6 col-sm-6 mb-3">
-                <div class="card h-100">
-                    <a href="DetailsDiner.html" class="text-decoration-none text-dark">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-4 align-items-center pt-2">
-                                    <img src="https://i.pinimg.com/736x/b8/72/48/b8724874ef9210c3857a686edb981f5f.jpg"
-                                         alt="" height="70" width="70"
-                                         class="rounded-circle object-fit-cover border">
-                                </div>
-                                <div class="col-8">
-                                    <h5 class="fw-bold text-truncate">Trà Sữa & Kem</h5>
-                                    <div class="d-flex align-items-center mb-1">
-                                        <i class="bi bi-geo-alt text-danger me-1"></i>
-                                        <p class="text-truncate mb-0 small">TP Cần Thơ</p>
-                                    </div>
-                                    <div class="d-flex align-items-center mb-2">
-                                        <i class="bi bi-shop text-danger me-1"></i>
-                                        <span class="badge bg-success ms-2">Đang hoạt động</span>
-                                    </div>
-                                    <div class="row text-nowrap">
-                                        <div class="col-4 d-flex align-items-center">
-                                            <span class="fw-bold">4.7</span>
-                                            <i class="bi bi-star-fill text-danger ms-1"></i>
-                                        </div>
-                                        <div class="col-4 d-flex align-items-center">
-                                            <span>18k</span>
-                                            <i class="bi bi-cart-check-fill text-danger ms-1"></i>
-                                        </div>
-                                        <div class="col-4 d-flex align-items-center">
-                                            <span>35+</span>
-                                            <i class="bi bi-box text-danger ms-1"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center p-3">
-                        <a href="Chat.html" class="btn btn-outline-danger btn-sm">
-                            <i class="bi bi-chat-dots"></i>
-                        </a>
-                        <a href="DetailsDiner.html" class="btn btn-danger flex-grow-1 ms-2">
-                            <i class="bi bi-shop me-2"></i>Xem cửa hàng
-                        </a>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Card 4 -->
-            <div class="col-lg-4 col-md-6 col-sm-6 mb-3">
-                <div class="card h-100">
-                    <a href="DetailsDiner.html" class="text-decoration-none text-dark">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-4 align-items-center pt-2">
-                                    <img src="https://i.pinimg.com/originals/bc/88/15/bc881536a76015d935aeae08de4a16df.jpg"
-                                         alt="" height="70" width="70"
-                                         class="rounded-circle object-fit-cover border">
-                                </div>
-                                <div class="col-8">
-                                    <h5 class="fw-bold text-truncate">Tiệm Bánh & Cookie</h5>
-                                    <div class="d-flex align-items-center mb-1">
-                                        <i class="bi bi-geo-alt text-danger me-1"></i>
-                                        <p class="text-truncate mb-0 small">TP Cần Thơ</p>
-                                    </div>
-                                    <div class="d-flex align-items-center mb-2">
-                                        <i class="bi bi-shop text-danger me-1"></i>
-                                        <span class="badge bg-success ms-2">Đang hoạt động</span>
-                                    </div>
-                                    <div class="row text-nowrap">
-                                        <div class="col-4 d-flex align-items-center">
-                                            <span class="fw-bold">4.5</span>
-                                            <i class="bi bi-star-fill text-danger ms-1"></i>
                                         </div>
-                                        <div class="col-4 d-flex align-items-center">
-                                            <span>25k</span>
-                                            <i class="bi bi-cart-check-fill text-danger ms-1"></i>
-                                        </div>
-                                        <div class="col-4 d-flex align-items-center">
-                                            <span>20+</span>
-                                            <i class="bi bi-box text-danger ms-1"></i>
+                                        <div class="row text-nowrap">
+                                            <div class="col-4 d-flex align-items-center">
+                                                <span class="fw-bold">4.8</span>
+                                                <i class="bi bi-star-fill text-danger ms-1"></i>
+                                            </div>
+                                            <div class="col-4 d-flex align-items-center">
+                                                <span>15k</span>
+                                                <i class="bi bi-cart-check-fill text-danger ms-1"></i>
+                                            </div>
+                                            <div class="col-4 d-flex align-items-center">
+                                                <span>30+</span>
+                                                <i class="bi bi-box text-danger ms-1"></i>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                        </a>
+                        <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center p-3">
+                            <a href="Chat.html" class="btn btn-outline-danger btn-sm">
+                                <i class="bi bi-chat-dots"></i>
+                            </a>
+                            <a asp-controller="Store" asp-action="Detail" asp-route-id="@store.Id" class="btn btn-danger flex-grow-1 ms-2">
+                                <i class="bi bi-shop me-2"></i>Xem cửa hàng
+                            </a>
                         </div>
-                    </a>
-                    <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center p-3">
-                        <a href="Chat.html" class="btn btn-outline-danger btn-sm">
-                            <i class="bi bi-chat-dots"></i>
-                        </a>
-                        <a href="DetailsDiner.html" class="btn btn-danger flex-grow-1 ms-2">
-                            <i class="bi bi-shop me-2"></i>Xem cửa hàng
-                        </a>
                     </div>
                 </div>
-            </div>
-
-            <!-- Card 5 -->
-            <div class="col-lg-4 col-md-6 col-sm-6 mb-3">
-                <div class="card h-100">
-                    <a href="DetailsDiner.html" class="text-decoration-none text-dark">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-4 align-items-center pt-2">
-                                    <img src="https://i.pinimg.com/originals/bc/88/15/bc881536a76015d935aeae08de4a16df.jpg"
-                                         alt="" height="70" width="70"
-                                         class="rounded-circle object-fit-cover border">
-                                </div>
-                                <div class="col-8">
-                                    <h5 class="fw-bold text-truncate">Candy Pop - Tiệm Bánh & Kẹo</h5>
-                                    <div class="d-flex align-items-center mb-1">
-                                        <i class="bi bi-geo-alt text-danger me-1"></i>
-                                        <p class="text-truncate mb-0 small">TP Hồ Chí Minh</p>
-                                    </div>
-                                    <div class="d-flex align-items-center mb-2">
-                                        <i class="bi bi-shop text-danger me-1"></i>
-                                        <span class="badge bg-danger ms-2">Đã đóng cửa</span>
-                                    </div>
-                                    <div class="row text-nowrap">
-                                        <div class="col-4 d-flex align-items-center">
-                                            <span class="fw-bold">4.8</span>
-                                            <i class="bi bi-star-fill text-danger ms-1"></i>
-                                        </div>
-                                        <div class="col-4 d-flex align-items-center">
-                                            <span>40k</span>
-                                            <i class="bi bi-cart-check-fill text-danger ms-1"></i>
-                                        </div>
-                                        <div class="col-4 d-flex align-items-center">
-                                            <span>50+</span>
-                                            <i class="bi bi-box text-danger ms-1"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center p-3">
-                        <a href="Chat.html" class="btn btn-outline-danger btn-sm">
-                            <i class="bi bi-chat-dots"></i>
-                        </a>
-                        <a href="DetailsDiner.html" class="btn btn-danger flex-grow-1 ms-2">
-                            <i class="bi bi-shop me-2"></i>Xem cửa hàng
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card 6 -->
-            <div class="col-lg-4 col-md-6 col-sm-6 mb-3">
-                <div class="card h-100">
-                    <a href="DetailsDiner.html" class="text-decoration-none text-dark">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-4 align-items-center pt-2">
-                                    <img src="https://i.pinimg.com/originals/bc/88/15/bc881536a76015d935aeae08de4a16df.jpg"
-                                         alt="" height="70" width="70"
-                                         class="rounded-circle object-fit-cover border">
-                                </div>
-                                <div class="col-8">
-                                    <h5 class="fw-bold text-truncate">Fruit Tea House</h5>
-                                    <div class="d-flex align-items-center mb-1">
-                                        <i class="bi bi-geo-alt text-danger me-1"></i>
-                                        <p class="text-truncate mb-0 small">TP Hồ Chí Minh</p>
-                                    </div>
-                                    <div class="d-flex align-items-center mb-2">
-                                        <i class="bi bi-shop text-danger me-1"></i>
-                                        <span class="badge bg-success ms-2">Đang hoạt động</span>
-                                    </div>
-                                    <div class="row text-nowrap">
-                                        <div class="col-4 d-flex align-items-center">
-                                            <span class="fw-bold">4.5</span>
-                                            <i class="bi bi-star-fill text-danger ms-1"></i>
-                                        </div>
-                                        <div class="col-4 d-flex align-items-center">
-                                            <span>7k</span>
-                                            <i class="bi bi-cart-check-fill text-danger ms-1"></i>
-                                        </div>
-                                        <div class="col-4 d-flex align-items-center">
-                                            <span>22+</span>
-                                            <i class="bi bi-box text-danger ms-1"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center p-3">
-                        <a href="Chat.html" class="btn btn-outline-danger btn-sm">
-                            <i class="bi bi-chat-dots"></i>
-                        </a>
-                        <a href="DetailsDiner.html" class="btn btn-danger flex-grow-1 ms-2">
-                            <i class="bi bi-shop me-2"></i>Xem cửa hàng
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card 7 -->
-            <div class="col-lg-4 col-md-6 col-sm-6 mb-3">
-                <div class="card h-100">
-                    <a href="DetailsDiner.html" class="text-decoration-none text-dark">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-4 align-items-center pt-2">
-                                    <img src="https://i.pinimg.com/236x/17/ec/8c/17ec8c1f13ce13a79b708074e8b4ec09.jpg"
-                                         alt="" height="70" width="70"
-                                         class="rounded-circle object-fit-cover border">
-                                </div>
-                                <div class="col-8">
-                                    <h5 class="fw-bold text-truncate">TocoToco Bubble Tea</h5>
-                                    <div class="d-flex align-items-center mb-1">
-                                        <i class="bi bi-geo-alt text-danger me-1"></i>
-                                        <p class="text-truncate mb-0 small">TP Hồ Chí Minh</p>
-                                    </div>
-                                    <div class="d-flex align-items-center mb-2">
-                                        <i class="bi bi-shop text-danger me-1"></i>
-                                        <span class="badge bg-success ms-2">Đang hoạt động</span>
-                                    </div>
-                                    <div class="row text-nowrap">
-                                        <div class="col-4 d-flex align-items-center">
-                                            <span class="fw-bold">4.9</span>
-                                            <i class="bi bi-star-fill text-danger ms-1"></i>
-                                        </div>
-                                        <div class="col-4 d-flex align-items-center">
-                                            <span>30k</span>
-                                            <i class="bi bi-cart-check-fill text-danger ms-1"></i>
-                                        </div>
-                                        <div class="col-4 d-flex align-items-center">
-                                            <span>45+</span>
-                                            <i class="bi bi-box text-danger ms-1"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center p-3">
-                        <a href="Chat.html" class="btn btn-outline-danger btn-sm">
-                            <i class="bi bi-chat-dots"></i>
-                        </a>
-                        <a href="DetailsDiner.html" class="btn btn-danger flex-grow-1 ms-2">
-                            <i class="bi bi-shop me-2"></i>Xem cửa hàng
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card 8 -->
-            <div class="col-lg-4 col-md-6 col-sm-6 mb-3">
-                <div class="card h-100">
-                    <a href="DetailsDiner.html" class="text-decoration-none text-dark">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-4 align-items-center pt-2">
-                                    <img src="https://i.pinimg.com/236x/17/ec/8c/17ec8c1f13ce13a79b708074e8b4ec09.jpg"
-                                         alt="" height="70" width="70"
-                                         class="rounded-circle object-fit-cover border">
-                                </div>
-                                <div class="col-8">
-                                    <h5 class="fw-bold text-truncate">Snack House</h5>
-                                    <div class="d-flex align-items-center mb-1">
-                                        <i class="bi bi-geo-alt text-danger me-1"></i>
-                                        <p class="text-truncate mb-0 small">TP Cần Thơ</p>
-                                    </div>
-                                    <div class="d-flex align-items-center mb-2">
-                                        <i class="bi bi-shop text-danger me-1"></i>
-                                        <span class="badge bg-danger ms-2">Đã đóng cửa</span>
-                                    </div>
-                                    <div class="row text-nowrap">
-                                        <div class="col-4 d-flex align-items-center">
-                                            <span class="fw-bold">4.2</span>
-                                            <i class="bi bi-star-fill text-danger ms-1"></i>
-                                        </div>
-                                        <div class="col-4 d-flex align-items-center">
-                                            <span>6k</span>
-                                            <i class="bi bi-cart-check-fill text-danger ms-1"></i>
-                                        </div>
-                                        <div class="col-4 d-flex align-items-center">
-                                            <span>18+</span>
-                                            <i class="bi bi-box text-danger ms-1"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center p-3">
-                        <a href="Chat.html" class="btn btn-outline-danger btn-sm">
-                            <i class="bi bi-chat-dots"></i>
-                        </a>
-                        <a href="DetailsDiner.html" class="btn btn-danger flex-grow-1 ms-2">
-                            <i class="bi bi-shop me-2"></i>Xem cửa hàng
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card 9 -->
-            <div class="col-lg-4 col-md-6 col-sm-6 mb-3">
-                <div class="card h-100">
-                    <a href="DetailsDiner.html" class="text-decoration-none text-dark">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-4 align-items-center pt-2">
-                                    <img src="https://i.pinimg.com/236x/17/ec/8c/17ec8c1f13ce13a79b708074e8b4ec09.jpg"
-                                         alt="" height="70" width="70"
-                                         class="rounded-circle object-fit-cover border">
-                                </div>
-                                <div class="col-8">
-                                    <h5 class="fw-bold text-truncate">Sweet & Tasty Corner</h5>
-                                    <div class="d-flex align-items-center mb-1">
-                                        <i class="bi bi-geo-alt text-danger me-1"></i>
-                                        <p class="text-truncate mb-0 small">TP Đà Nẵng</p>
-                                    </div>
-                                    <div class="d-flex align-items-center mb-2">
-                                        <i class="bi bi-shop text-danger me-1"></i>
-                                        <span class="badge bg-success ms-2">Đang hoạt động</span>
-                                    </div>
-                                    <div class="row text-nowrap">
-                                        <div class="col-4 d-flex align-items-center">
-                                            <span class="fw-bold">4.7</span>
-                                            <i class="bi bi-star-fill text-danger ms-1"></i>
-                                        </div>
-                                        <div class="col-4 d-flex align-items-center">
-                                            <span>35k</span>
-                                            <i class="bi bi-cart-check-fill text-danger ms-1"></i>
-                                        </div>
-                                        <div class="col-4 d-flex align-items-center">
-                                            <span>42+</span>
-                                            <i class="bi bi-box text-danger ms-1"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                    <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center p-3">
-                        <a href="Chat.html" class="btn btn-outline-danger btn-sm">
-                            <i class="bi bi-chat-dots"></i>
-                        </a>
-                        <a href="DetailsDiner.html" class="btn btn-danger flex-grow-1 ms-2">
-                            <i class="bi bi-shop me-2"></i>Xem cửa hàng
-                        </a>
-                    </div>
-                </div>
-            </div>
+            }
 
         </div>
 
@@ -636,3 +245,26 @@
 
 
 </div>
+<script>
+    // Desktop Search
+    document.getElementById("searchInput").addEventListener("keypress", function (e) {
+        if (e.key === "Enter") {
+            const keyword = this.value;
+            window.location.href = `@Url.Action("Diner", "Diner")?search=${encodeURIComponent(keyword)}`;
+        }
+    });
+
+    // Mobile Search
+    document.getElementById("searchInputMobile").addEventListener("keypress", function (e) {
+        if (e.key === "Enter") {
+            const keyword = this.value;
+            window.location.href = `@Url.Action("Diner", "Diner")?search=${encodeURIComponent(keyword)}`;
+        }
+    });
+
+    // Optional: Nút "Tìm kiếm" có thể gọi function applyFilters()
+    function applyFilters() {
+        const keyword = document.getElementById("searchInput").value;
+        window.location.href = `@Url.Action("Diner", "Diner")?search=${encodeURIComponent(keyword)}`;
+    }
+</script>

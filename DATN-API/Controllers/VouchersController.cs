@@ -87,5 +87,44 @@ namespace DATN_API.Controllers
 
             return NoContent();
         }
+
+        [HttpGet("shop/{storeId}")]
+        public async Task<IActionResult> GetVouchersByStore(int storeId)
+        {
+            var vouchers = await _context.Vouchers
+                .Where(v => v.StoreId == storeId)
+                .Include(v => v.ProductVouchers)
+                .Include(v => v.Orders)
+                .ToListAsync();
+
+            return Ok(vouchers);
+        }
+        // GET: api/vouchers/admin
+        [HttpGet("admin")]
+        public async Task<IActionResult> GetAdminVouchers()
+        {
+            var vouchers = await _context.Vouchers
+                .Where(v => v.StoreId == null)
+                .Include(v => v.ProductVouchers)
+                .Include(v => v.Orders)
+                .ToListAsync();
+
+            return Ok(vouchers);
+        }
+
+        // POST: api/vouchers/admin
+        [HttpPost("admin")]
+        public async Task<IActionResult> CreateAdminVoucher([FromBody] Vouchers model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            model.StoreId = null;
+
+            _context.Vouchers.Add(model);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetById), new { id = model.Id }, model);
+        }
     }
 }

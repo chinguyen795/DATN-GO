@@ -1,4 +1,33 @@
-﻿<div class="page-wrapper">
+﻿@model List<DATN_GO.Models.Users>
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+@functions {
+    string GetGenderText(string gender)
+    {
+        return gender switch
+        {
+            "Male" => "Nam",
+            "Female" => "Nữ",
+            "Other" => "Khác",
+            _ => gender
+        };
+    }
+
+    string GetStatusText(string status)
+    {
+        return status switch
+        {
+            "Active" => "Đang Hoạt động",
+            "Inactive" => "Ngừng hoạt động",
+            _ => status
+        };
+    }
+}
+
+
+<div class="page-wrapper">
     <header class="main-header" id="header">
         <nav class="navbar navbar-expand-lg navbar-light" id="navbar">
             <button id="sidebar-toggler" class="sidebar-toggle">
@@ -55,92 +84,50 @@
                                 <th>Tên người dùng</th>
                                 <th>Email</th>
                                 <th>SĐT</th>
-                                <th>Địa chỉ</th>
                                 <th>Giới tính</th>
                                 <th>Trạng thái</th>
                                 <th>Ngày tạo</th>
-                                <th>Actions</th>
+
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>101</td>
-                                <td class="py-0">
-                                    <img src="images/user/user-xs-01.jpg"
-                                         alt="User Image"
-                                         style="width: 50px; height: 50px; object-fit: cover" />
-                                </td>
-                                <td>Nguyễn Văn A</td>
-                                <td>nguyenvana@example.com</td>
-                                <td>0912345678</td>
-                                <td>123 Đường ABC, Quận 1, TP.HCM</td>
-                                <td>Nam</td>
-                                <td>
-                                    <span class="badge badge-success">Hoạt động</span>
-                                </td>
-                                <td>2025-06-01</td>
-                                <td>
-                                    <button class="btn btn-info btn-sm"
-                                            title="Xem chi tiết"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#exampleModallarge">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                </td>
-                            </tr>
+                            @foreach (var user in Model)
+                            {
+                                <tr>
+                                    <td>@user.Id</td>
+                                    <td class="py-0">
+                                        <img src="@user.Avatar ?? " /images/default-avatar.png""
+                                             class="clickable-image"
+                                             data-src="@user.Avatar ?? " /images/default-avatar.png""
+                                             style="width: 50px; height: 50px; object-fit: cover; cursor: pointer;" />
 
-                            <tr>
-                                <td>102</td>
-                                <td class="py-0">
-                                    <img src="images/user/user-xs-02.jpg"
-                                         alt="User Image"
-                                         style="width: 50px; height: 50px; object-fit: cover" />
-                                </td>
-                                <td>Trần Thị B</td>
-                                <td>tranthib@example.com</td>
-                                <td>0987654321</td>
-                                <td>456 Đường XYZ, Quận Bình Thủy, TP.Cần Thơ</td>
-                                <td>Nữ</td>
-                                <td>
-                                    <span class="badge badge-danger">Bị khóa</span>
-                                </td>
-                                <td>2025-05-20</td>
-                                <td>
-                                    <button class="btn btn-info btn-sm"
-                                            title="Xem chi tiết"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#exampleModallarge">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                </td>
-                            </tr>
+                                    </td>
+                                    <td>@user.FullName</td>
+                                    <td>@user.Email</td>
+                                    <td>@user.Phone</td>
 
-                            <tr>
-                                <td>103</td>
-                                <td class="py-0">
-                                    <img src="images/user/user-xs-03.jpg"
-                                         alt="User Image"
-                                         style="width: 50px; height: 50px; object-fit: cover" />
-                                </td>
-                                <td>Lê Văn C</td>
-                                <td>levanc@example.com</td>
-                                <td>0901234567</td>
-                                <td>789 Đường KLM, Quận 3, TP.HCM</td>
-                                <td>Nam</td>
-                                <td>
-                                    <span class="badge badge-success">Hoạt động</span>
-                                </td>
-                                <td>2025-04-10</td>
-                                <td>
-                                    <button class="btn btn-info btn-sm"
-                                            title="Xem chi tiết"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#exampleModallarge">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                </td>
-                            </tr>
+                                    <td>@GetGenderText(user.Gender.ToString())</td>
+                                    <td>
+                                        @if (user.Status.ToString() == "Active")
+                                        {
+                                            <span class="badge rounded-pill bg-success text-white" style="font-size: 0.7rem; padding: 4px 10px;">
+                                                @GetStatusText(user.Status.ToString())
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge rounded-pill bg-warning text-dark" style="font-size: 0.7rem; padding: 4px 10px;">
+                                                @GetStatusText(user.Status.ToString())
+                                            </span>
+                                        }
+
+                                    </td>
+                                    <td>@user.CreateAt.ToString("yyyy-MM-dd")</td>
+
+                                </tr>
+                            }
                         </tbody>
+
                     </table>
                 </div>
             </div>
@@ -149,72 +136,21 @@
 </div>
     </div>
 
-<div class="modal fade"
-     id="exampleModallarge"
-     tabindex="-1"
-     role="dialog"
-     aria-labelledby="exampleModalLarge"
-     aria-hidden="true">
-    <div class="modal-dialog modal-xl" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLarge">
-                    Chi tiết người dùng
-                </h5>
-                <button type="button"
-                        class="close"
-                        data-bs-dismiss="modal"
-                        aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="row">
-                    <div class="col-xl-4">
-                        <p class="text-dark font-weight-medium pt-4 mb-2">ID:</p>
-                        <p><span id="detail-userId">Loading...</span></p>
-                    </div>
-                    <div class="col-xl-4">
-                        <p class="text-dark font-weight-medium pt-4 mb-2">
-                            Tên người dùng:
-                        </p>
-                        <p><span id="detail-userName">Loading...</span></p>
-                    </div>
-                    <div class="col-xl-4">
-                        <p class="text-dark font-weight-medium pt-4 mb-2">Email:</p>
-                        <p><span id="detail-userEmail">Loading...</span></p>
-                    </div>
-                    <div class="col-xl-4">
-                        <p class="text-dark font-weight-medium pt-4 mb-2">SĐT:</p>
-                        <p><span id="detail-userPhone">Loading...</span></p>
-                    </div>
-                    <div class="col-xl-4">
-                        <p class="text-dark font-weight-medium pt-4 mb-2">Địa chỉ:</p>
-                        <p><span id="detail-userAddress">Loading...</span></p>
-                    </div>
-                    <div class="col-xl-4">
-                        <p class="text-dark font-weight-medium pt-4 mb-2">Giới tính:</p>
-                        <p><span id="detail-userGender">Loading...</span></p>
-                    </div>
-                    <div class="col-xl-4">
-                        <p class="text-dark font-weight-medium pt-4 mb-2">
-                            Trạng thái:
-                        </p>
-                        <p><span id="detail-userStatus">Loading...</span></p>
-                    </div>
-                    <div class="col-xl-4">
-                        <p class="text-dark font-weight-medium pt-4 mb-2">Ngày tạo:</p>
-                        <p><span id="detail-userCreatedAt">Loading...</span></p>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button"
-                        class="btn btn-danger btn-pill"
-                        data-bs-dismiss="modal">
-                    Đóng
-                </button>
-            </div>
+
+<div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content text-center p-4 rounded shadow"
+             style="background-color: #fff; border: 1px solid #ddd;">
+            <!-- Close button -->
+            <button type="button" class="close ml-auto mb-2 mr-1 mt-1" data-dismiss="modal" aria-label="Đóng"
+                    style="position: absolute; top: 10px; right: 15px; z-index: 10;">
+                <span aria-hidden="true" style="font-size: 2rem;">&times;</span>
+            </button>
+
+            <!-- Image content -->
+            <img id="modalImage" src="" class="img-fluid rounded"
+                 style="max-height: 75vh; max-width: 100%; object-fit: contain; border: 4px solid #f1f1f1; padding: 10px; background: #fafafa;"
+                 alt="Zoom ảnh">
         </div>
     </div>
 </div>
@@ -253,3 +189,44 @@
         </div>
     </div>
 </div>
+
+<script>
+
+        document.querySelectorAll('.btn-detail').forEach(btn => {
+            btn.addEventListener('click', function () {
+                document.getElementById('detail-userId').textContent = this.dataset.id;
+                document.getElementById('detail-userName').textContent = this.dataset.fullname;
+                document.getElementById('detail-userEmail').textContent = this.dataset.email;
+                document.getElementById('detail-userPhone').textContent = this.dataset.phone;
+                document.getElementById('detail-userGender').textContent = this.dataset.gender;
+                document.getElementById('detail-userStatus').textContent = this.dataset.status;
+                document.getElementById('detail-userCreatedAt').textContent = this.dataset.created;
+                const avatarUrl = this.dataset.avatar || "/images/default-avatar.png";
+        document.getElementById('detail-userAvatar').src = avatarUrl;
+
+                const modal = new bootstrap.Modal(document.getElementById('exampleModallarge'));
+                modal.show();
+            });
+        });
+
+    document.querySelectorAll('.clickable-image').forEach(img => {
+        img.addEventListener('click', function () {
+            document.getElementById('modalImage').src = this.dataset.src;
+            $('#imageModal').modal('show');
+        });
+    });
+            $('.close').on('click', function () {
+            $('#imageModal').modal('hide'); // Dùng Bootstrap API
+        });
+
+    document.querySelectorAll('.btn[data-bs-dismiss="modal"]').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const modalEl = btn.closest('.modal');
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+        });
+    });
+
+</script>
