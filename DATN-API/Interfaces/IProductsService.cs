@@ -13,5 +13,8 @@ namespace DATN_API.Services.Interfaces
         Task<bool> DeleteAsync(int id);
         Task<int> GetTotalProductsAsync();
         Task<Dictionary<int, int>> GetProductCountByMonthAsync(int year);
+        Task<List<Products>> GetProductsByStoreAsync(int storeId);
+
+
     }
 }

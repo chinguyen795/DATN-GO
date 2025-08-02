@@ -211,31 +211,38 @@ namespace DATN_API.Services
                 });
             }
 
-            // ✅ Lấy địa chỉ mặc định mới nhất
-            var address = await _context.Addresses
-                .Include(a => a.City)
-                .Where(a => a.UserId == userId)
-                .OrderByDescending(a => a.UpdateAt)
-                .FirstOrDefaultAsync();
+            var addresses = await _context.Addresses
+     .Include(a => a.City)
+     .Where(a => a.UserId == userId)
+     .OrderByDescending(a => a.UpdateAt)
+     .ToListAsync();
 
-            string? fullAddress = null;
+            var addressViewModels = new List<AddressViewModel>();
 
-            if (address != null)
+            foreach (var address in addresses)
             {
                 var district = await _context.Districts.FirstOrDefaultAsync(d => d.CityId == address.City.Id);
                 var ward = district != null
                     ? await _context.Wards.FirstOrDefaultAsync(w => w.DistrictId == district.Id)
                     : null;
 
-                fullAddress = string.Join(", ", new[]
+                var full = string.Join(", ", new[]
                 {
-            $"{address.Name} - {address.Phone}",
-            address.Description,
-            ward?.WardName,
-            district?.DistrictName,
-            address.City?.CityName
-        }.Where(s => !string.IsNullOrWhiteSpace(s)));
+        $"{address.Name} - {address.Phone}",
+        address.Description,
+        ward?.WardName,
+        district?.DistrictName,
+        address.City?.CityName
+    }.Where(s => !string.IsNullOrWhiteSpace(s)));
+
+                addressViewModels.Add(new AddressViewModel
+                {
+                    Id = address.Id,
+                    FullAddress = full
+                });
             }
+
+
 
             // ✅ Lấy danh sách voucher đã lưu, còn hạn, chưa dùng
             var now = DateTime.Now;
@@ -258,9 +265,10 @@ namespace DATN_API.Services
             return new CartSummaryViewModel
             {
                 CartItems = result,
-                FullAddress = fullAddress,
+                Addresses = addressViewModels,
                 Vouchers = vouchers
             };
+
         }
 
         public async Task<bool> RemoveFromCartAsync(int cartId)

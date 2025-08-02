@@ -72,6 +72,7 @@ builder.Services.AddHttpClient<CategoryService>();
 builder.Services.AddHttpClient<StoreService>();
 builder.Services.AddHttpClient<OrderService>();
 builder.Services.AddHttpClient<DecoratesService>();
+builder.Services.AddHttpClient<CartService>();
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())

@@ -11,5 +11,6 @@ namespace DATN_API.Services.Interfaces
         Task<Users> CreateAsync(Users model);
         Task<bool> UpdateAsync(int id, Users model);
         Task<bool> DeleteAsync(int id);
+        Task<Users> GetByEmailAsync(string email);
     }
 }

@@ -75,5 +75,32 @@ namespace DATN_API.Services
                                  .ToListAsync();
         }
 
+        public async Task<IEnumerable<Posts>> GetPendingPostsAsync()
+        {
+            return await _context.Posts
+                                 .Include(p => p.User)
+                                 .Where(p => p.Status == PostStatus.NotApproved)
+                                 .ToListAsync();
+        }
+
+        public async Task<bool> ApprovePostAsync(int id)
+        {
+            var post = await _context.Posts.FindAsync(id);
+            if (post == null) return false;
+
+            post.Status = PostStatus.Approved;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> RejectPostAsync(int id)
+        {
+            var post = await _context.Posts.FindAsync(id);
+            if (post == null) return false;
+
+            post.Status = PostStatus.NotApproved;
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }

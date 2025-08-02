@@ -75,4 +75,9 @@ namespace DATN_API.Models
         [JsonIgnore]
         public ICollection<Reviews>? Reviews { get; set; }
     }
+
+    public class GoogleLoginDto
+    {
+        public string IdToken { get; set; }
+    }
 }

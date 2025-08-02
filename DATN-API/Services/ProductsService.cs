@@ -92,5 +92,14 @@ namespace DATN_API.Services
 
             return result;
         }
+
+        public async Task<List<Products>> GetProductsByStoreAsync(int storeId)
+        {
+            return await _context.Products
+                .Include(p => p.Store)
+                .Include(p => p.Category)
+                .Where(p => p.StoreId == storeId && p.Status == ProductStatus.Approved)
+                .ToListAsync();
+        }
     }
 }

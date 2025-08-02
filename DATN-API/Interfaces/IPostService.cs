@@ -13,5 +13,8 @@ namespace DATN_API.Interfaces
         Task<bool> DeleteAsync(int id);
         Task<IEnumerable<Posts>> GetByUserIdAsync(int userId);
 
+        Task<IEnumerable<Posts>> GetPendingPostsAsync();
+        Task<bool> ApprovePostAsync(int id);
+        Task<bool> RejectPostAsync(int id);
     }
 }

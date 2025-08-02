@@ -3,7 +3,7 @@
     public class CartSummaryViewModel
     {
         public List<CartItemViewModel> CartItems { get; set; }
-        public string? FullAddress { get; set; }
+        public List<AddressViewModel> Addresses { get; set; }
         public List<UserVoucherViewModel> Vouchers { get; set; }
     }
 

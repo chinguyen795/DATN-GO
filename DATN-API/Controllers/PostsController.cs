@@ -66,5 +66,40 @@ namespace DATN_API.Controllers
             return Ok(posts);
         }
 
+        [HttpGet("pending")]
+        public async Task<IActionResult> GetPendingPosts()
+        {
+            var posts = await _postsService.GetPendingPostsAsync();
+            var result = posts.Select(p => new
+            {
+                p.Id,
+                p.Content,
+                p.Image,
+                Status = p.Status.ToString(),
+                p.CreateAt,
+                UserName = p.User?.FullName,
+                UserEmail = p.User?.Email
+            });
+
+            return Ok(result);
+        }
+
+        [HttpPut("approve/{id}")]
+        public async Task<IActionResult> Approve(int id)
+        {
+            var success = await _postsService.ApprovePostAsync(id);
+            if (!success) return NotFound("Không tìm thấy bài viết");
+
+            return Ok("Bài viết đã được duyệt");
+        }
+
+        [HttpPut("reject/{id}")]
+        public async Task<IActionResult> Reject(int id)
+        {
+            var success = await _postsService.RejectPostAsync(id);
+            if (!success) return NotFound("Không tìm thấy bài viết");
+
+            return Ok("Bài viết đã bị từ chối");
+        }
     }
 }

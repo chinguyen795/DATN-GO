@@ -12,15 +12,14 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="~/css/homestyle.css" />
-
 </head>
 <body>
     <div class="container-fluid vh-100">
         <div class="row h-100">
-            <!-- Phần ảnh -->
+            <!-- Bên trái hình ảnh -->
             <div class="col-md-6 d-none d-md-block p-0">
                 <div class="h-100 bg-crimson d-flex align-items-center justify-content-center position-relative">
-					<img src="~/images/imglog.png" class="w-100 h-100" style="object-fit: cover;">
+                    <img src="~/images/imglog.png" class="w-100 h-100" style="object-fit: cover;">
                     <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center">
                         <div class="text-center text-white">
                             <h1 class="display-4 fw-bold mb-3">Chào mừng bạn!</h1>
@@ -29,55 +28,124 @@
                 </div>
             </div>
 
-            <!-- Phần form -->
+            <!-- Bên phải form đăng nhập -->
             <div class="col-md-6 d-flex align-items-center justify-content-center">
                 <div class="w-100">
-                    <!-- Form Đăng Nhập -->
                     <div id="loginForm" class="p-5">
-                        <div>
-                            <h2 class="text-center mb-4">Đăng Nhập</h2>
-                            <form asp-controller="UserAuthentication" asp-action="Login" method="post">
-                                <div class="mb-3">
-                                    <label asp-for="Identifier" class="form-label">Tài khoản</label>
-                                    <input asp-for="Identifier" class="form-control form-control-lg" placeholder="Email / Số điện thoại" />
-                                    <span asp-validation-for="Identifier" class="text-danger"></span>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label asp-for="Password" class="form-label">Mật khẩu</label>
-                                    <input asp-for="Password" type="password" class="form-control form-control-lg" placeholder="Nhập mật khẩu" />
-                                    <span asp-validation-for="Password" class="text-danger"></span>
-                                </div>
-
-                                <div class="mb-3 text-end">
-                                    <a asp-action="ForgotPassword" asp-controller="UserAuthentication" class="text-decoration-none">Quên Mật Khẩu</a>
-                                </div>
-
-                                <button type="submit" class="btn btn-crimson btn-lg w-100 mb-3">
-                                    Đăng Nhập
-                                </button>
-                            </form>
-
-                            <hr class="my-4">
-
-                            <div class="d-grid gap-2">
-                                <button class="btn btn-outline-crimson">
-                                    <i class="fab fa-google me-2"></i>Đăng nhập với Google
-                                </button>
-                                <button class="btn btn-outline-primary">
-                                    <i class="fab fa-facebook-f me-2"></i>Đăng nhập với Facebook
-                                </button>
+                        <h2 class="text-center mb-4">Đăng Nhập</h2>
+                        <form asp-controller="UserAuthentication" asp-action="Login" method="post">
+                            <div class="mb-3">
+                                <label asp-for="Identifier" class="form-label">Tài khoản</label>
+                                <input asp-for="Identifier" class="form-control form-control-lg" placeholder="Email / Số điện thoại" />
+                                <span asp-validation-for="Identifier" class="text-danger"></span>
                             </div>
 
-                            <div class="text-center mt-4">
-                                <span class="text-muted">Chưa có tài khoản? </span>
-                                <a asp-action="Register" asp-controller="UserAuthentication" class="text-decoration-none fw-bold">Đăng ký ngay</a>
+                            <div class="mb-3">
+                                <label asp-for="Password" class="form-label">Mật khẩu</label>
+                                <input asp-for="Password" type="password" class="form-control form-control-lg" placeholder="Nhập mật khẩu" />
+                                <span asp-validation-for="Password" class="text-danger"></span>
                             </div>
+
+                            <div class="mb-3 text-end">
+                                <a href="#" class="text-decoration-none">Quên mật khẩu?</a>
+                            </div>
+
+                            <button type="submit" class="btn btn-crimson btn-lg w-100 mb-3">
+                                Đăng Nhập
+                            </button>
+                        </form>
+
+                        <hr class="my-4">
+
+                        <div class="d-grid gap-2">
+                            <button id="googleLoginBtn" class="btn btn-outline-danger">
+                                <i class="fab fa-google me-2"></i>Đăng nhập với Google
+                            </button>
+                            <button class="btn btn-outline-primary">
+                                <i class="fab fa-facebook-f me-2"></i>Đăng nhập với Facebook
+                            </button>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <span class="text-muted">Chưa có tài khoản? </span>
+                            <a asp-action="Register" asp-controller="UserAuthentication" class="text-decoration-none fw-bold">Đăng ký ngay</a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <script>
+        window.onload = function () {
+            google.accounts.id.initialize({
+                client_id: "185130462575-kq61q46pbt3dggk8f6sgaes2hc321lgq.apps.googleusercontent.com",
+                callback: handleGoogleLogin,
+                auto_select: false, // không tự đăng nhập
+                ux_mode: "popup"    // bật popup chọn tài khoản
+            });
+
+            document.getElementById("googleLoginBtn").addEventListener("click", function () {
+                google.accounts.id.prompt(); // gọi popup chọn tài khoản
+            });
+        };
+
+        function handleGoogleLogin(response) {
+            const id_token = response.credential;
+
+            fetch('/UserAuthentication/LoginWithGoogle', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken: id_token })
+            })
+            .then(async res => {
+                if (res.ok) {
+                    const data = await res.json();
+                    localStorage.setItem("toastMessage", `Chào mừng ${data.fullName}, bạn đã đăng nhập bằng Google thành công!`);
+                    localStorage.setItem("toastType", "success");
+                    window.location.href = '/';
+                } else {
+                    alert("Đăng nhập bằng Google thất bại!");
+                }
+            })
+            .catch(err => {
+                console.error("Google login error:", err);
+            });
+        }
+
+        function showToast(message, isSuccess = true) {
+            const iconUrl = isSuccess ? "/icons/happy.gif" : "/icons/sad.gif";
+            const title = isSuccess ? "Thành công" : "Lỗi";
+
+            const toastHtml = `
+                <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" id="dynamicToast"
+                     style="position: fixed; top: 1rem; right: 1rem; z-index: 1060; min-width: 320px;">
+                    <div class="toast-header d-flex align-items-center ${isSuccess ? "bg-success" : "bg-danger"} text-white">
+                        <img src="${iconUrl}" alt="icon" width="20" height="20" class="me-2" />
+                        <strong class="me-auto">${title}</strong>
+                        <small class="text-white">Vừa xong</small>
+                        <button type="button" class="btn-close btn-close-white ms-2" onclick="this.closest('.toast').remove()" aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body">${message}</div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', toastHtml);
+            setTimeout(() => document.getElementById('dynamicToast')?.remove(), 3000);
+        }
+
+        window.addEventListener('DOMContentLoaded', function () {
+            const message = localStorage.getItem("toastMessage");
+            const type = localStorage.getItem("toastType");
+
+            if (message && type) {
+                showToast(message, type === "success");
+                localStorage.removeItem("toastMessage");
+                localStorage.removeItem("toastType");
+            }
+        });
+    </script>
 </body>
 </html>

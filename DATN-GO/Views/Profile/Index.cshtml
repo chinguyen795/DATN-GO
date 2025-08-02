@@ -270,7 +270,7 @@
                                             <button type="submit" class="btn btn-crimson btn-lg px-4">
                                                 <i class="bi bi-floppy me-2"></i>Lưu thay đổi
                                             </button>
-                                            <a href="./Repassword.html" class="btn btn-outline-crimson btn-lg px-4">
+                                            <a asp-action="ChangePassword" asp-controller="UserAuthentication" class="btn btn-outline-crimson btn-lg px-4">
                                                 <i class="bi bi-key me-2"></i>Đổi mật khẩu
                                             </a>
                                             @if (storeStatus == StoreStatus.PendingApproval)

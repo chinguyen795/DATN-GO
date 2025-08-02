@@ -1,4 +1,26 @@
-﻿<div class="page-wrapper">
+﻿@model List<DATN_GO.ViewModels.PostAdminViewModel>
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+
+}
+<form id="anti-forgery-form">
+    @Html.AntiForgeryToken()
+</form>
+
+@functions {
+    string GetStatusDisplayName(string status)
+    {
+        return status switch
+        {
+            "NotApproved" => "Chờ duyệt",
+            "Approved" => "Đã duyệt",
+            _ => status
+        };
+    }
+}
+
+
+<div class="page-wrapper">
 
     <!-- Header -->
     <header class="main-header" id="header">
@@ -14,15 +36,7 @@
 
                 <!-- search form -->
                 <div class="search-form">
-                    <form action="index.html" method="get">
-                        <div class="input-group input-group-sm" id="input-group-search">
-                            <input type="text" autocomplete="off" name="query" id="search-input" class="form-control"
-                                   placeholder="Search..." />
-                            <div class="input-group-append">
-                                <button class="btn" type="button">/</button>
-                            </div>
-                        </div>
-                    </form>
+
                     <ul class="dropdown-menu dropdown-menu-search">
 
                         <li class="nav-item">
@@ -379,13 +393,26 @@
                     <div class="card card-default">
                         <div class="card-header">
                             <h2 class="text-danger"> duyệt bài viết</h2>
-
+                            <div class="mb-3 d-flex justify-content-end" id="bulkActionButtons" style="display: none; gap: 12px;">
+                                <button type="button" class="btn btn-success btn-approve-all" style="border-radius: 0; padding: 8px 16px;">
+                                    <i class="bi bi-check-circle-fill me-1"></i> DUYỆT TẤT CẢ
+                                </button>
+                                <button type="button" class="btn btn-danger btn-reject-all" style="border-radius: 0; padding: 8px 16px;">
+                                    <i class="mdi mdi-close-circle-outline me-1"></i> TỪ CHỐI TẤT CẢ
+                                </button>
+                            </div>
 
                         </div>
                         <div class="card-body">
+
+
+
+
+
                             <table id="productsTable" class="table table-hover table-product" style="width:100%">
                                 <thead>
                                     <tr>
+                                        <th><input type="checkbox" id="checkAll" /></th>
                                         <th></th>
                                         <th>Người đăng</th>
                                         <th>Tiêu đề</th>
@@ -397,67 +424,42 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>
-                                            <img src="images/products/pdora.jpg" class="clickable-image"
-                                                 data-src="images/products/pdora.jpg" style="cursor: pointer;" alt="Ảnh cửa hàng">
-
-                                        </td>
-                                        <td>Nguyễn văn B</td>
-                                        <td>Truyện chinh thám</td>
-                                        <td>cuộc phiêu lưu</td>
-                                        <td>02/02/2022 09:45</td>
-
-                                        <td>
-                                            <a href="#" class="badge badge-pill badge-success">Đã duyệt
-                                        </td>
-
-                                        <td>
-                                            <button class="btn btn-sm btn-success" onclick="showAlert('success')" title="Duyệt"
-                                                    aria-label="Duyệt">
-                                                <i class="bi bi-check-circle-fill"></i> Duyệt
-
-                                            </button>
-                                            <button class="btn btn-sm btn-danger" onclick="showAlert('danger')" title="Từ chối"
-                                                    aria-label="Từ chối">
-                                                <i class="mdi mdi-close-circle-outline"></i></i> Từ chối
-
-                                            </button>
-
-                                        </td>
-
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <img src="images/products/pdora.jpg" class="clickable-image"
-                                                 data-src="images/products/pdora.jpg" style="cursor: pointer;" alt="Ảnh cửa hàng">
-
-                                        </td>
-                                        <td>Nguyễn văn a</td>
-                                        <td>truyện tranh thám tử</td>
-                                        <td>truy tìm kho báo</td>
-                                        <td>12/01/2025 08:33</td>
-
-                                        <td>
-                                            <a href="#" class="badge badge-pill badge-warning">Đang chờ duyệt
-                                        </td>
-
-                                        <td>
-                                            <button class="btn btn-sm btn-success" onclick="showAlert('success')" title="Duyệt"
-                                                    aria-label="Duyệt">
-                                                <i class="bi bi-check-circle-fill"></i> Duyệt
-
-                                            </button>
-                                            <button class="btn btn-sm btn-danger" onclick="showAlert('danger')" title="Từ chối"
-                                                    aria-label="Từ chối">
-                                                <i class="mdi mdi-close-circle-outline"></i></i> Từ chối
-
-                                            </button>
-
-                                        </td>
-
-                                    </tr>
+                                    @foreach (var p in Model)
+                                    {
+                                        <tr>
+                                            <td><input type="checkbox" class="post-checkbox" value="@p.Id" /></td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(p.Image))
+                                                {
+                                                    <img src="@p.Image" class="clickable-image" data-src="@p.Image"
+                                                         style="cursor: pointer; width: 60px;" alt="Ảnh bài viết" />
+                                                }
+                                                else
+                                                {
+                                                    <span>Không có ảnh</span>
+                                                }
+                                            </td>
+                                            <td>@p.UserName</td>
+                                            <td>@p.Content</td>
+                                            <td>@p.CreateAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                            <td>
+                                                <span class="badge badge-pill
+                @(p.Status == "Approved" ? "badge-success" : p.Status == "NotApproved" ? "badge-warning" : "badge-secondary")">
+                                                    @GetStatusDisplayName(p.Status)
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-success btn-approve" data-id="@p.Id">
+                                                    <i class="bi bi-check-circle-fill"></i> Duyệt
+                                                </button>
+                                                <button class="btn btn-sm btn-danger btn-reject" data-id="@p.Id">
+                                                    <i class="mdi mdi-close-circle-outline"></i> Từ chối
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
                                 </tbody>
+
                             </table>
 
 
@@ -488,3 +490,260 @@
 
     </div>
 </div>
+<!-- Modal xác nhận duyệt -->
+<div class="modal fade" id="approveModal" tabindex="-1" role="dialog" aria-labelledby="approveModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger">
+                <h5 class="modal-title text-white" id="approveModalLabel">Thông báo duyệt bài viết</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Bạn có chắc chắn muốn duyệt bài viết này? Hành động này sẽ không thể hoàn tác.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light btn-pill" data-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-danger btn-pill" id="confirmApproveBtn">Duyệt</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal xác nhận từ chối -->
+<div class="modal fade" id="rejectModal" tabindex="-1" role="dialog" aria-labelledby="rejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger">
+                <h5 class="modal-title text-white" id="rejectModalLabel">Thông báo từ chối bài viết</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Bạn có chắc chắn muốn từ chối bài viết này? Hành động này sẽ không thể hoàn tác.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light btn-pill" data-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-danger btn-pill" id="confirmRejectBtn">Từ chối</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal xác nhận duyệt tất cả -->
+<div class="modal fade" id="bulkApproveModal" tabindex="-1" role="dialog" aria-labelledby="bulkApproveModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="bulkApproveModalLabel">Xác nhận duyệt tất cả</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Bạn có chắc chắn muốn <strong>duyệt tất cả</strong> bài viết đã chọn không?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-dismiss="modal">Huỷ</button>
+                <button type="button" class="btn btn-success" id="confirmBulkApproveBtn">Duyệt</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal xác nhận từ chối tất cả -->
+<div class="modal fade" id="bulkRejectModal" tabindex="-1" role="dialog" aria-labelledby="bulkRejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="bulkRejectModalLabel">Xác nhận từ chối tất cả</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Bạn có chắc chắn muốn <strong>từ chối tất cả</strong> bài viết đã chọn không?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-dismiss="modal">Huỷ</button>
+                <button type="button" class="btn btn-danger" id="confirmBulkRejectBtn">Từ chối</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1056">
+    @if (TempData["ToastMessage"] != null && TempData["ToastType"] != null)
+    {
+        var toastType = TempData["ToastType"].ToString();
+        var isSuccess = toastType == "success";
+        <div class="toast @(isSuccess ? "" : "mt-3")" role="alert" aria-live="assertive" aria-atomic="true" id="autoToast">
+            <div class="toast-header @(isSuccess ? "bg-success" : "bg-danger") text-white">
+                <img src="@(isSuccess ? "/icons/happy.gif" : "/icons/sad.gif")" class="rounded me-2" width="20" height="20" alt="" />
+                <strong class="me-auto">@((isSuccess) ? "Thành công" : "Lỗi")</strong>
+                <small>Vừa xong</small>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                @TempData["ToastMessage"]
+            </div>
+        </div>
+    }
+</div>
+
+
+@section Scripts2 {
+    <script>
+        let postIdToHandle = null;
+
+        // ========== TOAST FUNCTION ==========
+        function showToast(message, isSuccess = true) {
+            const iconUrl = isSuccess ? "/icons/happy.gif" : "/icons/sad.gif";
+            const title = isSuccess ? "Thành công" : "Lỗi";
+
+            const toastHtml = `
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" id="dynamicToast"
+                 style="position: fixed; top: 1rem; right: 1rem; z-index: 9999; min-width: 320px;">
+                <div class="toast-header d-flex align-items-center ${isSuccess ? "bg-success" : "bg-danger"} text-white">
+                    <img src="${iconUrl}" alt="icon" width="20" height="20" class="me-2" />
+                    <strong class="me-auto">${title}</strong>
+                    <small class="text-white"> Vừa xong</small>
+                    <button type="button" class="btn-close btn-close-white ms-2" onclick="this.closest('.toast').remove()" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                    ${message}
+                </div>
+            </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', toastHtml);
+            setTimeout(() => document.getElementById('dynamicToast')?.remove(), 3000);
+        }
+
+        // ========== IMAGE MODAL ==========
+        document.querySelectorAll('.clickable-image').forEach(img => {
+            img.addEventListener('click', function () {
+                document.getElementById('modalImage').src = this.dataset.src;
+                $('#imageModal').modal('show');
+            });
+        });
+
+        // ========== CLOSE ALL MODALS ==========
+        $('.close, [data-dismiss="modal"]').on('click', function () {
+            $('#imageModal, #approveModal, #rejectModal, #bulkApproveModal, #bulkRejectModal').modal('hide');
+        });
+
+        // ========== APPROVE SINGLE ==========
+        document.querySelectorAll('.btn-approve').forEach(btn => {
+            btn.addEventListener('click', function () {
+                postIdToHandle = this.dataset.id;
+                $('#approveModal').modal('show');
+            });
+        });
+
+        document.getElementById('confirmApproveBtn').addEventListener('click', async function () {
+            if (postIdToHandle) {
+                const res = await fetch(`/Admin/Post/Approve?id=${postIdToHandle}`, { method: 'POST' });
+                const data = await res.json();
+                $('#approveModal').modal('hide');
+                showToast(data.message, data.success);
+                if (data.success) {
+                    setTimeout(() => location.reload(), 1500);
+                }
+            }
+        });
+
+        // ========== REJECT SINGLE ==========
+        document.querySelectorAll('.btn-reject').forEach(btn => {
+            btn.addEventListener('click', function () {
+                postIdToHandle = this.dataset.id;
+                $('#rejectModal').modal('show');
+            });
+        });
+
+        document.getElementById('confirmRejectBtn').addEventListener('click', async function () {
+            if (postIdToHandle) {
+                const res = await fetch(`/Admin/Post/Reject?id=${postIdToHandle}`, { method: 'POST' });
+                const data = await res.json();
+                $('#rejectModal').modal('hide');
+                showToast(data.message, data.success);
+                if (data.success) {
+                    setTimeout(() => location.reload(), 1500);
+                }
+            }
+        });
+
+        // ========== TOGGLE BULK BUTTONS ==========
+        function toggleBulkButtons() {
+            const checkedCount = document.querySelectorAll('.post-checkbox:checked').length;
+            document.getElementById('bulkActionButtons').style.display = checkedCount > 0 ? 'flex' : 'none';
+        }
+
+        document.getElementById('checkAll').addEventListener('change', function () {
+            const isChecked = this.checked;
+            document.querySelectorAll('.post-checkbox').forEach(cb => cb.checked = isChecked);
+            toggleBulkButtons();
+        });
+
+        document.querySelectorAll('.post-checkbox').forEach(cb => {
+            cb.addEventListener('change', toggleBulkButtons);
+        });
+
+        // ========== OPEN BULK APPROVE MODAL ==========
+        document.querySelector('.btn-approve-all').addEventListener('click', function () {
+            const selected = document.querySelectorAll('.post-checkbox:checked');
+            if (selected.length === 0) {
+                showToast("⚠️ Bạn chưa chọn bài viết nào để duyệt.", false);
+                return;
+            }
+            $('#bulkApproveModal').modal('show');
+        });
+
+        // ========== OPEN BULK REJECT MODAL ==========
+        document.querySelector('.btn-reject-all').addEventListener('click', function () {
+            const selected = document.querySelectorAll('.post-checkbox:checked');
+            if (selected.length === 0) {
+                showToast("⚠️ Bạn chưa chọn bài viết nào để từ chối.", false);
+                return;
+            }
+            $('#bulkRejectModal').modal('show');
+        });
+
+        // ========== CONFIRM BULK APPROVE ==========
+        document.getElementById('confirmBulkApproveBtn').addEventListener('click', async function () {
+            const selectedIds = Array.from(document.querySelectorAll('.post-checkbox:checked')).map(cb => cb.value);
+            let allSuccess = true;
+
+            for (const id of selectedIds) {
+                const res = await fetch(`/Admin/Post/Approve?id=${id}`, { method: 'POST' });
+                const data = await res.json();
+                showToast(data.message, data.success);
+                if (!data.success) allSuccess = false;
+            }
+
+            $('#bulkApproveModal').modal('hide');
+            if (allSuccess) {
+                setTimeout(() => location.reload(), 1500);
+            }
+        });
+
+        // ========== CONFIRM BULK REJECT ==========
+        document.getElementById('confirmBulkRejectBtn').addEventListener('click', async function () {
+            const selectedIds = Array.from(document.querySelectorAll('.post-checkbox:checked')).map(cb => cb.value);
+            let allSuccess = true;
+
+            for (const id of selectedIds) {
+                const res = await fetch(`/Admin/Post/Reject?id=${id}`, { method: 'POST' });
+                const data = await res.json();
+                showToast(data.message, data.success);
+                if (!data.success) allSuccess = false;
+            }
+
+            $('#bulkRejectModal').modal('hide');
+            if (allSuccess) {
+                setTimeout(() => location.reload(), 1500);
+            }
+        });
+    </script>
+}

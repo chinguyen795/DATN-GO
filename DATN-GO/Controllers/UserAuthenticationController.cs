@@ -49,7 +49,7 @@ namespace DATN_GO.Controllers
                 string redirectUrl = loginResult.Roles switch
                 {
                     1 => "/",
-                    2 => "/Seller/Home/",
+                    2 => "/",
                     _ => "/Admin/Home/"
                 };
                 return Redirect(redirectUrl);
@@ -149,25 +149,38 @@ namespace DATN_GO.Controllers
         [HttpPost("AuthenticationCode")]
         public async Task<IActionResult> AuthenticationCode(string identifier, string code)
         {
-
             if (string.IsNullOrEmpty(identifier) || string.IsNullOrEmpty(code))
             {
-                TempData["ToastMessage"] = " Thiếu thông tin hoặc mã OTP. Vui lòng thử lại!";
+                TempData["ToastMessage"] = "Thiếu thông tin hoặc mã OTP. Vui lòng thử lại!";
                 TempData["ToastType"] = "danger";
                 ViewBag.Identifier = identifier;
                 return View();
             }
 
+            // Kiểm tra mã OTP
             var (success, message) = await _AuthenticationService.VerifyCodeAsync(identifier, code);
 
             if (success)
             {
-                TempData["ToastMessage"] = " Mã xác thực hợp lệ! " + message;
-                TempData["ToastType"] = "success";
-                return RedirectToAction("CreatePassword", new { identifier });
+                // Kiểm tra nếu email đã tồn tại trong hệ thống
+                bool emailExists = await _AuthenticationService.IsEmailExistAsync(identifier);
+
+                if (emailExists)
+                {
+                    // Nếu email đã tồn tại, chuyển hướng đến trang ResetPassword
+                    return RedirectToAction("ResetPassword", new { identifier });
+                }
+                else
+                {
+                    // Nếu email chưa tồn tại, chuyển hướng đến trang CreatePassword để người dùng tạo mật khẩu mới
+                    TempData["ToastMessage"] = "Mã xác thực hợp lệ!";
+                    TempData["ToastType"] = "success";
+                    return RedirectToAction("CreatePassword", new { identifier });
+                }
             }
             else
             {
+                // Nếu mã OTP không hợp lệ
                 TempData["ToastMessage"] = $" {message}";
                 TempData["ToastType"] = "danger";
                 ViewBag.Identifier = identifier;

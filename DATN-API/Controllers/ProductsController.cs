@@ -72,5 +72,16 @@ namespace DATN_API.Controllers
             var result = await _service.GetProductCountByMonthAsync(year);
             return Ok(result);
         }
+
+        [HttpGet("store/{storeId}")]
+        public async Task<IActionResult> GetProductsByStore(int storeId)
+        {
+            var products = await _service.GetProductsByStoreAsync(storeId);
+            if (products == null || !products.Any())
+                return NotFound("No products found for this store.");
+
+            return Ok(products);
+        }
+
     }
 }

@@ -1,6 +1,8 @@
 ﻿using DATN_API.Data;
 using DATN_API.Models;
+using DATN_API.Services;
 using DATN_API.Services.Interfaces;
+using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,10 +14,14 @@ namespace DATN_API.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUsersService _service;
+        private readonly IJwtService _jwtService;
+        private readonly IConfiguration _config;
 
-        public UsersController(IUsersService service)
+        public UsersController(IUsersService service, IJwtService jwtService, IConfiguration config)
         {
             _service = service;
+            _jwtService = jwtService;
+            _config = config;
         }
 
         // GET: api/users
@@ -73,6 +79,65 @@ namespace DATN_API.Controllers
             if (user == null)
                 return NotFound("Không tìm thấy người dùng");
             return Ok(user);
+        }
+
+
+        [HttpPost("google-login")]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginDto dto)
+        {
+            if (string.IsNullOrEmpty(dto.IdToken))
+                return BadRequest(new { message = "Thiếu mã xác thực từ Google." });
+
+            try
+            {
+                var payload = await GoogleJsonWebSignature.ValidateAsync(dto.IdToken/*, new GoogleJsonWebSignature.ValidationSettings
+                {
+                    Audience = new[] { _config["Authentication:Google:ClientId"] }
+                }*/);
+
+                var existingUser = await _service.GetByEmailAsync(payload.Email);
+                if (existingUser == null)
+                {
+                    var newUser = new Users
+                    {
+                        Email = payload.Email,
+                        FullName = payload.Name,
+                        Avatar = payload.Picture,
+                        Status = UserStatus.Active,
+                        Gender = GenderType.Other,
+                        RoleId = 1,
+                        Password = Guid.NewGuid().ToString(),
+                        Phone = "0000000000",
+                        CreateAt = DateTime.UtcNow,
+                        UpdateAt = DateTime.UtcNow
+                    };
+
+                    existingUser = await _service.CreateAsync(newUser);
+                }
+
+                var token = _jwtService.GenerateToken(existingUser);
+
+                return Ok(new
+                {
+                    token,
+                    user = new
+                    {
+                        id = existingUser.Id,
+                        fullName = existingUser.FullName,
+                        email = existingUser.Email,
+                        roles = existingUser.RoleId
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    message = "Xác thực Google thất bại",
+                    error = ex.Message,
+                    stack = ex.StackTrace // 👈 tạm thêm để dễ debug
+                });
+            }
         }
     }
 
