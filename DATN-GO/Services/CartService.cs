@@ -25,32 +25,59 @@ namespace DATN_GO.Service
 {
     var json = JsonSerializer.Serialize(request);
     Console.WriteLine("➡️ JSON gửi đến API:");
-    Console.WriteLine(json); // 👈 CẦN CÓ DÒNG NÀY
+    Console.WriteLine(json);
 
     var content = new StringContent(json, Encoding.UTF8, "application/json");
     var response = await _httpClient.PostAsync($"{_baseUrl}Cart/add", content);
 
     var responseContent = await response.Content.ReadAsStringAsync();
     Console.WriteLine($"📥 Kết quả trả về: {response.StatusCode}");
-    Console.WriteLine($"📥 Nội dung trả về: {responseContent}"); // 👈 CẦN CÓ DÒNG NÀY
+    Console.WriteLine($"📥 Nội dung trả về: {responseContent}");
 
     return response.IsSuccessStatusCode;
 }
 
 
 
-        public async Task<List<CartItemViewModel>?> GetCartByUserIdAsync(int userId)
+        public async Task<CartSummaryViewModel?> GetCartByUserIdAsync(int userId)
         {
             var response = await _httpClient.GetAsync($"{_baseUrl}Cart/user/{userId}");
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<List<CartItemViewModel>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                return JsonSerializer.Deserialize<CartSummaryViewModel>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             }
 
             Console.WriteLine($"Lỗi khi lấy giỏ hàng: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
             return null;
         }
+
+        public async Task<List<ShippingGroupViewModel>?> GetShippingGroupsAsync(int userId, int addressId)
+        {
+            var body = new
+            {
+                UserId = userId,
+                AddressId = addressId
+            };
+
+            var content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
+            var response = await _httpClient.PostAsync($"{_baseUrl}Cart/shipping-groups", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                return JsonSerializer.Deserialize<List<ShippingGroupViewModel>>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+            }
+
+            return null;
+        }
+
+
+
+
 
         public async Task<bool> RemoveFromCartAsync(int cartId)
         {
@@ -71,6 +98,15 @@ namespace DATN_GO.Service
             var response = await _httpClient.PutAsync($"{_baseUrl}Cart/update-quantity", content);
             return response.IsSuccessStatusCode;
         }
+
+        public async Task<bool> UpdateSelectionAsync(List<int> selectedCartIds)
+        {
+            var json = JsonSerializer.Serialize(selectedCartIds);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await _httpClient.PutAsync($"{_baseUrl}Cart/update-selection", content);
+            return response.IsSuccessStatusCode;
+        }
+
 
     }
 }

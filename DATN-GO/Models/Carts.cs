@@ -22,5 +22,6 @@ namespace DATN_GO.Models
         public virtual Users? User { get; set; }
         [JsonIgnore]
         public virtual Products? Product { get; set; }
+        public bool IsSelected { get; set; } = true;
     }
 }

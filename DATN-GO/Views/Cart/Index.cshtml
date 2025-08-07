@@ -1,4 +1,4 @@
-﻿@model List<DATN_GO.ViewModels.Cart.CartItemViewModel>
+﻿@model DATN_GO.ViewModels.Cart.CartSummaryViewModel
 @{
     ViewData["UseContainer"] = false;
 }
@@ -40,15 +40,19 @@
                         </tr>
                         </thead>
                         <tbody id="cart-items-body">
-                        @foreach (var item in Model)
+                        @foreach (var item in Model.CartItems)
                         {
-                            <tr class="cart-item-row" data-cart-id="@item.CartId">
+                            <tr class="cart-item-row" data-cart-id="@item.CartId" data-store-id="@item.StoreId">
                                 <td class="text-center align-middle">
                                     <div class="form-check">
                                         <input class="form-check-input item-checkbox" type="checkbox"
+                                               data-cart-id="@item.CartId"
                                                data-price="@item.Price"
                                                data-quantity="@item.Quantity"
-                                               data-total="@item.Total">
+                                               data-total="@item.Total"
+                                        @(item.IsSelected ? "checked" : "")>
+
+
                                     </div>
                                 </td>
                                 <td>
@@ -113,51 +117,48 @@
                 <div class="mb-4">
                     <label for="discountCode" class="form-label fw-semibold">Mã giảm giá</label>
                     <div class="input-group">
-                        <input type="text" class="form-control" id="discountCode"
-                               placeholder="Nhập mã giảm giá">
-                        <button class="btn btn-crimson" type="button" data-bs-toggle="modal"
-                                data-bs-target="#discountModal">
-                            <i class="bi bi-ticket-perforated me-1"></i>Chọn mã
-                        </button>
+                        <select class="selectpicker w-100" id="voucherSelect" name="SelectedVoucherId"
+                                data-live-search="true" data-width="auto" title="Chọn voucher">
+                        </select>
+
+                    </div>
+                </div>
+                <div class="mb-4 border-top pt-3">
+                    <label class="form-label fw-semibold mb-2">Địa chỉ giao hàng</label>
+                    <div>
+                        <select class="form-select" id="addressSelect">
+                            @foreach (var address in Model.Addresses)
+                            {
+                                <option value="@address.Id" title="@address.FullAddress">
+                                    @address.FullAddress
+                                </option>
+                            }
+                        </select>
                     </div>
                 </div>
                 <ul class="list-group list-group-flush mb-4">
+                    <input type="hidden" id="userId" value="@ViewBag.UserId" />
+
                     <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 pb-2">
                         Tạm tính
-                        <span id="subtotal">120.000 đ</span>
+                        <span id="subtotal">0đ</span>
                     </li>
                     <li class="list-group-item d-flex justify-content-between align-items-center px-0 pb-2">
                         Phí vận chuyển
-                        <span>6000 đ</span>
+                        <span id="shipping-fee">0₫</span>
                     </li>
                     <li class="list-group-item d-flex justify-content-between align-items-center px-0 pb-2">
                         Voucher giảm giá
-                        <span>10000 đ</span>
+                        <span id="voucher-discount">0</span>
                     </li>
                     <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 mt-3">
                         <div>
                             <strong class="fs-5">Tổng tiền</strong>
                         </div>
-                        <strong class="text-crimson fs-5"><span id="grand-total">120.000 đ</span></strong>
+                        <p>Tổng cộng: <strong id="grand-total">0₫</strong></p>
                     </li>
                 </ul>
-                <div class="mb-4 border-top pt-3">
-                    <label class="form-label fw-semibold mb-2">Địa chỉ giao hàng</label>
-                    <div>
-                        <select class="form-select" id="addressSelect">
-                            <option value="1" selected>
-                                Nguyễn Văn A - 123 Đường ABC, Phường XYZ, Quận 1, TP.
-                                HCM
-                            </option>
-                            <option value="2">
-                                Nguyễn Văn A - 456 Đường DEF, Phường UVW, Quận 2, TP. HCM
-                            </option>
-                            <option value="3">
-                                Nguyễn Văn A - 789 Đường GHI, Phường RST, Quận 3, TP. HCM
-                            </option>
-                        </select>
-                    </div>
-                </div>
+               
                 <div class="mb-4 border-top pt-3">
                     <label class="form-label fw-semibold mb-3">Phương thức thanh toán</label>
                     <div class="form-check mb-2">
@@ -197,3 +198,12 @@
     </div>
      
     </div>
+
+
+<script>
+    const API_BASE_URL = '@ViewBag.ApiBaseUrl';
+</script>
+
+
+
+

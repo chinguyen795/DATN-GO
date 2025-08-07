@@ -8,6 +8,8 @@ namespace DATN_API.Interfaces
         Task<CartSummaryViewModel> GetCartByUserIdAsync(int userId);
         Task<bool> RemoveFromCartAsync(int cartId);
         Task<bool> UpdateQuantityAsync(int cartId, int newQuantity);
+        Task UpdateSelectionAsync(List<int> selectedCartIds);
+        Task<List<ShippingGroupViewModel>> GetShippingGroupsByUserIdAsync(int userId, int addressId);
 
     }
 }

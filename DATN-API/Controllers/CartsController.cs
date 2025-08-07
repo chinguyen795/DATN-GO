@@ -50,6 +50,30 @@ namespace DATN_API.Controllers
             return BadRequest(new { message = "Cập nhật số lượng thất bại" });
         }
 
+        [HttpPut("update-selection")]
+        public async Task<IActionResult> UpdateSelection([FromBody] List<int> selectedCartIds)
+        {
+            await _cartService.UpdateSelectionAsync(selectedCartIds);
+            return Ok();
+        }
+
+        [HttpGet("selected-vouchers")]
+        public async Task<IActionResult> GetSelectedVouchers(int userId)
+        {
+            var cartSummary = await _cartService.GetCartByUserIdAsync(userId);
+            if (cartSummary == null)
+                return NotFound();
+
+            return Ok(cartSummary.Vouchers);
+        }
+
+        [HttpPost("shipping-groups")]
+        public async Task<IActionResult> GetShippingGroups([FromBody] ShippingGroupRequest request)
+        {
+            var result = await _cartService.GetShippingGroupsByUserIdAsync(request.UserId, request.AddressId);
+            return Ok(result);
+        }
+
 
     }
 

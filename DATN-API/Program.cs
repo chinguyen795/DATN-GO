@@ -69,6 +69,8 @@ builder.Services.AddScoped<IOcrService, OcrService>();
 builder.Services.AddScoped<IPostsService, PostsService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IVNPayService, VNPayService>();
+builder.Services.AddScoped<IGHTKService, GHTKService>();
 
 
 builder.Services.AddAuthorization();

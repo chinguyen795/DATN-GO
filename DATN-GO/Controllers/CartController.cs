@@ -1,7 +1,10 @@
 ﻿using DATN_GO.Service;
+using DATN_GO.Services;
 using DATN_GO.ViewModels;
 using DATN_GO.ViewModels.Cart;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using System.Configuration;
 using System.Text;
 using System.Text.Json;
 
@@ -10,10 +13,13 @@ namespace DATN_GO.Controllers
     public class CartController : Controller
     {
         private readonly CartService _cartService;
+        private readonly IConfiguration _configuration;
 
-        public CartController(CartService cartService)
+        public CartController(CartService cartService, IConfiguration configuration)
         {
             _cartService = cartService;
+            _configuration = configuration;
+
         }
 
         public async Task<IActionResult> Index()
@@ -25,10 +31,14 @@ namespace DATN_GO.Controllers
                 TempData["ToastType"] = "danger";
                 return RedirectToAction("Login", "UserAuthentication");
             }
+            ViewBag.ApiBaseUrl = _configuration["ApiSettings:BaseUrl"];
 
-            var cartItems = await _cartService.GetCartByUserIdAsync(userId);
-            return View(cartItems);
+            var cartSummary = await _cartService.GetCartByUserIdAsync(userId);
+            ViewBag.UserId = userId;
+            return View(cartSummary);
+
         }
+
 
         [HttpPost]
         public async Task<IActionResult> AddToCart(AddToCartRequest request)
@@ -43,7 +53,6 @@ namespace DATN_GO.Controllers
 
             request.UserId = userId;
 
-            // ✅ Kiểm tra nếu sản phẩm có biến thể mà chưa chọn đủ
             var productVariantCount = ViewBag.VariantOptions is List<VariantWithValuesViewModel> variants
                 ? variants.Count
                 : 0;
@@ -114,6 +123,45 @@ namespace DATN_GO.Controllers
             return RedirectToAction("Index");
         }
 
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateVoucherDropdown([FromBody] List<int> selectedCartIds)
+        {
+
+            if (!HttpContext.Session.TryGetValue("Id", out byte[] idBytes) ||
+                !int.TryParse(Encoding.UTF8.GetString(idBytes), out int userId))
+            {
+                return Unauthorized();
+            }
+
+
+            await _cartService.UpdateSelectionAsync(selectedCartIds);
+
+            var cartSummary = await _cartService.GetCartByUserIdAsync(userId);
+            if (cartSummary == null)
+            {
+                return BadRequest();
+            }
+
+            return PartialView("_VoucherDropdown", cartSummary.Vouchers);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetShippingFee([FromBody] ShippingGroupRequest request)
+        {
+            if (!HttpContext.Session.TryGetValue("Id", out byte[] idBytes) ||
+                !int.TryParse(Encoding.UTF8.GetString(idBytes), out int userId))
+            {
+                return Unauthorized();
+            }
+
+            var shippingGroups = await _cartService.GetShippingGroupsAsync(userId, request.AddressId);
+
+            if (shippingGroups == null)
+                return BadRequest();
+
+            return Json(shippingGroups);
+        }
 
 
 

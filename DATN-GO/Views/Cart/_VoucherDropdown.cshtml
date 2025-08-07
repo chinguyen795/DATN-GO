@@ -1,0 +1,15 @@
+﻿@model List<DATN_GO.ViewModels.Cart.UserVoucherViewModel>
+
+@foreach (var voucher in Model
+    .GroupBy(v => v.VoucherId)
+    .Select(g => g.First())
+.OrderByDescending(v => v.Reduce))
+{
+  <option value="@voucher.VoucherId" 
+        data-reduce="@voucher.Reduce" 
+        data-min-order="@voucher.MinOrder">
+    @voucher.Reduce.ToString("N0") đ – Đơn tối thiểu @voucher.MinOrder.ToString("N0") đ – HSD @voucher.EndDate.ToString("dd/MM/yyyy") – @voucher.StoreName
+</option>
+
+}
+

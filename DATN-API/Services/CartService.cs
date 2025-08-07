@@ -3,19 +3,24 @@ using DATN_API.Interfaces;
 using DATN_API.Models;
 using DATN_API.ViewModels.Cart;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using System.Linq;
+using System.Text.Json;
 
 namespace DATN_API.Services
 {
     public class CartService : ICartService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IConfiguration _configuration;
 
-        public CartService(ApplicationDbContext context)
+        public CartService(ApplicationDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
+ 
         public async Task<bool> AddToCartAsync(AddToCartRequest request)
         {
             var variantValueIds = request.VariantValueIds?.OrderBy(id => id).ToList() ?? new List<int>();
@@ -141,6 +146,7 @@ namespace DATN_API.Services
             var carts = await _context.Carts
                 .Where(c => c.UserId == userId)
                 .Include(c => c.Product)
+                .ThenInclude(p => p.Store)
                 .ToListAsync();
 
             var result = new List<CartItemViewModel>();
@@ -156,6 +162,8 @@ namespace DATN_API.Services
                 var variantValueIds = variants.Select(v => v.VariantValueId).OrderBy(id => id).ToList();
                 decimal price = 0;
                 int maxQuantity = 0;
+                int weight = 0;
+
 
                 if (variantValueIds.Any())
                 {
@@ -177,21 +185,20 @@ namespace DATN_API.Services
                         {
                             price = pv.Price;
                             maxQuantity = pv.Quantity;
+                            weight = pv.Weight;
                             break;
                         }
                     }
                 }
                 else
                 {
-                    var product = await _context.Products
-                        .FirstOrDefaultAsync(p => p.Id == cart.ProductId);
-
+                    var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == cart.ProductId);
                     price = await _context.Prices
                         .Where(p => p.ProductId == cart.ProductId)
                         .Select(p => (decimal?)p.Price)
                         .FirstOrDefaultAsync() ?? 0;
-
                     maxQuantity = product?.Quantity ?? 0;
+                    weight = product?.Weight ?? 500;
                 }
 
                 var variantTexts = variants
@@ -207,18 +214,22 @@ namespace DATN_API.Services
                     Quantity = cart.Quantity,
                     Price = (int)price,
                     MaxQuantity = maxQuantity,
-                    Variants = variantTexts
+                    Variants = variantTexts,
+                    IsSelected = cart.IsSelected,
+                    TotalWeight = weight * cart.Quantity,
+                    TotalValue = (int)price * cart.Quantity,
+                    StoreId = cart.Product?.StoreId ?? 0,
+
                 });
             }
 
             var addresses = await _context.Addresses
-     .Include(a => a.City)
-     .Where(a => a.UserId == userId)
-     .OrderByDescending(a => a.UpdateAt)
-     .ToListAsync();
+                .Include(a => a.City)
+                .Where(a => a.UserId == userId)
+                .OrderByDescending(a => a.UpdateAt)
+                .ToListAsync();
 
             var addressViewModels = new List<AddressViewModel>();
-
             foreach (var address in addresses)
             {
                 var district = await _context.Districts.FirstOrDefaultAsync(d => d.CityId == address.City.Id);
@@ -228,12 +239,12 @@ namespace DATN_API.Services
 
                 var full = string.Join(", ", new[]
                 {
-        $"{address.Name} - {address.Phone}",
-        address.Description,
-        ward?.WardName,
-        district?.DistrictName,
-        address.City?.CityName
-    }.Where(s => !string.IsNullOrWhiteSpace(s)));
+            $"{address.Name} - {address.Phone}",
+            address.Description,
+            ward?.WardName,
+            district?.DistrictName,
+            address.City?.CityName
+        }.Where(s => !string.IsNullOrWhiteSpace(s)));
 
                 addressViewModels.Add(new AddressViewModel
                 {
@@ -242,33 +253,218 @@ namespace DATN_API.Services
                 });
             }
 
+            var now = DateTime.UtcNow;
+            var selectedCartItems = result.Where(c => c.IsSelected).ToList();
+            var selectedProductIds = selectedCartItems.Select(c => c.ProductId).ToList();
 
+            var selectedProducts = await _context.Products
+                .Where(p => selectedProductIds.Contains(p.Id))
+                .Select(p => new { p.Id, p.CategoryId, p.StoreId })
+                .ToListAsync();
 
-            // ✅ Lấy danh sách voucher đã lưu, còn hạn, chưa dùng
-            var now = DateTime.Now;
+            var selectedCategoryIds = selectedProducts.Select(p => p.CategoryId).Distinct().ToList();
+            var selectedStoreIds = selectedProducts.Select(p => p.StoreId).Distinct().ToList();
+
+            var productAmountDict = selectedCartItems
+                .Join(selectedProducts,
+                      cart => cart.ProductId,
+                      prod => prod.Id,
+                      (cart, prod) => new
+                      {
+                          cart.ProductId,
+                          cart.Quantity,
+                          prod.CategoryId,
+                          prod.StoreId,
+                          Amount = cart.Quantity * cart.Price
+                      }).ToList();
+
             var userVouchers = await _context.UserVouchers
-                .Where(uv => uv.UserId == userId && !uv.IsUsed && uv.Voucher.EndDate >= now)
+                .Where(uv =>
+                    uv.UserId == userId &&
+                    !uv.IsUsed &&
+                    uv.Voucher.EndDate.Date >= now.Date &&
+                    (
+                        (uv.Voucher.StoreId == null || selectedStoreIds.Contains(uv.Voucher.StoreId.Value)) &&
+                        (uv.Voucher.CategoryId == null || selectedCategoryIds.Contains(uv.Voucher.CategoryId.Value))
+                    ))
                 .Include(uv => uv.Voucher)
                 .ThenInclude(v => v.Store)
                 .ToListAsync();
 
-            var vouchers = userVouchers.Select(uv => new UserVoucherViewModel
-            {
-                Id = uv.Id,
-                VoucherId = uv.VoucherId,
-                Reduce = uv.Voucher.Reduce,
-                MinOrder = uv.Voucher.MinOrder,
-                EndDate = uv.Voucher.EndDate,
-                StoreName = uv.Voucher.Store?.Name ?? "Sàn TMĐT"
-            }).ToList();
+            var validVouchers = userVouchers
+                .Where(uv =>
+                         {
+                             var total = productAmountDict
+                                 .Where(p =>
+                                     (uv.Voucher.CategoryId == null || p.CategoryId == uv.Voucher.CategoryId) &&
+                                     (uv.Voucher.StoreId == null || p.StoreId == uv.Voucher.StoreId))
+                                 .Sum(p => p.Amount);
+
+                             return total >= uv.Voucher.MinOrder;
+                         })
+                .Select(uv => new UserVoucherViewModel
+                              {
+                                  Id = uv.Id,
+                                  VoucherId = uv.VoucherId,
+                                  Reduce = uv.Voucher.Reduce,
+                                  MinOrder = uv.Voucher.MinOrder,
+                                  EndDate = uv.Voucher.EndDate,
+                                  StoreName = uv.Voucher.Store?.Name ?? "Sàn TMĐT"
+                              })
+
+      .GroupBy(v => v.VoucherId)
+      .Select(g => g.First())
+      .ToList();
+
+            var totalWeight = result.Where(c => c.IsSelected).Sum(c => c.TotalWeight);
+            var totalValue = result.Where(c => c.IsSelected).Sum(c => c.TotalValue);
+
+            // Nhóm sản phẩm đã chọn theo cửa hàng
+            var selectedItems = result.Where(c => c.IsSelected).ToList();
+
+            var selectedWithStore = await _context.Products
+                .Where(p => selectedProductIds.Contains(p.Id))
+                .Select(p => new { p.Id, p.StoreId })
+                .ToListAsync();
+
+            var groupedByStore = selectedItems
+                .Join(selectedWithStore,
+                      cart => cart.ProductId,
+                      prod => prod.Id,
+                      (cart, prod) => new
+                      {
+                          StoreId = prod.StoreId,
+                          cart.ProductId,
+                          cart.Quantity,
+                          cart.Price,
+                          cart.TotalWeight
+                      })
+                .GroupBy(x => x.StoreId)
+                .Select(g => new StoreCartGroup
+                {
+                    StoreId = g.Key,
+                    Products = g.Select(p => new StoreCartItem
+                    {
+                        ProductId = p.ProductId,
+                        Quantity = p.Quantity,
+                        Price = p.Price,
+                        TotalWeight = p.TotalWeight
+                    }).ToList()
+                }).ToList();
 
             return new CartSummaryViewModel
             {
                 CartItems = result,
                 Addresses = addressViewModels,
-                Vouchers = vouchers
+                Vouchers = validVouchers,
+                TotalWeight = totalWeight,
+                TotalValue = totalValue
             };
 
+
+        }
+
+        public async Task<List<ShippingGroupViewModel>> GetShippingGroupsByUserIdAsync(int userId, int addressId)
+        {
+            var address = await _context.Addresses
+                .Include(a => a.City)
+                .FirstOrDefaultAsync(a => a.Id == addressId);
+
+            if (address == null || address.City == null)
+                throw new Exception("Không tìm thấy địa chỉ người nhận.");
+
+            var district = await _context.Districts.FirstOrDefaultAsync(d => d.CityId == address.City.Id);
+            if (district == null)
+                throw new Exception("Không tìm thấy quận cho địa chỉ.");
+
+            var ward = await _context.Wards.FirstOrDefaultAsync(w => w.DistrictId == district.Id);
+            if (ward == null)
+                throw new Exception("Không tìm thấy phường cho địa chỉ.");
+
+            var carts = await _context.Carts
+                .Where(c => c.UserId == userId && c.IsSelected)
+                .Include(c => c.Product)
+                .ToListAsync();
+
+            var result = new List<ShippingGroupViewModel>();
+
+            foreach (var group in carts.GroupBy(c => c.Product.StoreId))
+            {
+                int totalWeight = 0;
+                int totalValue = 0;
+                var productIdList = new List<int>();
+
+                var storeId = group.Key;
+                var store = await _context.Stores.FirstOrDefaultAsync(s => s.Id == storeId);
+
+                if (store == null || string.IsNullOrEmpty(store.Province) || string.IsNullOrEmpty(store.District))
+                    throw new Exception($"Không tìm thấy địa chỉ của cửa hàng {storeId}");
+
+                foreach (var item in group)
+                {
+                    var quantity = item.Quantity;
+                    var weight = item.Product?.Weight ?? 500;
+                    var price = await _context.Prices
+                        .Where(p => p.ProductId == item.ProductId)
+                        .Select(p => (decimal?)p.Price)
+                        .FirstOrDefaultAsync() ?? 0;
+
+                    totalWeight += weight * quantity;
+                    totalValue += (int)(price * quantity);
+                    productIdList.Add(item.ProductId);
+                }
+
+                // Tạo URL gọi API GHTK
+                var feeUrl = $"{_configuration["GHTK:BaseUrl"]}/services/shipment/fee" +
+                    $"?address={Uri.EscapeDataString(address.Description ?? "")}" +
+                    $"&province={Uri.EscapeDataString(address.City.CityName)}" +
+                    $"&district={Uri.EscapeDataString(district.DistrictName)}" +
+                    $"&ward={Uri.EscapeDataString(ward.WardName)}" +
+                    $"&pick_province={Uri.EscapeDataString(store.Province)}" +
+                    $"&pick_district={Uri.EscapeDataString(store.District)}" +
+                    $"&weight={totalWeight}" +
+                    $"&value={totalValue}" +
+                    $"&deliver_option=none&tags[]=1";
+
+                int fee = 0;
+
+                using (var client = new HttpClient())
+                {
+                    client.DefaultRequestHeaders.Add("Token", _configuration["GHTK:Token"]);
+
+                    var response = await client.GetAsync(feeUrl);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var content = await response.Content.ReadAsStringAsync();
+                        var json = JsonDocument.Parse(content);
+
+                        if (json.RootElement.TryGetProperty("fee", out var feeElement) &&
+                            feeElement.TryGetProperty("ship_fee_only", out var shipFeeOnly))
+                        {
+                            fee = shipFeeOnly.GetInt32();
+                        }
+                        else
+                        {
+                            throw new Exception("Không lấy được phí vận chuyển từ GHTK.");
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception($"Lỗi gọi GHTK: {response.StatusCode}");
+                    }
+                }
+
+                result.Add(new ShippingGroupViewModel
+                {
+                    StoreId = storeId,
+                    TotalWeight = totalWeight,
+                    TotalValue = totalValue,
+                    ProductIds = productIdList.Distinct().ToList(),
+                    ShippingFee = fee
+                });
+            }
+
+            return result;
         }
 
         public async Task<bool> RemoveFromCartAsync(int cartId)
@@ -297,7 +493,17 @@ namespace DATN_API.Services
             return true;
         }
 
+        public async Task UpdateSelectionAsync(List<int> selectedCartIds)
+        {
+            var carts = await _context.Carts.ToListAsync();
 
+            foreach (var cart in carts)
+            {
+                cart.IsSelected = selectedCartIds.Contains(cart.Id);
+            }
+
+            await _context.SaveChangesAsync();
+        }
     }
 
 }

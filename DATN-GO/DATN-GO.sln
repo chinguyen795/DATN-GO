@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34322.80
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DATN-GO", "DATN-GO.csproj", "{C91EE2C4-5D65-423C-9000-D1E0613EC80C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DATN-GO", "DATN-GO.csproj", "{C91EE2C4-5D65-423C-9000-D1E0613EC80C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DATN-API", "..\DATN-API\DATN-API.csproj", "{FC74F97C-ADDE-484F-AC89-009DAFE4A163}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DATN-API", "..\DATN-API\DATN-API.csproj", "{FC74F97C-ADDE-484F-AC89-009DAFE4A163}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

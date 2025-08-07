@@ -1,9 +1,11 @@
-﻿namespace DATN_GO.ViewModels.Cart
+﻿using DATN_GO.ViewModels.Address;
+
+namespace DATN_GO.ViewModels.Cart
 {
     public class CartSummaryViewModel
     {
         public List<CartItemViewModel> CartItems { get; set; }
-        public string? FullAddress { get; set; }
+        public List<AddressViewModel> Addresses { get; set; }
         public List<UserVoucherViewModel> Vouchers { get; set; }
     }
 
