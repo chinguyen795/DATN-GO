@@ -11,6 +11,8 @@ namespace DATN_API.Services
     public class OrdersService : IOrdersService
     {
         private readonly ApplicationDbContext _context;
+
+
         public OrdersService(ApplicationDbContext context)
         {
             _context = context;
@@ -74,31 +76,41 @@ namespace DATN_API.Services
                 .FirstOrDefaultAsync(o => o.Id == orderId);
             if (o == null) return null;
 
+            // Tính tạm tính
+            var itemsTotal = o.OrderDetails?.Sum(od => od.Price * od.Quantity) ?? 0m;
+
+            // Lấy phí ship: ưu tiên DeliveryFee trên đơn, fallback giá của phương thức vận chuyển
+            var shippingFee = o.DeliveryFee > 0 ? o.DeliveryFee : (o.ShippingMethod?.Price ?? 0m);
+
+            // Tổng tiền: ưu tiên trường đã lưu, fallback = tạm tính + ship
+            var total = o.TotalPrice > 0 ? o.TotalPrice : (itemsTotal + shippingFee);
+
             return new OrderViewModel
             {
                 Id = o.Id,
-                CustomerName = o.User?.FullName ?? string.Empty,
+                CreatedAt = o.OrderDate,                 // để MVC map từ "createdAt"
+                CustomerName = o.User?.FullName ?? "",
                 CustomerPhone = o.User?.Phone,
                 StoreName = o.ShippingMethod?.store?.Name,
-                ShippingMethodName = o.ShippingMethod?.MethodName ?? string.Empty,
-                ShippingFee = o.ShippingMethod?.Price ?? 0,
+                ShippingMethodName = o.ShippingMethod?.MethodName ?? "",
+                ShippingFee = shippingFee,               // << quan trọng
                 VoucherName = o.Voucher?.Type.ToString(),
                 VoucherReduce = o.Voucher?.Reduce,
-                CreatedAt = o.OrderDate,
-                TotalPrice = o.TotalPrice,
+                TotalPrice = total,
                 PaymentMethod = o.PaymentMethod,
                 PaymentStatus = o.PaymentStatus,
                 Status = o.Status.ToString(),
                 OrderDetails = o.OrderDetails.Select(od => new OrderDetailViewModel
                 {
                     ProductId = od.ProductId,
-                    ProductName = od.Product?.Name ?? string.Empty,
+                    ProductName = od.Product?.Name ?? "",
                     ProductImage = od.Product?.MainImage,
                     Quantity = od.Quantity,
                     UnitPrice = od.Price
                 }).ToList()
             };
         }
+
         // thành:
         public async Task<List<OrderViewModel>> GetOrdersByStoreUserAsync(int userId)
         {

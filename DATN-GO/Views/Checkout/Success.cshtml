@@ -1,0 +1,75 @@
+﻿@{
+    ViewData["Title"] = "Thanh toán thành công";
+    var brand = "#dc143c";   // crimson
+    var orderId = (int?)ViewBag.OrderId ?? 0;
+
+    if (ViewBag.OrderId != null)
+    {
+        int.TryParse(ViewBag.OrderId.ToString(), out orderId);
+    }
+    // Dự phòng đọc từ query string nếu chưa có
+    if (orderId == 0)
+    {
+        int.TryParse(Context.Request.Query["orderId"], out orderId);
+    }
+
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 col-lg-7">
+            <div class="card shadow border-0">
+                <div class="card-body p-4 p-md-5">
+
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle d-inline-flex align-items-center justify-content-center me-3"
+                             style="width:48px;height:48px;background:@brand;color:#fff;">
+                            <i class="bi bi-check-lg fs-4"></i>
+                        </div>
+                        <h4 class="mb-0 fw-bold" style="color:@brand">Thanh toán thành công!</h4>
+                    </div>
+
+                    <p class="text-muted mb-4">Đơn hàng của bạn đã được ghi nhận. Cảm ơn bạn đã mua sắm tại GO.</p>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-sm-6">
+                            <div class="border rounded p-3 h-100">
+                                <div class="text-muted small">Mã đơn hàng</div>
+                                <div class="fw-semibold">#@orderId</div>
+                            </div>
+                        </div>
+                        @* Nếu có tổng tiền / phương thức… bạn có thể thêm ô thứ 2 ở đây *@
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2">
+                        <a class="btn text-white" style="background:#dc143c"
+                           asp-controller="OrderUser" asp-action="Detail" asp-route-id="@orderId">
+                            XEM CHI TIẾT ĐƠN HÀNG
+                        </a>
+
+                        <a href="/" class="btn" style="color:@brand;border:1px solid @brand;background:#fff;">
+                            Về trang chủ
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        (async () => {
+          try {
+            // nếu bạn có endpoint đếm: GET /api/cart/count?userId=...
+            const userId = Number(document.getElementById('userId')?.value || 0);
+            if (!userId) return;
+            const res = await fetch(`${'@ViewBag.ApiBaseUrl'}Cart/count?userId=${userId}`);
+            if (!res.ok) return;
+            const { count } = await res.json();
+            const badge = document.querySelector('.header .cart-count-badge'); // đổi selector theo layout của bạn
+            if (badge) badge.textContent = count;
+          } catch {}
+        })();
+    </script>
+}

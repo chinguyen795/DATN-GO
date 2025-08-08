@@ -4,6 +4,7 @@
     {
         public int Id { get; set; }
 
+        public DateTime OrderDate { get; set; }
         public string CustomerName { get; set; } = string.Empty;
         public string? CustomerPhone { get; set; }
         public string? StoreName { get; set; }
@@ -16,10 +17,10 @@
         public DateTime CreatedAt { get; set; }
         public decimal TotalPrice { get; set; }
 
-        public string PaymentMethod { get; set; } = string.Empty;
+        public string? PaymentMethod { get; set; } = string.Empty;
         public string? PaymentStatus { get; set; }
 
-        public string Status { get; set; } = string.Empty;
+        public string Status { get; set; } = "";      // "ChoXuLy" | "ChoLayHang" | "DangGiao" | "DaHoanThanh" | "DaHuy"
 
         public List<OrderDetailViewModel> OrderDetails { get; set; } = new();
 
@@ -53,4 +54,5 @@
         public string? MainImage { get; set; }
         public decimal? CostPrice { get; set; }
     }
+
 }

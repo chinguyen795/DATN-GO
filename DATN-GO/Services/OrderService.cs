@@ -7,6 +7,8 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Elfie.Diagnostics;
+using DATN_GO.ViewModels.Orders;
+using static System.Net.WebRequestMethods;
 
 namespace DATN_GO.Service
 {
@@ -159,5 +161,14 @@ namespace DATN_GO.Service
                 return (false, null, ex.Message);
             }
         }
+        public async Task<OrderDetailVM?> GetDetailAsync(int orderId)
+        {
+            var res = await _httpClient.GetAsync($"{_baseUrl}orders/{orderId}/detail");
+            if (!res.IsSuccessStatusCode) return null;
+
+            return await res.Content.ReadFromJsonAsync<OrderDetailVM>(
+                new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        }
+
     }
 }

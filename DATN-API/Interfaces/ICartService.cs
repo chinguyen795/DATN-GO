@@ -10,6 +10,7 @@ namespace DATN_API.Interfaces
         Task<bool> UpdateQuantityAsync(int cartId, int newQuantity);
         Task UpdateSelectionAsync(List<int> selectedCartIds);
         Task<List<ShippingGroupViewModel>> GetShippingGroupsByUserIdAsync(int userId, int addressId);
+        Task<int> ClearSelectedAsync(int userId); 
 
     }
 }

@@ -504,6 +504,17 @@ namespace DATN_API.Services
 
             await _context.SaveChangesAsync();
         }
+        public async Task<int> ClearSelectedAsync(int userId)
+        {
+            var items = await _context.Carts
+                .Where(x => x.UserId == userId && x.IsSelected)
+                .ToListAsync();
+
+            if (items.Count == 0) return 0;
+
+            _context.Carts.RemoveRange(items);
+            return await _context.SaveChangesAsync();
+        }
     }
 
 }

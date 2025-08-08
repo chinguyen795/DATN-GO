@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DATN_API.Migrations
 {
     /// <inheritdoc />
-    public partial class adadadd4 : Migration
+    public partial class IntialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -186,6 +186,10 @@ namespace DATN_API.Migrations
                     Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     RepresentativeName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PickupAddress = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Ward = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    District = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Province = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Longitude = table.Column<float>(type: "real", nullable: false),
                     Latitude = table.Column<float>(type: "real", nullable: false),
                     Avatar = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -235,9 +239,29 @@ namespace DATN_API.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Image = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    AdminSettingId = table.Column<int>(type: "int", nullable: true)
+                    AdminSettingId = table.Column<int>(type: "int", nullable: true),
+                    Video = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Slide1 = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TitleSlide1 = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    DescriptionSlide1 = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Slide2 = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TitleSlide2 = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    DescriptionSlide2 = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Slide3 = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TitleSlide3 = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    DescriptionSlide3 = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Slide4 = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TitleSlide4 = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    DescriptionSlide4 = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Slide5 = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TitleSlide5 = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    DescriptionSlide5 = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Image1 = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Title1 = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Description1 = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Image2 = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Title2 = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Description2 = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -473,7 +497,8 @@ namespace DATN_API.Migrations
                     UserId = table.Column<int>(type: "int", nullable: false),
                     ProductId = table.Column<int>(type: "int", nullable: false),
                     Quantity = table.Column<int>(type: "int", nullable: false),
-                    CreateAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CreateAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsSelected = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {

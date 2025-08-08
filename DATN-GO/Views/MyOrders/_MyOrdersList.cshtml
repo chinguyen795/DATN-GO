@@ -1,0 +1,73 @@
+﻿@model List<DATN_GO.ViewModels.OrderViewModel>
+@functions {
+    string Badge(string s) => s switch
+    {
+        "ChoXuLy" => "secondary",
+        "ChoLayHang" => "warning",
+        "DangGiao" => "info",
+        "DaHoanThanh" => "success",
+        "DaHuy" => "danger",
+        _ => "secondary"
+    };
+    string Label(string s) => s switch
+    {
+        "ChoXuLy" => "Chờ xử lý",
+        "ChoLayHang" => "Chờ lấy hàng",
+        "DangGiao" => "Đang giao",
+        "DaHoanThanh" => "Đã hoàn thành",
+        "DaHuy" => "Đã hủy",
+        _ => s
+    };
+}
+@if (Model == null || !Model.Any())
+{
+    <div class="text-center text-muted py-5">Chưa có đơn hàng nào.</div>
+}
+else
+{
+    <div class="vstack gap-3">
+        @foreach (var o in Model)
+        {
+            var first = o.OrderDetails.FirstOrDefault();
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                        <div>
+                            <div class="small text-muted">Mã đơn</div>
+                            <div class="fw-semibold">#@o.Id</div>
+                        </div>
+                        <div>
+                            <div class="small text-muted">Ngày đặt</div>
+                            <div class="fw-semibold">@o.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                        </div>
+                        <div>
+                            <div class="small text-muted">Trạng thái</div>
+                            <span class="badge bg-@Badge(o.Status)">@Label(o.Status)</span>
+                        </div>
+                        <div class="text-end">
+                            <div class="small text-muted">Tổng cộng</div>
+                            <div class="fs-5 fw-bold text-danger">@((o.TotalPrice).ToString("N0")) đ</div>
+                        </div>
+                    </div>
+
+                    <hr class="my-3" />
+
+                    <div class="d-flex align-items-center gap-3">
+                        <img src="@(first?.ProductImage ?? "/images/placeholder.png")"
+                             class="rounded" style="width:56px;height:56px;object-fit:cover" />
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold">@first?.ProductName</div>
+                            <div class="text-muted small">
+                                @o.OrderDetails.Count sản phẩm • SL @o.TotalQuantity
+                            </div>
+                        </div>
+                        <a class="btn btn-outline-danger"
+                           asp-controller="OrderUser" asp-action="Detail" asp-route-id="@o.Id">
+                            Xem chi tiết
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

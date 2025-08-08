@@ -1,0 +1,65 @@
+﻿@model List<DATN_GO.ViewModels.OrderViewModel>
+@{
+    ViewData["Title"] = "Đơn hàng của tôi";
+    string Badge(string s) => s switch
+    {
+        "ChoXuLy" => "secondary",
+        "ChoLayHang" => "warning",
+        "DangGiao" => "info",
+        "DaHoanThanh" => "success",
+        "DaHuy" => "danger",
+        _ => "secondary"
+    };
+
+    var all = Model ?? new List<DATN_GO.ViewModels.OrderViewModel>();
+    var byStatus = all.GroupBy(o => o.Status).ToDictionary(g => g.Key, g => g.ToList());
+
+    string[] statuses = new[] { "ChoXuLy", "ChoLayHang", "DangGiao", "DaHoanThanh", "DaHuy" };
+    string Label(string s) => s switch
+    {
+        "ChoXuLy" => "Chờ xử lý",
+        "ChoLayHang" => "Chờ lấy hàng",
+        "DangGiao" => "Đang giao",
+        "DaHoanThanh" => "Đã hoàn thành",
+        "DaHuy" => "Đã hủy",
+        _ => s
+    };
+}
+
+<div class="container my-4">
+    <div class="d-flex align-items-center mb-3">
+        <i class="bi bi-box-seam me-2 fs-4 text-danger"></i>
+        <h4 class="m-0">Đơn hàng của tôi</h4>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-pills gap-2 flex-wrap mb-3">
+        <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-all">
+                Tất cả <span class="badge bg-light text-dark ms-1">@all.Count</span>
+            </button>
+        </li>
+        @foreach (var s in statuses)
+        {
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-@s">
+                    @Label(s) <span class="badge bg-light text-dark ms-1">@(byStatus.ContainsKey(s) ? byStatus[s].Count : 0)</span>
+                </button>
+            </li>
+        }
+    </ul>
+
+    <div class="tab-content">
+        <!-- All -->
+        <div class="tab-pane fade show active" id="tab-all">
+            @Html.Partial("_MyOrdersList", all)
+        </div>
+
+        @foreach (var s in statuses)
+        {
+            <div class="tab-pane fade" id="tab-@s">
+                @Html.Partial("_MyOrdersList", byStatus.ContainsKey(s) ? byStatus[s] : new List<DATN_GO.ViewModels.OrderViewModel>())
+            </div>
+        }
+    </div>
+</div>
