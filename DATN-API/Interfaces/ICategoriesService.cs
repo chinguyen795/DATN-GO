@@ -11,5 +11,6 @@ namespace DATN_API.Interfaces
         Task<Categories> CreateAsync(Categories model);
         Task<bool> UpdateAsync(int id, Categories model);
         Task<bool> DeleteAsync(int id);
+        Task<Categories> GetCategoryByProductIdAsync(int productId);
     }
 }

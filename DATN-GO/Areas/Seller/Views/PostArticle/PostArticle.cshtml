@@ -323,15 +323,21 @@
 </script>
 
 <!-- Đặt ở cuối file _Layout.cshtml hoặc cuối trang Razor, ngay trên </body> -->
+@{
+    // Tạo GUID để tránh trùng id
+    var toastId = "toast_" + Guid.NewGuid().ToString("N");
+    var toastMsgKey = "ToastMessage";
+    var toastTypeKey = "ToastType";
+}
 
 <div class="position-fixed top-0 end-0 p-3" style="z-index: 2000;">
-    @if (TempData["ToastMessage"] != null && TempData["ToastType"] != null)
+    @if (TempData[toastMsgKey] != null && TempData[toastTypeKey] != null)
     {
-        var toastType = TempData["ToastType"].ToString();
+        var toastType = TempData[toastTypeKey].ToString();
         var isSuccess = toastType == "success";
 
         <div class="toast shadow-lg" role="alert" aria-live="assertive" aria-atomic="true"
-             id="autoToast" style="min-width: 320px; font-size: 1.1rem;">
+             id="@toastId" style="min-width: 320px; font-size: 1.1rem;">
             <div class="toast-header @(isSuccess ? "bg-success" : "bg-danger") text-white">
                 <img src="@(isSuccess ? "/icons/happy.gif" : "/icons/sad.gif")"
                      class="rounded me-2" alt="@(isSuccess ? "Success" : "Error")" width="24" height="24">
@@ -343,18 +349,19 @@
                         aria-label="Close"></button>
             </div>
             <div class="toast-body fw-semibold">
-                @TempData["ToastMessage"]
+                @TempData[toastMsgKey]
             </div>
         </div>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                var toastEl = document.getElementById('@toastId');
+                if (toastEl) {
+                    var bsToast = new bootstrap.Toast(toastEl, { delay: 3000 });
+                    bsToast.show();
+                }
+            });
+        </script>
     }
 </div>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        var toastEl = document.getElementById('autoToast');
-        if (toastEl) {
-            var bsToast = new bootstrap.Toast(toastEl, { delay: 3000 });
-            bsToast.show();
-        }
-    });
-</script>

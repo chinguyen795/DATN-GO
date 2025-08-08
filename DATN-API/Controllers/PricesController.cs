@@ -87,6 +87,16 @@ namespace DATN_API.Controllers
             return Ok(result);
         }
 
+        [HttpGet("product/{productId}")]
+        public async Task<IActionResult> GetPriceByProductId(int productId)
+        {
+            var price = await _pricesService.GetPriceByProductIdAsync(productId);
+            if (price == null)
+            {
+                return NotFound(new { message = "Không tìm thấy giá cho sản phẩm này." });
+            }
 
+            return Ok(new { productId = productId, price = price });
+        }
     }
 }

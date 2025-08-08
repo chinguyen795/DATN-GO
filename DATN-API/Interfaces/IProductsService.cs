@@ -1,4 +1,6 @@
 using DATN_API.Models;
+using DATN_API.ViewModels;
+using DATN_GO.ViewModels;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -13,6 +15,12 @@ namespace DATN_API.Services.Interfaces
         Task<bool> DeleteAsync(int id);
         Task<int> GetTotalProductsAsync();
         Task<Dictionary<int, int>> GetProductCountByMonthAsync(int year);
+        Task<List<StoreProductVariantViewModel>> GetAllStoreProductVariantsAsync();
+        Task<List<int>> GetProductIdsByStoreIdAsync(int storeId);
+        Task<List<Products>> GetProductsByStoreIdAsync(int storeId);
+        Task<(bool Success, int? ProductId, string? ErrorMessage)> CreateFullProductAsync(ProductFullCreateViewModel model);
+        Task<bool> DeleteProductAndRelatedAsync(int productId);
+
         Task<List<Products>> GetProductsByStoreAsync(int storeId);
 
 

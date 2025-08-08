@@ -1,7 +1,9 @@
 ﻿using DATN_API.Data;
 using DATN_API.Models;
 using DATN_API.Services.Interfaces;
+using DATN_API.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace DATN_API.Controllers
 {
@@ -10,7 +12,7 @@ namespace DATN_API.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly IProductsService _service;
-
+        
         public ProductsController(IProductsService service)
         {
             _service = service;
@@ -84,4 +86,5 @@ namespace DATN_API.Controllers
         }
 
     }
+
 }

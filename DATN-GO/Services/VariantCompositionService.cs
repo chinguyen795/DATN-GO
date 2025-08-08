@@ -14,7 +14,7 @@ namespace DATN_GO.Services
         public VariantCompositionService(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
-            _baseUrl = configuration["ApiSettings:BaseUrl"] + "/api/VariantComposition";
+            _baseUrl = configuration["ApiSettings:BaseUrl"] + "VariantComposition";
         }
 
         public async Task<List<VariantComposition>> GetAllAsync()
@@ -67,5 +67,13 @@ namespace DATN_GO.Services
             var response = await _httpClient.DeleteAsync($"{_baseUrl}/{id}");
             return response.IsSuccessStatusCode;
         }
+        public async Task<List<VariantComposition>> GetByProductIdAsync(int productId)
+        {
+            var response = await _httpClient.GetAsync($"{_baseUrl}/product/{productId}");
+            response.EnsureSuccessStatusCode();
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<List<VariantComposition>>(content);
+        }
+
     }
 }

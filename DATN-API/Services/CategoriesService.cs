@@ -48,5 +48,13 @@ namespace DATN_API.Services
             await _context.SaveChangesAsync();
             return true;
         }
+        public async Task<Categories> GetCategoryByProductIdAsync(int productId)
+        {
+            return await _context.Products
+                .Where(p => p.Id == productId)
+                .Include(p => p.Category)
+                .Select(p => p.Category)
+                .FirstOrDefaultAsync();
+        }
     }
 }

@@ -12,6 +12,8 @@ namespace DATN_API.Interfaces
         Task UpdateAsync(VariantComposition variantComposition);
         Task DeleteAsync(int id);
         Task<List<VariantCombinationViewModel>> GetVariantCombinationsByProductIdAsync(int productId);
+        Task<List<VariantComposition>> GetByProductIdAsync(int productId);
 
+        Task<VariantComposition> CreateAsync(VariantComposition variantComposition);
     }
 }

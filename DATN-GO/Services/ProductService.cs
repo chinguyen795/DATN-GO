@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using DATN_GO.Models;
+using DATN_GO.ViewModels;
 using Microsoft.Extensions.Configuration;
 
 namespace DATN_GO.Service
@@ -87,7 +88,7 @@ namespace DATN_GO.Service
         {
             try
             {
-                var response = await _httpClient.GetAsync($"{_baseUrl}Products/Store/{storeId}");
+                var response = await _httpClient.GetAsync($"{_baseUrl}Products/ByStore/{storeId}");
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
@@ -130,6 +131,47 @@ namespace DATN_GO.Service
             }
             return new Dictionary<int, int>();
         }
+        public async Task<List<StoreProductVariantViewModel>> GetAllStoreProductVariantsAsync()
+        {
+            var response = await _httpClient.GetAsync($"{_baseUrl}products/store-product-variants");
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<List<StoreProductVariantViewModel>>();
+            }
+            return new List<StoreProductVariantViewModel>();
+        }
+        public async Task<List<StoreProductVariantViewModel>> GetAllStoreProductVariantsByStoreIdAsync(int storeId)
+        {
+            var response = await _httpClient.GetAsync($"{_baseUrl}Products/StoreVariants/{storeId}");
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                return JsonSerializer.Deserialize<List<StoreProductVariantViewModel>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new();
+            }
 
+            return new();
+        }
+        public async Task<(bool Success, int? ProductId, string? ErrorMessage)> CreateFullProductAsync(ProductFullCreateViewModel model)
+        {
+            var content = new StringContent(JsonSerializer.Serialize(model), Encoding.UTF8, "application/json");
+            var response = await _httpClient.PostAsync($"{_baseUrl}Products/full", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Nếu API trả về ProductId hoặc gì đó, deserialize ở đây
+                // Ví dụ: var result = await response.Content.ReadFromJsonAsync<ProductCreateResult>();
+                return (true, null, null); // Nếu không có ProductId trả về thì cứ null
+            }
+
+            var error = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"❌ Lỗi tạo sản phẩm đầy đủ: {response.StatusCode} - {error}");
+            return (false, null, error);
+        }
+
+        public async Task<bool> DeleteProduct2Async(int productId)
+        {
+            var response = await _httpClient.DeleteAsync($"{_baseUrl}Products/DeleteProduct/{productId}");
+            return response.IsSuccessStatusCode;
+        }
     }
 }

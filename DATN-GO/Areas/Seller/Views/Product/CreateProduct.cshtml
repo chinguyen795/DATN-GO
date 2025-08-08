@@ -1,6 +1,24 @@
 ﻿@{
     Layout = "~/Areas/Seller/Views/Shared/_LayoutSeller.cshtml";
 }
+<!-- Bootstrap CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+<!-- Bootstrap Select CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Bootstrap Bundle JS (gồm Popper) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Bootstrap Select JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
+
+<style>
+    .bootstrap-select .filter-option-inner-inner {
+        text-transform: none !important;
+    }
+</style>
+
 <style>
     #imagePreview .btn-close {
         display: block !important;
@@ -34,9 +52,10 @@
                     <!-- User Account -->
                     <li class="dropdown user-menu">
                         <button class="dropdown-toggle nav-link" data-toggle="dropdown">
-                            <img src="~/images/avt-user.jpg" alt="User Profile" width="32" height="32"
+                            <img src="@ViewBag.UserAvatar" alt="User Profile" width="32" height="32"
                                  style="object-fit: cover;" loading="lazy">
-                            <span class="d-none d-lg-inline-block">Meo Meo</span>
+                            <span class="d-none d-lg-inline-block">@ViewBag.UserName</span>
+
                         </button>
                         <ul class="dropdown-menu dropdown-menu-right">
                             <li>
@@ -72,83 +91,65 @@
                 <div class="card-body">
                     <div class="collapse">
                     </div>
-                    <form>
+                    <form id="productForm" enctype="multipart/form-data">
                         <div class="row">
                             <div class="col-xl-6">
                                 <div class="border-start border-danger border-3 ps-3 mb-3">
                                     <div class="form-group">
                                         <label for="productname">Tên sản phẩm</label>
                                         <span class="text-danger">*</span>
-                                        <input type="text" class="form-control" id="productname"
-                                               placeholder="Tên sản phẩm">
+                                        <input type="text" class="form-control" id="productname" name="Name" placeholder="Tên sản phẩm">
                                     </div>
-
 
                                     <div class="form-group">
-                                        <label for="cateloryproduct">Chọn danh mục</label>
-                                        <span class="text-danger">*</span>
-                                        <select class="selectpicker w-100" data-live-search="true">
-                                            <option>Quần áo</option>
-                                            <option>Gia dụng</option>
-                                            <option>Điện tử</option>
+                                        <label for="CategoryId">Chọn danh mục</label> <span class="text-danger">*</span>
+                                        <select name="CategoryId" class="selectpicker w-100" data-live-search="true" title="-- Chọn danh mục --">
+                                            @foreach (var item in ViewBag.Categories as List<SelectListItem>)
+                                            {
+                                                <option value="@item.Value">@item.Text</option>
+                                            }
                                         </select>
+
                                     </div>
+
 
                                     <div class="form-group">
                                         <label for="madein">Xuất xứ</label>
-                                        <input type="text" class="form-control" id="madein"
-                                               placeholder="Nơi xuất xứ">
+                                        <input type="text" class="form-control" id="madein" name="PlaceOfOrigin" placeholder="Nơi xuất xứ">
                                     </div>
 
                                     <div class="form-group">
                                         <label for="brandproduct">Thương hiệu (nếu có)</label>
-                                        <input type="text" class="form-control" id="brandproduct"
-                                               placeholder="Tên thương hiệu">
+                                        <input type="text" class="form-control" id="brandproduct" name="Brand" placeholder="Tên thương hiệu">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="sellingprice">Giá bán</label>
+                                        <input type="number" class="form-control" id="sellingprice" name="Price" placeholder="Giá bán sản phẩm">
                                     </div>
                                 </div>
 
-                                <div class="border-start border-danger border-3 ps-3 mb-3"
-                                     id="no-variant-section">
+                                <div class="border-start border-danger border-3 ps-3 mb-3" id="no-variant-section">
                                     <div class="alert alert-info alert-icon" role="alert">
-                                        <i class="mdi mdi-alert-circle-outline"></i>Mục này chỉ áp dụng cho sản
-                                        phẩm không có biến thể!
+                                        <i class="mdi mdi-alert-circle-outline"></i>Mục này chỉ áp dụng cho sản phẩm không có biến thể!
                                     </div>
                                     <div class="form-group">
                                         <label for="importprice">Giá nhập</label>
-                                        <input type="number" class="form-control" id="importprice"
-                                               placeholder="Giá nhập sản phẩm">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="sellingprice">Giá bán</label>
-                                        <input type="number" class="form-control" id="sellingprice"
-                                               placeholder="Giá bán sản phẩm">
+                                        <input type="number" class="form-control" id="importprice" name="CostPrice" placeholder="Giá nhập sản phẩm">
                                     </div>
                                     <div class="form-group">
                                         <label for="productnumber">Số lượng sản phẩm</label>
-                                        <input type="text" class="form-control" id="productnumber"
-                                               placeholder="Số lượng sản phẩm">
+                                        <input type="number" class="form-control" id="productnumber" name="Quantity" placeholder="Số lượng sản phẩm">
                                     </div>
                                 </div>
-
-
-
-
                             </div>
+
                             <div class="col-xl-6">
-
                                 <div class="mb-3">
-                                    <label class="form-label">
-                                        Hình ảnh sản phẩm <span class="text-danger">*</span>
-                                    </label>
+                                    <label class="form-label">Hình ảnh sản phẩm <span class="text-danger">*</span></label>
                                     <div class="mt-2">
-                                        <input type="file" class="d-none" id="productImage" accept="image/*"
-                                               onchange="previewImage(this)">
-                                        <div class="position-relative border-2 border-dashed rounded-3 bg-light d-flex align-items-center justify-content-center"
-                                             style="min-height: 300px; max-width: 100%; cursor: pointer;"
-                                             onclick="document.getElementById('productImage').click()"
-                                             id="dropZone">
-
-                                            <!-- Upload Icon and Text -->
+                                        <input type="file" class="d-none" id="productImage" name="Image" accept="image/*" onchange="previewImage(this)">
+                                        <div class="position-relative border-2 border-dashed rounded-3 bg-light d-flex align-items-center justify-content-center" style="min-height: 300px; max-width: 100%; cursor: pointer;" onclick="document.getElementById('productImage').click()" id="dropZone">
                                             <div id="uploadContent" class="text-center">
                                                 <div class="display-6 text-secondary mb-2">
                                                     <i class="mdi mdi-image-area"></i>
@@ -156,92 +157,78 @@
                                                 <p class="mb-0 text-secondary">Click để tải ảnh lên</p>
                                                 <p class="small text-muted mt-2">Hỗ trợ: JPG, PNG, JPEG</p>
                                             </div>
-
-                                            <!-- Image Preview -->
-                                            <div id="imagePreview"
-                                                 class="d-none w-100 h-100 position-relative border border-danger border-dashed rounded-3">
-                                                <img id="preview" src="#" alt="Preview"
-                                                     class="img-fluid mx-auto d-block w-100 h-100"
-                                                     style="max-height: 300px; object-fit: cover;">
-                                                <button type="button"
-                                                        class="btn-close position-absolute top-0 end-0 m-2 d-flex align-items-center justify-content-center"
-                                                        onclick="removeImage(event)" aria-label="Close">
-                                                    <i class="bi bi-x-circle-fill"
-                                                       style="font-size:2.5rem; color:#ff4d4f;"></i>
+                                            <div id="imagePreview" class="d-none w-100 h-100 position-relative border border-danger border-dashed rounded-3">
+                                                <img id="preview" src="#" alt="Preview" class="img-fluid mx-auto d-block w-100 h-100" style="max-height: 300px; object-fit: cover;">
+                                                <button type="button" class="btn-close position-absolute top-0 end-0 m-2 d-flex align-items-center justify-content-center" onclick="removeImage(event)" aria-label="Close">
+                                                    <i class="bi bi-x-circle-fill" style="font-size:2.5rem; color:#ff4d4f;"></i>
                                                 </button>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="border-start border-danger border-3 ps-3 mb-3"
-                                     id="no-variant-section-2">
+                                <div class="border-start border-danger border-3 ps-3 mb-3" id="no-variant-section-2">
                                     <div class="alert alert-info alert-icon" role="alert">
-                                        <i class="mdi mdi-alert-circle-outline"></i>Mục này chỉ áp dụng cho sản
-                                        phẩm không có biến thể!
+                                        <i class="mdi mdi-alert-circle-outline"></i>Mục này chỉ áp dụng cho sản phẩm không có biến thể!
                                     </div>
                                     <div class="form-group">
                                         <label for="volume">Khối lượng</label>
-                                        <input type="number" class="form-control" id="volume"
-                                               placeholder="Khối lượng sản phẩm">
+                                        <input type="number" class="form-control" id="volume" name="Weight" placeholder="Khối lượng sản phẩm">
                                     </div>
                                     <label class="form-label fw-medium">Kích Thước Đóng Gói (D x R x C)</label>
                                     <div class="form-group d-flex align-items-center">
-                                        <input type="number" class="form-control" id="packageLength"
-                                               placeholder="Dài" min="0" />
+                                        <input type="number" class="form-control" id="packageLength" name="Length" placeholder="Dài" min="0" />
                                         <span class="input-group-text">x</span>
-                                        <input type="number" class="form-control" id="packageWidth"
-                                               placeholder="Rộng" min="0" />
+                                        <input type="number" class="form-control" id="packageWidth" name="Width" placeholder="Rộng" min="0" />
                                         <span class="input-group-text">x</span>
-                                        <input type="number" class="form-control" id="packageHeight"
-                                               placeholder="Cao" min="0" />
+                                        <input type="number" class="form-control" id="packageHeight" name="Height" placeholder="Cao" min="0" />
                                     </div>
                                 </div>
                             </div>
+
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="border-start border-danger border-3 ps-3 mb-3">
+                                        <h4 class="mb-3">Biến thể sản phẩm</h4>
+                                        <button type="button" class="btn btn-danger mb-3" id="addVariantType" style="text-transform: capitalize;">
+                                            <i class="mdi mdi-plus"></i> Thêm loại tùy chọn
+                                        </button>
+
+                                        <div id="variantTypesContainer"></div>
+
+                                        <div class="variant-table mt-4" style="display: none;">
+                                            <h5 class="mb-3">Danh sách biến thể</h5>
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Size</th>
+                                                            <th>Màu</th>
+                                                            <th>Giá Bán</th>
+                                                            <th>Giá Vốn</th>
+                                                            <th>Tồn Kho</th>
+                                                            <th>KL (kg)</th>
+                                                            <th>K.Thước (DxRxC)</th>
+                                                            <th>Ảnh</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="variantTableBody"></tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="text-end mt-3">
+                                <button type="submit" class="btn btn-success">Lưu sản phẩm</button>
+                            </div>
+                        </div>
                     </form>
 
                     <!-- Variant Options Section -->
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <div class="border-start border-danger border-3 ps-3 mb-3">
-                                <h4 class="mb-3">Biến thể sản phẩm</h4>
-                                <button type="button" class="btn btn-danger mb-3" id="addVariantType"
-                                        style="text-transform: capitalize;">
-                                    <i class="mdi mdi-plus"></i> Thêm loại tùy chọn
-                                </button>
-
-                                <div id="variantTypesContainer">
-                                    <!-- Variant types will be added here dynamically -->
-                                </div>
-
-                                <!-- Variant Combination Table -->
-                                <div class="variant-table mt-4" style="display: none;">
-                                    <h5 class="mb-3">Danh sách biến thể</h5>
-                                    <div class="table-responsive">
-                                        <table class="table table-bordered">
-                                            <thead>
-                                                <tr>
-                                                    <th>Size</th>
-                                                    <th>Màu</th>
-                                                    <th>Giá Bán</th>
-                                                    <th>Giá Vốn</th>
-                                                    <th>Tồn Kho</th>
-                                                    <th>KL (kg)</th>
-                                                    <th>K.Thước (DxRxC)</th>
-                                                    <th>Ảnh</th>
-                                                    <!-- <th>Thao tác</th> -->
-                                                </tr>
-                                            </thead>
-                                            <tbody id="variantTableBody">
-                                                <!-- Variant combinations will be added here dynamically -->
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
+                    
+                        
                 </div>
             </div>
         </div>
@@ -252,6 +239,10 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // Initialize add variant button
+        initAddVariantButton();
+
+        // Handle hiding no-variant sections
         var addVariantBtn = document.getElementById('addVariantType');
         if (addVariantBtn) {
             addVariantBtn.addEventListener('click', function () {
@@ -284,4 +275,813 @@
         var event = new Event('showNoVariantSections');
         document.dispatchEvent(event);
     }
+
+    // Store all variant types and their values
+    let variantTypes = [];
+    // Lưu trữ ảnh cho từng combination (theo key)
+    let variantImages = {}
+    // Lưu trữ dữ liệu cho từng combination
+    let variantData = {};
+    // Flag để tránh re-render không cần thiết
+    let isUpdatingTable = false;
+
+    // Template for variant type
+    const variantTypeTemplate = (id) => `
+            <div class="variant-type mb-3 w-100" data-type-id="${id}">
+                <div class="card w-100" style="width:100vw;min-width:73vw;max-width:100vw;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="mb-0">Loại tùy chọn ${id}</h6>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="removeVariantType(${id})" style="text-transform: capitalize;">
+                                <i class="mdi mdi-delete"></i> Xóa
+                            </button>
+                        </div>
+                        <div class="form-group">
+                            <label>Tên biến thể:</label>
+                            <input type="text" class="form-control variant-type-name" placeholder="Ví dụ: Màu sắc, Kích thước...">
+                        </div>
+                        <div class="variant-values mt-3">
+                            <label>Giá trị biến thể:</label>
+                            <div class="variant-values-container">
+                                <div class="d-flex align-items-center mb-2">
+                                    <input type="text" class="form-control variant-value" placeholder="Nhập giá trị" style="margin-right:16px;">
+                                    <button type="button" class="btn btn-outline-danger" onclick="removeVariantValue(this)">
+                                        <i class="mdi mdi-delete"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-outline-danger btn-sm mt-2" onclick="addVariantValue(${id})" style="text-transform: capitalize;">
+                                <i class="mdi mdi-plus"></i> Thêm giá trị
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+    // Lưu ảnh cho biến thể
+    function saveVariantImage(typeId, imgSrc) {
+        const variantType = variantTypes.find(type => type.id === typeId);
+        if (variantType) {
+            variantType.imgSrc = imgSrc; // Lưu ảnh vào biến thể
+        }
+    }
+
+    // Store original non-variant sections HTML for restoration
+    let nonVariantSectionsHTML = null;
+
+    // Utility function to get all non-variant sections
+    function getNonVariantSections() {
+        return document.querySelectorAll('.border-start.border-danger:has(.alert-info.alert-icon)');
+    }
+
+    // Save original non-variant sections HTML
+    function saveNonVariantSections() {
+        if (!nonVariantSectionsHTML) {
+            const sections = getNonVariantSections();
+            nonVariantSectionsHTML = Array.from(sections).map(section => ({
+                parent: section.parentElement,
+                position: Array.from(section.parentElement.children).indexOf(section),
+                html: section.outerHTML
+            }));
+        }
+    }
+
+    // Thêm biến thể mới
+    function initAddVariantButton() {
+        const addBtn = document.getElementById('addVariantType');
+        console.log('Found addVariantType button:', addBtn); // Debug log
+
+        if (addBtn) {
+            // Remove existing listener if any
+            addBtn.removeEventListener('click', handleAddVariant);
+            // Add new listener
+            addBtn.addEventListener('click', handleAddVariant);
+            console.log('Added event listener to addVariantType button'); // Debug log
+        } else {
+            console.error('addVariantType button not found!');
+        }
+    }
+
+    function handleAddVariant() {
+        console.log('handleAddVariant called'); // Debug log
+
+        const typeId = variantTypes.length + 1;
+        const container = document.getElementById('variantTypesContainer');
+
+        console.log('Container found:', container); // Debug log
+        console.log('Current variantTypes:', variantTypes); // Debug log
+
+        if (!container) {
+            console.error('Không tìm thấy container variantTypesContainer');
+            return;
+        }
+
+        container.insertAdjacentHTML('beforeend', variantTypeTemplate(typeId));
+
+        variantTypes.push({
+            id: typeId,
+            name: '',
+            values: [''],
+        });
+
+        console.log('Added variant type, new variantTypes:', variantTypes); // Debug log
+        updateVariantTable();
+    }
+
+    // Initialize button when DOM is ready
+    // (This will be handled in DOMContentLoaded above)
+
+    // Remove variant type
+    function removeVariantType(typeId) {
+        const element = document.querySelector(`[data-type-id="${typeId}"]`);
+        if (element) {
+            element.remove();
+            variantTypes = variantTypes.filter(type => type.id !== typeId);
+
+            // Restore non-variant sections if no variant types remain
+            if (variantTypes.length === 0 && nonVariantSectionsHTML) {
+                nonVariantSectionsHTML.forEach(section => {
+                    const parent = section.parent;
+                    const position = section.position;
+
+                    // If there are elements after the position
+                    if (parent.children.length > position) {
+                        parent.children[position].insertAdjacentHTML('beforebegin', section.html);
+                    } else {
+                        // If we need to append at the end
+                        parent.insertAdjacentHTML('beforeend', section.html);
+                    }
+                });
+            }
+
+            updateVariantTable();
+            checkAndShowNoVariantSections();
+        }
+    }
+
+    // Thêm giá trị mới cho biến thể
+    function addVariantValue(typeId) {
+        const variantType = document.querySelector(`[data-type-id="${typeId}"]`);
+        const container = variantType.querySelector('.variant-values-container');
+
+        // Thêm giá trị mới vào phần tử giao diện mà không làm mất giá trị cũ
+        container.insertAdjacentHTML('beforeend', `
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <input type="text" class="form-control variant-value me-2" placeholder="Nhập giá trị">
+                    <button type="button" class="btn btn-outline-danger" onclick="removeVariantValue(this)">
+                        <i class="mdi mdi-delete"></i>
+                    </button>
+                </div>
+            `);
+
+        // Cập nhật mảng variantTypes mà không làm mất giá trị cũ
+        const variantTypeObj = variantTypes.find(type => type.id === typeId);
+        if (variantTypeObj) {
+            variantTypeObj.values.push(''); // Thêm giá trị mới vào mảng giá trị
+        }
+
+        // Debounce update để tránh re-render liên tục
+        debounceUpdateVariantTable();
+    }
+
+    // Xóa giá trị khi nhấn nút xóa
+    function removeVariantValue(button) {
+        const valueContainer = button.parentElement;
+        const typeContainer = valueContainer.closest('.variant-type');
+        const typeId = parseInt(typeContainer.dataset.typeId);
+
+        const variantTypeObj = variantTypes.find(type => type.id === typeId);
+        if (variantTypeObj) {
+            const valueIndex = Array.from(valueContainer.parentElement.children).indexOf(valueContainer);
+            variantTypeObj.values.splice(valueIndex, 1); // Xóa giá trị khỏi mảng
+        }
+
+        valueContainer.remove();
+        debounceUpdateVariantTable();
+    }
+
+    // Debounce function để tránh update liên tục
+    let updateTimeout;
+    function debounceUpdateVariantTable() {
+        clearTimeout(updateTimeout);
+        updateTimeout = setTimeout(() => {
+            updateVariantTable();
+        }, 300);
+    }
+
+    // Cập nhật tên và giá trị của các biến thể
+    document.addEventListener('input', function (e) {
+        if (e.target.classList.contains('variant-type-name')) {
+            const typeContainer = e.target.closest('.variant-type');
+            const typeId = parseInt(typeContainer.dataset.typeId);
+            const variantType = variantTypes.find(type => type.id === typeId);
+            if (variantType) {
+                variantType.name = e.target.value; // Cập nhật tên biến thể
+            }
+            debounceUpdateVariantTable();
+        } else if (e.target.classList.contains('variant-value')) {
+            const typeContainer = e.target.closest('.variant-type');
+            const typeId = parseInt(typeContainer.dataset.typeId);
+            const valueContainer = e.target.closest('.d-flex');
+            const valueIndex = Array.from(valueContainer.parentElement.children).indexOf(valueContainer);
+
+            const variantType = variantTypes.find(type => type.id === typeId);
+            if (variantType) {
+                variantType.values[valueIndex] = e.target.value; // Cập nhật giá trị biến thể
+            }
+            debounceUpdateVariantTable();
+        }
+    });
+
+    // Hàm tạo key ổn định cho mỗi combination (dựa vào giá trị, không dựa vào tên loại)
+    function getComboKey(values) {
+        return values.join('|');
+    }
+
+    // Generate all possible combinations of variant values, trả về cả mảng object {values, key}
+    function generateVariantCombinations() {
+        const validTypes = variantTypes.filter(type => type.name && type.values.some(v => v));
+        if (validTypes.length === 0) return [];
+
+        function combine(arrays) {
+            return arrays.reduce((a, b) =>
+                a.flatMap(x => b.map(y => [...x, y])), [[]]);
+        }
+        const combos = combine(validTypes.map(type => type.values.filter(v => v)));
+        // Tạo key duy nhất cho mỗi combination (dựa vào giá trị)
+        return combos.map(combo => {
+            const key = getComboKey(combo);
+            return { values: combo, key };
+        });
+    }
+
+    // Event delegation cho table inputs - CẢI THIỆN
+    function setupTableEventListeners() {
+        const tableBody = document.getElementById('variantTableBody');
+        if (!tableBody) return;
+
+        // Remove existing listeners trước
+        tableBody.removeEventListener('input', handleTableInput);
+        tableBody.removeEventListener('change', handleTableChange);
+        tableBody.removeEventListener('click', handleTableClick);
+
+        // Add new listeners
+        tableBody.addEventListener('input', handleTableInput);
+        tableBody.addEventListener('change', handleTableChange);
+        tableBody.addEventListener('click', handleTableClick);
+    }
+
+    function handleTableInput(event) {
+        const target = event.target;
+        if (!target.matches('input[type="text"], input[type="number"]')) return;
+
+        // Ngăn không cho re-render khi đang nhập
+        isUpdatingTable = true;
+
+        const tr = target.closest('tr');
+        const key = tr.dataset.variantKey;
+
+        if (!variantData[key]) {
+            variantData[key] = {};
+        }
+
+        // Lưu giá trị dựa vào class hoặc placeholder
+        if (target.classList.contains('variant-value-cell')) {
+            const index = target.dataset.index;
+            if (!variantData[key].values) variantData[key].values = [];
+            variantData[key].values[index] = target.value;
+        } else if (target.classList.contains('variant-price')) {
+            variantData[key].price = target.value;
+        } else if (target.classList.contains('variant-cost-price')) {
+            variantData[key].cost = target.value;
+        } else if (target.classList.contains('variant-quantity')) {
+            variantData[key].quantity = target.value;
+        } else if (target.classList.contains('variant-weight')) {
+            variantData[key].weight = target.value;
+        } else if (target.classList.contains('variant-length')) {
+            if (!variantData[key].dimensions) variantData[key].dimensions = {};
+            variantData[key].dimensions.D = target.value;
+        } else if (target.classList.contains('variant-width')) {
+            if (!variantData[key].dimensions) variantData[key].dimensions = {};
+            variantData[key].dimensions.R = target.value;
+        } else if (target.classList.contains('variant-height')) {
+            if (!variantData[key].dimensions) variantData[key].dimensions = {};
+            variantData[key].dimensions.C = target.value;
+        }
+
+        // Reset flag sau một thời gian ngắn
+        setTimeout(() => {
+            isUpdatingTable = false;
+        }, 100);
+    }
+
+    function handleTableChange(event) {
+        // Xử lý khi input mất focus - có thể dùng để validate
+        const target = event.target;
+        if (target.matches('input[type="file"]')) {
+            // Xử lý file upload
+            const key = target.dataset.key;
+            if (target.files && target.files[0]) {
+                uploadVariantImage(target, key);
+            }
+        }
+    }
+
+    function handleTableClick(event) {
+        const target = event.target;
+
+        // Xử lý click vào icon upload ảnh
+        if (target.matches('.mdi-image-area') || target.closest('.image-upload-btn')) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const tr = target.closest('tr');
+            const key = tr?.dataset?.variantKey;
+            if (key) {
+                const fileInput = document.getElementById(`file-${key}`);
+                if (fileInput) {
+                    fileInput.click();
+                }
+            }
+        }
+    }
+
+    // Cập nhật bảng biến thể - CẢI THIỆN
+    function updateVariantTable() {
+        // Tránh re-render khi đang nhập liệu
+        if (isUpdatingTable) return;
+
+        const tableContainer = document.querySelector('.variant-table');
+        const tableBody = document.getElementById('variantTableBody');
+        const thead = document.querySelector('.variant-table thead tr');
+
+        const validTypes = variantTypes.filter(type => type.name && type.values.some(v => v));
+
+        if (validTypes.length === 0) {
+            tableContainer.style.display = 'none';
+            return;
+        }
+
+        // Cập nhật tiêu đề bảng
+        thead.innerHTML = '';
+        validTypes.forEach(type => {
+            thead.insertAdjacentHTML('beforeend', `<th>${type.name}</th>`);
+        });
+        thead.insertAdjacentHTML('beforeend', `
+                <th>Giá Bán</th>
+                <th>Giá Vốn</th>
+                <th>Tồn Kho</th>
+                <th>KL (kg)</th>
+                <th>K.Thước (DxRxC)</th>
+                <th>Ảnh</th>
+            `);
+
+        // Tạo các kết hợp và cập nhật phần thân bảng
+        const combinations = generateVariantCombinations();
+
+        // Map lại ảnh cũ cho các combination mới nếu có phần giống nhau
+        const newVariantImages = {};
+        combinations.forEach(({ key }) => {
+            if (variantImages[key]) {
+                newVariantImages[key] = variantImages[key];
+            }
+        });
+        variantImages = newVariantImages;
+
+        tableBody.innerHTML = combinations.map(({ values }) => {
+            const key = values.join('|');
+            const imgSrc = variantImages[key] || '';
+            const savedData = variantData[key] || {};
+
+            return `
+            <tr class="align-middle" data-variant-key="${key}">
+                ${values.map((value, i) => `
+                    <td class='align-middle' style='min-width: 100px; text-align: center;'>
+                        <input type="text"
+                            class="form-control form-control-sm variant-value-cell"
+                            data-index="${i}"
+                            value="${value}"
+                            tabindex="0" />
+                    </td>
+                `).join('')}
+
+                <td class='align-middle' style='min-width: 120px;'>
+                    <input type="number"
+                        class="form-control form-control-sm variant-price"
+                        placeholder="Giá bán"
+                        value="${savedData.price || ''}"
+                        tabindex="0">
+                </td>
+
+                <td class='align-middle' style='min-width: 120px;'>
+                    <input type="number"
+                        class="form-control form-control-sm variant-cost-price"
+                        placeholder="Giá vốn"
+                        value="${savedData.cost || ''}"
+                        tabindex="0">
+                </td>
+
+                <td class='align-middle' style='min-width: 120px;'>
+                    <input type="number"
+                        class="form-control form-control-sm variant-quantity"
+                        placeholder="Số lượng"
+                        value="${savedData.quantity || ''}"
+                        tabindex="0">
+                </td>
+
+                <td class='align-middle' style='min-width: 120px;'>
+                    <input type="number"
+                        class="form-control form-control-sm variant-weight"
+                        placeholder="Khối lượng"
+                        value="${savedData.weight || ''}"
+                        tabindex="0">
+                </td>
+
+                <td class='align-middle' style='min-width: 180px;'>
+                    <div class="d-flex gap-1 align-items-center">
+                        <input type="number"
+                            class="form-control form-control-sm variant-length"
+                            placeholder="D"
+                            value="${savedData.dimensions?.D || ''}"
+                            tabindex="0">
+                        <input type="number"
+                            class="form-control form-control-sm variant-width"
+                            placeholder="R"
+                            value="${savedData.dimensions?.R || ''}"
+                            tabindex="0">
+                        <input type="number"
+                            class="form-control form-control-sm variant-height"
+                            placeholder="C"
+                            value="${savedData.dimensions?.C || ''}"
+                            tabindex="0">
+                    </div>
+                </td>
+
+                <td class='align-middle' style='min-width: 120px; text-align: center;'>
+                    <div id="imgPreview-${key}" style="margin-top: 8px; display: block; position: relative; width: max-content; margin-left: auto; margin-right: auto;">
+                        ${imgSrc
+                    ? `<div style="position: relative;">
+                                 <img src="${imgSrc}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 8px #0001;" />
+                                 <button type="button" class="btn btn-sm btn-primary" style="position: absolute; top: 2px; right: 2px; width: 24px; height: 24px; padding: 0; border-radius: 50%;" onclick="document.getElementById('file-${key}').click()">
+                                     <i class="mdi mdi-pencil" style="font-size: 12px;"></i>
+                                 </button>
+                               </div>`
+                    : `<button type="button" class="btn btn-outline-secondary image-upload-btn" style="width: 100px; height: 100px; border: 2px dashed #ccc; border-radius: 8px;" onclick="document.getElementById('file-${key}').click()">
+                                 <i class="mdi mdi-image-area" style="font-size: 24px; color: #bbb;"></i><br>
+                                 <small>Upload</small>
+                               </button>`
+                }
+                        <input type="file"
+                            id="file-${key}"
+                            data-key="${key}"
+                            accept="image/*"
+                            style="display: none;">
+                    </div>
+                </td>
+
+            </tr>
+        `;
+        }).join('');
+
+        tableContainer.style.display = 'block';
+        setupTableEventListeners();
+    }
+
+    // Upload ảnh biến thể - CẢI THIỆN
+    async function uploadVariantImage(input, key) {
+        if (!input.files || !input.files[0]) return;
+
+        const file = input.files[0];
+
+        // Hiển thị preview ngay lập tức
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const previewDiv = document.getElementById(`imgPreview-${key}`);
+            if (previewDiv) {
+                previewDiv.innerHTML = `
+                    <div style="position: relative;">
+                        <img src="${e.target.result}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 8px #0001;" />
+                        <button type="button" class="btn btn-sm btn-primary" style="position: absolute; top: 2px; right: 2px; width: 24px; height: 24px; padding: 0; border-radius: 50%;" onclick="document.getElementById('file-${key}').click()">
+                            <i class="mdi mdi-pencil" style="font-size: 12px;"></i>
+                        </button>
+                        <div style="position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); font-size: 10px; color: orange;">
+                            Uploading...
+                        </div>
+                    </div>
+                `;
+
+                // Lưu file tạm thời
+            }
+        };
+        reader.readAsDataURL(file);
+
+        // Upload lên server
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const res = await fetch('/Upload/VariantImage', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await res.json();
+            
+            
+            if (data.success) {
+                // Cập nhật với URL từ server
+                const previewDiv = document.getElementById(`imgPreview-${key}`);
+                if (previewDiv) {
+                    previewDiv.innerHTML = `
+                        <div style="position: relative;">
+                            <img src="${data.url}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 8px #0001;" />
+                            <button type="button" class="btn btn-sm btn-primary" style="position: absolute; top: 2px; right: 2px; width: 24px; height: 24px; padding: 0; border-radius: 50%;" onclick="document.getElementById('file-${key}').click()">
+                                <i class="mdi mdi-pencil" style="font-size: 12px;"></i>
+                            </button>
+                        </div>
+                    `;
+                }
+
+                // Lưu URL để gửi khi submit
+                variantImages[key] = data.url;
+            } else {
+                alert(data.message || 'Upload thất bại');
+                // Khôi phục trạng thái ban đầu nếu upload fail
+                const previewDiv = document.getElementById(`imgPreview-${key}`);
+                if (previewDiv) {
+                    previewDiv.innerHTML = `
+                        <button type="button" class="btn btn-outline-secondary image-upload-btn" style="width: 100px; height: 100px; border: 2px dashed #ccc; border-radius: 8px;" onclick="document.getElementById('file-${key}').click()">
+                            <i class="mdi mdi-image-area" style="font-size: 24px; color: #bbb;"></i><br>
+                            <small>Upload</small>
+                        </button>
+                    `;
+                }
+                delete variantImages[key];
+            }
+        } catch (err) {
+            console.error('Upload error:', err);
+            alert('Lỗi khi upload ảnh');
+
+            // Khôi phục trạng thái ban đầu nếu có lỗi
+            const previewDiv = document.getElementById(`imgPreview-${key}`);
+            if (previewDiv) {
+                previewDiv.innerHTML = `
+                    <button type="button" class="btn btn-outline-secondary image-upload-btn" style="width: 100px; height: 100px; border: 2px dashed #ccc; border-radius: 8px;" onclick="document.getElementById('file-${key}').click()">
+                        <i class="mdi mdi-image-area" style="font-size: 24px; color: #bbb;"></i><br>
+                        <small>Upload</small>
+                    </button>
+                `;
+            }
+            delete variantImages[key];
+        }
+    }
+
+    // Các function xử lý ảnh chính của sản phẩm - GIỮ NGUYÊN
+    function previewImage(input) {
+        const preview = document.getElementById('preview');
+        const previewDiv = document.getElementById('imagePreview');
+        const uploadContent = document.getElementById('uploadContent');
+        const dropZone = document.getElementById('dropZone');
+
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                preview.src = e.target.result;
+                previewDiv.classList.remove('d-none'); // Hiển thị ảnh
+                previewDiv.classList.add('d-block');
+                uploadContent.classList.add('d-none');
+                dropZone.classList.add('bg-white');
+                dropZone.classList.remove('bg-light');
+            }
+
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function removeImage(event) {
+        event.stopPropagation();
+        const input = document.getElementById('productImage');
+        const preview = document.getElementById('preview');
+        const previewDiv = document.getElementById('imagePreview');
+        const uploadContent = document.getElementById('uploadContent');
+        const dropZone = document.getElementById('dropZone');
+
+        // Xóa hình ảnh và reset lại UI
+        input.value = ''; // Reset file input
+        preview.src = '#'; // Reset image preview
+        previewDiv.classList.add('d-none'); // Ẩn ảnh
+        previewDiv.classList.remove('d-block');
+        uploadContent.classList.remove('d-none'); // Hiển thị lại icon upload
+        dropZone.classList.remove('bg-white');
+        dropZone.classList.add('bg-light');
+    }
+
+    // Kiểm tra và hiển thị lại các section không phải biến thể nếu cần
+    function checkAndShowNoVariantSections() {
+        if (variantTypes.length === 0) {
+            if (typeof showNoVariantSections === 'function') {
+                showNoVariantSections();
+            }
+        }
+    }
 </script>
+<script>
+    $(document).ready(function () {
+        $('.selectpicker').selectpicker();
+    });
+</script>
+
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Toast, validation, custom logic, etc -->
+    <script src="~/js/CreateProduct.js"></script> <!-- or your logic -->
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const formElement = document.getElementById('productForm');
+            if (formElement) {
+                formElement.addEventListener('submit', function (e) {
+                    e.preventDefault(); // ❌ Chặn submit mặc định
+                    submitProduct(formElement);
+                });
+            }
+        });
+
+        function submitProduct(formElement) {
+            const formData = new FormData(formElement);
+
+            // Lấy giá trị từng trường
+            const name = formData.get("Name")?.trim();
+            const categoryId = formData.get("CategoryId");
+            const image = formData.get("Image");
+
+            const price = formData.get("Price");
+            const cost = formData.get("CostPrice");
+            const quantity = formData.get("Quantity");
+
+            const weight = formData.get("Weight");
+            const length = formData.get("Length");
+            const width = formData.get("Width");
+            const height = formData.get("Height");
+
+            const hasVariant = variantTypes.length > 0;
+
+            // ==== VALIDATION CHUNG ====
+            if (!name) return showCustomToast("⚠️ Vui lòng nhập tên sản phẩm.");
+            if (!categoryId) return showCustomToast("⚠️ Bạn chưa chọn danh mục sản phẩm.");
+            if (!image || image.size === 0) return showCustomToast("⚠️ Vui lòng tải lên hình ảnh sản phẩm.");
+            if (!price || parseFloat(price) <= 0) return showCustomToast("⚠️ Giá bán sản phẩm không hợp lệ.");
+
+            // ==== VALIDATION KHÔNG CÓ VARIANT ====
+            if (!hasVariant) {
+                if (!cost || parseFloat(cost) <= 0) return showCustomToast("⚠️ Giá nhập không được để trống.");
+                if (!quantity || parseInt(quantity) <= 0) return showCustomToast("⚠️ Số lượng sản phẩm không được để trống.");
+                if (!weight || parseFloat(weight) <= 0) return showCustomToast("⚠️ Khối lượng sản phẩm không hợp lệ.");
+                if (!length || parseFloat(length) <= 0 ||
+                    !width || parseFloat(width) <= 0 ||
+                    !height || parseFloat(height) <= 0)
+                    return showCustomToast("⚠️ Kích thước sản phẩm không hợp lệ.");
+            }
+
+            // ==== VALIDATION CÓ VARIANT ====
+            if (hasVariant) {
+                const combinations = generateVariantCombinations();
+
+                if (combinations.length === 0) {
+                    return showCustomToast("⚠️ Bạn cần thêm ít nhất một giá trị biến thể.");
+                }
+
+                for (const combo of combinations) {
+                    const key = combo.key;
+                    const data = variantData[key];
+
+                    if (!data || !data.price || parseFloat(data.price) <= 0) {
+                        return showCustomToast(`⚠️ Giá bán không hợp lệ cho biến thể: ${combo.values.join(" / ")}`);
+                    }
+
+                    if (!data.cost || parseFloat(data.cost) <= 0) {
+                        return showCustomToast(`⚠️ Giá vốn không hợp lệ cho biến thể: ${combo.values.join(" / ")}`);
+                    }
+
+                    if (!data.quantity || parseInt(data.quantity) <= 0) {
+                        return showCustomToast(`⚠️ Số lượng không hợp lệ cho biến thể: ${combo.values.join(" / ")}`);
+                    }
+
+                    if (!data.weight || parseFloat(data.weight) <= 0) {
+                        return showCustomToast(`⚠️ Khối lượng không hợp lệ cho biến thể: ${combo.values.join(" / ")}`);
+                    }
+
+                    const dim = data.dimensions;
+                    if (!dim || !dim.D || !dim.R || !dim.C ||
+                        parseFloat(dim.D) <= 0 || parseFloat(dim.R) <= 0 || parseFloat(dim.C) <= 0) {
+                        return showCustomToast(`⚠️ Kích thước không hợp lệ cho biến thể: ${combo.values.join(" / ")}`);
+                    }
+                }
+            }
+
+            // ==== TIẾP TỤC GỬI ====
+
+            const cleanedVariants = variantTypes.map(v => ({
+                Name: v.name,
+                Values: v.values
+            }));
+            formData.append('Variants', JSON.stringify(cleanedVariants));
+
+            const combinations = [];
+            const rows = document.querySelectorAll('#variantTableBody tr');
+
+            rows.forEach((row, index) => {
+                const values = Array.from(row.querySelectorAll('.variant-value-cell'))
+                    .map(input => input.value.trim());
+
+                const key = values.join('|');
+
+                combinations.push({
+                    Values: values,
+                    Price: parseFloat(row.querySelector('.variant-price')?.value || "0"),
+                    CostPrice: parseFloat(row.querySelector('.variant-cost-price')?.value || "0"),
+                    Quantity: parseInt(row.querySelector('.variant-quantity')?.value || "0"),
+                    Weight: parseFloat(row.querySelector('.variant-weight')?.value || "0"),
+                    Width: parseFloat(row.querySelector('.variant-width')?.value || "0"),
+                    Height: parseFloat(row.querySelector('.variant-height')?.value || "0"),
+                    Length: parseFloat(row.querySelector('.variant-length')?.value || "0"),
+                    ImageUrl: variantImages[key] ?? null
+                });
+
+                if (variantImages[key] instanceof File) {
+                    formData.append(`Combinations[${index}].Image`, variantImages[key]);
+                }
+            });
+
+            formData.append('Combinations', JSON.stringify(combinations));
+
+            $.ajax({
+                url: '/Seller/Product/CreateProduct',
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (res) {
+                    if (res.success) {
+                        alert('✅ Thêm sản phẩm thành công!');
+                        location.href = '/Seller/Product/Product';
+                    } else {
+                        showValidationToast('❌ ' + (res.message || 'Thêm sản phẩm thất bại'));
+                    }
+                },
+                error: function (xhr) {
+                    console.error('❌ Lỗi khi gửi request:', xhr);
+                    showValidationToast('❌ Lỗi hệ thống khi thêm sản phẩm!');
+                }
+            });
+        }
+
+    </script>
+
+    <!-- Toast Container -->
+    <div id="custom-toast-container"
+         class="position-fixed top-0 end-0 p-3"
+         style="z-index: 5000; pointer-events: none;">
+    </div>
+    
+    
+
+    <script>
+    function showCustomToast(message, isSuccess = false) {
+        const container = document.getElementById('custom-toast-container');
+        if (!container) return;
+
+        const toastId = `toast-${Date.now()}`;
+
+        const toastHTML = `
+            <div id="${toastId}" class="toast custom-toast shadow-lg"
+                 role="alert" aria-live="assertive" aria-atomic="true"
+                 data-bs-autohide="true" data-bs-delay="3000">
+                <div class="toast-header ${isSuccess ? "bg-success" : "bg-danger"} text-white">
+                    <img src="${isSuccess ? "/icons/happy.gif" : "/icons/sad.gif"}" class="rounded me-2" width="24" height="24">
+                    <strong class="me-auto">${isSuccess ? "Thành công" : "Lỗi"}</strong>
+                    <small>Vừa xong</small>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                </div>
+                <div class="toast-body">${message}</div>
+            </div>`;
+
+        container.insertAdjacentHTML('beforeend', toastHTML);
+
+        const toastEl = document.getElementById(toastId);
+        const bsToast = new bootstrap.Toast(toastEl);
+        bsToast.show();
+
+        toastEl.addEventListener('hidden.bs.toast', () => {
+            toastEl.remove();
+        });
+    }
+
+    </script>
+
+}

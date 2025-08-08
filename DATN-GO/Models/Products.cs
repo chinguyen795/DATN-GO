@@ -75,7 +75,8 @@ namespace DATN_GO.Models
         public ICollection<Reviews>? Reviews { get; set; }
         [JsonIgnore]
         public ICollection<OrderDetails>? OrderDetails { get; set; }
-
+        [JsonIgnore]
+        public ICollection<ProductVariants>? ProductVariants { get; set; }
 
     }
 }

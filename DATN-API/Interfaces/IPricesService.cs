@@ -13,6 +13,7 @@ namespace DATN_API.Interfaces
         Task<bool> DeleteAsync(int id);
         Task<decimal?> GetMinPriceByProductIdAsync(int productId);
         Task<object> GetMinMaxPriceByProductIdAsync(int productId);
+        Task<decimal?> GetPriceByProductIdAsync(int productId);
 
     }
 }

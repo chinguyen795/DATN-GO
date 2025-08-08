@@ -68,6 +68,33 @@ namespace DATN_API.Controllers
             var combinations = await _service.GetVariantCombinationsByProductIdAsync(productId);
             return Ok(combinations);
         }
+        [HttpGet("product/{productId}")]
+        public async Task<IActionResult> GetByProductId(int productId)
+        {
+            var data = await _service.GetByProductIdAsync(productId);
+            return Ok(data);
+        }
+        [HttpPost]
+        public async Task<ActionResult<VariantComposition>> Create([FromBody] VariantComposition request)
+        {
+            try
+            {
+                var variantComposition = new VariantComposition
+                {
+                    ProductId = request.ProductId,
+                    ProductVariantId = request.ProductVariantId,
+                    VariantId = request.VariantId,
+                    VariantValueId = request.VariantValueId
+                };
+
+                var result = await _service.CreateAsync(variantComposition);
+                return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error: {ex.Message}");
+            }
+        }
 
     }
 

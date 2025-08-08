@@ -72,14 +72,6 @@ namespace DATN_API.Controllers
             return Ok(store);
         }
 
-
-        [HttpGet("User/{userId}")]
-        public async Task<IActionResult> GetStoreByUserId(int userId)
-        {
-            var store = await _service.GetStoreByUserIdAsync(userId);
-            if (store == null) return NotFound();
-            return Ok(store);
-        }
         [HttpGet("count/all")]
         public async Task<IActionResult> GetTotalStores()
         {

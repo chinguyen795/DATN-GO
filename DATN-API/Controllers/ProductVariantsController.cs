@@ -80,5 +80,24 @@ namespace DATN_API.Controllers
 
             return Ok(images);
         }
+        [HttpPost("match-variant")]
+        public async Task<IActionResult> GetVariantByVariantValueIds([FromBody] VariantMatchRequest request)
+        {
+            if (request == null || request.VariantValueIds == null)
+                return BadRequest("Invalid request.");
+
+            var result = await _service.GetVariantByVariantValueIdsAsync(request.ProductId, request.VariantValueIds);
+            if (result == null)
+                return NotFound("No matching product or variant found.");
+
+            return Ok(result); // Trả về object: có thể là Product hoặc ProductVariants
+        }
+
     }
+    public class VariantMatchRequest
+    {
+        public int ProductId { get; set; }
+        public List<int> VariantValueIds { get; set; }
+    }
+
 }

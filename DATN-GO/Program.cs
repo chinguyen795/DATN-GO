@@ -55,6 +55,7 @@ builder.Services.AddHttpClient<OcrService>();
 builder.Services.AddHttpClient<BankService>();
 builder.Services.AddHttpClient<StoreService>();
 builder.Services.AddScoped<PriceService>();
+builder.Services.AddScoped<CategoryService>();
 
 builder.Services.AddScoped<PostService>();
 builder.Services.AddScoped<StoreService>();
@@ -73,7 +74,18 @@ builder.Services.AddHttpClient<StoreService>();
 builder.Services.AddHttpClient<OrderService>();
 builder.Services.AddHttpClient<DecoratesService>();
 builder.Services.AddHttpClient<CartService>();
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
+app.UseCors();
 
 if (!app.Environment.IsDevelopment())
 {

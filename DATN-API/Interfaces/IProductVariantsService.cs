@@ -13,5 +13,8 @@ namespace DATN_API.Interfaces
         Task<bool> DeleteAsync(int id);
         Task<List<ProductVariants>> GetByProductIdAsync(int productId);
         Task<List<string>> GetAllImagesByProductIdAsync(int productId);
+        Task<object> GetVariantByVariantValueIdsAsync(int productId, List<int> variantValueIds);
+
+
     }
 }

@@ -68,5 +68,17 @@ namespace DATN_API.Controllers
 
             return NoContent();
         }
+        [HttpGet("GetByProduct/{productId}")]
+        public async Task<IActionResult> GetCategoryByProductId(int productId)
+        {
+            var category = await _service.GetCategoryByProductIdAsync(productId);
+            if (category == null)
+            {
+                return NotFound("Category not found for this product.");
+            }
+
+            return Ok(category); // trả về object có Id và Name
+        }
+
     }
 }

@@ -95,6 +95,46 @@ namespace DATN_API.Services
 
             return result;
         }
+        public async Task<object> GetVariantByVariantValueIdsAsync(int productId, List<int> variantValueIds)
+        {
+            // Nếu không có ProductVariants → sản phẩm đơn giản → trả Product
+            var hasVariants = await _context.ProductVariants
+                .AnyAsync(pv => pv.ProductId == productId);
+
+            if (!hasVariants)
+            {
+                var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == productId);
+                return product;
+            }
+
+            // Có biến thể → cần truyền đủ variantValueIds
+            var variantCount = await _context.VariantCompositions
+                .Where(vc => vc.ProductVariant.ProductId == productId)
+                .Select(vc => vc.VariantValue.VariantId)
+                .Distinct()
+                .CountAsync();
+
+            if (variantValueIds.Count != variantCount)
+                return null;
+
+            var variantMatch = await _context.VariantCompositions
+                .Where(vc => vc.ProductVariant.ProductId == productId
+                          && variantValueIds.Contains(vc.VariantValueId ?? -1))
+                .GroupBy(vc => vc.ProductVariantId)
+                .Select(g => new
+                {
+                    ProductVariantId = g.Key,
+                    MatchCount = g.Count()
+                })
+                .ToListAsync();
+
+            var matched = variantMatch.FirstOrDefault(g => g.MatchCount == variantCount);
+            if (matched == null)
+                return null;
+
+            return await _context.ProductVariants
+                .FirstOrDefaultAsync(pv => pv.Id == matched.ProductVariantId);
+        }
 
     }
 }

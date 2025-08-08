@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http;
 using DATN_GO.Models;
 using DATN_GO.Services;
 
-namespace DATN_GO.Service
+namespace DATN_GO.Services
 {
     public class CategoryService
     {
@@ -29,17 +29,17 @@ namespace DATN_GO.Service
         {
             try
             {
-                var response = await _httpClient.GetAsync($"{_baseUrl}Categories");
+            var response = await _httpClient.GetAsync($"{_baseUrl}Categories");
 
-                if (response.IsSuccessStatusCode)
-                {
-                    var json = await response.Content.ReadAsStringAsync();
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
                     var categories = JsonSerializer.Deserialize<List<Categories>>(json, new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true
                     });
                     return (true, categories ?? new List<Categories>(), "Lấy danh sách thành công!");
-                }
+            }
                 else
                 {
                     var errorMessage = await response.Content.ReadAsStringAsync();
@@ -141,7 +141,7 @@ namespace DATN_GO.Service
                         return (false, "Upload hình ảnh thất bại!");
                     }
                     request.Image = imageUrl; // Thay base64 bằng URL
-                }
+        }
 
                 var content = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
                 var response = await _httpClient.PutAsync($"{_baseUrl}Categories/{id}", content);
@@ -175,11 +175,11 @@ namespace DATN_GO.Service
         public async Task<(bool Success, string Message)> DeleteCategoryAsync(int id)
         {
             try
-            {
+        {
                 var response = await _httpClient.DeleteAsync($"{_baseUrl}Categories/{id}");
 
-                if (response.IsSuccessStatusCode)
-                {
+            if (response.IsSuccessStatusCode)
+            {
                     return (true, "Xóa danh mục thành công!");
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
@@ -196,7 +196,7 @@ namespace DATN_GO.Service
             {
                 return (false, $"Lỗi kết nối: {ex.Message}");
             }
-        }
+            }
 
         // Phương thức upload hình ảnh lên Google Cloud Storage
         private async Task<string> UploadImageAsync(string base64Image)
@@ -221,8 +221,8 @@ namespace DATN_GO.Service
             {
                 // Log lỗi nếu cần
                 Console.WriteLine($"Upload image error: {ex.Message}");
-                return null;
-            }
+            return null;
+        }
         }
 
         // Convert base64 string thành IFormFile
@@ -237,9 +237,9 @@ namespace DATN_GO.Service
 
         // Kiểm tra string có phải base64 không
         private bool IsBase64String(string base64)
-        {
+            {
             return base64.Contains("data:image") || base64.Length > 100; // Simple check
-        }
+            }
 
         // Các class request models
         public class CreateCategoryRequest

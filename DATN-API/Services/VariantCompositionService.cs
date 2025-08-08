@@ -105,8 +105,23 @@ namespace DATN_API.Services
 
             return result;
         }
+        public async Task<List<VariantComposition>> GetByProductIdAsync(int productId)
+        {
+            return await _context.VariantCompositions
+                .Where(vc => vc.ProductId == productId)
+                .Include(vc => vc.Variant)
+                .Include(vc => vc.VariantValue)
+                .Include(vc => vc.ProductVariant)
+                .ToListAsync();
+        }
+        public async Task<VariantComposition> CreateAsync(VariantComposition variantComposition)
+        {
+            
 
-
+            _context.VariantCompositions.Add(variantComposition);
+            await _context.SaveChangesAsync();
+            return variantComposition;
+        }
 
 
     }

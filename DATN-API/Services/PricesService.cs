@@ -104,6 +104,13 @@ namespace DATN_API.Services
                 maxPrice = maxPrice
             };
         }
+        public async Task<decimal?> GetPriceByProductIdAsync(int productId)
+        {
+            return await _context.Prices
+                .Where(p => p.ProductId == productId)
+                .Select(p => (decimal?)p.Price)
+                .FirstOrDefaultAsync();
+        }
 
 
 

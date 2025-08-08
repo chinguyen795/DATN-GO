@@ -18,6 +18,7 @@ namespace DATN_GO.Models
 
         [MaxLength(50)]
         [MinLength(2, ErrorMessage = "Tên phải từ 2 đến 50 kí tự.")]
+        [JsonPropertyName("name")]
         public required string Name { get; set; }
 
         [MaxLength]

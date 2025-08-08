@@ -11,6 +11,7 @@
     <link href="~/plugins/material/css/materialdesignicons.min.css" rel="stylesheet" />
     <link href="~/plugins/simplebar/simplebar.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
 
     <!-- PLUGINS CSS STYLE -->
@@ -48,6 +49,30 @@
                 background-color: #D22F32;
                 color: #000;
                 border-radius: 0.375rem;
+            }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .custom-toast {
+            min-width: 320px;
+            font-size: 1.1rem;
+            pointer-events: auto;
+            opacity: 1 !important;
+        }
+
+            .custom-toast .toast-header {
+                color: #fff !important;
+            }
+
+            .custom-toast .toast-body {
+                font-weight: 600;
+                color: #fff !important;
+            }
+
+            .custom-toast .btn-close-white {
+                filter: invert(1);
             }
     </style>
 
@@ -133,10 +158,8 @@
         <!-- Main Content -->
         @RenderBody()
     </div>
-
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
@@ -153,7 +176,6 @@
     <script src="~/js/custom.js"></script>
     <script src="~/js/chart.js"></script>
     <script src="~/js/Toast.js"></script>
-    <script src="~/js/variants.js"></script>
     <script src="~/js/map.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
@@ -164,9 +186,51 @@
             }
         });
     </script>
+    <script>
+        function showCustomToast(message, isSuccess = false) {
+            const container = document.getElementById('custom-toast-container');
+            if (!container) return;
+
+            // Create unique ID
+            const toastId = `toast-${Date.now()}`;
+
+            // Build HTML toast
+            const toastHTML = `
+                    <div id="${toastId}" class="toast custom-toast shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
+                        <div class="toast-header ${isSuccess ? "bg-success" : "bg-danger"} text-white">
+                            <img src="${isSuccess ? "/icons/happy.gif" : "/icons/sad.gif"}" class="rounded me-2" alt="${isSuccess ? "Success" : "Error"}" width="24" height="24">
+                            <strong class="me-auto">${isSuccess ? "Thành công" : "Lỗi"}</strong>
+                            <small>Vừa xong</small>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"
+                                    style="width: 26.4px; height: 26.4px;"></button>
+                        </div>
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                    </div>
+                `;
+
+            // Insert toast into container
+            container.insertAdjacentHTML('beforeend', toastHTML);
+
+            // Activate toast
+            const toastEl = document.getElementById(toastId);
+            const bsToast = new bootstrap.Toast(toastEl, {
+                autohide: true,
+                delay: 3000
+            });
+
+            bsToast.show();
+
+            // Optional: remove from DOM after hidden
+            toastEl.addEventListener('hidden.bs.toast', () => {
+                toastEl.remove();
+            });
+        }
+    </script>
 
     
-
+    @RenderSection("CustomToast", required: false)
     @RenderSection("Scripts", required: false)
     @RenderSection("Scripts2", required: false)
     <div class="position-fixed top-0 end-0 p-3" style="z-index: 1056">
@@ -190,5 +254,21 @@
             </div>
         }
     </div>
+    @section CustomToast {
+        <div class="custom-toast-wrapper position-fixed top-0 end-0 p-3" style="z-index: 3000;">
+            <div class="toast shadow-lg" id="customToast" role="alert" aria-live="assertive" aria-atomic="true"
+                 style="min-width: 320px; font-size: 1.1rem;">
+                <div class="toast-header text-white" id="customToastHeader">
+                    <img id="customToastIcon" class="rounded me-2" alt="" width="24" height="24">
+                    <strong class="me-auto" id="customToastTitle"></strong>
+                    <small>Vừa xong</small>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body fw-semibold" id="customToastBody"></div>
+            </div>
+        </div>
+
+    }
+
 </body>
 </html>

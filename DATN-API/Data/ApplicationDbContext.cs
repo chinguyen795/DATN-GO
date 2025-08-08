@@ -26,6 +26,7 @@ namespace DATN_API.Data
         public DbSet<Products> Products { get; set; }
         public DbSet<Stores> Stores { get; set; }
         public DbSet<Variants> Variants { get; set; }
+
         public DbSet<VariantValues> VariantValues { get; set; }
         public DbSet<ProductVariants> ProductVariants { get; set; }
         public DbSet<VariantComposition> VariantCompositions { get; set; }

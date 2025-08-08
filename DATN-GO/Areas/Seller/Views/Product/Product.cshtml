@@ -1,6 +1,10 @@
+﻿
 ﻿@{
     Layout = "~/Areas/Seller/Views/Shared/_LayoutSeller.cshtml";
+    var products = ViewBag.Products as List<DATN_GO.Models.Products>;
+    var categoryNames = ViewBag.CategoryNames as Dictionary<int, string>;
 }
+
 <div class="page-wrapper">
 
     <!-- Header -->
@@ -24,9 +28,10 @@
                     <!-- User Account -->
                     <li class="dropdown user-menu">
                         <button class="dropdown-toggle nav-link" data-toggle="dropdown">
-                            <img src="~/images/avt-user.jpg" alt="User Profile" width="32" height="32"
+                            <img src="@ViewBag.UserAvatar" alt="User Profile" width="32" height="32"
                                  style="object-fit: cover;" loading="lazy">
-                            <span class="d-none d-lg-inline-block">Meo Meo</span>
+                            <span class="d-none d-lg-inline-block">@ViewBag.UserName</span>
+
                         </button>
                         <ul class="dropdown-menu dropdown-menu-right">
                             <li>
@@ -73,14 +78,55 @@
                                 <th>Ảnh sản phẩm</th>
                                 <th>Tên sản phẩm</th>
                                 <th>Danh mục</th>
-                                <th>Hiển thị</th>
                                 <th>Trạng thái</th>
                                 <th>Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
-                            
+                            @foreach (var item in products)
+                            {
+                                <tr>
+                                    <td>@item.Id</td>
+                                    <td class="py-0">
+                                        <img src="@item.MainImage" alt="Product Image" style="width: 50px; height: 50px;">
+                                    </td>
+                                    <td>@item.Name</td>
+                                    <td>@(ViewBag.CategoryNames[item.Id])</td>
+                                    <td>
+                                        @switch (item.Status)
+                                        {
+                                            case ProductStatus.Pending:
+                                                <span class="badge badge-warning">Chờ duyệt</span>
+                                                break;
+                                            case ProductStatus.Approved:
+                                                <span class="badge badge-success">Đã duyệt</span>
+                                                break;
+                                            default:
+                                                <span class="badge badge-light">Không rõ</span>
+                                                break;
+                                        }
+
+                                    </td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <a class="dropdown-toggle icon-burger-mini" href="#" role="button"
+                                               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
+                                            <div class="dropdown-menu dropdown-menu-right">
+                                                <a class="dropdown-item btn-detail" href="#" data-toggle="modal"
+                                                   data-target="#exampleModallarge"
+                                                   data-product-id="@item.Id">Chi tiết sản phẩm</a>
+                                                <a class="dropdown-item" href="#">Sửa</a>
+                                                <a class="dropdown-item btn-delete" href="#" data-toggle="modal"
+                                                   data-target="#deleteConfirmModal"
+                                                   data-product-id="@item.Id">Xóa</a>
+
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
                         </tbody>
+
                     </table>
                 </div>
             </div>
@@ -100,32 +146,33 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
+            
             <div class="modal-body">
                 <div class="row">
                     <div class="col-xl-4">
                         <p class="text-dark font-weight-medium pt-4 mb-2">Tên sản phẩm</p>
-                        <p>Áo thun nam</p>
+                        <p id="modal-name"></p>
                     </div>
                     <div class="col-xl-4">
                         <p class="text-dark font-weight-medium pt-4 mb-2">Xuất xứ</p>
-                        <p>Việt Nam</p>
+                        <p id="modal-origin"></p>
                     </div>
                     <div class="col-xl-4">
                         <p class="text-dark font-weight-medium pt-4 mb-2">Thương hiệu</p>
-                        <p>Polo</p>
+                        <p <span id="modal-brand"></p>
                     </div>
 
                     <div class="col-xl-4">
                         <p class="text-dark font-weight-medium pt-4 mb-2">Số lượng</p>
-                        <p>921</p>
+                        <p id="modal-totalQuantity"></p>
                     </div>
                     <div class="col-xl-4">
                         <p class="text-dark font-weight-medium pt-4 mb-2">Giá bán</p>
-                        <p>110.000đ</p>
+                        <p id="modal-price"></p>
                     </div>
                     <div class="col-xl-4">
                         <p class="text-dark font-weight-medium pt-4 mb-2">Ngày tạo</p>
-                        <p>2025-06-15</p>
+                        <p id="modal-createAt"></p>
                     </div>
                 </div>
 
@@ -133,45 +180,20 @@
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th scope="col">Màu</th>
-                                <th scope="col">Size</th>
+                                <th scope="col">Variant 1</th>
+                                <th scope="col">Variant 2</th>
                                 <th scope="col">Giá vốn</th>
                                 <th scope="col">Giá bán</th>
                                 <th scope="col">Số lượng</th>
                                 <th scope="col">Khối lượng (Grams)</th>
                                 <th scope="col">Kích thước (Dài x Rộng x Cao) cm</th>
-                                <th scope="col">Ảnh sản phẩm</th>
+                                
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td>Xanh</td>
-                                <td>L</td>
-                                <td>100.000đ</td>
-                                <td>130.000đ</td>
-                                <td>50</td>
-                                <td>200g</td>
-                                <td>30cm x 20cm x 5cm</td>
-                                <td>
-                                    <img src="../theme/images/elements/user-md-1.jpg" alt="product"
-                                         style="width: 50px; height: 50px;">
-                                </td>
+                                <th scope="col">Không có biến thể</th>
                             </tr>
-
-                            <tr>
-                                <td>Cam</td>
-                                <td>L</td>
-                                <td>120.000đ</td>
-                                <td>140.000đ</td>
-                                <td>30</td>
-                                <td>200g</td>
-                                <td>30cm x 20cm x 5cm</td>
-                                <td>
-                                    <img src="../theme/images/elements/user-md-3.jpg" alt="product"
-                                         style="width: 50px; height: 50px;">
-                                </td>
-                            </tr>
-
                         </tbody>
                     </table>
                 </div>
@@ -248,47 +270,121 @@
     </div>
 </div>
 
-<!-- Modal xóa -->
-<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+
+<!-- Modal xác nhận xóa -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmLabel"
      aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header bg-danger">
-                <h5 class="modal-title text-white" id="exampleModalLabel">Thông Báo Xóa</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+                <h5 class="modal-title text-white">Xác nhận xóa</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                Bạn có chắc chắn muốn xóa không? Hành động này sẽ không thể hoàn tác.
+                Bạn có chắc chắn muốn xóa sản phẩm này và toàn bộ thông tin liên quan không?
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-light btn-pill" data-dismiss="modal" style="text-transform: capitalize;">Đóng</button>
-                <button type="button" class="btn btn-danger btn-pill" style="text-transform: capitalize;">Xóa</button>
+                <button type="button" class="btn btn-light btn-pill" data-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-danger btn-pill" id="confirmDeleteBtn">Xóa</button>
             </div>
         </div>
     </div>
 </div>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <!-- DataTables Initialization Script -->
 <script>
-    $(document).ready(function () {
-        $('#productsTable').DataTable({
-            "order": [[0, "desc"]],
-            "language": {
-                "lengthMenu": "Hiển thị _MENU_ sản phẩm mỗi trang",
-                "zeroRecords": "Không tìm thấy sản phẩm nào",
-                "info": "Hiển thị trang _PAGE_ / _PAGES_",
-                "infoEmpty": "Không có sản phẩm nào",
-                "infoFiltered": "(lọc từ _MAX_ sản phẩm)",
-                "search": "Tìm kiếm:",
-                "paginate": {
-                    "first": "Đầu",
-                    "last": "Cuối",
-                    "next": "Sau",
-                    "previous": "Trước"
-                }
+        let productIdToDelete = null;
+
+    // Khi click vào nút "Xóa"
+    $(document).on("click", ".btn-delete", function () {
+        productIdToDelete = $(this).data("product-id");
+    });
+
+    // Khi xác nhận xóa
+    $("#confirmDeleteBtn").click(function () {
+        if (!productIdToDelete) return;
+
+        $.ajax({
+            url: `/Seller/Product/DeleteProduct/${productIdToDelete}`,
+            type: 'DELETE',
+            success: function (res) {
+                $('#deleteConfirmModal').modal('hide');
+                alert("Xóa sản phẩm thành công.");
+                location.reload(); // Load lại trang
+            },
+            error: function () {
+                alert("Xóa sản phẩm thất bại.");
             }
         });
+    });
+
+    $(document).on('hidden.bs.modal', '.modal', function () {
+        if ($('.modal.show').length === 0) {
+            $('body').removeClass('modal-open');
+            $('.modal-backdrop').remove();
+        }
+    });
+    $(document).ready(function () {
+        $(".btn-detail").click(function (e) {
+    e.preventDefault();
+    var productId = $(this).data("product-id");
+
+    $.ajax({
+        url: 'https://localhost:7180/Seller/Product/GetProductDetail/' + productId,
+        type: 'GET',
+        success: function (data) {
+            $("#modal-name").text(data.name || "");
+            $("#modal-origin").text(data.placeoforigin || "");
+            $("#modal-brand").text(data.brand || "");
+            $("#modal-totalQuantity").text(data.totalQuantity || 0);
+            $("#modal-price").text(data.price > 0 ? data.price.toLocaleString() + "đ" : "Chưa có giá");
+            $("#modal-createAt").text(data.createat || "");
+
+            var thead = $("#exampleModallarge table thead");
+            thead.html(`
+                <tr>
+                    <th>${data.variantName1 || "Biến thể 1"}</th>
+                    <th>${data.variantName2 || "Biến thể 2"}</th>
+                    <th>Giá vốn</th>
+                    <th>Giá bán</th>
+                    <th>Số lượng</th>
+                    <th>Khối lượng (Grams)</th>
+                    <th>Kích thước (Dài x Rộng x Cao) cm</th>
+                    <th>Ảnh</th>
+                </tr>
+            `);
+
+            var tbody = $("#exampleModallarge table tbody");
+            tbody.empty();
+
+            if (data.variants && data.variants.length > 0) {
+                data.variants.forEach(function (v) {
+                    var row = `
+                        <tr>
+                            <td>${v.variantValue1 || ""}</td>
+                            <td>${v.variantValue2 || ""}</td>
+                            <td>${v.costPrice.toLocaleString()}đ</td>
+                            <td>${v.price.toLocaleString()}đ</td>
+                            <td>${v.quantity}</td>
+                            <td>${v.weight}g</td>
+                            <td>${v.length}cm x ${v.width}cm x ${v.height}cm</td>
+                            <td><img src="${v.image}" style="width: 50px; height: 50px;" /></td>
+                        </tr>
+                    `;
+                    tbody.append(row);
+                });
+            } else {
+                tbody.html(`<tr><td colspan="8" class="text-center">Không có biến thể</td></tr>`);
+            }
+        },
+        error: function () {
+            alert("Không thể lấy dữ liệu sản phẩm.");
+        }
+    });
+});
+
     });
 </script>

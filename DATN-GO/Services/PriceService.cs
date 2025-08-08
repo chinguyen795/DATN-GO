@@ -116,6 +116,22 @@ namespace DATN_GO.Service
             return null;
         }
 
+        public async Task<decimal?> GetPriceByProductIdAsync(int productId)
+        {
+            var response = await _httpClient.GetAsync($"{_baseUrl}/product/{productId}");
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(json);
+                if (doc.RootElement.TryGetProperty("price", out var priceElement))
+                {
+                    return priceElement.GetDecimal();
+                }
+            }
+
+            Console.WriteLine($"Lỗi khi lấy giá theo ProductId {productId}: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
+            return null;
+        }
 
     }
 }
