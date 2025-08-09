@@ -84,6 +84,37 @@ namespace DATN_API.Controllers
 
             return Ok(products);
         }
+        [HttpGet("ByStore/{storeId}")]
+        public async Task<IActionResult> GetProductsByStoreId(int storeId)
+        {
+            var products = await _service.GetProductsByStoreIdAsync(storeId);
+            return Ok(products);
+        }
+        [HttpPost("full")]
+        public async Task<IActionResult> CreateFullProduct([FromBody] ProductFullCreateViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                return BadRequest(new { success = false, errors });
+            }
+
+            var result = await _service.CreateFullProductAsync(model);
+            if (result.Success)
+                return Ok(new { success = true, productId = result.ProductId });
+
+            return StatusCode(500, new { success = false, error = result.ErrorMessage });
+        }
+
+        [HttpDelete("DeleteProduct/{id}")]
+        public async Task<IActionResult> DeleteProduct(int id)
+        {
+            var success = await _service.DeleteProductAndRelatedAsync(id);
+            if (!success)
+                return BadRequest("Không thể xóa sản phẩm.");
+
+            return Ok("Xóa thành công.");
+        }
 
     }
 

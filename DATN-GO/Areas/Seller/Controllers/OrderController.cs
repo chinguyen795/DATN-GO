@@ -24,7 +24,8 @@ namespace DATN_GO.Areas.Seller.Controllers
         {
             var userIdStr = HttpContext.Session.GetString("Id");
             if (string.IsNullOrEmpty(userIdStr))
-                return RedirectToAction("Login", "Account");
+                return Redirect("https://localhost:7180/Login");
+
 
             int userId = int.Parse(userIdStr);
 
@@ -37,7 +38,7 @@ namespace DATN_GO.Areas.Seller.Controllers
             }
 
             ViewBag.UserId = userId;
-            return View(result.Data);  // Đây là List<OrderViewModel>
+            return View(result.Data);
         }
 
         // Cập nhật trạng thái đơn (giữ nguyên)

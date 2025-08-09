@@ -4,30 +4,27 @@
     ViewData["UseContainer"] = false;
 }
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div>
-            <a asp-controller="Profile" asp-action="Index" class="btn btn-outline-danger" style="text-transform: capitalize;">
+<div class="container mt-2">
+    <div class="row align-items-center pt-1 pb-2 mx-0">
+        <div class="col-auto">
+            <a asp-controller="Profile" asp-action="Index" class="btn btn-outline-danger">
                 <i class="bi bi-arrow-left me-1"></i>Quay lại
             </a>
         </div>
-        <div class="col-lg-8 mb-3">
-            <div class="d-flex align-items-center justify-content-between pt-1 pb-2 mx-0">
-                <div class="col-12 text-center">
-                    <h3 class="text-danger m-0">ĐĂNG KÝ BÁN HÀNG</h3>
-                </div>
-            </div>
+        <div class="col text-center">
+            <h3 class="text-danger m-0">Đăng ký bán hàng</h3>
         </div>
+        <div class="col-auto d-none d-md-block"></div>
     </div>
 </div>
 
-<div class="mb-5">
+<div class="bg-light">
     <div class="row justify-content-center">
         <div class="col-lg-8">
-            <div class="card border border-2 rounded-3">
+            <div class="bg-white rounded shadow-sm">
                 <form action="/SalesRegistration/SalesRegistration" method="post" enctype="multipart/form-data">
                     @Html.AntiForgeryToken()
-                    <div class="mb-4 mx-4 mt-2">
+                    <div class="mb-3 mx-4">
 
                         <label class="form-label">Ảnh đại diện</label>
                         <input type="file" asp-for="Avatar" class="filepond avatar-pond" name="Avatar" id="avatarInput"
@@ -148,8 +145,40 @@
                             </div>
                         </div>
 
+                        <!-- Thông tin khu vực -->
+                        <div class="mb-4">
+                            <div class="row g-3">
+                                <!-- Province -->
+                                <div class="col-md-4">
+                                    <label class="form-label">Tỉnh/Thành phố <span class="text-danger">*</span></label>
+                                    <select asp-for="Province" class="form-select" id="provinceSelect" name="Province">
+                                        <option value="">-- Chọn Tỉnh/Thành phố --</option>
+                                    </select>
+                                    @Html.ValidationMessageFor(m => m.Province, "", new { @class = "text-danger" })
+                                </div>
+
+                                <!-- District -->
+                                <div class="col-md-4">
+                                    <label class="form-label">Quận/Huyện <span class="text-danger">*</span></label>
+                                    <select asp-for="District" class="form-select" id="districtSelect" name="District">
+                                        <option value="">-- Chọn Quận/Huyện --</option>
+                                    </select>
+                                    @Html.ValidationMessageFor(m => m.District, "", new { @class = "text-danger" })
+                                </div>
+
+                                <!-- Ward -->
+                                <div class="col-md-4">
+                                    <label class="form-label">Phường/Xã <span class="text-danger">*</span></label>
+                                    <select asp-for="Ward" class="form-select" id="wardSelect" name="Ward">
+                                        <option value="">-- Chọn Phường/Xã --</option>
+                                    </select>
+                                    @Html.ValidationMessageFor(m => m.Ward, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-crimson" style="text-transform: capitalize;">
+                            <button type="submit" class="btn btn-crimson">
                                 <i class="bi bi-shop me-2"></i>Đăng ký
                             </button>
                         </div>
@@ -159,8 +188,8 @@
             </div>
         </div>
     </div>
-
 </div>
+
 
 <script>
     (function () {
@@ -298,6 +327,7 @@
 
 </script>
 
+
 <link href="https://unpkg.com/filepond/dist/filepond.min.css" rel="stylesheet" />
 <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.css"
       rel="stylesheet" />
@@ -363,3 +393,5 @@
         stylePanelLayout: 'compact'
     });
 </script>
+
+

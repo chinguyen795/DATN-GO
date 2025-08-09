@@ -11,8 +11,6 @@ namespace DATN_API.Services
     public class OrdersService : IOrdersService
     {
         private readonly ApplicationDbContext _context;
-
-
         public OrdersService(ApplicationDbContext context)
         {
             _context = context;
@@ -76,38 +74,40 @@ namespace DATN_API.Services
                 .FirstOrDefaultAsync(o => o.Id == orderId);
             if (o == null) return null;
 
-            // Tính tạm tính
-            var itemsTotal = o.OrderDetails?.Sum(od => od.Price * od.Quantity) ?? 0m;
+            // Tính lại tổng tiền sản phẩm từ OrderDetails
+            var totalPrice = o.OrderDetails.Sum(od => od.Quantity * od.Price);
 
-            // Lấy phí ship: ưu tiên DeliveryFee trên đơn, fallback giá của phương thức vận chuyển
-            var shippingFee = o.DeliveryFee > 0 ? o.DeliveryFee : (o.ShippingMethod?.Price ?? 0m);
-
-            // Tổng tiền: ưu tiên trường đã lưu, fallback = tạm tính + ship
-            var total = o.TotalPrice > 0 ? o.TotalPrice : (itemsTotal + shippingFee);
+            // Kiểm tra điều kiện voucher
+            decimal voucherReduce = 0;
+            if (o.Voucher != null && o.Voucher.Status == VoucherStatus.Valid && totalPrice >= o.Voucher.MinOrder)
+            {
+                voucherReduce = o.Voucher.Reduce;
+            }
 
             return new OrderViewModel
             {
                 Id = o.Id,
-                CreatedAt = o.OrderDate,                 // để MVC map từ "createdAt"
-                CustomerName = o.User?.FullName ?? "",
+                CustomerName = o.User?.FullName ?? string.Empty,
                 CustomerPhone = o.User?.Phone,
                 StoreName = o.ShippingMethod?.store?.Name,
-                ShippingMethodName = o.ShippingMethod?.MethodName ?? "",
-                ShippingFee = shippingFee,               // << quan trọng
+                ShippingMethodName = o.ShippingMethod?.MethodName ?? string.Empty,
+                ShippingFee = o.ShippingMethod?.Price ?? 0,
                 VoucherName = o.Voucher?.Type.ToString(),
-                VoucherReduce = o.Voucher?.Reduce,
-                TotalPrice = total,
+                VoucherReduce = voucherReduce,
+                CreatedAt = o.OrderDate,
                 PaymentMethod = o.PaymentMethod,
                 PaymentStatus = o.PaymentStatus,
                 Status = o.Status.ToString(),
                 OrderDetails = o.OrderDetails.Select(od => new OrderDetailViewModel
                 {
                     ProductId = od.ProductId,
-                    ProductName = od.Product?.Name ?? "",
+                    ProductName = od.Product?.Name ?? string.Empty,
                     ProductImage = od.Product?.MainImage,
                     Quantity = od.Quantity,
                     UnitPrice = od.Price
-                }).ToList()
+                }).ToList(),
+
+                TotalPrice = totalPrice
             };
         }
 
@@ -140,7 +140,7 @@ namespace DATN_API.Services
                 VoucherName = o.Voucher?.Type.ToString(),
                 VoucherReduce = o.Voucher?.Reduce,
                 CreatedAt = o.OrderDate,
-                TotalPrice = o.TotalPrice,
+
                 PaymentMethod = o.PaymentMethod,
                 PaymentStatus = o.PaymentStatus,
                 Status = o.Status.ToString(),
@@ -236,7 +236,42 @@ namespace DATN_API.Services
 
             return result;
         }
+        private OrderViewModel MapToOrderViewModel(Orders entity)
+        {
+            var totalPrice = entity.OrderDetails?.Sum(od => od.Quantity * od.Price) ?? 0;
 
+            decimal voucherReduce = 0;
+            if (entity.Voucher != null && entity.Voucher.Status == VoucherStatus.Valid && totalPrice >= entity.Voucher.MinOrder)
+            {
+                voucherReduce = entity.Voucher.Reduce;
+            }
+
+            return new OrderViewModel
+            {
+                Id = entity.Id,
+                CreatedAt = entity.OrderDate,
+                CustomerName = entity.User?.FullName ?? "Khách hàng",
+                CustomerPhone = entity.User?.Phone,
+                StoreName = entity.ShippingMethod?.store?.Name ?? "Không rõ",
+                VoucherName = GetVoucherDisplayName(entity.Voucher),
+                VoucherReduce = voucherReduce,
+
+                ShippingMethodName = entity.ShippingMethod?.MethodName ?? "",
+                ShippingFee = entity.ShippingMethod?.Price ?? 0,
+                PaymentMethod = entity.PaymentMethod ?? "",
+                PaymentStatus = entity.PaymentStatus,
+                Status = entity.Status.ToString(),
+                OrderDetails = entity.OrderDetails?.Select(od => new OrderDetailViewModel
+                {
+                    ProductId = od.ProductId,
+                    ProductName = od.Product?.Name ?? "Sản phẩm",
+                    ProductImage = od.Product?.MainImage,
+                    Quantity = od.Quantity,
+                    UnitPrice = od.Price
+                }).ToList() ?? new List<OrderDetailViewModel>(),
+                TotalPrice = totalPrice
+            };
+        }
         public async Task<OrderViewModel?> GetOrderDetailByIdAsync(int orderId, int userId)
         {
             var order = await _context.Orders
@@ -283,34 +318,6 @@ namespace DATN_API.Services
             };
         }
 
-
-        private OrderViewModel MapToOrderViewModel(Orders entity)
-        {
-            return new OrderViewModel
-            {
-                Id = entity.Id,
-                CreatedAt = entity.OrderDate,
-                CustomerName = entity.User?.FullName ?? "Khách hàng",
-                CustomerPhone = entity.User?.Phone,
-                StoreName = entity.ShippingMethod?.MethodName ?? "Không rõ",
-                VoucherName = GetVoucherDisplayName(entity.Voucher),
-                VoucherReduce = entity.Voucher?.Reduce,
-                ShippingMethodName = entity.ShippingMethod?.MethodName ?? "",
-                ShippingFee = entity.DeliveryFee,
-                TotalPrice = entity.TotalPrice,
-                PaymentMethod = entity.PaymentMethod ?? "",
-                PaymentStatus = entity.PaymentStatus,
-                Status = entity.Status.ToString(), // Hoặc map sang string hiển thị thân thiện
-                OrderDetails = entity.OrderDetails?.Select(od => new OrderDetailViewModel
-                {
-                    ProductId = od.ProductId,
-                    ProductName = od.Product?.Name ?? "Sản phẩm",
-                    ProductImage = od.Product?.MainImage,
-                    Quantity = od.Quantity,
-                    UnitPrice = od.Price
-                }).ToList() ?? new List<OrderDetailViewModel>()
-            };
-        }
         private string? GetVoucherDisplayName(Vouchers? voucher)
         {
             if (voucher == null) return null;

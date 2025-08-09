@@ -276,14 +276,14 @@
                                     <div class="tab-pane fade show active" id="allOrders" role="tabpanel" aria-labelledby="allOrdersTab">
                                         <div class="table-responsive">
                                             <table class="table table-hover align-middle mb-0">
-                                                <thead class="bg-danger text-white">
+                                                <thead class="bg-danger text-dark">
                                                     <tr>
-                                                        <th scope="col" class="fw-bold text-white">Mã Đơn</th>
-                                                        <th scope="col" class="fw-bold text-white">Khách Hàng</th>
-                                                        <th scope="col" class="fw-bold text-white">Số Lượng</th>
-                                                        <th scope="col" class="fw-bold text-white">Tổng Tiền</th>
-                                                        <th scope="col" class="fw-bold text-white">Ngày Đặt</th>
-                                                        <th scope="col" class="fw-bold text-white">Trạng Thái</th>
+                                                        <th scope="col" class="fw-bold text-dark">Mã Đơn</th>
+                                                        <th scope="col" class="fw-bold text-dark">Khách Hàng</th>
+                                                        <th scope="col" class="fw-bold text-dark">Số Lượng</th>
+                                                        <th scope="col" class="fw-bold text-dark">Tổng Tiền</th>
+                                                        <th scope="col" class="fw-bold text-dark">Ngày Đặt</th>
+                                                        <th scope="col" class="fw-bold text-dark">Trạng Thái</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -295,7 +295,7 @@
                                                                 <td>#@order.Id</td>
                                                                 <td>@order.CustomerName</td>
                                                                 <td>@order.TotalQuantity món</td>
-                                                                <td class="fw-semibold">@FormatCurrency(order.TotalPrice)</td>
+                                                                <td class="fw-semibold">@FormatCurrency(order.GrandTotal)</td>
                                                                 <td>@order.CreatedAt.ToString("dd/MM/yyyy")</td>
                                                                 <td>
                                                                     <span class="badge @MapStatusToBadgeClass(order.Status) px-3 py-2 rounded-pill">
@@ -318,14 +318,14 @@
                                     <div class="tab-pane fade" id="pendingOrders" role="tabpanel" aria-labelledby="pendingTab">
                                         <div class="table-responsive">
                                             <table class="table table-hover align-middle mb-0">
-                                                <thead class="bg-danger text-white">
+                                                <thead class="bg-danger text-dark">
                                                     <tr>
-                                                        <th scope="col" class="fw-bold text-white">Mã Đơn</th>
-                                                        <th scope="col" class="fw-bold text-white">Khách Hàng</th>
-                                                        <th scope="col" class="fw-bold text-white">Số Lượng</th>
-                                                        <th scope="col" class="fw-bold text-white">Tổng Tiền</th>
-                                                        <th scope="col" class="fw-bold text-white">Ngày Đặt</th>
-                                                        <th scope="col" class="fw-bold text-white">Thao Tác</th>
+                                                        <th scope="col" class="fw-bold text-dark">Mã Đơn</th>
+                                                        <th scope="col" class="fw-bold text-dark">Khách Hàng</th>
+                                                        <th scope="col" class="fw-bold text-dark">Số Lượng</th>
+                                                        <th scope="col" class="fw-bold text-dark">Tổng Tiền</th>
+                                                        <th scope="col" class="fw-bold text-dark">Ngày Đặt</th>
+                                                        <th scope="col" class="fw-bold text-dark">Thao Tác</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -364,14 +364,14 @@
                                     <div class="tab-pane fade" id="readyOrders" role="tabpanel" aria-labelledby="readyTab">
                                         <div class="table-responsive">
                                             <table class="table table-hover align-middle mb-0">
-                                                <thead class="bg-danger text-white">
+                                                <thead class="bg-danger text-dark">
                                                     <tr>
-                                                        <th scope="col" class="fw-bold text-white">Mã Đơn</th>
-                                                        <th scope="col" class="fw-bold text-white">Khách Hàng</th>
-                                                        <th scope="col" class="fw-bold text-white">Số Lượng</th>
-                                                        <th scope="col" class="fw-bold text-white">Tổng Tiền</th>
-                                                        <th scope="col" class="fw-bold text-white">Ngày Đặt</th>
-                                                        <th scope="col" class="fw-bold text-white">Trạng Thái</th>
+                                                        <th scope="col" class="fw-bold text-dark">Mã Đơn</th>
+                                                        <th scope="col" class="fw-bold text-dark">Khách Hàng</th>
+                                                        <th scope="col" class="fw-bold text-dark">Số Lượng</th>
+                                                        <th scope="col" class="fw-bold text-dark">Tổng Tiền</th>
+                                                        <th scope="col" class="fw-bold text-dark">Ngày Đặt</th>
+                                                        <th scope="col" class="fw-bold text-dark">Trạng Thái</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -404,14 +404,14 @@
                                     <div class="tab-pane fade" id="shippingOrders" role="tabpanel" aria-labelledby="shippingTab">
                                         <div class="table-responsive">
                                             <table class="table table-hover align-middle mb-0">
-                                                <thead class="bg-danger text-white">
+                                                <thead class="bg-danger text-dark">
                                                     <tr>
-                                                        <th scope="col" class="fw-bold text-white">Mã Đơn</th>
-                                                        <th scope="col" class="fw-bold text-white">Khách Hàng</th>
-                                                        <th scope="col" class="fw-bold text-white">Số Lượng</th>
-                                                        <th scope="col" class="fw-bold text-white">Tổng Tiền</th>
-                                                        <th scope="col" class="fw-bold text-white">Ngày Đặt</th>
-                                                        <th scope="col" class="fw-bold text-white">Trạng Thái</th>
+                                                        <th scope="col" class="fw-bold text-dark">Mã Đơn</th>
+                                                        <th scope="col" class="fw-bold text-dark">Khách Hàng</th>
+                                                        <th scope="col" class="fw-bold text-dark">Số Lượng</th>
+                                                        <th scope="col" class="fw-bold text-dark">Tổng Tiền</th>
+                                                        <th scope="col" class="fw-bold text-dark">Ngày Đặt</th>
+                                                        <th scope="col" class="fw-bold text-dark">Trạng Thái</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -444,14 +444,14 @@
                                     <div class="tab-pane fade" id="completedOrders" role="tabpanel" aria-labelledby="completedTab">
                                         <div class="table-responsive">
                                             <table class="table table-hover align-middle mb-0">
-                                                <thead class="bg-danger text-white">
+                                                <thead class="bg-danger text-dark">
                                                     <tr>
-                                                        <th scope="col" class="fw-bold text-white">Mã Đơn</th>
-                                                        <th scope="col" class="fw-bold text-white">Khách Hàng</th>
-                                                        <th scope="col" class="fw-bold text-white">Số Lượng</th>
-                                                        <th scope="col" class="fw-bold text-white">Tổng Tiền</th>
-                                                        <th scope="col" class="fw-bold text-white">Ngày Đặt</th>
-                                                        <th scope="col" class="fw-bold text-white">Trạng Thái</th>
+                                                        <th scope="col" class="fw-bold text-dark">Mã Đơn</th>
+                                                        <th scope="col" class="fw-bold text-dark">Khách Hàng</th>
+                                                        <th scope="col" class="fw-bold text-dark">Số Lượng</th>
+                                                        <th scope="col" class="fw-bold text-dark">Tổng Tiền</th>
+                                                        <th scope="col" class="fw-bold text-dark">Ngày Đặt</th>
+                                                        <th scope="col" class="fw-bold text-dark">Trạng Thái</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -484,14 +484,14 @@
                                     <div class="tab-pane fade" id="cancelledOrders" role="tabpanel" aria-labelledby="cancelledTab">
                                         <div class="table-responsive">
                                             <table class="table table-hover align-middle mb-0">
-                                                <thead class="bg-danger text-white">
+                                                <thead class="bg-danger text-dark">
                                                     <tr>
-                                                        <th scope="col" class="fw-bold text-white">Mã Đơn</th>
-                                                        <th scope="col" class="fw-bold text-white">Khách Hàng</th>
-                                                        <th scope="col" class="fw-bold text-white">Số Lượng</th>
-                                                        <th scope="col" class="fw-bold text-white">Tổng Tiền</th>
-                                                        <th scope="col" class="fw-bold text-white">Ngày Đặt</th>
-                                                        <th scope="col" class="fw-bold text-white">Lý Do Hủy</th>
+                                                        <th scope="col" class="fw-bold text-dark">Mã Đơn</th>
+                                                        <th scope="col" class="fw-bold text-dark">Khách Hàng</th>
+                                                        <th scope="col" class="fw-bold text-dark">Số Lượng</th>
+                                                        <th scope="col" class="fw-bold text-dark">Tổng Tiền</th>
+                                                        <th scope="col" class="fw-bold text-dark">Ngày Đặt</th>
+                                                        <th scope="col" class="fw-bold text-dark">Lý Do Hủy</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -745,6 +745,7 @@
 
 <script>
     const API_BASE_URL = 'https://localhost:7096/api'; // Khai báo duy nhất 1 lần
+    let productTotal = 0;
 
     document.addEventListener('DOMContentLoaded', function () {
         // --- Xử lý style tab ---
@@ -818,18 +819,21 @@
                     tbody.innerHTML = '';
 
                     if (order.orderDetails && order.orderDetails.length > 0) {
-                        order.orderDetails.forEach(item => {
-                            const tr2 = document.createElement('tr');
-                            tr2.classList.add('bg-light');
-                            const totalPrice = item.quantity * item.unitPrice;
-                            tr2.innerHTML = `
-                                <td>${item.productName || ''}</td>
-                                <td>${item.quantity}</td>
-                                <td>${formatCurrency(item.unitPrice)}</td>
-                                <td>${formatCurrency(totalPrice)}</td>
-                            `;
-                            tbody.appendChild(tr2);
-                        });
+                            order.orderDetails.forEach(item => {
+        const tr2 = document.createElement('tr');
+        tr2.classList.add('bg-light');
+        const totalPrice = item.quantity * item.unitPrice;
+        productTotal += totalPrice;
+
+        tr2.innerHTML = `
+            <td>${item.productName || ''}</td>
+            <td>${item.quantity}</td>
+            <td>${formatCurrency(item.unitPrice)}</td>
+            <td>${formatCurrency(totalPrice)}</td>
+        `;
+        tbody.appendChild(tr2);
+    });
+
                     } else {
                         tbody.innerHTML = `<tr><td colspan="4" class="text-center">Không có sản phẩm</td></tr>`;
                     }
@@ -905,8 +909,7 @@
                 rejectOrderModal.show();
             });
         });
-
-        // Xử lý nút xác nhận trong modal từ chối đơn hàng
+         
         document.getElementById('btnConfirmReject').addEventListener('click', function () {
             const orderId = rejectOrderModalEl.dataset.orderId;
             if (!orderId) {
@@ -1053,3 +1056,4 @@
         loadStatistics();
     });
 </script>
+ 

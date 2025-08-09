@@ -63,7 +63,7 @@
                                 <ul class="navbar-nav mb-2 mb-lg-0 fw-bold flex-row gap-3 align-items-center">
                                     <li class="nav-item">
                                         <a class="nav-link active text-crimson d-flex align-items-center gap-1"
-                                           aria-current="page" href="./Home.html">
+                                           aria-current="page" asp-controller="Home" asp-action="Index">
                                             Trang chủ
                                         </a>
                                     </li>
@@ -75,14 +75,14 @@
                                     </li>
                                     <li class="nav-item">
                                         <a class="nav-link text-crimson d-flex align-items-center gap-1"
-                                           href="Products.html">
-                                            Sản phẩm
+                                           asp-controller="Products" asp-action="Products">
+                                            Sản phẩm
                                         </a>
                                     </li>
                                     <li class="nav-item">
                                         <a class="nav-link text-crimson d-flex align-items-center gap-1"
-                                           href="./Blog.html">
-                                            Bài viết
+                                           asp-controller="Blog" asp-action="Blog">
+                                            Bài viết
                                         </a>
                                     </li>
                                 </ul>
@@ -91,8 +91,8 @@
                         <!-- Cart -->
                         <a asp-action="index" asp-controller="cart" class="nav-link position-relative align-items-center p-0">
                             <i class="bi bi-cart-fill text-white icon-md header-icon"></i>
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-white text-crimson"
-                                  style="font-size:0.7rem;">99</span>
+                            @* <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-white text-crimson"
+                                  style="font-size:0.7rem;">99</span> *@
                         </a>
                         <!-- Account -->
                         @{
@@ -312,7 +312,6 @@
     <script src="~/js/NotificationToast.js"></script>
     <script src="~/js/Orders.js"></script>
     <script src="~/js/Profile.js"></script>
-    <script src="~/js/Repassword.js"></script>
     <script src="~/js/SalesRegistration.js"></script>
     <script src="~/js/Vouchers.js"></script>
 

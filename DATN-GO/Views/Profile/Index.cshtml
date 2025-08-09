@@ -31,19 +31,19 @@
 
         <ul class="nav flex-column p-3">
             <li class="nav-item mb-2">
-                <a href="./Profile.html" class="nav-link active text-crimson">
+                <a asp-action="Profile" asp-controller="Index" class="nav-link active text-crimson">
                     <i class="bi bi-person-circle me-2"></i>
                     Thông tin cá nhân
                 </a>
             </li>
             <li class="nav-item mb-2">
-                <a href="./Orders.html" class="nav-link text-dark">
+                <a asp-action="Order" asp-controller="Index" class="nav-link text-dark">
                     <i class="bi bi-box-seam me-2"></i>
                     Đơn hàng của tôi
                 </a>
             </li>
             <li class="nav-item mb-2">
-                <a href="./Vouchers.html" class="nav-link text-dark">
+                <a asp-action="Voucher" asp-controller="Voucher" class="nav-link text-dark">
                     <i class="bi bi-ticket-perforated me-2"></i>
                     Voucher của tôi
                 </a>
@@ -55,7 +55,7 @@
                 </a>
             </li>
             <li class="nav-item mb-2">
-                <a href="./Repassword.html" class="nav-link text-dark">
+                <a asp-action="UserAuthentication" asp-controller="ChangePassword" class="nav-link text-dark">
                     <i class="bi bi-shield-lock me-2"></i>
                     Đổi mật khẩu
                 </a>
@@ -98,33 +98,33 @@
 
                 <ul class="nav flex-column p-3">
                     <li class="nav-item mb-2">
-                        <a href="./Profile.html" class="nav-link active text-crimson">
+                        <a asp-action="Index" asp-controller="Profile" class="nav-link active text-crimson">
                             <i class="bi bi-person-circle me-2"></i>
                             Thông tin cá nhân
                         </a>
                     </li>
                     <li class="nav-item mb-2">
-                        <a href="./Orders.html" class="nav-link text-dark">
+                        <a asp-action="Index" asp-controller="Order" class="nav-link text-dark">
                             <i class="bi bi-box-seam me-2"></i>
                             Đơn hàng của tôi
                         </a>
                     </li>
                     <li class="nav-item mb-2">
-                        <a asp-action="Address" asp-controller="address" class="nav-link text-dark">
+                        <a asp-action="address" asp-controller="Address" class="nav-link text-dark">
                             <i class="bi bi-geo-alt me-2"></i>
                             Địa chỉ
                         </a>
                     </li>
                     <li class="nav-item mb-2">
-                        <a href="./Vouchers.html" class="nav-link text-dark">
+                        <a asp-action="Voucher" asp-controller="Voucher" class="nav-link text-dark">
                             <i class="bi bi-ticket-perforated me-2"></i>
                             Voucher
                         </a>
                     </li>
                     <li class="nav-item mb-2">
-                        <a href="./Notification.html" class="nav-link text-dark">
+                        <a asp-action="ChangePassword" asp-controller="UserAuthentication" class="nav-link text-dark">
                             <i class="bi bi-bell me-2"></i>
-                            Thông báo
+                            Đổi mật khẩu
                         </a>
                     </li>
                     <li class="nav-item">

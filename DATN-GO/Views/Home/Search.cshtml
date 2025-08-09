@@ -1,0 +1,60 @@
+﻿@model DATN_GO.ViewModels.SearchViewModel
+
+<div class="container mt-4 mb-5">
+    <h2 class="fw-bold">Kết quả tìm kiếm cho: "@Model.Query"</h2>
+
+    @if (!Model.Products.Any() && !Model.Stores.Any())
+    {
+        <p class="text-muted">Không tìm thấy kết quả nào.</p>
+    }
+    else
+    {
+        @if (Model.Products.Any())
+        {
+            <h4 class="mt-4 mb-3">Sản phẩm</h4>
+            <div class="row g-4">
+                @foreach (var p in Model.Products)
+                {
+                    <div class="col-lg-3 col-md-4 col-sm-6">
+                        <div class="card h-100 shadow-sm border-0 rounded-3">
+                            <img src="@p.MainImage" class="card-img-top rounded-top" style="height:200px;object-fit:cover;" alt="@p.Name" />
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title text-truncate">@p.Name</h5>
+                                <p class="text-danger fw-bold mb-1">@p.Price.ToString("N0")đ</p>
+                                <p class="small text-muted mb-3 text-truncate">@p.StoreName</p>
+                                <div class="mt-auto d-flex justify-content-between">
+                                    <a asp-controller="Product" asp-action="Details" asp-route-id="@p.Id"
+                                       class="btn btn-outline-primary btn-sm w-50 me-1">Chi tiết</a>
+                                    <button class="btn btn-primary btn-sm w-50">Giỏ hàng</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+        @if (Model.Stores.Any())
+        {
+            <h4 class="mt-5 mb-3">Cửa hàng</h4>
+            <div class="row g-4">
+                @foreach (var s in Model.Stores)
+                {
+                    <div class="col-lg-3 col-md-4 col-sm-6">
+                        <div class="card h-100 shadow-sm border-0 rounded-3 text-center p-3">
+                            <img src="@s.Avatar" alt="@s.Name" class="rounded-circle mx-auto d-block mb-3"
+                                 style="width:120px;height:120px;object-fit:cover;" />
+                            <div class="card-body">
+                                <h5 class="card-title text-truncate">@s.Name</h5>
+                                <p class="small text-muted mb-2">@s.Address</p>
+                                <p class="mb-3">Đánh giá: @s.Rating.ToString("0.0")</p>
+                                <a asp-controller="Store" asp-action="Details" asp-route-id="@s.Id"
+                                   class="btn btn-outline-primary w-100">Xem chi tiết</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>

@@ -50,7 +50,7 @@ namespace DATN_GO.Controllers
                 {
                     1 => "/",
                     2 => "/",
-                    _ => "/Admin/Home/"
+                    3 => "/Admin/Home/"
                 };
                 return Redirect(redirectUrl);
             }

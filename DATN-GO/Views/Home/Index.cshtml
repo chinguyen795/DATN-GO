@@ -1,5 +1,9 @@
-﻿@{
+﻿@model DATN_GO.ViewModels.HomeViewModel
+
+
+@{
     ViewData["Title"] = "Home Page";
+
 }
 <section class="slideshow mb-3">
     <div class="row">
@@ -88,322 +92,131 @@
 <section class="categories-section mb-3">
     <h2 class="fw-bold mb-4">Danh Mục</h2>
     <div class="categories-slider position-relative" data-aos="fade-up">
-
         <div class="owl-carousel category-carousel">
-            <div class="category-wrapper">
-                <div class="category-item text-center">
-                    <div class="category-circle">
-                        <img src="https://i.pinimg.com/736x/9d/3f/fa/9d3ffa34744058f4925bb23cf6db72b4.jpg"
-                             alt="Món Bắc">
-                    </div>
-                    <h6 class="mb-0">Món Bắc</h6>
-                </div>
-            </div>
-            <div class="category-wrapper">
-                <div class="category-item text-center">
-                    <div class="category-circle">
-                        <img src="https://i.pinimg.com/736x/00/17/63/0017631d7ed34e0a714c40feee8e479d.jpg"
-                             alt="Món Trung">
-                    </div>
-                    <h6 class="mb-0">Món Trung</h6>
-                </div>
-            </div>
-            <div class="category-wrapper">
-                <div class="category-item text-center">
-                    <div class="category-circle">
-                        <img src="https://i.pinimg.com/736x/a2/c3/31/a2c33191ad5463acb80142eabcde22b8.jpg"
-                             alt="Món Nam">
-                    </div>
-                    <h6 class="mb-0">Món Nam</h6>
-                </div>
-            </div>
-            <div class="category-wrapper">
-                <div class="category-item text-center">
-                    <div class="category-circle">
-                        <img src="https://i.pinimg.com/736x/27/e2/9a/27e29aa74fad35945aa23fdc0c54527a.jpg"
-                             alt="Món Hàn">
-                    </div>
-                    <h6 class="mb-0">Món Hàn</h6>
-                </div>
-            </div>
-            <div class="category-wrapper">
-                <div class="category-item text-center">
-                    <div class="category-circle">
-                        <img src="https://i.pinimg.com/736x/97/a4/3c/97a43cbb55493f2439b55468798a77cc.jpg"
-                             alt="Món Nhật">
-                    </div>
-                    <h6 class="mb-0">Món Nhật</h6>
-                </div>
-            </div>
-            <div class="category-wrapper">
-                <div class="category-item text-center">
-                    <div class="category-circle">
-                        <img src="https://i.pinimg.com/736x/67/e9/f2/67e9f28cc9b02a92703a45a3c4c88cc9.jpg"
-                             alt="Món Âu">
-                    </div>
-                    <h6 class="mb-0">Món Âu</h6>
-                </div>
-            </div>
-            <div class="category-wrapper">
-                <div class="category-item text-center">
-                    <div class="category-circle">
-                        <img src="https://i.pinimg.com/736x/0e/0f/eb/0e0febf746d99bcdbbf7c8c688b86bb7.jpg"
-                             alt="Món chay">
-                    </div>
-                    <h6 class="mb-0">Món chay</h6>
-                </div>
-            </div>
-            <div class="category-wrapper">
-                <div class="category-item text-center">
-                    <div class="category-circle">
-                        <img src="https://i.pinimg.com/736x/51/67/99/51679964424ad36d8cd3f01e391e6720.jpg"
-                             alt="Món lẩu">
-                    </div>
-                    <h6 class="mb-0">Món lẩu</h6>
-                </div>
-            </div>
-            <div class="category-wrapper">
-                <div class="category-item text-center">
-                    <div class="category-circle">
-                        <img src="https://i.pinimg.com/736x/32/c0/54/32c05405e98bf5f4e8c3a7d2e213dade.jpg"
-                             alt="Món nướng">
-                    </div>
-                    <h6 class="mb-0">Món nướng</h6>
-                </div>
-            </div>
-        </div>
-    </div>
-</section> <!-- Popular Restaurants Section -->
-
-<section class="popular-restaurants mb-3">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold mb-0">Nhà Hàng Nổi Bật</h2>
-        <a href="Diner.html" class="btn btn-outline-danger rounded-pill">Xem tất cả</a>
-    </div>
-    <div class="row g-4">
-        <!-- Restaurant Card 1 -->
-        <div class="col-lg-6" data-aos="fade-up">
-            <div class="restaurant-card card border-0 shadow-sm hover-scale">
-                <div class="row g-0">
-                    <div class="col-md-4">
-                        <img src="https://i.pinimg.com/736x/9d/3f/fa/9d3ffa34744058f4925bb23cf6db72b4.jpg"
-                             class="img-fluid rounded-start h-100" style="object-fit: cover;"
-                             alt="Restaurant">
-                    </div>
-                    <div class="col-md-8">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h5 class="card-title fw-bold mb-1">Nhà hàng Phở Ngon</h5>
-                                <span class="badge bg-success">Mở cửa</span>
-                            </div>
-                            <p class="card-text text-muted small mb-2 text-truncate-1">
-                                <i class="bi bi-geo-alt-fill icon-sm"></i> 123 Đường ABC, Quận 1, TP.HCM
-                            </p>
-                            <div class="d-flex align-items-center mb-2">
-                                <div class="rating text-warning me-2">
-                                    <i class="bi bi-star-fill icon-sm"></i>
-                                    <i class="bi bi-star-fill icon-sm"></i>
-                                    <i class="bi bi-star-fill icon-sm"></i>
-                                    <i class="bi bi-star-fill icon-sm"></i>
-                                    <i class="bi bi-star-half icon-sm"></i>
-                                </div>
-                                <span class="text-muted small">(128 đánh giá)</span>
-                            </div>
-                            <div class="restaurant-tags mb-3">
-                                <span class="badge rounded-pill bg-light text-dark me-1">Món Việt Nam</span>
-                                <span class="badge rounded-pill bg-light text-dark me-1">Phở</span>
-                                <span class="badge rounded-pill bg-light text-dark">Bún</span>
-                            </div>
-                            <a href="DetailsDiner.html" class="btn btn-outline-danger rounded-pill">
-                                Xem chi
-                                tiết
-                            </a>
+            @foreach (var category in Model.Categories)
+            {
+                <div class="category-wrapper">
+                    <div class="category-item text-center">
+                        <div class="category-circle">
+                            <img src="@category.Image" alt="@category.Name" />
                         </div>
+                        <h6 class="mb-0">@category.Name</h6>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Restaurant Card 2 -->
-        <div class="col-lg-6" data-aos="fade-up" data-aos-delay="100">
-            <div class="restaurant-card card border-0 shadow-sm hover-scale">
-                <div class="row g-0">
-                    <div class="col-md-4">
-                        <img src="https://i.pinimg.com/736x/27/e2/9a/27e29aa74fad35945aa23fdc0c54527a.jpg"
-                             class="img-fluid rounded-start h-100" style="object-fit: cover;"
-                             alt="Restaurant">
-                    </div>
-                    <div class="col-md-8">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h5 class="card-title fw-bold mb-1">Korean BBQ House</h5>
-                                <span class="badge bg-success">Mở cửa</span>
-                            </div>
-                            <p class="card-text text-muted small mb-2">
-                                <i class="bi bi-geo-alt-fill icon-sm"></i> 456 Đường XYZ, Quận 3, TP.HCM
-                            </p>
-                            <div class="d-flex align-items-center mb-2">
-                                <div class="rating text-warning me-2">
-                                    <i class="bi bi-star-fill icon-sm"></i>
-                                    <i class="bi bi-star-fill icon-sm"></i>
-                                    <i class="bi bi-star-fill icon-sm"></i>
-                                    <i class="bi bi-star-fill icon-sm"></i>
-                                    <i class="bi bi-star icon-sm"></i>
-                                </div>
-                                <span class="text-muted small">(96 đánh giá)</span>
-                            </div>
-                            <div class="restaurant-tags mb-3">
-                                <span class="badge rounded-pill bg-light text-dark me-1">Món Hàn Quốc</span>
-                                <span class="badge rounded-pill bg-light text-dark me-1">BBQ</span>
-                                <span class="badge rounded-pill bg-light text-dark">Buffet</span>
-                            </div>
-                            <a href="DetailsDiner.html" class="btn btn-outline-danger rounded-pill">
-                                Xem chi
-                                tiết
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            }
         </div>
     </div>
 </section>
+<section class="popular-restaurants mb-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">Nhà Hàng Nổi Bật</h2>
+        <button id="toggleStoresBtn" class="btn btn-outline-danger rounded-pill">Xem tất cả</button>
+    </div>
+    <div class="row g-4" id="storeList">
+        @if (Model.Stores != null && Model.Stores.Any())
+        {
+            var storeIndex = 0;
+            @foreach (var store in Model.Stores)
+            {
+                <div class="col-lg-6 store-card @(storeIndex >= 2 ? "d-none" : "")" data-aos="fade-up">
+                    <div class="restaurant-card card border-0 shadow-sm hover-scale">
+                        <div class="row g-0">
+                            <div class="col-md-4">
+                                <img src="@(!string.IsNullOrEmpty(store.Avatar) ? store.Avatar : "/images/no-image.png")"
+                                     class="img-fluid rounded-start h-100" style="object-fit: cover;" alt="@store.Name">
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="card-title fw-bold mb-1">@store.Name</h5>
+                                        <span class="badge bg-success">
+                                            Mở cửa
+                                        </span>
 
-<!-- Featured Products Section -->
+                                    </div>
+                                    <p class="card-text text-muted small mb-2 text-truncate-1">
+                                        <i class="bi bi-geo-alt-fill icon-sm"></i> @store.Address
+                                    </p>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="rating text-warning me-2">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                <i class="bi @(i <= Math.Round(store.Rating) ? "bi-star-fill" : "bi-star") icon-sm"></i>
+                                            }
+                                        </div>
+                                        <span class="text-muted small">(@store.Rating.ToString("0.0") điểm)</span>
+                                    </div>
+                                    <a asp-controller="Store" asp-action="Details" asp-route-id="@store.Id"
+                                       class="btn btn-outline-danger rounded-pill">Xem chi tiết</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                storeIndex++;
+            }
+
+        }
+        else
+        {
+            <p class="text-muted">Hiện chưa có cửa hàng nổi bật.</p>
+        }
+    </div>
+</section>
+
+
 <section class="featured-products mb-3">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="fw-bold mb-0">Sản Phẩm Nổi Bật</h2>
-        <a href="Products.html" class="btn btn-outline-danger rounded-pill">Xem tất cả</a>
+        <button id="toggleProductsBtn" class="btn btn-outline-danger rounded-pill">Xem tất cả</button>
     </div>
-    <div class="row g-4">
-        <!-- Product Card 1 -->
-        <div class="col-lg-3 col-md-4 col-sm-6" data-aos="fade-up">
-            <div class="product-card card h-100 border-0 shadow-sm hover-scale">
-                <div class="position-relative">
-                    <img src="https://i.pinimg.com/736x/9d/3f/fa/9d3ffa34744058f4925bb23cf6db72b4.jpg"
-                         class="card-img-top" style="height: 200px; object-fit: cover;" alt="Product">
-                    <div class="product-badge bg-danger text-white position-absolute top-0 end-0 m-2 px-2 py-1 rounded-pill">
-                        -20%
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="badge bg-light text-danger">Món Việt Nam</span>
-                        <div class="rating text-warning">
-                            <i class="bi bi-star-fill icon-sm"></i>
-                            <span class="ms-1 text-dark">4.8</span>
+    <div class="row g-4" id="productList">
+        @if (Model.FeaturedProducts != null && Model.FeaturedProducts.Any())
+        {
+            var productIndex = 0;
+            foreach (var product in Model.FeaturedProducts)
+            {
+                <div class="col-lg-3 col-md-4 col-sm-6 product-card @(productIndex >= 4 ? "d-none" : "")" data-aos="fade-up">
+                    <div class="product-card card h-100 border-0 shadow-sm hover-scale">
+                        <div class="position-relative">
+                            <img src="@product.MainImage" class="card-img-top" style="height: 200px; object-fit: cover;" alt="@product.Name" />
+                            <div class="product-badge bg-danger text-white position-absolute top-0 end-0 m-2 px-2 py-1 rounded-pill">
+                                -20%
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-light text-danger">@product.CategoryName</span>
+                                <div class="rating text-warning">
+                                    <i class="bi bi-star-fill icon-sm"></i>
+                                    <span class="ms-1 text-dark">@product.Rating.ToString("0.0")</span>
+                                </div>
+                            </div>
+                            <h5 class="card-title fw-bold mb-1 text-truncate-1">@product.Name</h5>
+                            <p class="card-text text-muted small mb-2 text-truncate-1">@product.StoreName</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="text-danger fw-bold">@product.Price.ToString("N0")đ</span>
+                                </div>
+                                <button class="btn btn-crimson btn-sm rounded-pill">
+                                    <i class="bi bi-cart-plus icon-sm"></i> Thêm
+                                </button>
+                            </div>
                         </div>
                     </div>
-                    <h5 class="card-title fw-bold mb-1 text-truncate-1">Phở Bò Hà Nội</h5>
-                    <p class="card-text text-muted small mb-2 text-truncate-1">Nhà hàng Phở Ngon</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="text-danger fw-bold">45.000đ</span>
-                            <span class="text-muted text-decoration-line-through small">55.000đ</span>
-                        </div>
-                        <button class="btn btn-crimson btn-sm rounded-pill">
-                            <i class="bi bi-cart-plus icon-sm"></i> Thêm
-                        </button>
-                    </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Product Card 2 -->
-        <div class="col-lg-3 col-md-4 col-sm-6" data-aos="fade-up" data-aos-delay="100">
-            <div class="product-card card h-100 border-0 shadow-sm hover-scale">
-                <div class="position-relative">
-                    <img src="https://i.pinimg.com/736x/27/e2/9a/27e29aa74fad35945aa23fdc0c54527a.jpg"
-                         class="card-img-top" style="height: 200px; object-fit: cover;" alt="Product">
-
-                </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="badge bg-light text-danger">Món Hàn Quốc</span>
-                        <div class="rating text-warning">
-                            <i class="bi bi-star-fill icon-sm"></i>
-                            <span class="ms-1 text-dark">4.7</span>
-                        </div>
-                    </div>
-                    <h5 class="card-title fw-bold mb-1 text-truncate-1">Kim Chi Cải Thảo</h5>
-                    <p class="card-text text-muted small mb-2 text-truncate-1">Korean Food Store</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="text-danger fw-bold">65.000đ</span>
-                        </div>
-                        <button class="btn btn-crimson btn-sm rounded-pill">
-                            <i class="bi bi-cart-plus icon-sm"></i> Thêm
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Product Card 3 -->
-        <div class="col-lg-3 col-md-4 col-sm-6" data-aos="fade-up" data-aos-delay="200">
-            <div class="product-card card h-100 border-0 shadow-sm hover-scale">
-                <div class="position-relative">
-                    <img src="https://i.pinimg.com/736x/97/a4/3c/97a43cbb55493f2439b55468798a77cc.jpg"
-                         class="card-img-top" style="height: 200px; object-fit: cover;" alt="Product">
-                    <div class="product-badge bg-success text-white position-absolute top-0 end-0 m-2 px-2 py-1 rounded-pill">
-                        Mới
-                    </div>
-
-                </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="badge bg-light text-danger">Món Nhật Bản</span>
-                        <div class="rating text-warning">
-                            <i class="bi bi-star-fill icon-sm"></i>
-                            <span class="ms-1 text-dark">4.9</span>
-                        </div>
-                    </div>
-                    <h5 class="card-title fw-bold mb-1 text-truncate-1">Sushi Cá Hồi</h5>
-                    <p class="card-text text-muted small mb-2 text-truncate-1">Sushi Express</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="text-danger fw-bold">85.000đ</span>
-                        </div>
-                        <button class="btn btn-crimson btn-sm rounded-pill">
-                            <i class="bi bi-cart-plus icon-sm"></i> Thêm
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Product Card 4 -->
-        <div class="col-lg-3 col-md-4 col-sm-6" data-aos="fade-up" data-aos-delay="300">
-            <div class="product-card card h-100 border-0 shadow-sm hover-scale">
-                <div class="position-relative">
-                    <img src="https://i.pinimg.com/736x/67/e9/f2/67e9f28cc9b02a92703a45a3c4c88cc9.jpg"
-                         class="card-img-top" style="height: 200px; object-fit: cover;" alt="Product">
-
-                </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="badge bg-light text-danger">Món Âu</span>
-                        <div class="rating text-warning">
-                            <i class="bi bi-star-fill icon-sm"></i>
-                            <span class="ms-1 text-dark">4.6</span>
-                        </div>
-                    </div>
-                    <h5 class="card-title fw-bold mb-1 text-truncate-1">Pasta Carbonara</h5>
-                    <p class="card-text text-muted small mb-2 text-truncate-1">Italian Kitchen</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="text-danger fw-bold">95.000đ</span>
-                        </div>
-                        <button class="btn btn-crimson btn-sm rounded-pill">
-                            <i class="bi bi-cart-plus icon-sm"></i> Thêm
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+                productIndex++;
+            }
+        }
+        else
+        {
+            <p class="text-muted">Hiện chưa có sản phẩm nổi bật.</p>
+        }
     </div>
-</section> <!-- Hot Trend Categories Section -->
+</section>
 
+
+<!-- Trend Categories -->
 <section class="hot-trend mb-3">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div class="d-flex align-items-center">
@@ -415,231 +228,126 @@
         </div>
     </div>
     <div class="row g-4">
-        <!-- Trend Category 1 -->
-        <div class="col-lg-3 col-md-6" data-aos="fade-up">
-            <div class="trend-category-card position-relative overflow-hidden rounded-4">
-                <div class="trend-category-image">
-                    <img src="https://i.imgur.com/JfVGmCK.jpeg" class="w-100"
-                         alt="Lẩu">
-                    <div class="trend-category-overlay"></div>
-                </div>
-                <div class="trend-category-content text-center text-white">
-                    <div class="trend-category-icon mb-3">
-                        <i class="bi bi-cup-hot-fill icon-lg"></i>
+        @foreach (var product in Model.SuggestedProducts.Take(4))
+        {
+            <div class="col-xl-3 col-lg-4 col-md-6">
+                <div class="product-card card h-100 border-0 shadow-sm hover-scale">
+                    <div class="position-relative">
+                        <img src="@product.MainImage" class="card-img-top"
+                             style="height: 200px; object-fit: cover;" alt="@product.Name" />
                     </div>
-                    <h3 class="trend-category-title mb-2">Món Lẩu</h3>
-                    <p class="trend-category-stat mb-3">
-                        <span class="badge bg-danger me-2">Top 1</span>
-                        <span>2.5K+ món ăn</span>
-                    </p>
-                    <a href="#" class="btn btn-light rounded-pill px-4">Khám phá ngay</a>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge bg-light text-danger">@product.CategoryName</span>
+                            <div class="rating text-warning">
+                                <i class="bi bi-star-fill icon-sm"></i>
+                                <span class="ms-1 text-dark">@product.Rating.ToString("0.0")</span>
+                            </div>
+                        </div>
+                        <h5 class="card-title fw-bold mb-1 text-truncate-1">@product.Name</h5>
+                        <p class="card-text text-muted small mb-2 text-truncate-1">@product.StoreName</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-danger fw-bold">@product.Price.ToString("N0")đ</span>
+                            </div>
+                            <button class="btn btn-crimson btn-sm rounded-pill">
+                                <i class="bi bi-cart-plus icon-sm"></i> Thêm
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Trend Category 2 -->
-        <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
-            <div class="trend-category-card position-relative overflow-hidden rounded-4">
-                <div class="trend-category-image">
-                    <img src="https://i.imgur.com/dGWZL8s.jpeg" class="w-100"
-                         alt="Nướng">
-                    <div class="trend-category-overlay"></div>
-                </div>
-                <div class="trend-category-content text-center text-white">
-                    <div class="trend-category-icon mb-3">
-                        <i class="bi bi-fire icon-lg"></i>
-                    </div>
-                    <h3 class="trend-category-title mb-2">Món Nướng</h3>
-                    <p class="trend-category-stat mb-3">
-                        <span class="badge bg-danger me-2">Top 2</span>
-                        <span>2.1K+ món ăn</span>
-                    </p>
-                    <a href="#" class="btn btn-light rounded-pill px-4">Khám phá ngay</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Trend Category 3 -->
-        <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
-            <div class="trend-category-card position-relative overflow-hidden rounded-4">
-                <div class="trend-category-image">
-                    <img src="https://i.imgur.com/Vw3RXn8.jpeg" class="w-100"
-                         alt="Hàn Quốc">
-                    <div class="trend-category-overlay"></div>
-                </div>
-                <div class="trend-category-content text-center text-white">
-                    <div class="trend-category-icon mb-3">
-                        <i class="bi bi-globe-asia-australia icon-lg"></i>
-                    </div>
-                    <h3 class="trend-category-title mb-2">Món Hàn</h3>
-                    <p class="trend-category-stat mb-3">
-                        <span class="badge bg-danger me-2">Top 3</span>
-                        <span>1.8K+ món ăn</span>
-                    </p>
-                    <a href="#" class="btn btn-light rounded-pill px-4">Khám phá ngay</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Trend Category 4 -->
-        <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
-            <div class="trend-category-card position-relative overflow-hidden rounded-4">
-                <div class="trend-category-image">
-                    <img src="https://i.imgur.com/Hcbqys9.jpeg" class="w-100"
-                         alt="Nhật Bản">
-                    <div class="trend-category-overlay"></div>
-                </div>
-                <div class="trend-category-content text-center text-white">
-                    <div class="trend-category-icon mb-3">
-                        <i class="bi bi-flower1 icon-lg"></i>
-                    </div>
-                    <h3 class="trend-category-title mb-2">Món Nhật</h3>
-                    <p class="trend-category-stat mb-3">
-                        <span class="badge bg-danger me-2">Top 4</span>
-                        <span>1.5K+ món ăn</span>
-                    </p>
-                    <a href="#" class="btn btn-light rounded-pill px-4">Khám phá ngay</a>
-                </div>
-            </div>
-        </div>
+        }
     </div>
+
 </section>
 
-<!-- All Products Section -->
+
 <section class="all-products mb-3">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="fw-bold mb-0">Gợi ý cho bạn</h2>
-        <div class="d-flex align-items-center">
-            <a href="Products.html" class="btn btn-outline-danger rounded-pill">Xem tất cả</a>
-        </div>
     </div>
-    <div class="row g-4">
-        <!-- Product Card 1 -->
-        <div class="col-xl-3 col-lg-4 col-md-6" data-aos="fade-up">
-            <div class="product-card card h-100 border-0 shadow-sm hover-scale">
-                <div class="position-relative">
-                    <img src="https://i.pinimg.com/736x/51/67/99/51679964424ad36d8cd3f01e391e6720.jpg"
-                         class="card-img-top" style="height: 200px; object-fit: cover;" alt="Product">
-                    <div class="product-badge bg-danger text-white position-absolute top-0 end-0 m-2 px-2 py-1 rounded-pill">
-                        -30%
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="badge bg-light text-danger">Món Lẩu</span>
-                        <div class="rating text-warning">
-                            <i class="bi bi-star-fill icon-sm"></i>
-                            <span class="ms-1 text-dark">4.9</span>
-                        </div>
-                    </div>
-                    <h5 class="card-title fw-bold mb-1 text-truncate-1">Lẩu Thái Chua Cay</h5>
-                    <p class="card-text text-muted small mb-2 text-truncate-1">Nhà hàng Lẩu Thái</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="text-danger fw-bold">175.000đ</span>
-                            <span class="text-muted text-decoration-line-through small">250.000đ</span>
-                        </div>
-                        <button class="btn btn-crimson btn-sm rounded-pill">
-                            <i class="bi bi-cart-plus icon-sm"></i> Thêm
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Product Card 2 -->
-        <div class="col-xl-3 col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
-            <div class="product-card card h-100 border-0 shadow-sm hover-scale">
-                <div class="position-relative">
-                    <img src="https://i.pinimg.com/736x/32/c0/54/32c05405e98bf5f4e8c3a7d2e213dade.jpg"
-                         class="card-img-top" style="height: 200px; object-fit: cover;" alt="Product">
-                    <div class="product-badge bg-success text-white position-absolute top-0 end-0 m-2 px-2 py-1 rounded-pill">
-                        Mới
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="badge bg-light text-danger">Món Nướng</span>
-                        <div class="rating text-warning">
-                            <i class="bi bi-star-fill icon-sm"></i>
-                            <span class="ms-1 text-dark">4.7</span>
+    @if (Model.SuggestedProducts != null && Model.SuggestedProducts.Any())
+    {
+        <div class="row g-4">
+            @foreach (var product in Model.SuggestedProducts.Take(4))
+            {
+                <div class="col-xl-3 col-lg-4 col-md-6">
+                    <div class="product-card card h-100 border-0 shadow-sm hover-scale">
+                        <div class="position-relative">
+                            <img src="@product.MainImage" class="card-img-top"
+                                 style="height: 200px; object-fit: cover;" alt="@product.Name" />
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-light text-danger">@product.CategoryName</span>
+                                <div class="rating text-warning">
+                                    <i class="bi bi-star-fill icon-sm"></i>
+                                    <span class="ms-1 text-dark">@product.Rating.ToString("0.0")</span>
+                                </div>
+                            </div>
+                            <h5 class="card-title fw-bold mb-1 text-truncate-1">@product.Name</h5>
+                            <p class="card-text text-muted small mb-2 text-truncate-1">@product.StoreName</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="text-danger fw-bold">@product.Price.ToString("N0")đ</span>
+                                </div>
+                                <button class="btn btn-crimson btn-sm rounded-pill">
+                                    <i class="bi bi-cart-plus icon-sm"></i> Thêm
+                                </button>
+                            </div>
                         </div>
                     </div>
-                    <h5 class="card-title fw-bold mb-1 text-truncate-1">Sườn Nướng BBQ</h5>
-                    <p class="card-text text-muted small mb-2 text-truncate-1">Quán Nướng 68</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="text-danger fw-bold">165.000đ</span>
-                        </div>
-                        <button class="btn btn-crimson btn-sm rounded-pill">
-                            <i class="bi bi-cart-plus icon-sm"></i> Thêm
-                        </button>
-                    </div>
                 </div>
-            </div>
+            }
         </div>
-
-        <!-- Product Card 3 -->
-        <div class="col-xl-3 col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
-            <div class="product-card card h-100 border-0 shadow-sm hover-scale">
-                <div class="position-relative">
-                    <img src="https://i.pinimg.com/736x/0e/0f/eb/0e0febf746d99bcdbbf7c8c688b86bb7.jpg"
-                         class="card-img-top" style="height: 200px; object-fit: cover;" alt="Product">
-                </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="badge bg-light text-danger">Món Chay</span>
-                        <div class="rating text-warning">
-                            <i class="bi bi-star-fill icon-sm"></i>
-                            <span class="ms-1 text-dark">4.8</span>
-                        </div>
-                    </div>
-                    <h5 class="card-title fw-bold mb-1 text-truncate-1">Cơm Chay Thập Cẩm</h5>
-                    <p class="card-text text-muted small mb-2 text-truncate-1">Nhà Hàng Chay An Nhiên</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="text-danger fw-bold">85.000đ</span>
-                        </div>
-                        <button class="btn btn-crimson btn-sm rounded-pill">
-                            <i class="bi bi-cart-plus icon-sm"></i> Thêm
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Product Card 4 -->
-        <div class="col-xl-3 col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
-            <div class="product-card card h-100 border-0 shadow-sm hover-scale">
-                <div class="position-relative">
-                    <img src="https://i.pinimg.com/736x/67/e9/f2/67e9f28cc9b02a92703a45a3c4c88cc9.jpg"
-                         class="card-img-top" style="height: 200px; object-fit: cover;" alt="Product">
-                    <div class="product-badge bg-danger text-white position-absolute top-0 end-0 m-2 px-2 py-1 rounded-pill">
-                        -15%
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="badge bg-light text-danger">Món Âu</span>
-                        <div class="rating text-warning">
-                            <i class="bi bi-star-fill icon-sm"></i>
-                            <span class="ms-1 text-dark">4.6</span>
-                        </div>
-                    </div>
-                    <h5 class="card-title fw-bold mb-1 text-truncate-1">Steak Bò Mỹ</h5>
-                    <p class="card-text text-muted small mb-2 text-truncate-1">Western Cuisine</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="text-danger fw-bold">425.000đ</span>
-                            <span class="text-muted text-decoration-line-through small">500.000đ</span>
-                        </div>
-                        <button class="btn btn-crimson btn-sm rounded-pill">
-                            <i class="bi bi-cart-plus icon-sm"></i> Thêm
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    }
+    else
+    {
+        <p class="text-muted">Chưa có sản phẩm gợi ý.</p>
+    }
 </section>
 
+
+
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // --- Cửa hàng nổi bật ---
+            const storeBtn = document.getElementById("toggleStoresBtn");
+            const storeCards = document.querySelectorAll(".store-card");
+            let storeExpanded = false;
+            const defaultStoreVisible = 2;
+
+            storeBtn.addEventListener("click", function () {
+                storeExpanded = !storeExpanded;
+                storeCards.forEach((card, index) => {
+                    if (index >= defaultStoreVisible) {
+                        card.classList.toggle("d-none", !storeExpanded);
+                    }
+                });
+                storeBtn.textContent = storeExpanded ? "Thu gọn" : "Xem tất cả";
+            });
+
+            // --- Sản phẩm nổi bật ---
+            const btn = document.getElementById("toggleProductsBtn");
+            // CHỈ bắt các thẻ trong #productList, không đụng "Gợi ý cho bạn"
+            const cards = document.querySelectorAll("#productList .product-card");
+            let expanded = false;
+
+            btn.addEventListener("click", function () {
+                expanded = !expanded;
+                cards.forEach((card, index) => {
+                    if (!expanded && index >= 4) {
+                        card.classList.add("d-none");
+                    } else {
+                        card.classList.remove("d-none");
+                    }
+                });
+                btn.textContent = expanded ? "Thu gọn" : "Xem tất cả";
+            });
+        });
+    </script>
+}

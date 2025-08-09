@@ -50,7 +50,7 @@ namespace DATN_GO.Controllers
             var allVariantOptions = new Dictionary<int, List<VariantWithValuesViewModel>>();
             var allVariantCombinations = new Dictionary<int, List<VariantCombinationViewModel>>();
             var allStores = new Dictionary<int, Stores>();
-
+                
             foreach (var product in products)
             {
                 productCards.Add(product);
@@ -159,7 +159,6 @@ namespace DATN_GO.Controllers
             var allImages = new List<string>();
             if (!string.IsNullOrEmpty(product.MainImage))
                 allImages.Add(product.MainImage);
-
             if (productvariant != null)
             {
                 foreach (var variant in productvariant)
@@ -171,8 +170,9 @@ namespace DATN_GO.Controllers
                 }
             }
 
+
             ViewBag.Images = allImages;
-            
+
             // Lấy cửa hàng
             var store = await _storeService.GetStoreByIdAsync(product.StoreId);
             if (store != null)
@@ -212,6 +212,7 @@ namespace DATN_GO.Controllers
 
             return View(product);
         }
+
 
 
     }
