@@ -59,7 +59,8 @@ namespace DATN_API.Services
                     var citizenId = first.TryGetProperty("id", out var idProp) ? idProp.GetString() : null;
                     var name = first.TryGetProperty("name", out var nameProp) ? nameProp.GetString() : null;
                     var address = first.TryGetProperty("address", out var addrProp) ? addrProp.GetString() : null;
-                    var mapped = new {
+                    var mapped = new
+                    {
                         citizenIdentityCard = citizenId,
                         representativeName = name,
                         address = address
@@ -74,6 +75,7 @@ namespace DATN_API.Services
                 return result;
             }
         }
+
 
 
 
@@ -102,7 +104,12 @@ namespace DATN_API.Services
                     BankAccountOwner = request.BankAccountOwner,
                     Status = StoreStatus.PendingApproval,
                     CreateAt = DateTime.Now,
-                    UpdateAt = DateTime.Now
+                    UpdateAt = DateTime.Now,
+
+                    // Các trường mới 
+                    Province = request.Province,
+                    District = request.District,
+                    Ward = request.Ward
                 };
                 _context.Stores.Add(store);
             }
@@ -118,11 +125,16 @@ namespace DATN_API.Services
                 store.BankAccountOwner = request.BankAccountOwner;
                 store.Status = StoreStatus.PendingApproval;
                 store.UpdateAt = DateTime.Now;
-            }
 
+                // Các trường mới
+                store.Province = request.Province;
+                store.District = request.District;
+                store.Ward = request.Ward;
+            }
 
             _context.SaveChanges();
             return new OkObjectResult(new { message = "Lưu thông tin thành công." });
         }
+
     }
 }

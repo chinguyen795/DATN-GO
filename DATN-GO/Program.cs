@@ -64,6 +64,7 @@ builder.Services.AddScoped<ProductVariantService>();
 builder.Services.AddScoped<VariantService>();
 builder.Services.AddScoped<VariantValueService>();
 builder.Services.AddScoped<VariantCompositionService>();
+builder.Services.AddScoped<BlogService>();
 // Đăng ký HttpClient cho các Service
 builder.Services.AddHttpClient<AuthenticationService>();
 builder.Services.AddHttpClient<UserService>();
@@ -74,6 +75,7 @@ builder.Services.AddHttpClient<StoreService>();
 builder.Services.AddHttpClient<OrderService>();
 builder.Services.AddHttpClient<DecoratesService>();
 builder.Services.AddHttpClient<CartService>();
+builder.Services.AddHttpClient<BlogService>();
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>

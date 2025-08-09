@@ -4,39 +4,42 @@
     ViewData["UseContainer"] = false;
 }
 
-<div class="container mt-2">
-    <div class="row align-items-center pt-1 pb-2 mx-0">
-        <div class="col-auto">
-            <a href="#" class="btn btn-outline-danger">
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div>
+            <a asp-controller="Profile" asp-action="Index" class="btn btn-outline-danger" style="text-transform: capitalize;">
                 <i class="bi bi-arrow-left me-1"></i>Quay lại
             </a>
         </div>
-        <div class="col text-center">
-            <h3 class="text-danger m-0">Đăng ký bán hàng</h3>
+        <div class="col-lg-8 mb-3">
+            <div class="d-flex align-items-center justify-content-between pt-1 pb-2 mx-0">
+                <div class="col-12 text-center">
+                    <h3 class="text-danger m-0">ĐĂNG KÝ BÁN HÀNG</h3>
+                </div>
+            </div>
         </div>
-        <div class="col-auto d-none d-md-block"></div>
     </div>
 </div>
 
-<div class="bg-light">
+<div class="mb-5">
     <div class="row justify-content-center">
         <div class="col-lg-8">
-            <div class="bg-white rounded shadow-sm">
+            <div class="card border border-2 rounded-3">
                 <form action="/SalesRegistration/SalesRegistration" method="post" enctype="multipart/form-data">
                     @Html.AntiForgeryToken()
-                    <div class="mb-3 mx-4">
-                        
-                            <label class="form-label">Ảnh đại diện</label>
-                        <input type="file" asp-for="Avatar" class="filepond avatar-pond" name="Avatar" id="avatarInput"
-                                   accept="image/*" />
+                    <div class="mb-4 mx-4 mt-2">
 
-                            <label class="form-label">Ảnh bìa</label>
+                        <label class="form-label">Ảnh đại diện</label>
+                        <input type="file" asp-for="Avatar" class="filepond avatar-pond" name="Avatar" id="avatarInput"
+                               accept="image/*" />
+
+                        <label class="form-label">Ảnh bìa</label>
                         <input type="file" asp-for="CoverPhoto" class="filepond cover-pond" name="CoverPhoto" id="coverInput"
-                                   accept="image/*" />
+                               accept="image/*" />
                     </div>
 
-                <div class="p-4">
-                  
+                    <div class="p-4">
+
                         <!-- Tên cửa hàng -->
                         <div class="mb-4">
                             <label class="form-label">Tên cửa hàng  <span class="text-danger">*</span></label>
@@ -140,59 +143,161 @@
                                         @Html.ValidationMessageFor(m => m.Bank, "", new { @class = "text-danger" })
                                     </div>
 
-                                    
+
                                 </div>
                             </div>
                         </div>
 
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-crimson">
+                            <button type="submit" class="btn btn-crimson" style="text-transform: capitalize;">
                                 <i class="bi bi-shop me-2"></i>Đăng ký
                             </button>
                         </div>
-                    
-                </div> 
+
+                    </div>
                 </form>
-            </div> 
-        </div> 
-    </div> 
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script>
-function handleOcrImageChange(input) {
-    if (input.files && input.files[0]) {
-        // Hiển thị preview ảnh
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            const img = document.getElementById('idFrontImg');
-            img.src = e.target.result;
-            img.classList.remove('d-none');
-        };
-        reader.readAsDataURL(input.files[0]);
+    (function () {
+      const provinceSelect = document.getElementById('provinceSelect');
+      const districtSelect = document.getElementById('districtSelect');
+      const wardSelect = document.getElementById('wardSelect');
 
-        // Gửi ảnh lên server để OCR
-        var formData = new FormData();
-        formData.append('ImageFile', input.files[0]);
-        fetch('/SalesRegistration/ExtractOcr', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('OCR response:', data);
-            if (data.success && data.data) {
-                document.getElementById('representativeName').value = data.data.representativeName || '';
-                document.getElementById('citizenIdentityCard').value = data.data.citizenIdentityCard || '';
-                document.getElementById('address').value = data.data.address || '';
-            } else {
-                alert(data.message || 'Không nhận diện được thông tin.');
+      if (!provinceSelect || !districtSelect || !wardSelect) return;
+
+      let LOCATIONS = [];
+
+      // Helpers
+      function clearSelect(sel, placeholder) {
+        sel.innerHTML = '';
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = placeholder || '-- Chọn --';
+        sel.appendChild(opt);
+      }
+
+      function fillSelect(sel, items, textKey) {
+        items.forEach(item => {
+          const opt = document.createElement('option');
+          const text = typeof item === 'string' ? item : item[textKey];
+          opt.value = text;
+          opt.textContent = text;
+          sel.appendChild(opt);
+        });
+      }
+
+      function findCityByName(name) {
+        return LOCATIONS.find(c => c.CityName === name);
+      }
+
+      function findDistrictByName(city, name) {
+        return (city?.Districts || []).find(d => d.DistrictName === name);
+      }
+
+      // Load JSON + hydrate 3 cấp
+      async function initLocations() {
+        try {
+          const res = await fetch('/data/locations.json', { cache: 'no-store' });
+          if (!res.ok) throw new Error('Failed to load locations.json');
+          LOCATIONS = await res.json();
+
+          // Province
+          clearSelect(provinceSelect, '-- Chọn Tỉnh/Thành phố --');
+          fillSelect(provinceSelect, LOCATIONS, 'CityName');
+
+          // Preselect nếu model đã có value (Edit lại form)
+          const preProvince = provinceSelect.value?.trim();
+          const preDistrict = districtSelect.value?.trim();
+          const preWard = wardSelect.value?.trim();
+
+          // District
+          clearSelect(districtSelect, '-- Chọn Quận/Huyện --');
+          clearSelect(wardSelect, '-- Chọn Phường/Xã --');
+
+          if (preProvince) {
+            const city = findCityByName(preProvince);
+            if (city) {
+              fillSelect(districtSelect, city.Districts, 'DistrictName');
+              if (preDistrict) {
+                districtSelect.value = preDistrict;
+                const district = findDistrictByName(city, preDistrict);
+                if (district) {
+                  clearSelect(wardSelect, '-- Chọn Phường/Xã --');
+                  fillSelect(wardSelect, district.Wards, 'WardName');
+                  if (preWard) wardSelect.value = preWard;
+                }
+              }
             }
-        })
-        .catch(() => alert('Lỗi khi gửi ảnh nhận diện.'));
+          }
+        } catch (err) {
+          console.error('[locations] load error:', err);
+        }
+      }
+
+      // Events
+      provinceSelect.addEventListener('change', () => {
+        const city = findCityByName(provinceSelect.value);
+        clearSelect(districtSelect, '-- Chọn Quận/Huyện --');
+        clearSelect(wardSelect, '-- Chọn Phường/Xã --');
+        if (!city) return;
+        fillSelect(districtSelect, city.Districts, 'DistrictName');
+      });
+
+      districtSelect.addEventListener('change', () => {
+        const city = findCityByName(provinceSelect.value);
+        const district = findDistrictByName(city, districtSelect.value);
+        clearSelect(wardSelect, '-- Chọn Phường/Xã --');
+        if (!district) return;
+        fillSelect(wardSelect, district.Wards, 'WardName');
+      });
+
+      // Kickoff
+      document.addEventListener('DOMContentLoaded', initLocations);
+    })();
+</script>
+
+
+<script>
+    function handleOcrImageChange(input) {
+        if (input.files && input.files[0]) {
+            // Hiển thị preview ảnh
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = document.getElementById('idFrontImg');
+                img.src = e.target.result;
+                img.classList.remove('d-none');
+            };
+            reader.readAsDataURL(input.files[0]);
+
+            // Gửi ảnh lên server để OCR
+            var formData = new FormData();
+            formData.append('ImageFile', input.files[0]);
+            fetch('/SalesRegistration/ExtractOcr', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('OCR response:', data);
+                if (data.success && data.data) {
+                    document.getElementById('representativeName').value = data.data.representativeName || '';
+                    document.getElementById('citizenIdentityCard').value = data.data.citizenIdentityCard || '';
+                    document.getElementById('address').value = data.data.address || '';
+                } else {
+                    alert(data.message || 'Không nhận diện được thông tin.');
+                }
+            })
+            .catch(() => alert('Lỗi khi gửi ảnh nhận diện.'));
+        }
     }
-}
 
 </script>
+
 <link href="https://unpkg.com/filepond/dist/filepond.min.css" rel="stylesheet" />
 <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.css"
       rel="stylesheet" />
@@ -208,8 +313,10 @@ function handleOcrImageChange(input) {
     }
 
     .filepond--root.avatar-pond {
-        max-width: 180px; 
+        max-width: 180px;
         margin: 0 auto;
+    }
+
     .filepond--root.cover-pond {
         max-width: 100%;
     }
@@ -256,6 +363,3 @@ function handleOcrImageChange(input) {
         stylePanelLayout: 'compact'
     });
 </script>
-
-
-

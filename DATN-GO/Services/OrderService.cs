@@ -81,7 +81,23 @@ namespace DATN_GO.Service
                 return (false, null, ex.Message);
             }
         }
+        public async Task<OrderViewModel?> GetOrderDetailByIdAsync(int orderId, int userId)
+        {
+            try
+            {
+                // Gọi endpoint API có truyền cả userId để kiểm tra quyền
+                var response = await _httpClient.GetAsync($"{_baseUrl}orders/{orderId}/user/{userId}");
+                if (!response.IsSuccessStatusCode)
+                    return null;
 
+                var order = await response.Content.ReadFromJsonAsync<OrderViewModel>();
+                return order;
+            }
+            catch
+            {
+                return null;
+            }
+        }
         // Lấy chi tiết đơn hàng theo orderId (danh sách order detail ViewModel)
         // Nếu API trả về dạng List<OrderDetailsViewModel> hoặc có thể map như sau
         public async Task<(bool Success, List<OrderDetailViewModel> Data, string Message)> GetOrderDetailsByOrderIdAsync(int orderId)

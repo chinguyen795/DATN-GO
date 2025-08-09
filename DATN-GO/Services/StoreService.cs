@@ -1,14 +1,16 @@
 ﻿using DATN_GO.Models;
+using DATN_GO.ViewModels.Store;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using DATN_GO.Models;
-using Microsoft.AspNetCore.Http;
 
 namespace DATN_GO.Service
 {
@@ -26,13 +28,29 @@ namespace DATN_GO.Service
         public async Task<List<Stores>?> GetAllStoresAsync()
         {
             var response = await _httpClient.GetAsync($"{_baseUrl}Stores");
-            if (response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode)
             {
-                var json = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<List<Stores>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                Console.WriteLine($"Error fetching stores: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
+                return null;
             }
-            Console.WriteLine($"Error fetching stores: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
-            return null;
+
+            var json = await response.Content.ReadAsStringAsync();
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
+            };
+
+            var stores = JsonSerializer.Deserialize<List<Stores>>(json, options);
+
+            if (stores == null)
+            {
+                Console.WriteLine("[DEBUG] Deserialize store thất bại");
+                return null;
+            }
+
+            return stores;
         }
 
         public async Task<Stores?> GetStoreByIdAsync(int id)
@@ -192,6 +210,31 @@ namespace DATN_GO.Service
 
             return new Dictionary<int, int>();
         }
-        
+        // -- //
+
+        public async Task<List<StoreQuantityViewModel>> GetStoreQuantitiesAsync()
+        {
+            var response = await _httpClient.GetAsync($"{_baseUrl}Stores/quantities");
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"[DEBUG] Failed to call Stores/quantities: {response.StatusCode}");
+                return new();
+            }
+
+            var json = await response.Content.ReadAsStringAsync();
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+
+            return JsonSerializer.Deserialize<List<StoreQuantityViewModel>>(json, options) ?? new();
+        }
+
+
+
+
+
+
+
     }
 }

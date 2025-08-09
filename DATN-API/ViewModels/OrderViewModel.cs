@@ -25,7 +25,7 @@
         public List<OrderDetailViewModel> OrderDetails { get; set; } = new();
 
         public int TotalQuantity => OrderDetails.Sum(d => d.Quantity);
-        public decimal GrandTotal => TotalPrice + TotalQuantity + ShippingFee - (VoucherReduce ?? 0);
+        public decimal GrandTotal => TotalPrice + ShippingFee - (VoucherReduce ?? 0);
     }
 
     public class OrderDetailViewModel

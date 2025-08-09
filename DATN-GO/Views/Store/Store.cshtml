@@ -1,10 +1,11 @@
-﻿@model List<DATN_GO.Models.Stores>
+﻿@model List<DATN_GO.ViewModels.Store.StoreViewModel>
+
 
 @{
     ViewData["Title"] = "Store Page";
-    var quantityByStore = ViewBag.QuantityByStore as Dictionary<int, int> ?? new();
-    var cartQuantityByStore = ViewBag.CartQuantityByStore as Dictionary<int, int> ?? new();
 }
+
+
 <style>
     .rating-filter.active,
     .orders-filter.active {
@@ -20,11 +21,8 @@
 
 </style>
 
-
-
-
 <!-- Filter bar -->
-<div class="bg-danger rounded-3 mt-3 mb-5 py-3">
+<div class="bg-crimson rounded-3 mt-3 mb-3 py-3">
     <div class="d-flex flex-row align-items-center justify-content-between flex-wrap mx-2">
         <div class="text-white fw-bold me-2 my-auto">
             <button class="btn btn-outline-light d-lg-none me-2" type="button" data-bs-toggle="offcanvas"
@@ -48,19 +46,13 @@
                 <i class="bi bi-clock-history me-1"></i>
                 <span>Mới nhất</span>
             </button>
-            <select class="form-select fw-bold border-0 border-bottom bg-danger text-white"
-                    style="width: auto; min-width: 150px;" id="statusFilter">
-                <option class="text-dark" value="">Trạng thái</option>
-                <option class="text-dark" value="active">Đang hoạt động</option>
-                <option class="text-dark" value="inactive">Ngừng hoạt động</option>
-            </select>
         </div>
     </div>
 </div>
 
 <!-- Mobile Filter Offcanvas -->
 <div class="offcanvas offcanvas-start" tabindex="-1" id="filterOffcanvas">
-    <div class="offcanvas-header text-danger bg-light mx-0">
+    <div class="offcanvas-header text-crimson bg-light mx-0">
         <h5 class="offcanvas-title fw-bold">Bộ lọc</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
@@ -95,23 +87,8 @@
                 </select>
             </div>
 
-            <!-- Status Filter -->
-            <div class="mb-3">
-                <label class="form-label">
-                    <i class="bi bi-shop"></i> Trạng thái
-                </label>
-                <div class="d-grid gap-2">
-                    <button class="btn btn-outline-danger status-filter" type="button" data-status="open">
-                        <i class="bi bi-shop"></i> Đang mở cửa
-                    </button>
-                    <button class="btn btn-outline-danger status-filter" type="button" data-status="closed">
-                        <i class="bi bi-shop"></i> Đã đóng cửa
-                    </button>
-                </div>
-            </div>
-
             <!-- Apply Filters Button -->
-            <button class="btn btn-danger w-100" data-bs-dismiss="offcanvas">
+            <button class="btn btn-crimson w-100" data-bs-dismiss="offcanvas">
                 <i class="bi bi-funnel"></i> Áp dụng bộ lọc
             </button>
         </div>
@@ -128,27 +105,21 @@
             <div class="mb-3 d-flex">
                 <input type="text" class="form-control" name="search" id="searchInput"
                        value="@ViewBag.Search" placeholder="Tìm theo tên cửa hàng..." autocomplete="off" />
-                <button type="submit" class="btn btn-danger ms-2" id="searchBtn">
+                <button type="submit" class="btn btn-crimson ms-2" id="searchBtn">
                     <i class="bi bi-search"></i>
                 </button>
             </div>
         </form>
 
-
-
-
-
-
-
         <!-- Province Filter -->
         <div class="mb-3">
             <label for="provinceSelect" class="form-label">
-                <i class="bi bi-geo-alt-fill me-1 text-danger"></i> Tỉnh/Thành phố
+                <i class="bi bi-geo-alt-fill me-1 text-crimson"></i> Tỉnh/Thành phố
             </label>
             <select class="form-select"
                     id="provinceSelect"
                     data-live-search="true"
-                    data-style="btn-outline-danger"
+                    data-style="btn-outline-crimson"
                     data-width="100%">
                 <option value="">Tất cả địa điểm</option>
                 <option value="can-tho">Cần Thơ</option>
@@ -198,8 +169,7 @@
             </div>
         </div>
 
-
-        <button class="btn btn-danger w-100 mb-2" onclick="applyFilters()">
+        <button class="btn btn-crimson w-100 mb-2" onclick="applyFilters()" style="text-transform: capitalize;">
             <i class="bi bi-search"></i> Tìm kiếm
         </button>
         <!-- End of Store Filter -->
@@ -209,16 +179,40 @@
         <div class="row">
             @foreach (var store in Model)
             {
-                var statusValue = (int)store.Status;
-                var (statusText, statusClass, statusKey) = statusValue switch
+                var quantity = store.TotalProductQuantity;
+                var cartQuantity = store.TotalCartQuantity;
+                // Gán key trạng thái
+                var statusKey = store.Status switch
                 {
-                    1 => ("Đang hoạt động", "bg-success", "active"),
-                    0 => ("Ngừng hoạt động", "bg-danger", "inactive"),
-                    _ => ("Không rõ", "bg-secondary", "unknown")
+                    StoreStatus.Active => "active",
+                    StoreStatus.Inactive => "inactive",
+                    StoreStatus.PendingApproval => "pending",
+                    StoreStatus.NotApproved => "not-approved",
+                    StoreStatus.Rejected => "rejected",
+                    _ => "unknown"
                 };
 
-                var quantity = quantityByStore?.GetValueOrDefault(store.Id) ?? 0;
-                var cartQuantity = cartQuantityByStore?.GetValueOrDefault(store.Id) ?? 0;
+                // Gán class trạng thái
+                var statusClass = store.Status switch
+                {
+                    StoreStatus.Active => "bg-success",
+                    StoreStatus.Inactive => "bg-crimson",
+                    StoreStatus.PendingApproval => "bg-warning",
+                    StoreStatus.NotApproved => "bg-secondary",
+                    StoreStatus.Rejected => "bg-dark",
+                    _ => "bg-secondary"
+                };
+
+                // Hiển thị text trạng thái
+                string statusText = store.Status switch
+                {
+                    StoreStatus.Active => "Hoạt động",
+                    StoreStatus.Inactive => "Ngừng hoạt động",
+                    StoreStatus.PendingApproval => "Chờ duyệt",
+                    StoreStatus.NotApproved => "Chưa duyệt",
+                    StoreStatus.Rejected => "Từ chối",
+                    _ => "Không rõ"
+                };
 
                 <div class="col-lg-4 col-md-6 col-sm-6 mb-3 store-wrapper">
                     <div class="card h-100 store-card"
@@ -230,7 +224,7 @@
                          data-quantity="@quantity"
                          data-cart="@cartQuantity"
                          data-created-at="@store.CreateAt.ToString("yyyy-MM-ddTHH:mm:ss")">
-                        <a href="@Url.Action("Detail", "Store", new { storeId = store.Id })" class="text-decoration-none text-dark">
+                        <a href="@Url.Action("Detail", "Store", new { id = store.Id })" class="text-decoration-none text-dark">
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-4 align-items-center pt-2">
@@ -240,25 +234,25 @@
                                     <div class="col-8">
                                         <h5 class="fw-bold text-truncate">@store.Name</h5>
                                         <div class="d-flex align-items-center mb-1">
-                                            <i class="bi bi-geo-alt text-danger me-1"></i>
+                                            <i class="bi bi-geo-alt text-crimson me-1"></i>
                                             <p class="text-truncate mb-0 small">@store.Address</p>
                                         </div>
                                         <div class="d-flex align-items-center mb-2">
-                                            <i class="bi bi-shop text-danger me-1"></i>
+                                            <i class="bi bi-shop text-crimson me-1"></i>
                                             <span class="badge @statusClass ms-2">@statusText</span>
                                         </div>
                                         <div class="row text-nowrap">
                                             <div class="col-4 d-flex align-items-center">
                                                 <span class="fw-bold">@store.Rating.ToString("0.0")</span>
-                                                <i class="bi bi-star-fill text-danger ms-1"></i>
+                                                <i class="bi bi-star-fill text-crimson ms-1"></i>
                                             </div>
                                             <div class="col-4 d-flex align-items-center">
-                                                <span>@cartQuantity</span>
-                                                <i class="bi bi-cart-check-fill text-danger ms-1"></i>
+                                                <span>@store.TotalCartQuantity</span>
+                                                <i class="bi bi-cart-check-fill text-crimson ms-1"></i>
                                             </div>
                                             <div class="col-4 d-flex align-items-center">
-                                                <span>@quantity</span>
-                                                <i class="bi bi-box text-danger ms-1"></i>
+                                                <span>@store.TotalProductQuantity</span>
+                                                <i class="bi bi-box text-crimson ms-1"></i>
                                             </div>
                                         </div>
                                     </div>
@@ -266,10 +260,10 @@
                             </div>
                         </a>
                         <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center p-3">
-                            <a href="@Url.Action("Chat", "Chat", new { storeId = store.Id })" class="btn btn-outline-danger btn-sm">
+                            <a href="@Url.Action("Chat", "Chat", new { storeId = store.Id })" class="btn btn-outline-crimson btn-sm">
                                 <i class="bi bi-chat-dots"></i>
                             </a>
-                            <a href="@Url.Action("Detail", "Store", new { storeId = store.Id })" class="btn btn-danger flex-grow-1 ms-2">
+                            <a href="@Url.Action("Detail", "Store", new { id = store.Id })" class="btn btn-crimson flex-grow-1 ms-2" style="text-transform: capitalize;">
                                 <i class="bi bi-shop me-2"></i>Xem cửa hàng
                             </a>
                         </div>
@@ -280,11 +274,19 @@
     </div>
 </div>
 
-
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-
 <script>
+    window.addEventListener("DOMContentLoaded", () => {
+        const toastMessage = '@TempData["ToastMessage"]';
+        const toastType = '@TempData["ToastType"]';
+
+        if (toastMessage && toastType === "warning") {
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        }
+    });
     $(document).ready(function () {
         const $input = $('#searchInput');
         const $form = $('#searchForm');
@@ -447,6 +449,42 @@
             sorted.show().each(function () {
                 $(this).parent().append(this);
             });
+
+    $('.rating-filter, .orders-filter').on('mouseleave', function (e) {
+        // Nếu vẫn còn di chuột sang 1 nút filter khác => bỏ qua
+        if ($(e.relatedTarget).closest('.rating-filter, .orders-filter').length) return;
+
+        const hasActive =
+            $('.rating-filter.active').length > 0 ||
+            $('.orders-filter.active').length > 0;
+
+        if (!hasActive) {
+            // Cho 1 nhịp ngắn để tránh giật (optional)
+            setTimeout(() => { location.reload(); }, 100);
+        }
+    });
+
+
+    function reloadIfNoActiveFilters() {
+        const hasActive =
+            $('.rating-filter.active').length > 0 ||
+            $('.orders-filter.active').length > 0;
+
+        if (!hasActive) {
+            setTimeout(() => { location.reload(); }, 100);
+        }
+    }
+
+    // Hook vào click sẵn có
+    $('.rating-filter').on('click', function () {
+        // code cũ của bạn đã toggle active rồi, mình chỉ gọi check thêm
+        reloadIfNoActiveFilters();
+    });
+    $('.orders-filter').on('click', function () {
+        // code cũ của bạn đã toggle active rồi, mình chỉ gọi check thêm
+        reloadIfNoActiveFilters();
+    });
+
         };
     });
 </script>

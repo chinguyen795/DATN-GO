@@ -15,6 +15,10 @@ namespace DATN_GO.ViewModels
         public string? BankAccount { get; set; }
         public string? Bank { get; set; }
         public string? BankAccountOwner { get; set; }
-    }
 
+        // ===== NEW =====
+        public string? Ward { get; set; }
+        public string? District { get; set; }
+        public string? Province { get; set; }
+    }
 }

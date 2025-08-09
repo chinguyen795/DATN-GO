@@ -1,45 +1,82 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using DATN_GO.Models;
-using System.Linq;
+﻿using DATN_GO.Models;
+using DATN_GO.Service;
 using DATN_GO.ViewModels.Store;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using System.Linq;
 
 namespace DATN_GO.Controllers
 {
     public class StoreController : Controller
     {
         private readonly HttpClient _http;
+        private readonly StoreService _storeService;
 
-        public StoreController(IHttpClientFactory factory)
+        public StoreController(IHttpClientFactory factory, StoreService storeService)
         {
             _http = factory.CreateClient();
-            _http.BaseAddress = new Uri("https://localhost:7096"); // Ensure the API URL is correct
+            _http.BaseAddress = new Uri("https://localhost:7096");
+            _storeService = storeService;
         }
 
-        // Display list of active stores only
         public async Task<IActionResult> Store(string search)
         {
-            var response = await _http.GetAsync("/api/Stores");
-            if (!response.IsSuccessStatusCode)
-                return View(new List<StoreAdminViewModel>());
+            var storeEntities = await _storeService.GetAllStoresAsync();
 
-            var json = await response.Content.ReadAsStringAsync();
-            var stores = JsonConvert.DeserializeObject<List<StoreAdminViewModel>>(json);
+            // Chỉ cho phép hiển thị Active & Inactive
+            var allowed = new[] { StoreStatus.Active };
+            storeEntities = storeEntities
+                .Where(s => allowed.Contains(s.Status))
+                .ToList();
 
-            // Lọc theo trạng thái active
-            var activeStores = stores.Where(store => store.Status == StoreStatus.Active).ToList();
-
-            // Nếu có chuỗi tìm kiếm, lọc theo tên
-            if (!string.IsNullOrEmpty(search))
+            if (storeEntities == null || storeEntities.Count == 0)
             {
-                search = search.ToLower(); // Convert to lowercase để tìm chính xác hơn
-                activeStores = activeStores
-                    .Where(store => store.Name != null && store.Name.ToLower().Contains(search))
+                Console.WriteLine("[DEBUG] Không có store nào.");
+                return View(new List<StoreViewModel>());
+            }
+
+            var quantities = await _storeService.GetStoreQuantitiesAsync();
+
+            var storeViewModels = storeEntities.Select(store =>
+            {
+                var matched = quantities.FirstOrDefault(q => q.StoreId == store.Id);
+                return new StoreViewModel
+                {
+                    Id = store.Id,
+                    UserId = store.UserId,
+                    Name = store.Name,
+                    RepresentativeName = store.RepresentativeName,
+                    Address = store.Address,
+                    Latitude = store.Latitude,
+                    Longitude = store.Longitude,
+                    Avatar = store.Avatar,
+                    Status = store.Status,
+                    Slug = store.Slug,
+                    CoverPhoto = store.CoverPhoto,
+                    Bank = store.Bank,
+                    BankAccount = store.BankAccount,
+                    BankAccountOwner = store.BankAccountOwner,
+                    Rating = store.Rating,
+                    CreateAt = store.CreateAt,
+                    UpdateAt = store.UpdateAt,
+                    TotalProductQuantity = matched?.TotalProductQuantity ?? 0,
+                    TotalCartQuantity = matched?.TotalCartQuantity ?? 0
+                };
+            }).ToList();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var s = search.ToLower();
+                storeViewModels = storeViewModels
+                    .Where(x => x.Name != null && x.Name.ToLower().Contains(s))
                     .ToList();
             }
 
-            return View(activeStores);
+            ViewBag.Search = search;
+            return View(storeViewModels);
         }
+
+
 
 
         public async Task<IActionResult> Detail(int id, string? search)
@@ -50,9 +87,6 @@ namespace DATN_GO.Controllers
 
             var storeJson = await storeResponse.Content.ReadAsStringAsync();
             var store = JsonConvert.DeserializeObject<StoreAdminViewModel>(storeJson);
-
-            if (store.Status != StoreStatus.Active)
-                return RedirectToAction("Diner");
 
             var productResponse = await _http.GetAsync($"/api/Products/store/{id}");
             if (!productResponse.IsSuccessStatusCode)

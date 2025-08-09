@@ -150,7 +150,16 @@ namespace DATN_API.Controllers
                 }).ToList() ?? new List<OrderDetailItemDto>()
             };
         }
+        [HttpGet("{id}/user/{userId}")]
+        public async Task<IActionResult> GetByIdForUser(int id, int userId)
+        {
+            var order = await _service.GetOrderDetailByIdAsync(id, userId);
 
+            if (order == null)
+                return NotFound();
+
+            return Ok(order);
+        }
         // OrdersController (API)
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetOrdersByUser(int userId)

@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using DATN_GO.Services; // Đảm bảo đúng namespace chứa các service
 using DATN_GO.Service;
-using DATN_GO.ViewModels; // Nếu có tách riêng interface
+using DATN_GO.ViewModels;
+using DATN_GO.Models; // Nếu có tách riêng interface
 
 namespace DATN_GO.Controllers
 {
@@ -15,6 +16,7 @@ namespace DATN_GO.Controllers
         private readonly VariantValueService _variantValueService;
         private readonly VariantCompositionService _variantCompositionService;
         private readonly PriceService _priceService;
+        private readonly CategoryService _categoryService;
 
         public ProductsController(
             ProductService productService,
@@ -24,7 +26,8 @@ namespace DATN_GO.Controllers
             VariantService variantService,
             VariantValueService variantValueService,
             VariantCompositionService variantCompositionService,
-            PriceService priceService)
+            PriceService priceService,
+            CategoryService categoryService)
         {
             _productService = productService;
             _productVariantService = productVariantService;
@@ -34,11 +37,108 @@ namespace DATN_GO.Controllers
             _variantValueService = variantValueService;
             _variantCompositionService = variantCompositionService;
             _priceService = priceService;
+            _categoryService = categoryService;
         }
 
-        [HttpGet]
-        public IActionResult Products()
+        public async Task<IActionResult> Products()
         {
+            var products = await _productService.GetAllProductsAsync();
+            var productCards = new List<Products>();
+
+            var allImages = new Dictionary<int, List<string>>();
+            var allMinMaxPrices = new Dictionary<int, MinMaxPriceResponse>();
+            var allVariantOptions = new Dictionary<int, List<VariantWithValuesViewModel>>();
+            var allVariantCombinations = new Dictionary<int, List<VariantCombinationViewModel>>();
+            var allStores = new Dictionary<int, Stores>();
+
+            foreach (var product in products)
+            {
+                productCards.Add(product);
+
+                var productVariants = await _productVariantService.GetByProductIdAsync(product.Id);
+                var variantCombinations = await _productVariantService.GetVariantCombinationsByProductIdAsync(product.Id);
+                var variantImages = await _productVariantService.GetImagesByProductIdAsync(product.Id);
+
+                var images = new List<string>();
+                if (!string.IsNullOrEmpty(product.MainImage))
+                    images.Add(product.MainImage);
+
+                if (productVariants != null)
+                {
+                    foreach (var variant in productVariants)
+                    {
+                        if (!string.IsNullOrEmpty(variant.Image))
+                            images.Add(variant.Image);
+                    }
+                }
+                allImages[product.Id] = images;
+
+                var store = await _storeService.GetStoreByIdAsync(product.StoreId);
+                if (store != null)
+                    allStores[product.Id] = store;
+
+                // ✅ Xử lý giá
+                if (productVariants != null && productVariants.Any())
+                {
+                    decimal min = productVariants.Min(v => v.Price);
+                    decimal max = productVariants.Max(v => v.Price);
+
+                    allMinMaxPrices[product.Id] = new MinMaxPriceResponse
+                    {
+                        IsVariant = true,
+                        MinPrice = min,
+                        MaxPrice = max,
+                        Price = min,
+                        OriginalPrice = max
+                    };
+                }
+                else
+                {
+
+
+                    allMinMaxPrices[product.Id] = new MinMaxPriceResponse
+                    {
+                        IsVariant = false,
+                        Price = product.CostPrice, // ✅ giữ null nếu không có giá
+                        OriginalPrice = null
+                    };
+                }
+
+                // ✅ Load variants & values
+                var variants = await _variantService.GetByProductIdAsync(product.Id);
+                var variantViewModels = new List<VariantWithValuesViewModel>();
+
+                foreach (var variant in variants)
+                {
+                    var values = await _variantValueService.GetByVariantIdAsync(variant.Id);
+
+                    variantViewModels.Add(new VariantWithValuesViewModel
+                    {
+                        VariantName = variant.VariantName,
+                        VariantType = variant.Type,
+                        Values = values.Select(v => new VariantValueItem
+                        {
+                            Id = v.Id,
+                            ValueName = v.ValueName,
+                            ColorHex = v.colorHex
+                        }).ToList()
+                    });
+                }
+
+                allVariantOptions[product.Id] = variantViewModels;
+                allVariantCombinations[product.Id] = variantCombinations;
+            }
+
+            ViewBag.ProductList = productCards;
+            ViewBag.ImagesDict = allImages;
+            ViewBag.MinMaxPriceDict = allMinMaxPrices;
+            ViewBag.VariantOptionsDict = allVariantOptions;
+            ViewBag.VariantCombinationsDict = allVariantCombinations;
+            ViewBag.StoreDict = allStores;
+
+            ViewBag.Categories = (await _categoryService.GetAllCategoriesAsync()).Data;
+            ViewBag.Provinces = new List<string> { "Cần Thơ", "TP. Hồ Chí Minh", "Hà Nội", "Đà Nẵng", "Tỉnh/TP khác" };
+
             return View();
         }
 

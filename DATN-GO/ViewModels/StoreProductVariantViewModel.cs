@@ -111,7 +111,8 @@ namespace DATN_GO.ViewModels
         public bool IsVariant { get; set; }
         public decimal? Price { get; set; }           
         public decimal? MinPrice { get; set; }      
-        public decimal? MaxPrice { get; set; }       
+        public decimal? MaxPrice { get; set; }
+        public decimal? OriginalPrice { get; set; }
     }
 
 }

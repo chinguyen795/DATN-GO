@@ -21,7 +21,7 @@
         <div class="p-3 border-bottom">
             <div class="d-flex align-items-center mb-3">
                 <img src="https://i.pinimg.com/736x/f0/cd/c4/f0cdc47ddb7f9dd5e86c3e7915c8b337.jpg" alt="Profile"
-                    class="rounded-circle me-2" style="width: 45px; height: 45px;">
+                     class="rounded-circle me-2" style="width: 45px; height: 45px;">
                 <div>
                     <h6 class="mb-0">Nguyễn Văn A</h6>
                     <small class="text-muted">nguyenvana</small>
@@ -37,12 +37,11 @@
                 </a>
             </li>
             <li class="nav-item mb-2">
-                <a asp-controller="MyOrders" asp-action="Index" class="nav-link text-dark">
-                    <i class="bi bi-box-seam me-2"></i> Đơn hàng của tôi
+                <a href="./Orders.html" class="nav-link text-dark">
+                    <i class="bi bi-box-seam me-2"></i>
+                    Đơn hàng của tôi
                 </a>
             </li>
-
-
             <li class="nav-item mb-2">
                 <a href="./Vouchers.html" class="nav-link text-dark">
                     <i class="bi bi-ticket-perforated me-2"></i>
@@ -73,11 +72,12 @@
 
 
 <div class="container-fluid">
+
     <div class="row">
         <!-- Button to toggle sidebar on mobile -->
         <div class="d-lg-none p-3">
             <button class="btn btn-outline-danger" type="button" data-bs-toggle="offcanvas"
-                data-bs-target="#sidebarMenu">
+                    data-bs-target="#sidebarMenu">
                 <i class="bi bi-list"></i>
             </button>
         </div>
@@ -88,7 +88,7 @@
                 <div class="p-3 border-bottom">
                     <div class="d-flex align-items-center mb-3">
                         <img src="https://i.pinimg.com/736x/f0/cd/c4/f0cdc47ddb7f9dd5e86c3e7915c8b337.jpg" alt="Profile"
-                            class="rounded-circle me-2" style="width: 45px; height: 45px;">
+                             class="rounded-circle me-2" style="width: 45px; height: 45px;">
                         <div>
                             <h6 class="mb-0">Nguyễn Văn A</h6>
                             <small class="text-muted">nguyenvana</small>
@@ -104,12 +104,11 @@
                         </a>
                     </li>
                     <li class="nav-item mb-2">
-                        <a asp-controller="MyOrders" asp-action="Index" class="nav-link text-dark">
-                            <i class="bi bi-box-seam me-2"></i> Đơn hàng của tôi
+                        <a href="./Orders.html" class="nav-link text-dark">
+                            <i class="bi bi-box-seam me-2"></i>
+                            Đơn hàng của tôi
                         </a>
                     </li>
-
-
                     <li class="nav-item mb-2">
                         <a asp-action="Address" asp-controller="address" class="nav-link text-dark">
                             <i class="bi bi-geo-alt me-2"></i>
@@ -144,7 +143,7 @@
                 <div class="col-lg-10">
                     <div class="bg-white rounded-4 shadow-lg overflow-hidden">
                         <form asp-action="Update" asp-controller="Profile" method="post"
-                            enctype="multipart/form-data" class="needs-validation" novalidate>
+                              enctype="multipart/form-data" class="needs-validation" novalidate>
                             @Html.AntiForgeryToken()
                             <div class="row g-0">
                                 <!-- Profile Banner & Avatar Section -->
@@ -153,13 +152,13 @@
                                         <div class="text-center">
                                             <div class="position-relative d-inline-block">
                                                 <img id="avatar-img" src="@(string.IsNullOrEmpty(Model.Avatar) ? "https://i.pinimg.com/736x/f0/cd/c4/f0cdc47ddb7f9dd5e86c3e7915c8b337.jpg" : Model.Avatar + "?v=" + Guid.NewGuid())"
-                                                    alt="Avatar"
-                                                    class="rounded-circle border border-4 border-white shadow-lg"
-                                                    style="width: 150px; height: 150px; object-fit: cover;">
+                                                     alt="Avatar"
+                                                     class="rounded-circle border border-4 border-white shadow-lg"
+                                                     style="width: 150px; height: 150px; object-fit: cover;">
                                                 <input type="file" id="profile-image" name="avatarFile" accept="image/*"
-                                                    class="d-none">
+                                                       class="d-none">
                                                 <label for="profile-image" class="position-absolute bottom-0 end-0 bg-white rounded-circle px-2 py-1 shadow-sm cursor-pointer"
-                                                    style="cursor: pointer;">
+                                                       style="cursor: pointer;">
                                                     <i class="bi bi-camera-fill text-crimson"></i>
                                                 </label>
                                             </div>
@@ -181,7 +180,7 @@
                                                     <i class="bi bi-person-fill me-2"></i>Họ và tên
                                                 </label>
                                                 <input type="text" class="form-control form-control-lg border-crimson"
-                                                    id="fullName" name="FullName" value="@Model.FullName" required />
+                                                       id="fullName" name="FullName" value="@Model.FullName" required />
                                                 <span asp-validation-for="FullName" class="text-danger"></span>
                                             </div>
 
@@ -190,9 +189,9 @@
                                                     <i class="bi bi-calendar-date me-2"></i>Ngày sinh
                                                 </label>
                                                 <input type="date" class="form-control form-control-lg border-crimson"
-                                                    id="birthDate" name="BirthDay"
-                                                    value="@Model.BirthDay?.ToString("yyyy-MM-dd")" required
-                                                    max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                                                       id="birthDate" name="BirthDay"
+                                                       value="@Model.BirthDay?.ToString("yyyy-MM-dd")" required
+                                                       max="@DateTime.Today.ToString("yyyy-MM-dd")" />
                                                 <span asp-validation-for="BirthDay" class="text-danger"></span>
                                             </div>
 
@@ -201,7 +200,7 @@
                                                     <i class="bi bi-gender-ambiguous me-2"></i>Giới tính
                                                 </label>
                                                 <select class="form-select form-select-lg border-crimson" id="gender"
-                                                    name="Gender" required>
+                                                        name="Gender" required>
                                                     @foreach (DATN_GO.Models.GenderType gender in Enum.GetValues(typeof(DATN_GO.Models.GenderType)))
                                                     {
                                                         var displayAttr = gender.GetType()
@@ -210,7 +209,7 @@
 
                                                         var displayName = displayAttr?.Name ?? gender.ToString();
                                                         <option value="@gender"
-                                                            selected="@(Model.Gender == gender ? "selected" : null)">
+                                                                selected="@(Model.Gender == gender ? "selected" : null)">
                                                             @displayName
                                                         </option>
                                                     }
@@ -224,18 +223,18 @@
                                                 </label>
                                                 <div class="input-group input-group-lg align-items-center">
                                                     <input type="tel" class="form-control border-crimson" id="phone"
-                                                        value="@Model.Phone" readonly>
+                                                           value="@Model.Phone" readonly>
                                                     @if (string.IsNullOrEmpty(Model.Phone))
                                                     {
                                                         <a asp-controller="UserAuthentication" asp-action="ChangeEmailPrompt"
-                                                            class="btn btn-crimson d-flex align-items-center px-4" style="height: 44px;">
+                                                           class="btn btn-crimson d-flex align-items-center px-4" style="height: 44px;">
                                                             <i class="bi bi-plus-circle me-2"></i> Thêm số điện thoại
                                                         </a>
                                                     }
                                                     else
                                                     {
                                                         <a asp-controller="UserAuthentication" asp-action="ChangeEmailPrompt"
-                                                            class="btn btn-crimson d-flex align-items-center px-4" style="height: 44px;">
+                                                           class="btn btn-crimson d-flex align-items-center px-4" style="height: 44px;">
                                                             <i class="bi bi-pencil-square me-2"></i> Đổi số
                                                         </a>
                                                     }
@@ -248,18 +247,18 @@
                                                 </label>
                                                 <div class="input-group input-group-lg align-items-center">
                                                     <input type="email" class="form-control border-crimson" id="email"
-                                                        value="@Model.Email" readonly>
+                                                           value="@Model.Email" readonly>
                                                     @if (string.IsNullOrEmpty(Model.Email))
                                                     {
                                                         <a asp-controller="UserAuthentication" asp-action="ChangeEmailPrompt"
-                                                            class="btn btn-crimson d-flex align-items-center px-4" style="height: 44px;">
+                                                           class="btn btn-crimson d-flex align-items-center px-4" style="height: 44px;">
                                                             <i class="bi bi-plus-circle me-2"></i> Thêm email
                                                         </a>
                                                     }
                                                     else
                                                     {
                                                         <a asp-controller="UserAuthentication" asp-action="ChangeEmailPrompt"
-                                                            class="btn btn-crimson d-flex align-items-center px-4" style="height: 44px;">
+                                                           class="btn btn-crimson d-flex align-items-center px-4" style="height: 44px;">
                                                             <i class="bi bi-pencil-square me-2"></i> Đổi email
                                                         </a>
                                                     }
@@ -275,19 +274,30 @@
                                             <a asp-action="ChangePassword" asp-controller="UserAuthentication" class="btn btn-outline-crimson btn-lg px-4">
                                                 <i class="bi bi-key me-2"></i>Đổi mật khẩu
                                             </a>
-                                            @if (storeStatus == StoreStatus.PendingApproval)
+                                            @if (storeStatus == StoreStatus.PendingApproval || storeStatus == StoreStatus.NotApproved)
                                             {
                                                 <a asp-action="PendingApproval" asp-controller="SalesRegistration" class="btn btn-warning btn-lg px-4">
                                                     <i class="bi bi-shop me-2"></i> Đăng ký bán hàng
-                                            </a>
+                                                </a>
+                                            }
+                                            else if (storeStatus == StoreStatus.Rejected)
+                                            {
+                                                <a asp-action="SalesRegistration" asp-controller="SalesRegistration" class="btn btn-crimson btn-lg px-4">
+                                                    <i class="bi bi-shop me-2"></i> Đăng ký bán hàng
+                                                </a>
+                                            }
+                                            else if (storeStatus == StoreStatus.Active)
+                                            {
+                                                <a asp-action="Index" asp-controller="Home" asp-area="Seller" class="btn btn-success btn-lg px-4">
+                                                    <i class="bi bi-house-door me-2"></i> Đăng ký bán hàng
+                                                </a>
                                             }
                                             else
                                             {
-                                            <a asp-action="SalesRegistration" asp-controller="SalesRegistration" class="btn btn-warning btn-lg px-4">
-                                                <i class="bi bi-shop me-2"></i> Đăng ký bán hàng
-                                            </a>
+                                                <a asp-action="SalesRegistration" asp-controller="SalesRegistration" class="btn btn-crimson btn-lg px-4">
+                                                    <i class="bi bi-shop me-2"></i> Đăng ký bán hàng
+                                                </a>
                                             }
-
                                         </div>
                                     </div>
                                 </div>

@@ -51,7 +51,7 @@ namespace DATN_GO.Controllers
         {
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning(" ModelState không hợp lệ:");
+                _logger.LogWarning("ModelState không hợp lệ:");
                 foreach (var kvp in ModelState)
                 {
                     foreach (var error in kvp.Value.Errors)
@@ -60,29 +60,29 @@ namespace DATN_GO.Controllers
                     }
                 }
                 ViewBag.Banks = await _bankService.GetBankListAsync();
+                TempData["Error"] = "Thông tin không hợp lệ. Vui lòng kiểm tra lại!";
                 return View(model);
             }
 
             if (!HttpContext.Session.TryGetValue("Id", out byte[] idBytes) || !int.TryParse(System.Text.Encoding.UTF8.GetString(idBytes), out int userId))
             {
-                _logger.LogError(" Không tìm thấy Id trong session.");
+                _logger.LogError("Không tìm thấy Id trong session.");
                 TempData["ToastMessage"] = "Bạn chưa đăng nhập hoặc phiên làm việc đã hết hạn.";
                 TempData["ToastType"] = "danger";
                 ViewBag.Banks = await _bankService.GetBankListAsync();
                 return View(model);
             }
 
-
             var avatarFile = Request.Form.Files["Avatar"];
             var coverFile = Request.Form.Files["CoverPhoto"];
 
             if (avatarFile != null && avatarFile.Length > 0)
                 model.Avatar = await _gcsService.UploadFileAsync(avatarFile, "seller/avatars/");
-            _logger.LogInformation($" Avatar uploaded: {model.Avatar}");
+            _logger.LogInformation($"Avatar uploaded: {model.Avatar}");
 
             if (coverFile != null && coverFile.Length > 0)
                 model.CoverPhoto = await _gcsService.UploadFileAsync(coverFile, "seller/covers/");
-            _logger.LogInformation($" Cover uploaded: {model.CoverPhoto}");
+            _logger.LogInformation($"Cover uploaded: {model.CoverPhoto}");
 
             var saveInfoRequest = new
             {
@@ -90,7 +90,10 @@ namespace DATN_GO.Controllers
                 CitizenIdentityCard = model.CitizenIdentityCard,
                 RepresentativeName = model.RepresentativeName,
                 Address = model.Address,
-                AvatarUrl = model.Avatar, 
+                Ward = model.Ward,
+                District = model.District,
+                Province = model.Province,
+                AvatarUrl = model.Avatar,
                 CoverUrl = model.CoverPhoto,
                 Name = model.Name,
                 BankAccount = model.BankAccount,
@@ -98,22 +101,23 @@ namespace DATN_GO.Controllers
                 BankAccountOwner = model.BankAccountOwner
             };
 
-            _logger.LogInformation(" Gửi request SaveInfoFromOcrAsync:");
+            _logger.LogInformation("Gửi request SaveInfoFromOcrAsync:");
             _logger.LogInformation(JsonSerializer.Serialize(saveInfoRequest));
 
             var result = await _ocrService.SaveInfoFromOcrAsync(saveInfoRequest);
             if (result)
             {
-                TempData["Success"] = "Đăng ký bán hàng thành công.";
-                return RedirectToAction("SalesRegistration");
+                TempData["ToastMessage"] = "Đăng ký bán hàng thành công!";
+                TempData["ToastType"] = "success";
+                return RedirectToAction("Index", "Profile");
             }
 
-            _logger.LogError(" Gọi API SaveInfoFromOcrAsync thất bại.");
+            _logger.LogError("Gọi API SaveInfoFromOcrAsync thất bại.");
             ViewBag.Banks = await _bankService.GetBankListAsync();
-            ModelState.AddModelError("", "Đăng ký thất bại.");
+            TempData["ToastMessage"] = "Đăng ký bán hàng thất bại. Vui lòng thử lại!";
+            TempData["ToastType"] = "danger";
             return View(model);
         }
-
 
         [HttpPost]
         public async Task<IActionResult> ExtractOcr([FromForm] OcrRequest request)

@@ -236,6 +236,54 @@ namespace DATN_API.Services
 
             return result;
         }
+
+        public async Task<OrderViewModel?> GetOrderDetailByIdAsync(int orderId, int userId)
+        {
+            var order = await _context.Orders
+                .Include(o => o.User)
+                .Include(o => o.Voucher)
+                .Include(o => o.ShippingMethod).ThenInclude(sm => sm.store)
+                .Include(o => o.OrderDetails).ThenInclude(od => od.Product)
+                .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
+
+            if (order == null)
+                return null;
+
+            var totalPrice = order.OrderDetails.Sum(od => od.Quantity * od.Price);
+
+            decimal voucherReduce = 0;
+            if (order.Voucher != null && order.Voucher.Status == VoucherStatus.Valid && totalPrice >= order.Voucher.MinOrder)
+            {
+                voucherReduce = order.Voucher.Reduce;
+            }
+
+            return new OrderViewModel
+            {
+                Id = order.Id,
+                CustomerName = order.User?.FullName ?? string.Empty,
+                CustomerPhone = order.User?.Phone,
+                StoreName = order.ShippingMethod?.store?.Name,
+                ShippingMethodName = order.ShippingMethod?.MethodName ?? string.Empty,
+                ShippingFee = order.ShippingMethod?.Price ?? 0,
+                VoucherName = GetVoucherDisplayName(order.Voucher),
+                VoucherReduce = voucherReduce,
+                CreatedAt = order.OrderDate,
+                PaymentMethod = order.PaymentMethod,
+                PaymentStatus = order.PaymentStatus,
+                Status = order.Status.ToString(),
+                OrderDetails = order.OrderDetails.Select(od => new OrderDetailViewModel
+                {
+                    ProductId = od.ProductId,
+                    ProductName = od.Product?.Name ?? string.Empty,
+                    ProductImage = od.Product?.MainImage,
+                    Quantity = od.Quantity,
+                    UnitPrice = od.Price
+                }).ToList(),
+                TotalPrice = totalPrice
+            };
+        }
+
+
         private OrderViewModel MapToOrderViewModel(Orders entity)
         {
             return new OrderViewModel

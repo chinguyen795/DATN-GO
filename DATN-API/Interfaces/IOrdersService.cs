@@ -17,5 +17,7 @@ namespace DATN_API.Services.Interfaces
         Task<object> GetStatisticsAsync(int storeId, DateTime? start, DateTime? end, DateTime? startCompare, DateTime? endCompare);
         Task<OrderViewModel?> GetOrderDetailAsync(int orderId);
         Task<List<OrderViewModel>> GetOrdersByStoreUserAsync(int userId);
+
+        Task<OrderViewModel?> GetOrderDetailByIdAsync(int orderId, int userId);
     }
 }

@@ -1,4 +1,4 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace DATN_API.Models
 {
@@ -17,9 +17,14 @@ namespace DATN_API.Models
         public string? CoverUrl { get; set; }
         public string? Name { get; set; }
 
-        public string? BankAccount { get; set; }   
+        public string? BankAccount { get; set; }
         public string? Bank { get; set; }
         public string? BankAccountOwner { get; set; }
 
+        // Thêm các trường Province, District, Ward
+        public string? Province { get; set; }
+        public string? District { get; set; }
+        public string? Ward { get; set; }
     }
+
 }

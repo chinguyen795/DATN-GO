@@ -1,240 +1,149 @@
-﻿@{
+﻿@model List<DATN_GO.Models.Posts>
+@{
     ViewData["Title"] = "Blog Page";
 }
 
-
-    <div class="row">
-        <!-- Filters Sidebar -->
-        <div class="col-lg-4">
-            <div class="position-sticky" style="top: 2rem;">
-                <!-- Search -->
-                <div class="card shadow-sm mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title text-danger mb-3">Tìm kiếm bài viết</h5>
+<div class="row">
+    <!-- Filters Sidebar -->
+    <div class="col-lg-4">
+        <div class="position-sticky" style="top: 2rem;">
+            <!-- Search -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title text-danger mb-3">Tìm kiếm bài viết</h5>
+                    <form method="get" asp-action="Blog">
                         <div class="input-group">
-                            <input type="text" class="form-control" placeholder="Tìm kiếm..." aria-label="Tìm kiếm">
-                            <button class="btn btn-danger" type="button"><i class="fas fa-search"></i></button>
+                            <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm..." name="search" value="@ViewBag.Search" />
+                            <button class="btn btn-danger" type="submit"><i class="fas fa-search"></i></button>
                         </div>
-                    </div>
-                </div>
+                    </form>
 
-                <!-- Filters -->
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <form method="get" asp-action="Blog" id="filterForm">
                 <div class="card shadow-sm mb-4">
                     <div class="card-body">
                         <h5 class="card-title text-danger mb-3">Bộ lọc</h5>
-                        <div class="mb-3">
+                        @*                         <div class="mb-3">
                             <label class="form-label">Sắp xếp theo</label>
-                            <select class="form-select">
-                                <option>Mới nhất</option>
-                                <option>Phổ biến nhất</option>
-                                <option>Nhiều bình luận nhất</option>
+                            <!-- Sắp xếp -->
+                            @{
+                                var selectedSort = ViewBag.Sort as string ?? "";
+                            }
+
+                            <select class="form-select" name="sort" id="sortSelect">
+                                <option value="">-- Chọn sắp xếp --</option>
+                                <option value="newest" selected="@(selectedSort == "newest" ? "selected" : null)">Mới nhất</option>
+                                <option value="popular" selected="@(selectedSort == "popular" ? "selected" : null)">Phổ biến nhất</option>
+                                <option value="commented" selected="@(selectedSort == "commented" ? "selected" : null)">Nhiều bình luận nhất</option>
                             </select>
-                        </div>
-                        <div class="mb-3">
+
+                        </div> *@
+                        @*                         <div class="mb-3">
                             <label class="form-label">Danh mục</label>
+                            <!-- 📦 Danh mục -->
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="" id="food">
+                                <input class="form-check-input" type="radio" name="category" value="Ẩm thực" id="food"
+                                       @(ViewBag.Category == "Ẩm thực" ? "checked" : "") />
                                 <label class="form-check-label" for="food">Ẩm thực</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="" id="travel">
+                                <input class="form-check-input" type="radio" name="category" value="Du lịch" id="travel"
+                                       @(ViewBag.Category == "Du lịch" ? "checked" : "") />
                                 <label class="form-check-label" for="travel">Du lịch</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="" id="lifestyle">
+                                <input class="form-check-input" type="radio" name="category" value="Phong cách sống" id="lifestyle"
+                                       @(ViewBag.Category == "Phong cách sống" ? "checked" : "") />
                                 <label class="form-check-label" for="lifestyle">Phong cách sống</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="" id="photography">
+                                <input class="form-check-input" type="radio" name="category" value="Nhiếp ảnh" id="photography"
+                                       @(ViewBag.Category == "Nhiếp ảnh" ? "checked" : "") />
                                 <label class="form-check-label" for="photography">Nhiếp ảnh</label>
                             </div>
-                        </div>
+
+                        </div> *@
                         <div class="mb-3">
                             <label class="form-label">Thời gian</label>
-                            <select class="form-select">
-                                <option>Hôm nay</option>
-                                <option>Tuần này</option>
-                                <option>Tháng này</option>
-                                <option>Tất cả</option>
+                            @{
+                                var selectedTime = ViewBag.Time as string ?? "";
+                            }
+
+                            <select class="form-select" name="time" id="timeSelect">
+                                <option value="today" selected="@(selectedTime == "today" ? "selected" : null)">Hôm nay</option>
+                                <option value="week" selected="@(selectedTime == "week" ? "selected" : null)">Tuần này</option>
+                                <option value="month" selected="@(selectedTime == "month" ? "selected" : null)">Tháng này</option>
+                                <option value="" selected="@(string.IsNullOrEmpty(selectedTime) ? "selected" : null)">Tất cả</option>
                             </select>
                         </div>
                     </div>
                 </div>
+            </form>
 
-                <!-- Trending Topics -->
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title text-danger mb-3">Chủ đề thịnh hành</h5>
-                        <div class="d-flex flex-wrap gap-2">
-                            <span class="badge bg-danger">#AmThuc</span>
-                            <span class="badge bg-danger">#DuLich2025</span>
-                            <span class="badge bg-danger">#NhiepAnh</span>
-                            <span class="badge bg-danger">#DoiSong</span>
-                            <span class="badge bg-danger">#ThienNhien</span>
-                        </div>
+            <!-- Trending Topics -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title text-danger mb-3">Chủ đề thịnh hành</h5>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="badge bg-danger">#AmThuc</span>
+                        <span class="badge bg-danger">#DuLich2025</span>
+                        <span class="badge bg-danger">#NhiepAnh</span>
+                        <span class="badge bg-danger">#DoiSong</span>
+                        <span class="badge bg-danger">#ThienNhien</span>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
 
-        <!-- Posts Column -->
-        <div class="col-lg-8 mb-4">
-            <!-- Post 1 -->
-            <div class="card shadow-sm mb-2">
+    <!-- Posts Column -->
+    <div class="col-lg-8 mb-4 id=" post-list"">
+        @foreach (var post in Model)
+        {
+            <div class="card shadow-sm mb-3 post-card">
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-2">
-                        <img src="https://source.unsplash.com/random/50x50?person1" class="rounded-circle me-2" alt="Người dùng">
+                        <img src="@(string.IsNullOrEmpty(post.User?.Avatar) ? "https://source.unsplash.com/random/50x50?person" : post.User.Avatar)"
+                             class="rounded-circle me-2"
+                             style="width: 50px; height: 50px; object-fit: cover;"
+                             alt="Người dùng" />
                         <div>
-                            <h6 class="mb-0">Nguyễn Văn An</h6>
-                            <small class="text-muted">2 giờ trước</small>
+                            <h6 class="mb-0 post-author">@post.User?.FullName</h6>
+                            <small class="text-muted">@post.CreateAt.ToString("dd/MM/yyyy HH:mm")</small>
                         </div>
                     </div>
-                    <p class="card-text">Vừa thử một nhà hàng mới tuyệt vời ở trung tâm! Đồ ăn ngon không thể tả! 🍜✨</p>
-                    <img src="https://source.unsplash.com/random/800x400?food" class="img-fluid rounded mb-3" alt="Ảnh bài đăng">
+
+                    <p class="card-text post-content">@post.Content</p>
+
+                    @if (!string.IsNullOrEmpty(post.Image))
+                    {
+                        <img src="@post.Image" class="img-fluid rounded mb-3" alt="Ảnh bài đăng" />
+                    }
                 </div>
             </div>
-
-            <!-- Post 2 -->
-            <div class="card shadow-sm mb-2">
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-2">
-                        <img src="https://source.unsplash.com/random/50x50?person2" class="rounded-circle me-2" alt="Người dùng">
-                        <div>
-                            <h6 class="mb-0">Trần Thị Bình</h6>
-                            <small class="text-muted">5 giờ trước</small>
-                        </div>
-                    </div>
-                    <p class="card-text">Hoàng hôn đẹp tuyệt vời tại biển hôm nay! 🌅 Thiên nhiên luôn khiến ta kinh ngạc.</p>
-                    <img src="https://source.unsplash.com/random/800x400?sunset" class="img-fluid rounded mb-3" alt="Ảnh bài đăng">
-                </div>
-            </div>
-
-            <!-- Post 1 -->
-            <div class="card shadow-sm mb-2">
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-2">
-                        <img src="https://source.unsplash.com/random/50x50?person1" class="rounded-circle me-2" alt="Người dùng">
-                        <div>
-                            <h6 class="mb-0">Nguyễn Văn An</h6>
-                            <small class="text-muted">2 giờ trước</small>
-                        </div>
-                    </div>
-                    <p class="card-text">Vừa thử một nhà hàng mới tuyệt vời ở trung tâm! Đồ ăn ngon không thể tả! 🍜✨</p>
-                    <img src="https://source.unsplash.com/random/800x400?food" class="img-fluid rounded mb-3" alt="Ảnh bài đăng">
-                </div>
-            </div>
-
-            <!-- Post 2 -->
-            <div class="card shadow-sm mb-2">
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-2">
-                        <img src="https://source.unsplash.com/random/50x50?person2" class="rounded-circle me-2" alt="Người dùng">
-                        <div>
-                            <h6 class="mb-0">Trần Thị Bình</h6>
-                            <small class="text-muted">5 giờ trước</small>
-                        </div>
-                    </div>
-                    <p class="card-text">Hoàng hôn đẹp tuyệt vời tại biển hôm nay! 🌅 Thiên nhiên luôn khiến ta kinh ngạc.</p>
-                    <img src="https://source.unsplash.com/random/800x400?sunset" class="img-fluid rounded mb-3" alt="Ảnh bài đăng">
-                </div>
-            </div>
-
-
-            <!-- Post 1 -->
-            <div class="card shadow-sm mb-2">
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-2">
-                        <img src="https://source.unsplash.com/random/50x50?person1" class="rounded-circle me-2" alt="Người dùng">
-                        <div>
-                            <h6 class="mb-0">Nguyễn Văn An</h6>
-                            <small class="text-muted">2 giờ trước</small>
-                        </div>
-                    </div>
-                    <p class="card-text">Vừa thử một nhà hàng mới tuyệt vời ở trung tâm! Đồ ăn ngon không thể tả! 🍜✨</p>
-                    <img src="https://source.unsplash.com/random/800x400?food" class="img-fluid rounded mb-3" alt="Ảnh bài đăng">
-                </div>
-            </div>
-
-            <!-- Post 2 -->
-            <div class="card shadow-sm mb-2">
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-2">
-                        <img src="https://source.unsplash.com/random/50x50?person2" class="rounded-circle me-2" alt="Người dùng">
-                        <div>
-                            <h6 class="mb-0">Trần Thị Bình</h6>
-                            <small class="text-muted">5 giờ trước</small>
-                        </div>
-                    </div>
-                    <p class="card-text">Hoàng hôn đẹp tuyệt vời tại biển hôm nay! 🌅 Thiên nhiên luôn khiến ta kinh ngạc.</p>
-                    <img src="https://source.unsplash.com/random/800x400?sunset" class="img-fluid rounded mb-3" alt="Ảnh bài đăng">
-                </div>
-            </div>
-
-
-            <!-- Post 1 -->
-            <div class="card shadow-sm mb-2">
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-2">
-                        <img src="https://source.unsplash.com/random/50x50?person1" class="rounded-circle me-2" alt="Người dùng">
-                        <div>
-                            <h6 class="mb-0">Nguyễn Văn An</h6>
-                            <small class="text-muted">2 giờ trước</small>
-                        </div>
-                    </div>
-                    <p class="card-text">Vừa thử một nhà hàng mới tuyệt vời ở trung tâm! Đồ ăn ngon không thể tả! 🍜✨</p>
-                    <img src="https://source.unsplash.com/random/800x400?food" class="img-fluid rounded mb-3" alt="Ảnh bài đăng">
-                </div>
-            </div>
-
-            <!-- Post 2 -->
-            <div class="card shadow-sm mb-2">
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-2">
-                        <img src="https://source.unsplash.com/random/50x50?person2" class="rounded-circle me-2" alt="Người dùng">
-                        <div>
-                            <h6 class="mb-0">Trần Thị Bình</h6>
-                            <small class="text-muted">5 giờ trước</small>
-                        </div>
-                    </div>
-                    <p class="card-text">Hoàng hôn đẹp tuyệt vời tại biển hôm nay! 🌅 Thiên nhiên luôn khiến ta kinh ngạc.</p>
-                    <img src="https://source.unsplash.com/random/800x400?sunset" class="img-fluid rounded mb-3" alt="Ảnh bài đăng">
-                </div>
-            </div>
-
-
-            <!-- Post 1 -->
-            <div class="card shadow-sm mb-2">
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-2">
-                        <img src="https://source.unsplash.com/random/50x50?person1" class="rounded-circle me-2" alt="Người dùng">
-                        <div>
-                            <h6 class="mb-0">Nguyễn Văn An</h6>
-                            <small class="text-muted">2 giờ trước</small>
-                        </div>
-                    </div>
-                    <p class="card-text">Vừa thử một nhà hàng mới tuyệt vời ở trung tâm! Đồ ăn ngon không thể tả! 🍜✨</p>
-                    <img src="https://source.unsplash.com/random/800x400?food" class="img-fluid rounded mb-3" alt="Ảnh bài đăng">
-                </div>
-            </div>
-
-            <!-- Post 2 -->
-            <div class="card shadow-sm mb-2">
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-2">
-                        <img src="https://source.unsplash.com/random/50x50?person2" class="rounded-circle me-2" alt="Người dùng">
-                        <div>
-                            <h6 class="mb-0">Trần Thị Bình</h6>
-                            <small class="text-muted">5 giờ trước</small>
-                        </div>
-                    </div>
-                    <p class="card-text">Hoàng hôn đẹp tuyệt vời tại biển hôm nay! 🌅 Thiên nhiên luôn khiến ta kinh ngạc.</p>
-                    <img src="https://source.unsplash.com/random/800x400?sunset" class="img-fluid rounded mb-3" alt="Ảnh bài đăng">
-                </div>
-            </div>
-
-
-        </div>
-
+        }
 
     </div>
+
+</div>
+<script>
+    const input = document.getElementById('searchInput');
+    const form = input.closest('form');
+    let lastValue = input.value.trim();
+
+    input.addEventListener('input', function () {
+        const keyword = this.value.trim();
+
+        // Nếu trước đó có từ khoá mà giờ rỗng thì tự submit
+        if (lastValue !== '' && keyword === '') {
+            form.submit();
+        }
+
+        lastValue = keyword;
+    });
+</script>
+
