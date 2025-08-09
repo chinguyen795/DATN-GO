@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DATN_GO.Models;
 using DATN_GO.Service;
-using DATN_GO.Models;
-using static DATN_GO.Service.CategoryService;
+using DATN_GO.Services;
+using Microsoft.AspNetCore.Mvc;
 using System.Text.RegularExpressions;
+using static DATN_GO.Services.CategoryService;
 
 namespace DATN_GO.Areas.Admin.Controllers
 {

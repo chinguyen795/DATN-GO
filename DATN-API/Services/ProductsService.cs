@@ -103,5 +103,213 @@ namespace DATN_API.Services
                 .Where(p => p.StoreId == storeId && p.Status == ProductStatus.Approved)
                 .ToListAsync();
         }
+        public async Task<List<StoreProductVariantViewModel>> GetAllStoreProductVariantsAsync()
+        {
+            var result = await (
+                from product in _context.Products
+                join variant in _context.ProductVariants on product.Id equals variant.ProductId
+                join store in _context.Stores on product.StoreId equals store.Id
+                join comp in _context.VariantCompositions on variant.Id equals comp.ProductVariantId into compGroup
+                from comp in compGroup.DefaultIfEmpty()
+                join value in _context.VariantValues on comp.VariantValueId equals value.Id into valueGroup
+                from value in valueGroup.DefaultIfEmpty()
+                join variantInfo in _context.Variants on comp.VariantId equals variantInfo.Id into variantGroup
+                from variantInfo in variantGroup.DefaultIfEmpty()
+                select new StoreProductVariantViewModel
+                {
+                    // Product
+                    ProductId = product.Id,
+                    ProductName = product.Name,
+                    ProductMainImage = product.MainImage,
+                    ProductCategoryId = product.CategoryId,
+                    ProductDescription = product.Description,
+                    ProductStatus = product.Status.ToString(),
+                    ProductSlug = product.Slug,
+
+                    // Store
+                    StoreId = store.Id,
+                    StoreName = store.Name,
+                    StoreAvatar = store.Avatar,
+                    StoreUserId = store.UserId,
+                    StoreStatus = store.Status,
+                    StoreRating = store.Rating,
+
+                    // Variant
+                    ProductVariantId = variant.Id,
+                    ProductVariantPrice = variant.Price,
+                    ProductVariantImage = variant.Image,
+                    ProductVariantQuantity = variant.Quantity,
+                    ProductVariantHeight = variant.Height,
+                    ProductVariantWidth = variant.Width,
+                    ProductVariantLength = variant.Length,
+                    ProductVariantCreatedAt = variant.CreatedAt,
+                    ProductVariantUpdatedAt = variant.UpdatedAt,
+                    ProductVariantCostPrice = variant.CostPrice,
+
+                    // Variant Values
+                    VariantValueId = value != null ? value.Id : 0,
+                    VariantValueValueName = value != null ? value.ValueName : "",
+                    VariantValueType = value != null ? value.Type : "",
+                    // Variant Info
+                    VariantId = variantInfo != null ? variantInfo.Id : 0,
+                    VariantVariantName = variantInfo != null ? variantInfo.VariantName : "",
+                    VariantType = variantInfo != null ? variantInfo.Type : "",
+
+                    VariantCompositionId = comp != null ? comp.Id : 0,
+                    VariantCompositionProductVariantId = comp != null ? comp.ProductVariantId : 0,
+                    VariantCompositionVariantValueId = comp != null ? comp.VariantValueId : 0,
+                    VariantCompositionVariantId = comp != null ? comp.VariantId : 0
+                }
+            ).ToListAsync();
+
+            return result;
+        }
+        public async Task<List<int>> GetProductIdsByStoreIdAsync(int storeId)
+        {
+            return await _context.Products
+                .Where(p => p.StoreId == storeId)
+                .Select(p => p.Id)
+                .ToListAsync();
+        }
+        public async Task<List<Products>> GetProductsByStoreIdAsync(int storeId)
+        {
+            return await _context.Products
+                .Where(p => p.StoreId == storeId)
+                .ToListAsync();
+        }
+        public async Task<(bool Success, int? ProductId, string? ErrorMessage)> CreateFullProductAsync(ProductFullCreateViewModel model)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var product = model.Product;
+                product.CreateAt = DateTime.UtcNow;
+                product.UpdateAt = DateTime.UtcNow;
+                product.Slug = product.Name.ToLower().Replace(" ", "-") + "-" + DateTime.UtcNow.Ticks;
+                product.Status = ProductStatus.Pending;
+                product.Rating = 0;
+                product.Views = 0;
+
+                _context.Products.Add(product);
+                await _context.SaveChangesAsync();
+
+                // Nếu không có biến thể
+                if (model.Variants == null || model.Combinations == null || !model.Combinations.Any())
+                {
+                    var price = new Prices
+                    {
+                        ProductId = product.Id,
+                        Price = model.Price ?? 0,
+                        VariantCompositionId = null
+                    };
+                    _context.Prices.Add(price);
+                    await _context.SaveChangesAsync();
+                }
+                else
+                {
+                    // Dùng để map ValueName -> (VariantId, VariantValueId)
+                    var variantDict = new Dictionary<string, (int variantId, int variantValueId)>(StringComparer.OrdinalIgnoreCase);
+
+                    // Tạo Variant và VariantValue
+                    foreach (var variant in model.Variants.Take(2))
+                    {
+                        var variantEntity = new Variants
+                        {
+                            ProductId = product.Id,
+                            VariantName = variant.Name,
+                            Type = "Text"
+                        };
+                        _context.Variants.Add(variantEntity);
+                        await _context.SaveChangesAsync();
+
+                        foreach (var val in variant.Values)
+                        {
+                            var vv = new VariantValues
+                            {
+                                VariantId = variantEntity.Id,
+                                ValueName = val,
+                                Type = "Text"
+                            };
+                            _context.VariantValues.Add(vv);
+                            await _context.SaveChangesAsync();
+
+                            variantDict[val.Trim()] = (variantEntity.Id, vv.Id);
+                        }
+                    }
+
+                    // Tạo ProductVariant + VariantComposition
+                    foreach (var combo in model.Combinations)
+                    {
+                        var pv = new ProductVariants
+                        {
+                            ProductId = product.Id,
+                            Price = combo.Price,
+                            CostPrice = combo.CostPrice,
+                            Quantity = combo.Quantity,
+                            Weight = combo.Weight,
+                            Width = combo.Width,
+                            Height = combo.Height,
+                            Length = combo.Length,
+                            Image = combo.ImageUrl,
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        };
+                        _context.ProductVariants.Add(pv);
+                        await _context.SaveChangesAsync();
+
+                        var pairs = combo.Values
+                            .Select(val => val.Trim())
+                            .Where(val => variantDict.ContainsKey(val))
+                            .Select(val => variantDict[val])
+                            .ToList();
+
+                        foreach (var (variantId, variantValueId) in pairs)
+                        {
+                            _context.VariantCompositions.Add(new VariantComposition
+                            {
+                                ProductId = product.Id,
+                                ProductVariantId = pv.Id,
+                                VariantId = variantId,
+                                VariantValueId = variantValueId
+                            });
+                        }
+
+                        await _context.SaveChangesAsync();
+                    }
+                }
+
+                await transaction.CommitAsync();
+                return (true, product.Id, null);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return (false, null, ex.Message);
+            }
+        }
+        public async Task<bool> DeleteProductAndRelatedAsync(int productId)
+        {
+            var product = await _context.Products
+                .Include(p => p.ProductVariants)
+                    .ThenInclude(pv => pv.VariantCompositions)
+                .FirstOrDefaultAsync(p => p.Id == productId);
+
+            if (product == null) return false;
+
+            // Xóa tất cả VariantCompositions
+            foreach (var variant in product.ProductVariants)
+            {
+                _context.VariantCompositions.RemoveRange(variant.VariantCompositions);
+            }
+
+            // Xóa tất cả ProductVariants
+            _context.ProductVariants.RemoveRange(product.ProductVariants);
+
+            // Xóa chính Product
+            _context.Products.Remove(product);
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }

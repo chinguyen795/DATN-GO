@@ -71,7 +71,7 @@ namespace DATN_GO.Areas.Seller.Controllers
 
             foreach (var product in products)
             {
-                var category = await _categoryService.GetCategoryByProductIdAsync(product.Id);
+                var category = await _categoryService. GetCategoryByProductIdAsync(product.Id);
                 categoryNames[product.Id] = category?.Name ?? "Không xác định";
 
                 var variants = await _variantService.GetByProductIdAsync(product.Id);
@@ -111,7 +111,7 @@ namespace DATN_GO.Areas.Seller.Controllers
 
             var user = await _userService.GetUserByIdAsync(int.Parse(userId));
             var categories = await _categoryService.GetAllCategoriesAsync();
-            ViewBag.Categories = categories.Select(c => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+            ViewBag.Categories = categories.Data.Select(c => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
             {
                 Value = c.Id.ToString(),
                 Text = c.Name

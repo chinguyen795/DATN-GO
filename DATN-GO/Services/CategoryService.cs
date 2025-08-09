@@ -262,5 +262,16 @@ namespace DATN_GO.Services
             public string? Hashtag { get; set; }
             public string? Description { get; set; }
         }
+        public async Task<Categories?> GetCategoryByProductIdAsync(int productId)
+        {
+            var response = await _httpClient.GetAsync($"{_baseUrl}Categories/GetByProduct/{productId}");
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<Categories>();
+            }
+
+            Console.WriteLine($"Lỗi khi lấy danh mục theo ProductId {productId}: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
+            return null;
+        }
     }
 }
