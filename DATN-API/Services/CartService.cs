@@ -502,14 +502,10 @@ namespace DATN_API.Services
             if (store == null)
                 throw new Exception("Không tìm thấy cửa hàng.");
 
-            var storeOwner = await _context.Users.FirstOrDefaultAsync(u => u.Id == store.UserId);
-            if (storeOwner == null)
-                throw new Exception("Không tìm thấy chủ cửa hàng.");
-
-            if (string.IsNullOrWhiteSpace(storeOwner.Phone))
+            if (string.IsNullOrWhiteSpace(store.Phone))
                 throw new Exception("Số điện thoại cửa hàng trống.");
 
-            if (storeOwner.Phone == address.Phone)
+            if (store.Phone == address.Phone)
                 throw new Exception("Số điện thoại cửa hàng trùng với số người nhận.");
 
             if (string.IsNullOrWhiteSpace(store.Name) ||
@@ -520,6 +516,7 @@ namespace DATN_API.Services
             {
                 throw new Exception("Thiếu thông tin địa chỉ cửa hàng.");
             }
+
 
             if (string.IsNullOrWhiteSpace(address.Name) ||
                 string.IsNullOrWhiteSpace(address.Description) ||
@@ -566,7 +563,7 @@ namespace DATN_API.Services
                     PickProvince = store.Province,
                     PickDistrict = store.District,
                     PickWard = store.Ward,
-                    PickTel = storeOwner.Phone,
+                    PickTel = store.Phone,
 
                     Name = address.Name,
                     Address = address.Description,
@@ -617,7 +614,7 @@ namespace DATN_API.Services
 
                 using (var client = new HttpClient())
                 {
-                    client.BaseAddress = new Uri("https://services-staging.ghtklab.com");
+                    client.BaseAddress = new Uri("https://services.giaohangtietkiem.vn");
                     client.DefaultRequestHeaders.Add("Token", token);
 
                     var response = await client.PostAsync($"/services/shipment/cancel/{orderCode}", null);

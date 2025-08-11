@@ -17,7 +17,7 @@ namespace DATN_API.Models
 
         [ForeignKey("ShippingMethod")]
         public int ShippingMethodId { get; set; }
-        public string LabelId { get; set; }
+        public string? LabelId { get; set; }
         public DateTime OrderDate { get; set; }
 
         public decimal TotalPrice { get; set; }

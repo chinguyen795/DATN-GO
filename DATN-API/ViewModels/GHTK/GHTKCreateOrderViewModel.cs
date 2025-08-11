@@ -118,4 +118,20 @@ namespace DATN_API.ViewModels.GHTK
         public decimal Cost { get; set; }
     }
 
+    public class GHTKCreateOrderResponse
+    {
+        [JsonProperty("success")]
+        public bool Success { get; set; }
+
+        [JsonProperty("order")]
+        public GHTKOrderResponse Order { get; set; }
+    }
+
+    public class GHTKOrderResponse
+    {
+        [JsonProperty("label")]
+        public string Label { get; set; }
+    }
+
+
 }

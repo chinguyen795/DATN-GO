@@ -40,9 +40,7 @@
                         </tr>
                         </thead>
                         <tbody id="cart-items-body">
-                        @if (Model?.CartItems != null && Model.CartItems.Any())
-                        {
-                           @foreach (var item in Model.CartItems)
+                        @foreach (var item in Model.CartItems)
                         {
                             <tr class="cart-item-row" data-cart-id="@item.CartId" data-store-id="@item.StoreId">
                                 <td class="text-center align-middle">
@@ -102,11 +100,6 @@
                                 </td>
 
                             </tr>
-                        }
-                        }
-                        else
-                        {
-                            <tr><td colspan="5">Giỏ hàng trống</td></tr>
                         }
                         </tbody>
                     </table>
@@ -181,7 +174,7 @@
                         <input class="form-check-input" type="radio" name="paymentMethod" id="paymentVNPay"
                                value="vnpay">
                         <label class="form-check-label d-flex align-items-center" for="paymentVNPay">
-                            <img src="https://vnpay.vn/s1/statics.vnpay.vn/logo-vnpay-qr-1.png" alt="VNPay"
+                            <img src="https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/company_logos/cong-ty-cp-giai-phap-thanh-toan-viet-nam-vnpay-6194ba1fa3d66.jpg" alt="VNPay"
                                  height="24" class="me-2">
                             <span>VNPay QR</span>
                         </label>
@@ -196,7 +189,7 @@
                     </div>
                 </div>
                 <div class="d-grid">
-                    <button type="button" class="btn btn-crimson btn-lg fw-bold">
+                    <button type="button" id="btn-checkout" class="btn btn-crimson btn-lg fw-bold">
                         Tiến hành thanh toán
                     </button>
                 </div>
@@ -209,4 +202,75 @@
 
 <script>
     const API_BASE_URL = '@ViewBag.ApiBaseUrl';
+    const btn = document.getElementById('btn-checkout');
+    const voucherSelect = document.getElementById('voucherSelect');
+    const addressSelect = document.getElementById('addressSelect');
+    const toast = (msg) => alert(msg);
+
+    btn?.addEventListener('click', async () => {
+      try {
+        const method = (document.querySelector('input[name="paymentMethod"]:checked')?.value || '').toLowerCase();
+
+        const userId = Number(document.getElementById('userId')?.value || 0);
+        if (!userId) return toast('Bạn cần đăng nhập.');
+
+        const addressId = Number(addressSelect?.value || 0);
+        if (!addressId) return toast('Vui lòng chọn địa chỉ giao hàng.');
+
+        // Lấy các cart đã tick
+        const selectedIds = [...document.querySelectorAll('.item-checkbox')]
+          .filter(cb => cb.checked)
+          .map(cb => Number(cb.dataset.cartId));
+        if (selectedIds.length === 0) return toast('Vui lòng chọn ít nhất một sản phẩm.');
+
+        // Cập nhật IsSelected trên API
+        btn.disabled = true; btn.textContent = 'Đang xử lý...';
+        const upRes = await fetch(`${API_BASE_URL}Cart/update-selection`, {
+          method: 'PUT',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(selectedIds)
+        });
+        if (!upRes.ok) {
+          btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
+          return toast('Cập nhật lựa chọn giỏ hàng thất bại.');
+        }
+
+        if (method === 'vnpay') {
+          // Tạo đơn + lấy VNPay URL
+          const userVoucherId = voucherSelect?.value ? Number(voucherSelect.value) : null;
+          const body = { userId, addressId, userVoucherId };
+
+          const payRes = await fetch(`${API_BASE_URL}Payment/vnpay-create`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(body)
+          });
+
+          if (!payRes.ok) {
+            btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
+            const msg = await payRes.text();
+            return toast('Tạo thanh toán VNPay thất bại: ' + msg);
+          }
+
+          const { paymentUrl } = await payRes.json();
+          if (!paymentUrl) {
+            btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
+            return toast('Không lấy được paymentUrl từ server.');
+          }
+
+          // Redirect sang VNPay
+          window.location.href = paymentUrl;
+          return;
+        }
+
+        // Các phương thức khác (tạm chưa làm)
+        btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
+        toast('Phương thức này chưa hỗ trợ ở luồng hiện tại. Chọn VNPay để thanh toán nhé!');
+
+      } catch (e) {
+        console.error(e);
+        btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
+        toast('Có lỗi xảy ra. Vui lòng thử lại.');
+      }
+    });
 </script>
