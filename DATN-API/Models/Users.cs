@@ -43,7 +43,7 @@ namespace DATN_API.Models
         public string FullName { get; set; }
         
         [MaxLength(13)]
-        [RegularExpression(@"^(0|\+84)(3[2-9]|5[6|8|9]|7[0|6-9]|8[1-5]|9[0-9])[0-9]{7}$", ErrorMessage = "Số điện thoại không đúng định dạng Việt Nam.")]
+        [RegularExpression(@"^(0|\+84)([2-9]|5[6|8|9]|7[0|6-9]|8[1-5]|9[0-9])[0-9]{7}$", ErrorMessage = "Số điện thoại không đúng định dạng Việt Nam.")]
         public required string Phone { get; set; }
         [MaxLength]
         public string? Avatar { get; set; }
