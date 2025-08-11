@@ -617,7 +617,7 @@ namespace DATN_API.Services
 
                 using (var client = new HttpClient())
                 {
-                    client.BaseAddress = new Uri("https://services.giaohangtietkiem.vn");
+                    client.BaseAddress = new Uri("https://services-staging.ghtklab.com");
                     client.DefaultRequestHeaders.Add("Token", token);
 
                     var response = await client.PostAsync($"/services/shipment/cancel/{orderCode}", null);
