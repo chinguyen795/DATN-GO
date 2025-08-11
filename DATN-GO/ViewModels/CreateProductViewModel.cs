@@ -11,6 +11,8 @@ namespace DATN_GO.ViewModels
         public int? Quantity { get; set; } // optional for variants
         public decimal? CostPrice { get; set; } // optional for variants
         public decimal? Price { get; set; } // optional for variants
+
+        public string? Description { get; set; }
         public int? Weight { get; set; }
         public float? Height { get; set; }
         public float? Width { get; set; }

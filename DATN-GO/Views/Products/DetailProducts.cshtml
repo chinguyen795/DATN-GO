@@ -161,7 +161,7 @@
             <div class="d-flex align-items-center gap-3">
                 <div class="input-group quantity-input-group">
                     <button class="btn btn-outline-secondary" type="button" id="btnDecreaseProductQuantity">-</button>
-                    <input class="form-control text-center" value="1" min="1" id="productQuantityInput" step="1">
+                    <input class="form-control text-center" value="1" min="1" id="productQuantityInput" step="1" style="width: 100%; max-width: 120px;">
                     <button class="btn btn-outline-secondary" type="button" id="btnIncreaseProductQuantity">+</button>
                 </div>
                 <span class="text-muted" id="productQuantityDisplay">Còn lại: @Model.Quantity sản phẩm</span>
@@ -169,7 +169,7 @@
         </div>
 
 
-        <form asp-controller="Cart" asp-action="AddToCart" method="post">
+        <form id="addToCartForm" asp-controller="Cart" asp-action="AddToCart" method="post">
             @Html.AntiForgeryToken()
 
             <!-- Hidden product ID -->
@@ -182,6 +182,7 @@
                 <button type="submit" class="btn btn-outline-primary btn-lg">Thêm vào giỏ hàng</button>
             </div>
         </form>
+
 
 
     </div>
@@ -227,11 +228,13 @@
 
             const selectedArray = Array.from(selectedVariantsMap.values()).sort((a, b) => a - b);
 
+            // Kiểm tra và tìm variant combination phù hợp
             const match = variantCombinations.find(variant => {
                 const sortedIds = [...variant.variantValueIds].sort((a, b) => a - b);
                 return JSON.stringify(sortedIds) === JSON.stringify(selectedArray);
             });
 
+            // Nếu tìm thấy match, cập nhật giá và số lượng
             if (match) {
                 currentVariantPrice = match.price;
                 updateTotalPrice();
@@ -245,6 +248,7 @@
                     mainImage.src = match.image;
                 }
             } else {
+                // Nếu không có kết hợp đầy đủ, thì giá sẽ là giá mặc định (0)
                 currentVariantPrice = 0;
                 updateTotalPrice();
 
@@ -257,6 +261,32 @@
         });
     });
 
+    // Nếu chỉ có một variant, bạn cũng cần cập nhật ngay khi chọn variant đó
+    const singleVariantRadios = document.querySelectorAll('input[type=radio][name^="variant_"]');
+    if (singleVariantRadios.length === 1) {
+        singleVariantRadios[0].addEventListener('change', () => {
+            const selectedValue = parseInt(singleVariantRadios[0].value);
+
+            // Nếu chỉ có một variant, tìm ngay kết hợp đầu tiên phù hợp
+            const match = variantCombinations.find(variant => variant.variantValueIds.includes(selectedValue));
+
+            if (match) {
+                currentVariantPrice = match.price;
+                updateTotalPrice();
+
+                if (quantityDisplay) {
+                    quantityDisplay.textContent = `Còn lại: ${match.quantity} sản phẩm`;
+                }
+
+                const mainImage = document.getElementById('mainProductImage');
+                if (mainImage && match.image) {
+                    mainImage.src = match.image;
+                }
+            }
+        });
+    }
+
+    // Cập nhật số lượng và các trường ẩn
     const quantityInput = document.getElementById("productQuantityInput");
     const hiddenQuantity = document.getElementById("QuantityHidden");
 
@@ -308,4 +338,67 @@
     }
 
     updateFormHiddenInputs();
+
+</script>
+<script>
+    document.getElementById("addToCartForm").addEventListener("submit", function (e) {
+        let errors = [];
+
+        // Lấy số lượng tồn kho từ text hiển thị
+        const quantityDisplay = document.getElementById("productQuantityDisplay")?.textContent || "";
+        const availableMatch = quantityDisplay.match(/Còn lại:\s*(\d+)/);
+        const availableQuantity = availableMatch ? parseInt(availableMatch[1]) : 0;
+
+        // Lấy số lượng người dùng nhập
+        const quantityInputEl = document.getElementById("productQuantityInput");
+        const requestedQuantity = parseInt(quantityInputEl?.value) || 1;
+
+        // Nếu vượt quá tồn kho
+        if (requestedQuantity > availableQuantity) {
+            errors.push(`Số lượng bạn chọn (${requestedQuantity}) vượt quá số lượng tồn (${availableQuantity}).`);
+        }
+
+        // Kiểm tra biến thể (nếu có)
+        const variantGroups = document.querySelectorAll('[name^="variant_"]');
+        if (variantGroups.length > 0) {
+            const uniqueGroups = [...new Set(Array.from(variantGroups).map(v => v.name))];
+            uniqueGroups.forEach(groupName => {
+                const checked = document.querySelector(`input[name="${groupName}"]:checked`);
+                if (!checked) {
+                    errors.push(`Vui lòng chọn ${groupName.replace("variant_", "")}.`);
+                }
+            });
+        }
+
+        // Nếu có lỗi thì chặn submit và báo lỗi
+        if (errors.length > 0) {
+            e.preventDefault();
+            showToast(errors.join("\n"), false);  // Hiển thị toast lỗi
+            return;
+        }
+
+        // Cập nhật giá trị QuantityHidden bằng số lượng người nhập
+        document.getElementById("QuantityHidden").value = requestedQuantity;
+    });
+
+    // Hàm hiển thị Toast
+    function showToast(message, isSuccess = true) {
+        const iconUrl = isSuccess ? "/icons/happy.gif" : "/icons/sad.gif";
+        const title = isSuccess ? "Thành công" : "Lỗi";
+
+        const toastHtml = `
+                <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" id="dynamicToast"
+                    style="position: fixed; top: 1rem; right: 1rem; z-index: 1060; min-width: 320px;">
+                    <div class="toast-header d-flex align-items-center ${isSuccess ? "bg-success" : "bg-danger"} text-white">
+                        <img src="${iconUrl}" alt="icon" width="20" height="20" class="me-2" />
+                        <strong class="me-auto">${title}</strong>
+                        <small class="text-white">Vừa xong</small>
+                        <button type="button" class="btn-close btn-close-white ms-2" onclick="this.closest('.toast').remove()" aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body">${message}</div>
+                </div>
+            `;
+        document.body.insertAdjacentHTML('beforeend', toastHtml);
+        setTimeout(() => document.getElementById('dynamicToast')?.remove(), 5000); // Tự động xóa toast sau 5 giây
+    }
 </script>

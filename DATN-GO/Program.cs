@@ -56,7 +56,6 @@ builder.Services.AddHttpClient<BankService>();
 builder.Services.AddHttpClient<StoreService>();
 builder.Services.AddScoped<PriceService>();
 builder.Services.AddScoped<CategoryService>();
-
 builder.Services.AddScoped<PostService>();
 builder.Services.AddScoped<StoreService>();
 builder.Services.AddScoped<ProductService>();

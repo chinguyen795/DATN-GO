@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DATN_API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250811041030_adasddasdasd")]
-    partial class adasddasdasd
+    [Migration("20250811121203_Add")]
+    partial class Add
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -506,7 +506,6 @@ namespace DATN_API.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("LabelId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("OrderDate")

@@ -83,6 +83,8 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @if (products != null && products.Any())
+{
                             @foreach (var item in products)
                             {
                                 <tr>
@@ -123,6 +125,12 @@
                                             </div>
                                         </div>
                                     </td>
+                                </tr>
+                                }}
+                            else
+                            {
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">Không có sản phẩm nào</td>
                                 </tr>
                             }
                         </tbody>

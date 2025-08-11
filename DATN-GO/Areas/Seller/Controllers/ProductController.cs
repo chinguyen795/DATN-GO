@@ -69,27 +69,29 @@ namespace DATN_GO.Areas.Seller.Controllers
             var totalQuantities = new Dictionary<int, int>();
             var prices = new Dictionary<int, decimal>();
 
-            foreach (var product in products)
+            if (products != null)
             {
-                var category = await _categoryService. GetCategoryByProductIdAsync(product.Id);
-                categoryNames[product.Id] = category?.Name ?? "Không xác định";
-
-                var variants = await _variantService.GetByProductIdAsync(product.Id);
-                variantsDict[product.Id] = variants;
-
-                var productVariants = await _productVariantService.GetByProductIdAsync(product.Id);
-                productVariantsDict[product.Id] = productVariants;
-
-                int totalQuantity = productVariants?.Sum(pv => pv.Quantity) ?? product.Quantity;
-                totalQuantities[product.Id] = totalQuantity;
-
-                var price = await _priceService.GetPriceByProductIdAsync(product.Id);
-                if (price.HasValue)
+                foreach (var product in products)
                 {
-                    prices[product.Id] = price.Value;
+                    var category = await _categoryService.GetCategoryByProductIdAsync(product.Id);
+                    categoryNames[product.Id] = category?.Name ?? "Không xác định";
+
+                    var variants = await _variantService.GetByProductIdAsync(product.Id);
+                    variantsDict[product.Id] = variants;
+
+                    var productVariants = await _productVariantService.GetByProductIdAsync(product.Id);
+                    productVariantsDict[product.Id] = productVariants;
+
+                    int totalQuantity = productVariants?.Sum(pv => pv.Quantity) ?? product.Quantity;
+                    totalQuantities[product.Id] = totalQuantity;
+
+                    var price = await _priceService.GetPriceByProductIdAsync(product.Id);
+                    if (price.HasValue)
+                    {
+                        prices[product.Id] = price.Value;
+                    }
                 }
             }
-
             ViewBag.Products = products;
             ViewBag.CategoryNames = categoryNames;
             ViewBag.VariantsDict = variantsDict;
@@ -161,6 +163,7 @@ namespace DATN_GO.Areas.Seller.Controllers
                 StoreId = store.Id,
                 Quantity = model.Quantity ?? 0,
                 CostPrice = model.CostPrice,
+                Description = model.Description,
                 Weight = model.Weight,
                 Height = model.Height,
                 Width = model.Width,
