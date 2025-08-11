@@ -502,6 +502,10 @@ namespace DATN_API.Migrations
                     b.Property<decimal>("DeliveryFee")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("LabelId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime2");
 
@@ -1011,6 +1015,9 @@ namespace DATN_API.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Phone")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PickupAddress")
                         .HasColumnType("nvarchar(max)");

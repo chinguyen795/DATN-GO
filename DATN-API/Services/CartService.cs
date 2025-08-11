@@ -2,9 +2,12 @@
 using DATN_API.Interfaces;
 using DATN_API.Models;
 using DATN_API.ViewModels.Cart;
+using DATN_API.ViewModels.GHTK;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 
 namespace DATN_API.Services
@@ -13,14 +16,15 @@ namespace DATN_API.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<CartService> _logger;
 
-        public CartService(ApplicationDbContext context, IConfiguration configuration)
+        public CartService(ApplicationDbContext context, IConfiguration configuration, ILogger<CartService> logger)
         {
             _context = context;
             _configuration = configuration;
+            _logger = logger;
         }
 
- 
         public async Task<bool> AddToCartAsync(AddToCartRequest request)
         {
             var variantValueIds = request.VariantValueIds?.OrderBy(id => id).ToList() ?? new List<int>();
@@ -293,24 +297,24 @@ namespace DATN_API.Services
 
             var validVouchers = userVouchers
                 .Where(uv =>
-                         {
-                             var total = productAmountDict
-                                 .Where(p =>
-                                     (uv.Voucher.CategoryId == null || p.CategoryId == uv.Voucher.CategoryId) &&
-                                     (uv.Voucher.StoreId == null || p.StoreId == uv.Voucher.StoreId))
-                                 .Sum(p => p.Amount);
+                {
+                    var total = productAmountDict
+                        .Where(p =>
+                            (uv.Voucher.CategoryId == null || p.CategoryId == uv.Voucher.CategoryId) &&
+                            (uv.Voucher.StoreId == null || p.StoreId == uv.Voucher.StoreId))
+                        .Sum(p => p.Amount);
 
-                             return total >= uv.Voucher.MinOrder;
-                         })
+                    return total >= uv.Voucher.MinOrder;
+                })
                 .Select(uv => new UserVoucherViewModel
-                              {
-                                  Id = uv.Id,
-                                  VoucherId = uv.VoucherId,
-                                  Reduce = uv.Voucher.Reduce,
-                                  MinOrder = uv.Voucher.MinOrder,
-                                  EndDate = uv.Voucher.EndDate,
-                                  StoreName = uv.Voucher.Store?.Name ?? "Sàn TMĐT"
-                              })
+                {
+                    Id = uv.Id,
+                    VoucherId = uv.VoucherId,
+                    Reduce = uv.Voucher.Reduce,
+                    MinOrder = uv.Voucher.MinOrder,
+                    EndDate = uv.Voucher.EndDate,
+                    StoreName = uv.Voucher.Store?.Name ?? "Sàn TMĐT"
+                })
 
       .GroupBy(v => v.VoucherId)
       .Select(g => g.First())
@@ -467,6 +471,226 @@ namespace DATN_API.Services
             return result;
         }
 
+        public async Task<string> CreateGHTKOrderAsync(int userId, int addressId)
+        {
+            var address = await _context.Addresses
+                .Include(a => a.City)
+                .FirstOrDefaultAsync(a => a.Id == addressId);
+
+            if (address == null || address.City == null)
+                throw new Exception("Không tìm thấy địa chỉ người nhận.");
+
+            var district = await _context.Districts.FirstOrDefaultAsync(d => d.CityId == address.City.Id);
+            if (district == null)
+                throw new Exception("Không tìm thấy quận cho địa chỉ.");
+
+            var ward = await _context.Wards.FirstOrDefaultAsync(w => w.DistrictId == district.Id);
+            if (ward == null)
+                throw new Exception("Không tìm thấy phường cho địa chỉ.");
+
+            // Lấy giỏ hàng
+            var carts = await _context.Carts
+                .Where(c => c.UserId == userId && c.IsSelected)
+                .Include(c => c.Product)
+                .ToListAsync();
+
+            if (!carts.Any())
+                throw new Exception("Giỏ hàng trống.");
+
+            var storeId = carts.First().Product.StoreId;
+            var store = await _context.Stores.FirstOrDefaultAsync(s => s.Id == storeId);
+            if (store == null)
+                throw new Exception("Không tìm thấy cửa hàng.");
+
+            var storeOwner = await _context.Users.FirstOrDefaultAsync(u => u.Id == store.UserId);
+            if (storeOwner == null)
+                throw new Exception("Không tìm thấy chủ cửa hàng.");
+
+            if (string.IsNullOrWhiteSpace(storeOwner.Phone))
+                throw new Exception("Số điện thoại cửa hàng trống.");
+
+            if (storeOwner.Phone == address.Phone)
+                throw new Exception("Số điện thoại cửa hàng trùng với số người nhận.");
+
+            if (string.IsNullOrWhiteSpace(store.Name) ||
+                string.IsNullOrWhiteSpace(store.PickupAddress) ||
+                string.IsNullOrWhiteSpace(store.Province) ||
+                string.IsNullOrWhiteSpace(store.District) ||
+                string.IsNullOrWhiteSpace(store.Ward))
+            {
+                throw new Exception("Thiếu thông tin địa chỉ cửa hàng.");
+            }
+
+            if (string.IsNullOrWhiteSpace(address.Name) ||
+                string.IsNullOrWhiteSpace(address.Description) ||
+                string.IsNullOrWhiteSpace(address.City.CityName) ||
+                string.IsNullOrWhiteSpace(district.DistrictName) ||
+                string.IsNullOrWhiteSpace(ward.WardName) ||
+                string.IsNullOrWhiteSpace(address.Phone))
+            {
+                throw new Exception("Thiếu thông tin địa chỉ người nhận.");
+            }
+
+            var totalValue = carts.Sum(c =>
+                (_context.Prices.Where(p => p.ProductId == c.ProductId)
+                    .Select(p => (decimal?)p.Price)
+                    .FirstOrDefault() ?? 0) * c.Quantity
+            );
+
+            if (totalValue <= 0)
+                throw new Exception("Giá trị đơn hàng không hợp lệ.");
+
+            var productList = carts.Select(c =>
+            {
+                if (!c.Product.Weight.HasValue || c.Product.Weight.Value <= 0)
+                    throw new Exception($"Sản phẩm '{c.Product.Name}' chưa có trọng lượng hợp lệ.");
+
+                return new GHTKProduct
+                {
+                    Name = c.Product.Name,
+                    Weight = (decimal)(c.Product.Weight.Value / 1000.0m),
+                    Quantity = c.Quantity,
+                    ProductCode = c.Product.Id.ToString()
+                };
+            }).ToList();
+
+            var ghtkRequest = new GHTKCreateOrderRequest
+            {
+                Products = productList,
+                Order = new GHTKOrder
+                {
+                    Id = Guid.NewGuid().ToString(),
+
+                    PickName = store.Name,
+                    PickAddress = store.PickupAddress,
+                    PickProvince = store.Province,
+                    PickDistrict = store.District,
+                    PickWard = store.Ward,
+                    PickTel = storeOwner.Phone,
+
+                    Name = address.Name,
+                    Address = address.Description,
+                    Province = address.City.CityName,
+                    District = district.DistrictName,
+                    Ward = ward.WardName,
+                    Tel = address.Phone,
+
+                    PickMoney = totalValue,
+                    Note = "Giao hàng COD",        
+                    Value = totalValue,
+                    Transport = "road",            
+                    DeliverOption = "none"      
+                }
+            };
+
+            // Gửi request đến GHTK
+            var baseUrl = _configuration["GHTK:BaseUrl"];
+            var token = _configuration["GHTK:Token"];
+
+            if (string.IsNullOrWhiteSpace(baseUrl) || string.IsNullOrWhiteSpace(token))
+                throw new Exception("Thiếu cấu hình GHTK.");
+
+            using var http = new HttpClient();
+            http.DefaultRequestHeaders.Add("Token", token);
+
+            var payload = JsonConvert.SerializeObject(ghtkRequest, Formatting.Indented);
+
+            _logger.LogInformation("{Json}", payload);
+            Console.WriteLine(payload);
+
+            var content = new StringContent(payload, Encoding.UTF8, "application/json");
+
+            var response = await http.PostAsync($"{baseUrl}/services/shipment/order", content);
+            var result = await response.Content.ReadAsStringAsync();
+
+            _logger.LogInformation("{Result}", result);
+            Console.WriteLine(result);
+
+            return result;
+        }
+
+        public async Task<bool> CancelGHTKOrderAsync(string orderCode, int userId)
+        {
+            try
+            {
+                var token = _configuration["GHTK:Token"];
+
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri("https://services.giaohangtietkiem.vn");
+                    client.DefaultRequestHeaders.Add("Token", token);
+
+                    var response = await client.PostAsync($"/services/shipment/cancel/{orderCode}", null);
+
+                    var content = await response.Content.ReadAsStringAsync();
+                    _logger.LogInformation($"Kết quả hủy đơn {orderCode}: {content}");
+
+                    return response.IsSuccessStatusCode;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Lỗi khi hủy đơn {orderCode}");
+                return false;
+            }
+        }
+
+        public async Task<GHTKOrderStatusViewModel> GetGHTKOrderStatusAsync(string orderCode)
+        {
+            var token = _configuration["GHTK:Token"];
+            var baseUrl = _configuration["GHTK:BaseUrl"];
+
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("Token", token);
+
+            var response = await client.GetAsync($"{baseUrl}/services/shipment/v2/{orderCode}");
+            if (!response.IsSuccessStatusCode)
+                throw new Exception($"Lỗi gọi GHTK: {response.StatusCode}");
+
+            var json = await response.Content.ReadAsStringAsync();
+            var doc = JsonDocument.Parse(json);
+
+            if (!doc.RootElement.TryGetProperty("order", out var orderElement))
+                throw new Exception("Không tìm thấy thông tin đơn hàng");
+
+            var result = new GHTKOrderStatusViewModel
+            {
+                OrderCode = orderElement.GetProperty("label_id").GetString(),
+                PartnerId = orderElement.GetProperty("partner_id").GetString(),
+                Status = orderElement.GetProperty("status").GetInt32(),
+                StatusText = orderElement.GetProperty("status_text").GetString(),
+                Created = DateTime.Parse(orderElement.GetProperty("created").GetString()),
+                Modified = DateTime.Parse(orderElement.GetProperty("modified").GetString()),
+                PickDate = DateTime.TryParse(orderElement.GetProperty("pick_date").GetString(), out var pd) ? pd : null,
+                DeliverDate = DateTime.TryParse(orderElement.GetProperty("deliver_date").GetString(), out var dd) ? dd : null,
+                ShipMoney = orderElement.GetProperty("ship_money").GetDecimal(),
+                Insurance = orderElement.GetProperty("insurance").GetDecimal(),
+                Value = orderElement.GetProperty("value").GetDecimal(),
+                Weight = orderElement.GetProperty("weight").GetDecimal(),
+                PickMoney = orderElement.GetProperty("pick_money").GetDecimal(),
+                IsFreeship = orderElement.GetProperty("is_freeship").GetInt32() == 1
+            };
+
+            // Lấy danh sách sản phẩm
+            if (orderElement.TryGetProperty("products", out var productsElement) && productsElement.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var p in productsElement.EnumerateArray())
+                {
+                    result.Products.Add(new GHTKProductStatusViewModel
+                    {
+                        FullName = p.GetProperty("full_name").GetString(),
+                        ProductCode = p.GetProperty("product_code").GetString(),
+                        Weight = p.GetProperty("weight").GetDecimal(),
+                        Quantity = p.GetProperty("quantity").GetInt32(),
+                        Cost = p.GetProperty("cost").GetDecimal()
+                    });
+                }
+            }
+
+            return result;
+        }
+
+
         public async Task<bool> RemoveFromCartAsync(int cartId)
         {
             var cart = await _context.Carts.FindAsync(cartId);
@@ -504,6 +728,7 @@ namespace DATN_API.Services
 
             await _context.SaveChangesAsync();
         }
+
         public async Task<int> ClearSelectedAsync(int userId)
         {
             var items = await _context.Carts

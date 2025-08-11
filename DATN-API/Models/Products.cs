@@ -46,7 +46,7 @@ namespace DATN_API.Models
         public float? Rating { get; set; }
         public DateTime CreateAt { get; set; }
         public DateTime UpdateAt { get; set; }
-        [Range(1000, double.MaxValue, ErrorMessage = "Giá phải từ 1.000")] 
+        [Range(1000, double.MaxValue, ErrorMessage = "Giá phải từ 1.000")]
         public decimal? CostPrice { get; set; }
         public float? Height { get; set; }
 
@@ -75,7 +75,7 @@ namespace DATN_API.Models
         [JsonIgnore]
         public ICollection<OrderDetails>? OrderDetails { get; set; }
         [JsonIgnore]
-        public  ICollection<ProductVariants>? ProductVariants { get; set; }
+        public ICollection<ProductVariants>? ProductVariants { get; set; }
 
     }
 }

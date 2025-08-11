@@ -3,6 +3,7 @@ using DATN_API.Interfaces;
 using DATN_API.Models;
 using DATN_API.Services;
 using DATN_API.ViewModels.Cart;
+using DATN_API.ViewModels.GHTK;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -72,6 +73,34 @@ namespace DATN_API.Controllers
         {
             var result = await _cartService.GetShippingGroupsByUserIdAsync(request.UserId, request.AddressId);
             return Ok(result);
+        }
+
+        [HttpPost("create-ghtk-order")]
+        public async Task<IActionResult> CreateGhtkOrder(int userId, int addressId)
+        {
+            var result = await _cartService.CreateGHTKOrderAsync(userId, addressId);
+            return Ok(result);
+        }
+
+        [HttpPost("cancel-ghtk-order")]
+        public async Task<IActionResult> CancelGhtkOrder(string orderCode, int userId)
+        {
+            var result = await _cartService.CancelGHTKOrderAsync(orderCode, userId);
+
+            if (result)
+                return Ok(new { message = $"Hủy đơn hàng {orderCode} thành công" });
+
+            return BadRequest(new { message = $"Hủy đơn hàng {orderCode} thất bại" });
+        }
+
+        [HttpGet("ghtk-order-status")]
+        public async Task<IActionResult> GetGhtkOrderStatus(string orderCode)
+        {
+            if (string.IsNullOrWhiteSpace(orderCode))
+                return BadRequest(new { message = "Mã đơn hàng không hợp lệ" });
+
+            var status = await _cartService.GetGHTKOrderStatusAsync(orderCode);
+            return Ok(status);
         }
 
 

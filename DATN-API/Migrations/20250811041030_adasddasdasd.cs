@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DATN_API.Migrations
 {
     /// <inheritdoc />
-    public partial class IntialCreate : Migration
+    public partial class adasddasdasd : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -192,6 +192,7 @@ namespace DATN_API.Migrations
                     Province = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Longitude = table.Column<float>(type: "real", nullable: false),
                     Latitude = table.Column<float>(type: "real", nullable: false),
+                    Phone = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Avatar = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false),
                     Slug = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -533,7 +534,8 @@ namespace DATN_API.Migrations
                     Quantity = table.Column<int>(type: "int", nullable: false),
                     Height = table.Column<float>(type: "real", nullable: true),
                     Width = table.Column<float>(type: "real", nullable: true),
-                    Length = table.Column<float>(type: "real", nullable: true)
+                    Length = table.Column<float>(type: "real", nullable: true),
+                    ProductsId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -544,6 +546,11 @@ namespace DATN_API.Migrations
                         principalTable: "Products",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ProductVariants_Products_ProductsId",
+                        column: x => x.ProductsId,
+                        principalTable: "Products",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -576,6 +583,7 @@ namespace DATN_API.Migrations
                     UserId = table.Column<int>(type: "int", nullable: false),
                     VoucherId = table.Column<int>(type: "int", nullable: true),
                     ShippingMethodId = table.Column<int>(type: "int", nullable: false),
+                    LabelId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     OrderDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     TotalPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(50)", nullable: false),
@@ -1141,6 +1149,11 @@ namespace DATN_API.Migrations
                 name: "IX_ProductVariants_ProductId",
                 table: "ProductVariants",
                 column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductVariants_ProductsId",
+                table: "ProductVariants",
+                column: "ProductsId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductVouchers_ProductId",

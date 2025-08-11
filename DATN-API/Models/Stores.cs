@@ -41,7 +41,7 @@ namespace DATN_API.Models
         public string? Province { get; set; }       
         public float Longitude { get; set; }
         public float Latitude { get; set; }
-
+        public string? Phone { get; set; }
         [MaxLength]
         public string? Avatar { get; set; }
 

@@ -1,4 +1,5 @@
 ﻿using DATN_API.ViewModels.Cart;
+using DATN_API.ViewModels.GHTK;
 
 namespace DATN_API.Interfaces
 {
@@ -10,7 +11,10 @@ namespace DATN_API.Interfaces
         Task<bool> UpdateQuantityAsync(int cartId, int newQuantity);
         Task UpdateSelectionAsync(List<int> selectedCartIds);
         Task<List<ShippingGroupViewModel>> GetShippingGroupsByUserIdAsync(int userId, int addressId);
-        Task<int> ClearSelectedAsync(int userId); 
+        Task<string> CreateGHTKOrderAsync(int userId, int addressId);
+        Task<bool> CancelGHTKOrderAsync(string orderCode, int userId);
+        Task<GHTKOrderStatusViewModel> GetGHTKOrderStatusAsync(string orderCode);
+        Task<int> ClearSelectedAsync(int userId);
 
     }
 }
