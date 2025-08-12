@@ -35,23 +35,32 @@
             </div>
 
             <!-- Thumbnails with Navigation -->
-            <div class="position-relative">
-                <button class="thumbnail-nav prev" type="button" id="scrollPrev">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <div class="thumbnails-container">
-                    <div class="thumbnails-wrapper">
-                        @for (int i = 0; i < images.Count; i++)
-                        {
-                            <img src="@images[i]" class="product-thumbnail @(i == 0 ? "active" : "")"
-                                 data-bs-target="#productCarousel" data-bs-slide-to="@i" />
-                        }
+            @if (variants != null && variants.Count > 0)
+            {
+                <div class="position-relative">
+                    <button class="thumbnail-nav prev" type="button" id="scrollPrev">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div class="thumbnails-container">
+                        <div class="thumbnails-wrapper">
+                            @for (int i = 0; i < images.Count; i++)
+                            {
+                                var matchingVariant = variantCombinations.FirstOrDefault(v => v.Image == images[i]);
+
+                                <img src="@images[i]"
+                                     class="product-thumbnail @(i == 0 ? "active" : "")"
+                                     data-bs-target="#productCarousel"
+                                     data-bs-slide-to="@i"
+                                     data-variant-value-ids="@(matchingVariant != null ? string.Join(",", matchingVariant.VariantValueIds) : "")" />
+                            }
+                        </div>
                     </div>
+                    <button class="thumbnail-nav next" type="button" id="scrollNext">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
                 </div>
-                <button class="thumbnail-nav next" type="button" id="scrollNext">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
-            </div>
+            }
+
         }
         else
         {
@@ -261,32 +270,6 @@
         });
     });
 
-    // Nếu chỉ có một variant, bạn cũng cần cập nhật ngay khi chọn variant đó
-    const singleVariantRadios = document.querySelectorAll('input[type=radio][name^="variant_"]');
-    if (singleVariantRadios.length === 1) {
-        singleVariantRadios[0].addEventListener('change', () => {
-            const selectedValue = parseInt(singleVariantRadios[0].value);
-
-            // Nếu chỉ có một variant, tìm ngay kết hợp đầu tiên phù hợp
-            const match = variantCombinations.find(variant => variant.variantValueIds.includes(selectedValue));
-
-            if (match) {
-                currentVariantPrice = match.price;
-                updateTotalPrice();
-
-                if (quantityDisplay) {
-                    quantityDisplay.textContent = `Còn lại: ${match.quantity} sản phẩm`;
-                }
-
-                const mainImage = document.getElementById('mainProductImage');
-                if (mainImage && match.image) {
-                    mainImage.src = match.image;
-                }
-            }
-        });
-    }
-
-    // Cập nhật số lượng và các trường ẩn
     const quantityInput = document.getElementById("productQuantityInput");
     const hiddenQuantity = document.getElementById("QuantityHidden");
 
@@ -337,11 +320,67 @@
         hiddenQuantity.value = quantityInput.value || "1";
     }
 
+    function setMainImage(src) {
+        const mainImage = document.getElementById('mainProductImage');
+        if (mainImage) {
+            mainImage.src = src;
+        }
+    }
+
+    function highlightThumbnailBySrc(src) {
+        document.querySelectorAll('.product-thumbnail').forEach(img => {
+            img.classList.toggle('active', img.src === src);
+        });
+    }
+
+    document.querySelectorAll('.product-thumbnail').forEach(thumbnail => {
+        thumbnail.addEventListener('click', () => {
+            setMainImage(thumbnail.src);
+            highlightThumbnailBySrc(thumbnail.src);
+
+            const variantIdsStr = thumbnail.getAttribute('data-variant-value-ids');
+            if (variantIdsStr) {
+                const variantIds = variantIdsStr.split(',').map(id => parseInt(id.trim()));
+                variantIds.forEach(id => {
+                    const input = document.querySelector(`input[type=radio][value="${id}"]`);
+                    if (input && !input.checked) {
+                        input.checked = true;
+                        input.dispatchEvent(new Event('change'));
+                    }
+                });
+            }
+        });
+    });
+
+    document.querySelectorAll('.btn-check').forEach(input => {
+        input.addEventListener('change', () => {
+            if (!input.checked) return;
+
+            const selectedValues = Array.from(document.querySelectorAll('.btn-check:checked')).map(i => parseInt(i.value));
+
+            const match = variantCombinations.find(v => {
+                return v.variantValueIds.every(id => selectedValues.includes(id));
+            });
+
+            if (match && match.image) {
+                setMainImage(match.image);
+                highlightThumbnailBySrc(match.image);
+            }
+        });
+    });
+
+
+
     updateFormHiddenInputs();
 
 </script>
 <script>
-    document.getElementById("addToCartForm").addEventListener("submit", function (e) {
+    document.getElementById("addToCartForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        // đảm bảo các input ẩn variant đã được cập nhật
+        updateFormHiddenInputs();
+
         let errors = [];
 
         // Lấy số lượng tồn kho từ text hiển thị
@@ -353,7 +392,7 @@
         const quantityInputEl = document.getElementById("productQuantityInput");
         const requestedQuantity = parseInt(quantityInputEl?.value) || 1;
 
-        // Nếu vượt quá tồn kho
+        // Kiểm tra local (nếu vượt quá tồn kho trực tiếp thì không gửi request)
         if (requestedQuantity > availableQuantity) {
             errors.push(`Số lượng bạn chọn (${requestedQuantity}) vượt quá số lượng tồn (${availableQuantity}).`);
         }
@@ -370,35 +409,68 @@
             });
         }
 
-        // Nếu có lỗi thì chặn submit và báo lỗi
         if (errors.length > 0) {
-            e.preventDefault();
-            showToast(errors.join("\n"), false);  // Hiển thị toast lỗi
+            showToast(errors.join("\n"), false);
             return;
         }
 
-        // Cập nhật giá trị QuantityHidden bằng số lượng người nhập
-        document.getElementById("QuantityHidden").value = requestedQuantity;
+        const form = this;
+        const formData = new FormData(form);
+
+        try {
+            const response = await fetch(form.action, {
+                method: (form.method || "POST").toUpperCase(),
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                credentials: 'same-origin'
+            });
+
+            const contentType = response.headers.get('content-type') || '';
+
+            if (contentType.includes('application/json')) {
+                const data = await response.json();
+
+                // server trả success = true
+                if (response.ok && (data.success === undefined || data.success === true)) {
+                    // hiển thị success (dùng message nếu server trả)
+                    showToast(data.message || 'Đã thêm vào giỏ hàng.', true);
+                    // tuỳ bạn có thể cập nhật UI giỏ hàng tại đây (số lượng, icon, ...)
+                    return;
+                }
+
+                // xử lý lỗi cụ thể từ server
+                const errMsg = data.message || '';
+                const errCode = data.errorCode || '';
+
+                if (errCode === 'EXCEEDED_STOCK' || /vượt|tồn|exceed/i.test(errMsg)) {
+                    showToast('Bạn đã thêm vượt quá số lượng hiện có của sản phẩm.', false);
+                } else {
+                    showToast(errMsg || 'Lỗi thêm vào giỏ hàng.', false);
+                }
+                return;
+            } else {
+                // Server trả HTML (ví dụ redirect). Nếu server redirect thì fetch sẽ trả nội dung cuối cùng.
+                // Nếu server response redirected => chuyển trang sang URL trả về
+                if (response.redirected) {
+                    window.location.href = response.url;
+                    return;
+                }
+                // Nếu không redirect, đọc text để dò lỗi (fallback)
+                const text = await response.text();
+                if (/vượt|tồn|exceed/i.test(text)) {
+                    showToast('Bạn đã thêm vượt quá số lượng hiện có của sản phẩm.', false);
+                } else {
+                    // fallback success -> reload hoặc show thông báo
+                    showToast('Hoàn tất. Vui lòng kiểm tra giỏ hàng.', true);
+                    // reload để cập nhật giỏ hàng
+                    window.location.reload();
+                }
+                return;
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('Lỗi kết nối. Vui lòng thử lại.', false);
+        }
     });
-
-    // Hàm hiển thị Toast
-    function showToast(message, isSuccess = true) {
-        const iconUrl = isSuccess ? "/icons/happy.gif" : "/icons/sad.gif";
-        const title = isSuccess ? "Thành công" : "Lỗi";
-
-        const toastHtml = `
-                <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" id="dynamicToast"
-                    style="position: fixed; top: 1rem; right: 1rem; z-index: 1060; min-width: 320px;">
-                    <div class="toast-header d-flex align-items-center ${isSuccess ? "bg-success" : "bg-danger"} text-white">
-                        <img src="${iconUrl}" alt="icon" width="20" height="20" class="me-2" />
-                        <strong class="me-auto">${title}</strong>
-                        <small class="text-white">Vừa xong</small>
-                        <button type="button" class="btn-close btn-close-white ms-2" onclick="this.closest('.toast').remove()" aria-label="Close"></button>
-                    </div>
-                    <div class="toast-body">${message}</div>
-                </div>
-            `;
-        document.body.insertAdjacentHTML('beforeend', toastHtml);
-        setTimeout(() => document.getElementById('dynamicToast')?.remove(), 5000); // Tự động xóa toast sau 5 giây
-    }
 </script>
+

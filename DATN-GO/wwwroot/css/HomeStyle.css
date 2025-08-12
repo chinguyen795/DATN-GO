@@ -1011,8 +1011,8 @@ p {
 
 /* Main Carousel Image */
 .carousel-item img {
-  object-fit: contain;
-  height: 300px;
+    object-fit: contain;
+    max-height: 600px;
 }
 
 /* Banner Image Styles */
