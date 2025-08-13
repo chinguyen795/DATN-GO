@@ -90,8 +90,8 @@
                         </li>
 
                         <li class="nav-item">
-                            <a asp-area="Admin" asp-controller="Decorates" asp-action="Decorates"
-                               class="sidenav-item-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Decorates" ? "active" : "")">
+                            <a asp-area="Admin" asp-controller="Decoration" asp-action="Decoration"
+                               class="sidenav-item-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Decoration" ? "active" : "")">
                                 <i class="bi bi-brush"></i>
                                 <span class="nav-text">Trang Trí</span>
                             </a>
@@ -129,7 +129,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a asp-area="Admin" asp-controller="Voucher" asp-action="Voucher"
+                            <a asp-area="Admin" asp-controller="Voucher" asp-action="Index"
                                class="sidenav-item-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Voucher" ? "active" : "")">
                                 <i class="bi bi-tag"></i>
                                 <span class="nav-text">Ưu đãi</span>
@@ -177,7 +177,7 @@
     <script src="~/js/mono.js"></script>
     <script src="~/js/custom.js"></script>
     <script src="~/js/chart.js"></script>
-    <!-- <script src="~/js/Toast.js"></script> -->
+    <script src="~/js/Toast.js"></script>  
     <script src="~/js/variants.js"></script>
     <script src="~/js/map.js"></script>
 
@@ -185,10 +185,7 @@
         document.addEventListener("DOMContentLoaded", function () {
             var toastEl = document.getElementById('autoToast');
             if (toastEl) {
-                var bsToast = new bootstrap.Toast(toastEl, {
-                    autohide: true,
-                    delay: 4000,
-                });
+                var bsToast = new bootstrap.Toast(toastEl);
                 bsToast.show();
             }
         });
@@ -199,7 +196,6 @@
 
 
     <div class="position-fixed top-0 end-0 p-3" style="z-index: 1056;">
-
         @if (TempData["ToastMessage"] != null && TempData["ToastType"] != null)
         {
             var toastType = TempData["ToastType"].ToString();
@@ -207,8 +203,7 @@
             <div class="toast fade @(isSuccess ? "" : "mt-3")" role="alert" aria-live="assertive" aria-atomic="true"
                  id="autoToast">
                 <div class="toast-header @(isSuccess ? "bg-success" : "bg-danger") text-white">
-                    <img src="@(isSuccess ? "/icons/happy.gif" : "/icons/sad.gif")" class="rounded me-2"
-                         alt="@(isSuccess ? "Success" : "Error")" width="20" height="20">
+                    <img src="@(isSuccess ? "/icons/happy.gif" : "/icons/sad.gif")" class="rounded me-2" alt="@(isSuccess ? "Success" : "Error")" width="20" height="20" />
                     <strong class="me-auto">@((isSuccess) ? "Thành công" : "Lỗi")</strong>
                     <small>Vừa xong</small>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"
