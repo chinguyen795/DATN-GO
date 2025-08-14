@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DATN_API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250811121203_Add")]
-    partial class Add
+    [Migration("20250813075416_GO")]
+    partial class GO
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -504,6 +504,9 @@ namespace DATN_API.Migrations
 
                     b.Property<decimal>("DeliveryFee")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("GhtkStatusCode")
+                        .HasColumnType("int");
 
                     b.Property<string>("LabelId")
                         .HasColumnType("nvarchar(max)");

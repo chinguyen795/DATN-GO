@@ -140,8 +140,13 @@
                                             <div class="d-flex justify-content-between align-items-center mb-3">
                                                 <div>
                                                     <h6 class="mb-0">Mã đơn hàng: #@order.Id</h6>
+                                                    <small class="text-muted d-block">
+                                                        Mã vận đơn: <span class="fw-bold">@(!string.IsNullOrEmpty(order.LabelId) ? order.LabelId : "Chưa có")</span>
+                                                    </small>
+
                                                     <small class="text-muted">@order.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
                                                 </div>
+
                                                 <span class="badge @GetBadgeClass(order.Status)">
                                                     @GetStatusDisplayName(order.Status)
                                                 </span>
@@ -149,11 +154,20 @@
                                             </div>
                                             <div class="row mb-3">
                                                 <div class="col-md-2">
-                                                    <img src="@(order.OrderDetails.FirstOrDefault()?.ProductImage ?? "https://via.placeholder.com/80")"
+                                                    <img src="@(order.OrderDetails != null && order.OrderDetails.Any()
+                                                            ? order.OrderDetails.First().ProductImage
+                                                            : "https://via.placeholder.com/80")"
                                                          alt="Product" class="img-fluid rounded" />
+
                                                 </div>
                                                 <div class="col-md-7">
-                                                    <h6>@((order.OrderDetails.Count == 1) ? order.OrderDetails[0].ProductName : $"{order.OrderDetails[0].ProductName} + {order.OrderDetails.Count - 1} sản phẩm khác")</h6>
+                                                    <h6>
+                                                        @(order.OrderDetails.Any()
+                                                            ? (order.OrderDetails.Count == 1
+                                                            ? order.OrderDetails[0].ProductName
+                                                            : $"{order.OrderDetails[0].ProductName} + {order.OrderDetails.Count - 1} sản phẩm khác")
+                                                            : "Không có sản phẩm")
+                                                    </h6>
                                                     <p class="text-muted mb-0">Số lượng: @order.TotalQuantity</p>
                                                 </div>
                                                 <div class="col-md-3 text-end">

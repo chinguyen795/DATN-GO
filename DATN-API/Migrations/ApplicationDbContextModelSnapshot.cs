@@ -502,6 +502,9 @@ namespace DATN_API.Migrations
                     b.Property<decimal>("DeliveryFee")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int?>("GhtkStatusCode")
+                        .HasColumnType("int");
+
                     b.Property<string>("LabelId")
                         .HasColumnType("nvarchar(max)");
 

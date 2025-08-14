@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DATN_API.Migrations
 {
     /// <inheritdoc />
-    public partial class Add : Migration
+    public partial class GO : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -584,6 +584,7 @@ namespace DATN_API.Migrations
                     VoucherId = table.Column<int>(type: "int", nullable: true),
                     ShippingMethodId = table.Column<int>(type: "int", nullable: false),
                     LabelId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    GhtkStatusCode = table.Column<int>(type: "int", nullable: true),
                     OrderDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     TotalPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(50)", nullable: false),

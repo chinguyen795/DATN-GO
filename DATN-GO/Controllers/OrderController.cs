@@ -67,7 +67,7 @@ namespace DATN_GO.Controllers
             ViewBag.UserFullName = userName;
             ViewBag.UserNickName = userNick;
             ViewBag.UserId = userId;
-            return View(result.Data);  // Đây là List<OrderViewModel>
+            return View(result.Data);  
         }
     }
 }

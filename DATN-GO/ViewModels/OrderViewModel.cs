@@ -1,4 +1,7 @@
-﻿namespace DATN_GO.ViewModels
+﻿using DATN_GO.ViewModels.GHTK;
+using Newtonsoft.Json;
+
+namespace DATN_GO.ViewModels
 {
 
     public class OrderViewModel
@@ -10,7 +13,8 @@
         public string? StoreName { get; set; }
         public string? VoucherName { get; set; }
         public decimal? VoucherReduce { get; set; }
-
+        public string? LabelId { get; set; }
+        public GHTKOrderStatusViewModel GHTKStatus { get; set; }
         public string ShippingMethodName { get; set; } = string.Empty;
         public decimal ShippingFee { get; set; }
 
@@ -21,7 +25,7 @@
         public string? PaymentStatus { get; set; }
 
         public string Status { get; set; } = string.Empty;
-
+        [JsonProperty("orderDetails")]
         public List<OrderDetailViewModel> OrderDetails { get; set; } = new();
 
         public int TotalQuantity => OrderDetails.Sum(d => d.Quantity);

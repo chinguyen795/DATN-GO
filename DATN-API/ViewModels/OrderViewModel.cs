@@ -1,4 +1,6 @@
-﻿namespace DATN_API.ViewModels
+﻿using DATN_API.ViewModels.GHTK;
+
+namespace DATN_API.ViewModels
 {
 
     public class OrderViewModel
@@ -10,7 +12,8 @@
         public string? StoreName { get; set; }
         public string? VoucherName { get; set; }
         public decimal? VoucherReduce { get; set; }
-
+        public string? LabelId { get; set; }
+        public GHTKOrderStatusViewModel GHTKStatus { get; set; }
         public string ShippingMethodName { get; set; } = string.Empty;
         public decimal ShippingFee { get; set; }
 
@@ -54,4 +57,5 @@
         public string? MainImage { get; set; }
         public decimal? CostPrice { get; set; }
     }
+
 }

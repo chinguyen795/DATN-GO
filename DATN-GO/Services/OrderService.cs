@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using DATN_GO.ViewModels.Orders;
 using static System.Net.WebRequestMethods;
+using System.Text.Json;
 
 namespace DATN_GO.Service
 {
@@ -64,23 +65,29 @@ namespace DATN_GO.Service
             return response.IsSuccessStatusCode;
         }
 
-        // Lấy tất cả đơn theo UserId (storeUser)
+
         public async Task<(bool Success, List<OrderViewModel> Data, string Message)> GetOrdersByStoreUserAsync(int userId)
         {
             try
             {
                 var response = await _httpClient.GetAsync($"{_baseUrl}orders/all-by-store/{userId}");
                 if (!response.IsSuccessStatusCode)
-                    return (false, null, $"Lỗi {response.StatusCode}");
+                    return (false, new List<OrderViewModel>(), $"Lỗi {response.StatusCode}");
 
-                var data = await response.Content.ReadFromJsonAsync<List<OrderViewModel>>();
-                return (true, data, null);
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                };
+
+                var data = await response.Content.ReadFromJsonAsync<List<OrderViewModel>>(options);
+                return (true, data ?? new List<OrderViewModel>(), null);
             }
             catch (Exception ex)
             {
-                return (false, null, ex.Message);
+                return (false, new List<OrderViewModel>(), ex.Message);
             }
         }
+
         public async Task<OrderViewModel?> GetOrderDetailByIdAsync(int orderId, int userId)
         {
             try
@@ -140,18 +147,26 @@ namespace DATN_GO.Service
         {
             try
             {
-                var response = await _httpClient.GetAsync($"{_baseUrl}orders/user/{userId}");
+                var response = await _httpClient.GetAsync($"{_baseUrl}orders/all-by-user/{userId}");
                 if (!response.IsSuccessStatusCode)
                     return (false, null, $"Lỗi {response.StatusCode}");
 
-                var data = await response.Content.ReadFromJsonAsync<List<OrderViewModel>>();
-                return (true, data, null);
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                };
+
+                var data = await response.Content.ReadFromJsonAsync<List<OrderViewModel>>(options);
+                return (true, data ?? new List<OrderViewModel>(), null);
             }
             catch (Exception ex)
             {
                 return (false, null, ex.Message);
             }
         }
+
+
+
 
         public async Task<(bool Success, Statistics Data, string Message)> GetStatisticsAsync(DateTime? start, DateTime? end)
         {
