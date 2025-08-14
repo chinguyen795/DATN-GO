@@ -1,8 +1,6 @@
 ﻿using DATN_API.Data;
-using DATN_API.Interfaces;
 using DATN_API.Models;
 using DATN_API.Services.Interfaces;
-using DATN_API.ViewModels;
 using DATN_API.ViewModels.Orders;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,15 +12,14 @@ namespace DATN_API.Controllers
     public class OrdersController : ControllerBase
     {
         private readonly ApplicationDbContext _db;
-        private readonly IGHTKService _ghtkService;
+
         private readonly IOrdersService _service;
 
-        
-        public OrdersController(ApplicationDbContext db, IOrdersService service, IGHTKService ghtkService )
+        // ✅ Chỉ duy nhất 1 constructor – inject cả DbContext & Service
+        public OrdersController(ApplicationDbContext db, IOrdersService service)
         {
             _db = db;
             _service = service;
-            _ghtkService = ghtkService;
         }
 
         // GET: api/orders
@@ -90,22 +87,8 @@ namespace DATN_API.Controllers
 
         // GET: api/orders/all-by-store/{userId}
         [HttpGet("all-by-store/{userId:int}")]
-        public async Task<List<OrderViewModel>> GetOrdersByStoreUserWithStatusAsync(int userId)
-        {
-            // Lấy danh sách đơn hàng theo store-user
-            var orders = await _service.GetOrdersByStoreUserAsync(userId);  
-
-            // Nếu không có GHTKService thì inject vào OrdersService
-            foreach (var order in orders)
-            {
-                if (!string.IsNullOrEmpty(order.LabelId))
-                {
-                    order.GHTKStatus = await _ghtkService.GetStatusByLabelIdAsync(order.LabelId);
-                }
-            }
-
-            return orders;
-        }
+        public async Task<IActionResult> GetAllByStore(int userId)
+            => Ok(await _service.GetOrdersByStoreUserAsync(userId));
 
         // PATCH: api/orders/updatestatus/{id}?status=ChoLayHang
         [HttpPatch("updatestatus/{id:int}")]
@@ -131,7 +114,8 @@ namespace DATN_API.Controllers
             var result = await _service.GetStatisticsAsync(storeId, start, end, startCompare, endCompare);
             return Ok(result);
         }
-         
+
+        // ================== Helpers ==================
         private async Task<OrderDetailDto?> BuildOrderDetailDtoAsync(int id)
         {
             var order = await _db.Orders
@@ -163,7 +147,8 @@ namespace DATN_API.Controllers
                     Image = d.Product?.MainImage,
                     Quantity = d.Quantity,
                     Price = d.Price
-                }).ToList() ?? new List<OrderDetailItemDto>()
+                }).ToList() ?? new List<OrderDetailItemDto>(),
+                LabelId = order.LabelId
             };
         }
         [HttpGet("{id}/user/{userId}")]

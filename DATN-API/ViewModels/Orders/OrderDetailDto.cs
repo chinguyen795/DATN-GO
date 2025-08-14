@@ -18,6 +18,6 @@ namespace DATN_API.ViewModels.Orders
         public string CustomerPhone { get; set; } = "";
 
         public List<OrderDetailItemDto> Items { get; set; } = new();
+        public string? LabelId { get; set; }
     }
 }
- 

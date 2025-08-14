@@ -1,6 +1,7 @@
 ﻿using DATN_API.Data;
 using DATN_API.Interfaces;
 using DATN_API.Models;
+using DATN_API.Services.Interfaces;
 using DATN_API.ViewModels.Vnpay;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,10 +15,11 @@ namespace DATN_API.Controllers
         private readonly ApplicationDbContext _db;
         private readonly ICartService _cartService;
         private readonly IVNPayService _vnp;
+        private readonly IOrdersService _orders;
 
-        public PaymentController(ApplicationDbContext db, ICartService cartService, IVNPayService vnp)
+        public PaymentController(ApplicationDbContext db, ICartService cartService, IVNPayService vnp, IOrdersService orders)
         {
-            _db = db; _cartService = cartService; _vnp = vnp;
+            _db = db; _cartService = cartService; _vnp = vnp; _orders = orders;
         }
 
         // DTO từ MVC gửi lên khi bấm thanh toán
@@ -116,82 +118,107 @@ namespace DATN_API.Controllers
 
         // Controllers/PaymentController.cs
 
-[HttpGet("vnpay-return")]
-public async Task<IActionResult> VnpReturn()
-{
-    var raw = Request.Query.ToDictionary(k => k.Key, v => v.Value.ToString());
-    var isValid = _vnp.ValidateReturn(raw);
-
-    var orderId = raw.TryGetValue("vnp_TxnRef", out var refId) ? refId : null;
-    var rspCode = raw.TryGetValue("vnp_ResponseCode", out var rc) ? rc : null;
-    if (orderId == null) return BadRequest("Missing order id");
-
-    var order = await _db.Orders.FirstOrDefaultAsync(o => o.Id.ToString() == orderId);
-    if (order == null) return NotFound("Order not found");
-
-    if (isValid && rspCode == "00")
-    {
-        order.PaymentStatus = "Paid";
-        order.Status = OrderStatus.ChoLayHang;   // hoặc trạng thái bạn dùng
-        order.PaymentDate = DateTime.UtcNow;
-
-        // 💥 xoá các item đã tick trong giỏ
-        try { await _cartService.ClearSelectedAsync(order.UserId); } catch {}
-
-        await _db.SaveChangesAsync();
-
-        return Redirect($"https://localhost:7180/Checkout/Success?orderId={order.Id}");
-    }
-    else
-    {
-        if (order.PaymentStatus != "Paid")
+        [HttpGet("vnpay-return")]
+        public async Task<IActionResult> VnpReturn()
         {
-            order.PaymentStatus = "Failed";
-            order.Status = OrderStatus.ChoXuLy;
-            await _db.SaveChangesAsync();
+            var raw = Request.Query.ToDictionary(k => k.Key, v => v.Value.ToString());
+            var isValid = _vnp.ValidateReturn(raw);
+
+            var orderId = raw.TryGetValue("vnp_TxnRef", out var refId) ? refId : null;
+            var rspCode = raw.TryGetValue("vnp_ResponseCode", out var rc) ? rc : null;
+            if (orderId == null) return BadRequest("Missing order id");
+
+            var order = await _db.Orders.FirstOrDefaultAsync(o => o.Id.ToString() == orderId);
+            if (order == null) return NotFound("Order not found");
+
+            if (isValid && rspCode == "00")
+            {
+                order.PaymentStatus = "Paid";
+                order.Status = OrderStatus.DaHoanThanh;   // hoặc trạng thái bạn dùng
+                order.PaymentDate = DateTime.UtcNow;
+
+                // 💥 xoá các item đã tick trong giỏ
+                try { await _cartService.ClearSelectedAsync(order.UserId); } catch { }
+
+                await _db.SaveChangesAsync();
+                // 🔗 Tạo đơn GHTK & lưu LabelId (tránh trùng)
+                try
+                {
+                    if (string.IsNullOrEmpty(order.LabelId))
+                    {
+                        var label = await _orders.PushOrderToGhtkAndSaveLabelAsync(order.Id);
+                        // optional: log label
+                    }
+                }
+                catch { /* log nếu cần */ }
+
+                return Redirect($"https://localhost:7180/Checkout/Success?orderId={order.Id}");
+            }
+            else
+            {
+                if (order.PaymentStatus != "Paid")
+                {
+                    order.PaymentStatus = "Failed";
+                    order.Status = OrderStatus.ChoXuLy;
+                    await _db.SaveChangesAsync();
+                }
+                return Redirect($"https://localhost:7180/Checkout/Failure?orderId={order.Id}");
+            }
         }
-        return Redirect($"https://localhost:7180/Checkout/Failure?orderId={order.Id}");
-    }
-}
 
-[HttpGet("vnpay-ipn")]
-public async Task<IActionResult> VnpIpn()
-{
-    var query = Request.Query.ToDictionary(k => k.Key, v => v.Value.ToString());
-    var valid = _vnp.ValidateReturn(query);
-    var rspCode = query.GetValueOrDefault("vnp_ResponseCode");
-    var txnRef  = query.GetValueOrDefault("vnp_TxnRef");
-
-    if (!valid) return new JsonResult(new { RspCode = "97", Message = "Invalid signature" });
-
-    var order = await _db.Orders.FirstOrDefaultAsync(o => o.Id.ToString() == txnRef);
-    if (order == null) return new JsonResult(new { RspCode = "01", Message = "Order not found" });
-
-    if (rspCode == "00")
-    {
-        if (order.PaymentStatus != "Paid")
+        [HttpGet("vnpay-ipn")]
+        public async Task<IActionResult> VnpIpn()
         {
-            order.PaymentStatus = "Paid";
-            order.Status = OrderStatus.ChoLayHang;
-            order.PaymentDate = DateTime.UtcNow;
+            var query = Request.Query.ToDictionary(k => k.Key, v => v.Value.ToString());
+            var valid = _vnp.ValidateReturn(query);
+            var rspCode = query.GetValueOrDefault("vnp_ResponseCode");
+            var txnRef = query.GetValueOrDefault("vnp_TxnRef");
 
-            // 💥 idempotent: cứ thử xoá, nếu hết rồi thì count=0
-            try { await _cartService.ClearSelectedAsync(order.UserId); } catch {}
+            if (!valid) return new JsonResult(new { RspCode = "97", Message = "Invalid signature" });
 
-            await _db.SaveChangesAsync();
+            var order = await _db.Orders.FirstOrDefaultAsync(o => o.Id.ToString() == txnRef);
+            if (order == null) return new JsonResult(new { RspCode = "01", Message = "Order not found" });
+
+            if (rspCode == "00")
+            {
+                if (order.PaymentStatus != "Paid")
+                {
+                    order.PaymentStatus = "Paid";
+                    order.Status = OrderStatus.DaHoanThanh;
+                    order.PaymentDate = DateTime.UtcNow;
+
+                    // 💥 idempotent: cứ thử xoá, nếu hết rồi thì count=0
+                    try { await _cartService.ClearSelectedAsync(order.UserId); } catch { }
+
+                    await _db.SaveChangesAsync();
+                    // 🔗 Tạo đơn GHTK & lưu LabelId (tránh trùng)
+                    try
+                    {
+                        if (string.IsNullOrEmpty(order.LabelId))
+                        {
+                            var label = await _orders.PushOrderToGhtkAndSaveLabelAsync(order.Id);
+                        }
+                    }
+                    catch { /* log nếu cần */ }
+                }
+                return new JsonResult(new { RspCode = "00", Message = "Success" });
+            }
+            else
+            {
+                if (order.PaymentStatus != "Paid")
+                {
+                    order.PaymentStatus = "Failed";
+                    await _db.SaveChangesAsync();
+                }
+                return new JsonResult(new { RspCode = "00", Message = "Success" });
+            }
         }
-        return new JsonResult(new { RspCode = "00", Message = "Success" });
-    }
-    else
-    {
-        if (order.PaymentStatus != "Paid")
+        [HttpPost("test-ghtk/{orderId:int}")]
+        public async Task<IActionResult> TestGhtk(int orderId)
         {
-            order.PaymentStatus = "Failed";
-            await _db.SaveChangesAsync();
+            var label = await _orders.PushOrderToGhtkAndSaveLabelAsync(orderId);
+            return Ok(new { orderId, label });
         }
-        return new JsonResult(new { RspCode = "00", Message = "Success" });
-    }
-}
 
     }
 }

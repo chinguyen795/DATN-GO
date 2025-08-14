@@ -1,5 +1,6 @@
 ﻿using DATN_GO.Service;
 using DATN_GO.ViewModels;
+using DATN_GO.ViewModels.Orders;   // <-- THÊM: để dùng OrderDetailVM
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -16,58 +17,64 @@ namespace DATN_GO.Controllers
             _orderService = orderService;
             _userService = userService;
         }
+
+        // GET: /Order/DetailOrder/{id}
         public async Task<IActionResult> DetailOrder(int id)
         {
+            // Lấy userId từ session
             var userIdStr = HttpContext.Session.GetString("Id");
-            if (string.IsNullOrEmpty(userIdStr))
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
                 return Redirect("https://localhost:7180/Login");
 
-            if (!int.TryParse(userIdStr, out int userId))
-                return Redirect("https://localhost:7180/Login");
-
+            // Lấy OrderDetailVM đã map sẵn (Items, ItemsTotal, DeliveryFee, TotalPrice, LabelId...)
             var order = await _orderService.GetOrderDetailByIdAsync(id, userId);
-
             if (order == null)
             {
                 TempData["ErrorMessage"] = "Không tìm thấy đơn hàng hoặc bạn không có quyền truy cập.";
                 return RedirectToAction("Index");
             }
 
-            // Lấy thêm thông tin user (giả sử bạn có một service UserService)
-            var userName = HttpContext.Session.GetString("FullName") ?? "N1";
-            var userNick = HttpContext.Session.GetString("Email") ?? "u2";
+            // Fallback: nếu TotalPrice từ API = 0, tự cộng cho chắc
+            if (order.TotalPrice <= 0)
+            {
+                var itemsTotal = order.ItemsTotal;
+                order.TotalPrice = itemsTotal + order.DeliveryFee;
+            }
 
-            ViewBag.UserFullName = userName;
-            ViewBag.UserNickName = userNick;
+            // Thông tin hiển thị phụ
+            ViewBag.UserFullName = HttpContext.Session.GetString("FullName") ?? "N1";
+            ViewBag.UserNickName = HttpContext.Session.GetString("Email") ?? "u2";
+            ViewBag.Crimson = "#dc143c";
 
-            return View(order);
+            // (tuỳ chọn) Tracking link nếu có LabelId
+            // Ví dụ với GHTK web: https://khachhang-staging.ghtklab.com/web/ (bạn có thể map theo môi trường)
+            if (!string.IsNullOrWhiteSpace(order.LabelId))
+            {
+                ViewBag.TrackingUrl = $"https://khachhang-staging.ghtklab.com/web/"; // có thể thay bằng URL tracking cụ thể nếu bạn có
+            }
+
+            return View(order); // View dùng @model DATN_GO.ViewModels.Orders.OrderDetailVM
         }
 
-
+        // GET: /Order
         public async Task<IActionResult> Index()
         {
-
             var userIdStr = HttpContext.Session.GetString("Id");
-            if (string.IsNullOrEmpty(userIdStr))
-                return Redirect("https://localhost:7180/Login");
-
-            if (!int.TryParse(userIdStr, out int userId))
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
                 return Redirect("https://localhost:7180/Login");
 
             var result = await _orderService.GetOrdersByUserAsync(userId);
-
             if (!result.Success)
             {
                 ViewBag.ErrorMessage = result.Message;
-                return View(new List<OrderViewModel>());  // Tên ViewModel chuẩn
+                return View(new List<OrderViewModel>());
             }
-            var userName = HttpContext.Session.GetString("FullName") ?? "N1";
-            var userNick = HttpContext.Session.GetString("Email") ?? "u2";
 
-            ViewBag.UserFullName = userName;
-            ViewBag.UserNickName = userNick;
+            ViewBag.UserFullName = HttpContext.Session.GetString("FullName") ?? "N1";
+            ViewBag.UserNickName = HttpContext.Session.GetString("Email") ?? "u2";
             ViewBag.UserId = userId;
-            return View(result.Data);  
+
+            return View(result.Data); // View dùng @model List<OrderViewModel>
         }
     }
 }

@@ -19,5 +19,7 @@ namespace DATN_API.Services.Interfaces
         Task<List<OrderViewModel>> GetOrdersByStoreUserAsync(int userId);
 
         Task<OrderViewModel?> GetOrderDetailByIdAsync(int orderId, int userId);
+         
+        Task<string?> PushOrderToGhtkAndSaveLabelAsync(int orderId);
     }
 }

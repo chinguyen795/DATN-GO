@@ -34,8 +34,15 @@
                         </div>
                         <div class="col-md-3">
                             <div class="small text-muted">Vận chuyển</div>
-                            <div class="fw-semibold">@Model.ShippingMethodName</div>
+                            <div class="fw-semibold">
+                                @Model.ShippingMethodName
+                                @if (!string.IsNullOrWhiteSpace(Model.LabelId))
+                                {
+                                    <span class="text-muted ms-2">(Mã vận đơn: @Model.LabelId)</span>
+                                }
+                            </div>
                         </div>
+
                     </div>
                 </div>
             </div>

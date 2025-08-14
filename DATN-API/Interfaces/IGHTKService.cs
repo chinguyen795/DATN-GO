@@ -4,8 +4,9 @@ namespace DATN_API.Interfaces
 {
     public interface IGHTKService
     {
-        string MapStatusText(int statusId);
-        Task<GHTKOrderStatusViewModel> GetStatusByLabelIdAsync(string labelId);
+        
         Task<int?> CalculateShippingFeeAsync(GHTKFeeRequestViewModel model);
+        Task<string?> CreateOrderAsync(GHTKCreateOrderRequest payload);
+        Task<(bool Success, string? Label, string Raw)> CreateOrderDebugAsync(GHTKCreateOrderRequest payload);
     }
 }

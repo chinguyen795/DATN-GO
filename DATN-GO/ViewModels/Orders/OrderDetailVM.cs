@@ -7,7 +7,8 @@ namespace DATN_GO.ViewModels.Orders
         [JsonPropertyName("id")]
         public int OrderId { get; set; }
 
-        [JsonPropertyName("createdAt")] // <- đổi từ orderDate
+        // API trả CreatedAt nên map về OrderDate cho View dùng
+        [JsonPropertyName("createdAt")]
         public DateTime OrderDate { get; set; }
 
         [JsonPropertyName("paymentMethod")]
@@ -22,18 +23,25 @@ namespace DATN_GO.ViewModels.Orders
         [JsonPropertyName("shippingMethodName")]
         public string? ShippingMethodName { get; set; }
 
+        // Tổng đã lưu ở server (nếu = 0 thì client sẽ tự cộng ItemsTotal + DeliveryFee)
         [JsonPropertyName("totalPrice")]
         public decimal TotalPrice { get; set; }
 
-        [JsonPropertyName("shippingFee")] // <- đổi từ deliveryFee
+        // Phí ship: API field shippingFee -> map về DeliveryFee cho View
+        [JsonPropertyName("shippingFee")]
         public decimal DeliveryFee { get; set; }
 
+        // Mã vận đơn GHTK
+        [JsonPropertyName("labelId")]
+        public string? LabelId { get; set; }
+
+        // Danh sách item trả về từ API
         [JsonPropertyName("orderDetails")]
         public List<OrderDetailItemVM> Items { get; set; } = new();
 
-        // Tự tính tạm tính (ItemsTotal) ở client
+        // Tạm tính (client-side)
         [JsonIgnore]
-        public decimal ItemsTotal => Items?.Sum(i => i.SubTotal) ?? 0;
+        public decimal ItemsTotal => Items?.Sum(i => i.SubTotal) ?? 0m;
     }
 
     public class OrderDetailItemVM
@@ -44,13 +52,14 @@ namespace DATN_GO.ViewModels.Orders
         [JsonPropertyName("productName")]
         public string ProductName { get; set; } = "";
 
-        [JsonPropertyName("productImage")] // <- đổi từ image
+        [JsonPropertyName("productImage")]
         public string? Image { get; set; }
 
         [JsonPropertyName("quantity")]
         public int Quantity { get; set; }
 
-        [JsonPropertyName("unitPrice")] // <- đổi từ price
+        // API field unitPrice -> map về Price
+        [JsonPropertyName("unitPrice")]
         public decimal Price { get; set; }
 
         [JsonIgnore]

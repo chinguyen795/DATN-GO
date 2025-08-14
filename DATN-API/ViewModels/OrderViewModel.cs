@@ -1,6 +1,4 @@
-﻿using DATN_API.ViewModels.GHTK;
-
-namespace DATN_API.ViewModels
+﻿namespace DATN_API.ViewModels
 {
 
     public class OrderViewModel
@@ -12,8 +10,7 @@ namespace DATN_API.ViewModels
         public string? StoreName { get; set; }
         public string? VoucherName { get; set; }
         public decimal? VoucherReduce { get; set; }
-        public string? LabelId { get; set; }
-        public GHTKOrderStatusViewModel GHTKStatus { get; set; }
+
         public string ShippingMethodName { get; set; } = string.Empty;
         public decimal ShippingFee { get; set; }
 
@@ -29,6 +26,8 @@ namespace DATN_API.ViewModels
 
         public int TotalQuantity => OrderDetails.Sum(d => d.Quantity);
         public decimal GrandTotal => TotalPrice + ShippingFee - (VoucherReduce ?? 0);
+
+        public string? LabelId { get; set; }
     }
 
     public class OrderDetailViewModel
@@ -57,5 +56,4 @@ namespace DATN_API.ViewModels
         public string? MainImage { get; set; }
         public decimal? CostPrice { get; set; }
     }
-
 }
