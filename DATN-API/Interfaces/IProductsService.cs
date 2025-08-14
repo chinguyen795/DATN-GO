@@ -22,7 +22,10 @@ namespace DATN_API.Services.Interfaces
         Task<bool> DeleteProductAndRelatedAsync(int productId);
 
         Task<List<Products>> GetProductsByStoreAsync(int storeId);
+        Task<IEnumerable<ProductAdminViewModel>> GetByStatusAsync(string status);
 
+
+        Task<bool> UpdateStatusAsync(int id, string status);
 
     }
 }

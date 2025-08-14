@@ -115,7 +115,32 @@ namespace DATN_API.Controllers
 
             return Ok("Xóa thành công.");
         }
+        [HttpPut("approve/{id}")]
+        public async Task<IActionResult> ApproveProduct(int id)
+        {
+            var result = await _service.UpdateStatusAsync(id, "1");  // Trạng thái 1: Đã duyệt
+            if (!result)
+                return NotFound("Không tìm thấy sản phẩm.");
+            return Ok("Sản phẩm đã được duyệt.");
+        }
 
+        // PUT: api/products/reject/{id}
+        [HttpPut("reject/{id}")]
+        public async Task<IActionResult> RejectProduct(int id)
+        {
+            var result = await _service.UpdateStatusAsync(id, "0");  // Trạng thái 0: Chưa duyệt
+            if (!result)
+                return NotFound("Không tìm thấy sản phẩm.");
+            return Ok("Sản phẩm đã bị từ chối.");
+        }
+
+        // GET: api/products/PendingApproval
+        [HttpGet("PendingApproval")]
+        public async Task<IActionResult> GetPendingProducts()
+        {
+            var products = await _service.GetByStatusAsync("0");  // Trạng thái 0: Chưa duyệt
+            return Ok(products);
+        }
     }
 
 }

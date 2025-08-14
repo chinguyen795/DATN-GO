@@ -1,6 +1,25 @@
-﻿<div class="page-wrapper">
+﻿@model List<DATN_GO.ViewModels.Store.ProductAdminViewModel>
 
-    <!-- Header -->
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+@functions {
+    string GetStatusDisplayName(string status)
+    {
+        return status switch
+        {
+            "PendingApproval" => "Chờ duyệt",
+            "NotApproved" => "Không duyệt",
+            "Rejected" => "Từ chối",
+            "Approved" => "Đã duyệt",
+            "Hidden" => "Ẩn",
+            _ => status
+        };
+    }
+}
+
+<div class="page-wrapper">
+
     <header class="main-header" id="header">
         <nav class="navbar navbar-expand-lg navbar-light" id="navbar">
             <!-- Sidebar toggle button -->
@@ -14,15 +33,7 @@
 
                 <!-- search form -->
                 <div class="search-form">
-                    <form action="index.html" method="get">
-                        <div class="input-group input-group-sm" id="input-group-search">
-                            <input type="text" autocomplete="off" name="query" id="search-input" class="form-control"
-                                   placeholder="Search..." />
-                            <div class="input-group-append">
-                                <button class="btn" type="button">/</button>
-                            </div>
-                        </div>
-                    </form>
+
                     <ul class="dropdown-menu dropdown-menu-search">
 
                         <li class="nav-item">
@@ -365,26 +376,24 @@
 
     </header>
 
-    <!-- ====================================
-      ——— CONTENT WRAPPER
-      ===================================== -->
     <div class="content-wrapper">
         <div class="content">
-
-
-
-            <!-- Table Product -->
             <div class="row">
                 <div class="col-12">
                     <div class="card card-default">
                         <div class="card-header">
                             <h2 class="text-danger">Duyệt sản phẩm</h2>
+                            <div class="mb-3 d-flex justify-content-end" id="bulkProductButtons" style="display: none; gap: 12px;">
+                                <button class="btn btn-success btn-approve-all">Duyệt tất cả</button>
+                                <button class="btn btn-danger btn-reject-all">Từ chối tất cả</button>
+                            </div>
                         </div>
                         <div class="card-body">
                             <table id="productsTable" class="table table-hover table-product" style="width:100%">
                                 <thead>
                                     <tr>
-                                        <th></th>
+                                        <th><input type="checkbox" id="checkAllProducts" /></th>
+                                        <th>Ảnh</th>
                                         <th>Sản phẩm</th>
                                         <th>Danh mục</th>
                                         <th>Giá</th>
@@ -395,90 +404,286 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>
-                                            <img src="images/products/p1.jpg" class="clickable-image"
-                                                 data-src="images/products/p1.jpg" style="cursor: pointer;" alt="Ảnh cửa hàng">
-
-                                        </td>
-                                        <td>tên sản phẩm</td>
-                                        <td>Đồ ăn nhanh</td>
-                                        <td>150.000đ</td>
-                                        <td>50</td>
-                                        <td>Cửa hàng 1</td>
-                                        <td>
-                                            <a href="#" class="badge badge-pill badge-success">Đã duyệt
-                                        </td>
-
-                                        <td>
-                                            <button class="btn btn-sm btn-success" onclick="showAlert('success')" title="Duyệt"
-                                                    aria-label="Duyệt">
-                                                <i class="bi bi-check-circle-fill"></i> Duyệt
-
-                                            </button>
-                                            <button class="btn btn-sm btn-danger" onclick="showAlert('danger')" title="Từ chối"
-                                                    aria-label="Từ chối">
-                                                <i class="mdi mdi-close-circle-outline"></i></i> Từ chối
-
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <img src="images/products/p2.jpg" class="clickable-image"
-                                                 data-src="images/products/p2.jpg" style="cursor: pointer;" alt="Ảnh cửa hàng">
-
-                                        </td>
-                                        <td>tên sản phẩm</td>
-                                        <td>Đồ ăn nhanh</td>
-                                        <td>150.000đ</td>
-                                        <td>50</td>
-                                        <td>Cửa hàng 1</td>
-                                        <td>
-                                            <a href="#" class="badge badge-pill badge-warning">Đang chờ duyệt
-                                        </td>
-
-                                        <td>
-                                            <button class="btn btn-sm btn-success" onclick="showAlert('success')" title="Duyệt"
-                                                    aria-label="Duyệt">
-                                                <i class="bi bi-check-circle-fill"></i> Duyệt
-
-                                            </button>
-                                            <button class="btn btn-sm btn-danger" onclick="showAlert('danger')" title="Từ chối"
-                                                    aria-label="Từ chối">
-                                                <i class="mdi mdi-close-circle-outline"></i></i> Từ chối
-
-                                            </button>
-
-                                        </td>
-
-                                    </tr>
+                                    @foreach (var p in Model)
+                                    {
+                                        <tr>
+                                            <td><input type="checkbox" class="product-checkbox" value="@p.Id" /></td>
+                                            <td>
+                                                <img src="@p.MainImage" class="clickable-image" data-src="@p.MainImage"
+                                                     style="width:50px; cursor:pointer;" />
+                                            </td>
+                                            <td>@p.Name</td>
+                                            <td>@p.CategoryName</td>
+                                            <td>@String.Format("{0:#,##0}₫", p.CostPrice)</td>
+                                            <td>@p.Quantity</td>
+                                            <td>@p.StoreName</td>
+                                            <td><span class="badge badge-warning">@GetStatusDisplayName(p.Status)</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-success btn-approve" data-id="@p.Id">
+                                                    <i class="bi bi-check-circle-fill"></i> Duyệt
+                                                </button>
+                                                <button class="btn btn-sm btn-danger btn-reject" data-id="@p.Id">
+                                                    <i class="mdi mdi-close-circle-outline"></i> Từ chối
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
                                 </tbody>
                             </table>
-
-
                         </div>
-
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content text-center p-4 rounded shadow"
-                 style="background-color: #fff; border: 1px solid #ddd;">
-                <!-- Close button -->
-                <button type="button" class="close ml-auto mb-2 mr-1 mt-1" data-dismiss="modal" aria-label="Đóng"
-                        style="position: absolute; top: 10px; right: 15px; z-index: 10;">
-                    <span aria-hidden="true" style="font-size: 2rem;">&times;</span>
-                </button>
+<div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content text-center p-4 rounded shadow" style="background-color: #fff;">
+            <button type="button" class="close ml-auto mb-2 mr-1 mt-1" data-dismiss="modal" aria-label="Đóng">
+                <span aria-hidden="true" style="font-size: 2rem;">&times;</span>
+            </button>
+            <img id="modalImage" src="" class="img-fluid rounded" style="max-height: 75vh; object-fit: contain;" alt="Zoom ảnh">
+        </div>
+    </div>
+</div>
 
-                <!-- Image content -->
-                <img id="modalImage" src="" class="img-fluid rounded"
-                     style="max-height: 75vh; max-width: 100%; object-fit: contain; border: 4px solid #f1f1f1; padding: 10px; background: #fafafa;"
-                     alt="Zoom ảnh">
+<!-- Modal duyệt tất cả -->
+<div class="modal fade" id="bulkApproveModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Xác nhận duyệt tất cả</h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">Bạn chắc chắn muốn duyệt tất cả sản phẩm đã chọn?</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-dismiss="modal">Huỷ</button>
+                <button type="button" class="btn btn-success" id="confirmBulkApproveBtn">Duyệt</button>
             </div>
         </div>
     </div>
+</div>
+
+<!-- Modal từ chối tất cả -->
+<div class="modal fade" id="bulkRejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Xác nhận từ chối tất cả</h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">Bạn chắc chắn muốn từ chối tất cả sản phẩm đã chọn?</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-dismiss="modal">Huỷ</button>
+                <button type="button" class="btn btn-danger" id="confirmBulkRejectBtn">Từ chối</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        // =================== Helper (không đè jQuery) ===================
+        function qs(sel, root = document) { return root.querySelector(sel); }
+        function qsa(sel, root = document) { return Array.from(root.querySelectorAll(sel)); }
+
+        // ========== CUSTOM TOAST ==========
+        function showToast(message, isSuccess = true) {
+            const iconUrl = isSuccess ? "/icons/happy.gif" : "/icons/sad.gif";
+            const title = isSuccess ? "Thành công" : "Lỗi";
+            const id = `toast-${Date.now()}`;
+            const html = `
+                <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" id="${id}"
+                     style="position: fixed; top: 1rem; right: 1rem; z-index: 9999; min-width: 320px;">
+                    <div class="toast-header d-flex align-items-center ${isSuccess ? "bg-success" : "bg-danger"} text-white">
+                        <img src="${iconUrl}" alt="icon" width="20" height="20" class="me-2" />
+                        <strong class="me-auto">${title}</strong>
+                        <small class="text-white">Vừa xong</small>
+                        <button type="button" class="btn-close btn-close-white ms-2"
+                                onclick="this.closest('.toast').remove()" aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body">${message}</div>
+                </div>`;
+            document.body.insertAdjacentHTML('beforeend', html);
+            setTimeout(() => document.getElementById(id)?.remove(), 3000);
+        }
+
+        // ========== Anti-Forgery (nếu có) ==========
+        function getCsrfToken() {
+            return document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? null;
+        }
+        async function postNoBody(url) {
+            const headers = {};
+            const token = getCsrfToken();
+            if (token) headers['RequestVerificationToken'] = token;
+            return fetch(url, { method: 'POST', headers });
+        }
+
+        // ========== Zoom ảnh ==========
+        qsa('.clickable-image').forEach(img => {
+            img.addEventListener('click', function () {
+                document.getElementById('modalImage').src = this.dataset.src;
+                // Dùng jQuery thật để gọi Bootstrap modal
+                window.jQuery('#imageModal').modal('show');
+            });
+        });
+
+        // ========== Duyệt / Từ chối từng sản phẩm ==========
+        qsa('.btn-approve').forEach(btn => {
+            btn.addEventListener('click', async function () {
+                const id = this.dataset.id;
+                this.disabled = true;
+                const oldHtml = this.innerHTML;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm"></span>...';
+                try {
+                    const res = await postNoBody(`/Admin/Product/Approve?id=${encodeURIComponent(id)}`);
+                    if (res.ok) {
+                        showToast('✅ Sản phẩm đã được duyệt!', true);
+                        this.closest('tr')?.remove();
+                    } else {
+                        showToast('❌ Duyệt sản phẩm thất bại!', false);
+                    }
+                } catch {
+                    showToast('❌ Duyệt sản phẩm thất bại (mạng/exception)!', false);
+                } finally {
+                    this.disabled = false;
+                    this.innerHTML = oldHtml;
+                    toggleBulkButtons();
+                }
+            });
+        });
+
+        qsa('.btn-reject').forEach(btn => {
+            btn.addEventListener('click', async function () {
+                const id = this.dataset.id;
+                this.disabled = true;
+                const oldHtml = this.innerHTML;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm"></span>...';
+                try {
+                    const res = await postNoBody(`/Admin/Product/Reject?id=${encodeURIComponent(id)}`);
+                    if (res.ok) {
+                        showToast('🚫 Sản phẩm đã bị từ chối!', false);
+                        this.closest('tr')?.remove();
+                    } else {
+                        showToast('❌ Từ chối sản phẩm thất bại!', false);
+                    }
+                } catch {
+                    showToast('❌ Từ chối sản phẩm thất bại (mạng/exception)!', false);
+                } finally {
+                    this.disabled = false;
+                    this.innerHTML = oldHtml;
+                    toggleBulkButtons();
+                }
+            });
+        });
+
+        // ========== Select All & bật/tắt nút bulk ==========
+        const checkAll = document.getElementById('checkAllProducts');
+        const bulkBtnsWrap = document.getElementById('bulkProductButtons');
+
+        if (checkAll) {
+            checkAll.addEventListener('change', function () {
+                const checked = this.checked;
+                qsa('.product-checkbox').forEach(cb => cb.checked = checked);
+                toggleBulkButtons();
+            });
+        }
+        qsa('.product-checkbox').forEach(cb => cb.addEventListener('change', toggleBulkButtons));
+
+        function toggleBulkButtons() {
+            const count = qsa('.product-checkbox:checked').length;
+            if (bulkBtnsWrap) bulkBtnsWrap.style.display = count > 0 ? 'flex' : 'none';
+        }
+
+        // ========== Bulk helper (Approve/Reject theo lô) ==========
+        async function callEndpointPerId(ids, action /* 'Approve' | 'Reject' */) {
+            const base = action === 'Approve' ? '/Admin/Product/Approve?id=' : '/Admin/Product/Reject?id=';
+            const CONCURRENCY = 6;                 // giới hạn song song nhẹ nhàng
+            const queue = [...ids];
+            const okIds = [];
+            const failIds = [];
+
+            async function worker() {
+                while (queue.length) {
+                    const id = queue.shift();
+                    try {
+                        const res = await postNoBody(base + encodeURIComponent(id));
+                        (res.ok ? okIds : failIds).push(id);
+                    } catch {
+                        failIds.push(id);
+                    }
+                }
+            }
+
+            await Promise.all(Array.from({ length: Math.min(CONCURRENCY, ids.length) }, worker));
+
+            // Xóa row OK
+            okIds.forEach(id => {
+                const row = document.querySelector(`.product-checkbox[value="${id}"]`)?.closest('tr');
+                row?.remove();
+            });
+
+            // Dọn trạng thái UI
+            if (checkAll) checkAll.checked = false;
+            toggleBulkButtons();
+
+            // Tổng kết
+            if (failIds.length === 0) {
+                showToast(`✅ ${action === 'Approve' ? 'Duyệt' : 'Từ chối'} thành công ${okIds.length} sản phẩm.`, true);
+            } else if (okIds.length === 0) {
+                showToast(`❌ ${action === 'Approve' ? 'Duyệt' : 'Từ chối'} thất bại cho ${failIds.length} sản phẩm.`, false);
+            } else {
+                showToast(`⚠️ ${action === 'Approve' ? 'Duyệt' : 'Từ chối'}: OK ${okIds.length}, fail ${failIds.length}.`, false);
+            }
+        }
+
+        // ========== Bulk Approve ==========
+        const approveAllBtn = document.querySelector('.btn-approve-all');
+        if (approveAllBtn) {
+            approveAllBtn.addEventListener('click', function () {
+                const selectedIds = qsa('.product-checkbox:checked').map(cb => cb.value);
+                if (selectedIds.length === 0) return showToast("⚠️ Bạn chưa chọn sản phẩm nào để duyệt.", false);
+
+                window.jQuery('#bulkApproveModal').modal('show');
+                const btn = document.getElementById('confirmBulkApproveBtn');
+                if (!btn) return;
+                btn.onclick = async function () {
+                    const old = btn.innerHTML;
+                    btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang duyệt...';
+                    try { await callEndpointPerId(selectedIds, 'Approve'); }
+                    finally {
+                        btn.disabled = false; btn.innerHTML = old;
+                        window.jQuery('#bulkApproveModal').modal('hide');
+                    }
+                };
+            });
+        }
+
+        // ========== Bulk Reject ==========
+        const rejectAllBtn = document.querySelector('.btn-reject-all');
+        if (rejectAllBtn) {
+            rejectAllBtn.addEventListener('click', function () {
+                const selectedIds = qsa('.product-checkbox:checked').map(cb => cb.value);
+                if (selectedIds.length === 0) return showToast("⚠️ Bạn chưa chọn sản phẩm nào để từ chối.", false);
+
+                window.jQuery('#bulkRejectModal').modal('show');
+                const btn = document.getElementById('confirmBulkRejectBtn');
+                if (!btn) return;
+                btn.onclick = async function () {
+                    const old = btn.innerHTML;
+                    btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang từ chối...';
+                    try { await callEndpointPerId(selectedIds, 'Reject'); }
+                    finally {
+                        btn.disabled = false; btn.innerHTML = old;
+                        window.jQuery('#bulkRejectModal').modal('hide');
+                    }
+                };
+            });
+        }
+    </script>
+}
+
+

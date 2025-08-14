@@ -311,5 +311,57 @@ namespace DATN_API.Services
             await _context.SaveChangesAsync();
             return true;
         }
+        public async Task<IEnumerable<ProductAdminViewModel>> GetByStatusAsync(string status)
+        {
+            // Ensure that status is parsed as integer (0 or 1)
+            if (!int.TryParse(status, out var statusValue))
+                return Enumerable.Empty<ProductAdminViewModel>();
+
+            var products = await _context.Products
+                .Where(p => (int)p.Status == statusValue)  // Cast ProductStatus to int
+                .Include(p => p.Category)
+                .Include(p => p.Store)
+                .Select(p => new ProductAdminViewModel
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    MainImage = p.MainImage,
+                    Description = p.Description,
+                    Brand = p.Brand,
+                    Weight = p.Weight,
+                    Slug = p.Slug,
+                    Status = p.Status.ToString(),
+                    Quantity = p.Quantity,
+                    Views = p.Views,
+                    Rating = p.Rating,
+                    CreateAt = p.CreateAt,
+                    UpdateAt = p.UpdateAt,
+                    CostPrice = p.CostPrice,
+                    PlaceOfOrigin = p.PlaceOfOrigin,
+                    Hashtag = p.Hashtag,
+                    CategoryName = p.Category != null ? p.Category.Name : null,
+                    StoreName = p.Store != null ? p.Store.Name : null
+                })
+                .ToListAsync();
+
+            return products;
+        }
+
+
+        public async Task<bool> UpdateStatusAsync(int id, string status)
+        {
+            var product = await _context.Products.FindAsync(id);
+            if (product == null) return false;
+
+            // Parse status string ("0" or "1") to ProductStatus enum
+            if (!Enum.TryParse<ProductStatus>(status, out var parsedStatus))
+                return false;
+
+            product.Status = parsedStatus;  // Now assign the parsed status to the Product's Status
+            product.UpdateAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }
