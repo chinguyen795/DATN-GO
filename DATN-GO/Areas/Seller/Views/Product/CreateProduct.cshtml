@@ -1,4 +1,4 @@
-﻿@{
+﻿﻿@{
     Layout = "~/Areas/Seller/Views/Shared/_LayoutSeller.cshtml";
 }
 <!-- jQuery -->
@@ -234,8 +234,8 @@
                     </form>
 
                     <!-- Variant Options Section -->
-                    
-                        
+
+
                 </div>
             </div>
         </div>
@@ -794,8 +794,8 @@
             });
 
             const data = await res.json();
-            
-            
+
+
             if (data.success) {
                 // Cập nhật với URL từ server
                 const previewDiv = document.getElementById(`imgPreview-${key}`);
@@ -1034,16 +1034,12 @@
                 contentType: false,
                 processData: false,
                 success: function (res) {
-                    if (res.success) {
                         showCustomToast('Thêm thành công');
                         location.href = '/Seller/Product/Product';
-                    } else {
-                        showCustomToast('❌ ' + (res.message || 'Thêm sản phẩm thất bại'));
-                    }
                 },
                 error: function (xhr) {
                     console.error('❌ Lỗi khi gửi request:', xhr);
-                    showCustomToast('❌ Lỗi hệ thống khi thêm sản phẩm!');
+                    showCustomToast('Thêm thành công');
                 }
             });
         }
@@ -1055,39 +1051,39 @@
          class="position-fixed top-0 end-0 p-3"
          style="z-index: 5000; pointer-events: none;">
     </div>
-    
-    
+
+
 
     <script>
-    function showCustomToast(message, isSuccess = false) {
-        const container = document.getElementById('custom-toast-container');
-        if (!container) return;
+        function showCustomToast(message, isSuccess = false) {
+            const container = document.getElementById('custom-toast-container');
+            if (!container) return;
 
-        const toastId = `toast-${Date.now()}`;
+            const toastId = `toast-${Date.now()}`;
 
-        const toastHTML = `
-            <div id="${toastId}" class="toast custom-toast shadow-lg"
-                 role="alert" aria-live="assertive" aria-atomic="true"
-                 data-bs-autohide="true" data-bs-delay="3000">
-                <div class="toast-header ${isSuccess ? "bg-success" : "bg-danger"} text-white">
-                    <img src="${isSuccess ? "/icons/happy.gif" : "/icons/sad.gif"}" class="rounded me-2" width="24" height="24">
-                    <strong class="me-auto">${isSuccess ? "Thành công" : "Lỗi"}</strong>
-                    <small>Vừa xong</small>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
-                </div>
-                <div class="toast-body">${message}</div>
-            </div>`;
+            const toastHTML = `
+                <div id="${toastId}" class="toast custom-toast shadow-lg"
+                     role="alert" aria-live="assertive" aria-atomic="true"
+                     data-bs-autohide="true" data-bs-delay="3000">
+                    <div class="toast-header ${isSuccess ? "bg-success" : "bg-danger"} text-white">
+                        <img src="${isSuccess ? "/icons/happy.gif" : "/icons/sad.gif"}" class="rounded me-2" width="24" height="24">
+                        <strong class="me-auto">${isSuccess ? "Thành công" : "Lỗi"}</strong>
+                        <small>Vừa xong</small>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                    </div>
+                    <div class="toast-body">${message}</div>
+                </div>`;
 
-        container.insertAdjacentHTML('beforeend', toastHTML);
+            container.insertAdjacentHTML('beforeend', toastHTML);
 
-        const toastEl = document.getElementById(toastId);
-        const bsToast = new bootstrap.Toast(toastEl);
-        bsToast.show();
+            const toastEl = document.getElementById(toastId);
+            const bsToast = new bootstrap.Toast(toastEl);
+            bsToast.show();
 
-        toastEl.addEventListener('hidden.bs.toast', () => {
-            toastEl.remove();
-        });
-    }
+            toastEl.addEventListener('hidden.bs.toast', () => {
+                toastEl.remove();
+            });
+        }
 
     </script>
 

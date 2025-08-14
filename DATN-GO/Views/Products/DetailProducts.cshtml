@@ -1,4 +1,4 @@
-﻿﻿@using DATN_GO.ViewModels
+﻿﻿﻿@using DATN_GO.ViewModels
 @{
     var images = ViewBag.Images as List<string> ?? new List<string>();
     var variants = ViewBag.VariantOptions as List<VariantWithValuesViewModel>;
@@ -215,7 +215,20 @@
     console.log("Variant Combinations:", variantCombinations);
 
     let currentVariantPrice = parseFloat("@((priceInfo != null && !priceInfo.IsVariant && priceInfo.Price.HasValue) ? priceInfo.Price.Value.ToString("0.##") : "0")");
-    let totalQuantity = variantCombinations.reduce((sum, v) => sum + v.quantity, 0);
+
+    // -------------------------
+    // FIX: Tách trường hợp có biến thể / không có biến thể
+    // -------------------------
+    let totalQuantity = 0;
+    if (@(priceInfo != null && priceInfo.IsVariant ? "true" : "false")) {
+        // Có biến thể -> cộng tất cả quantity của variant combinations
+        totalQuantity = variantCombinations.reduce((sum, v) => sum + v.quantity, 0);
+    } else {
+        // Không có biến thể -> lấy quantity trực tiếp từ Model
+        totalQuantity = parseInt("@Model.Quantity") || 0;
+    }
+
+    let availableStock = totalQuantity;
 
     const quantityDisplay = document.getElementById("productQuantityDisplay");
     if (quantityDisplay) {
@@ -257,7 +270,7 @@
                     mainImage.src = match.image;
                 }
             } else {
-                // Nếu không có kết hợp đầy đủ, thì giá sẽ là giá mặc định (0)
+                // Nếu không có kết hợp đầy đủ
                 currentVariantPrice = 0;
                 updateTotalPrice();
 
@@ -369,11 +382,9 @@
         });
     });
 
-
-
     updateFormHiddenInputs();
-
 </script>
+
 <script>
     document.getElementById("addToCartForm").addEventListener("submit", async function (e) {
         e.preventDefault();
@@ -383,21 +394,30 @@
 
         let errors = [];
 
-        // Lấy số lượng tồn kho từ text hiển thị
-        const quantityDisplay = document.getElementById("productQuantityDisplay")?.textContent || "";
-        const availableMatch = quantityDisplay.match(/Còn lại:\s*(\d+)/);
-        const availableQuantity = availableMatch ? parseInt(availableMatch[1]) : 0;
+        // -------------------------
+        // FIX: Kiểm tra tồn kho theo 2 trường hợp
+        // -------------------------
+        let availableQuantity = 0;
+        if (@(priceInfo != null && priceInfo.IsVariant ? "true" : "false")) {
+            // Lấy số lượng tồn kho từ text hiển thị (biến thể)
+            const quantityDisplayText = document.getElementById("productQuantityDisplay")?.textContent || "";
+            const availableMatch = quantityDisplayText.match(/Còn lại:\s*(\d+)/);
+            availableQuantity = availableMatch ? parseInt(availableMatch[1]) : 0;
+        } else {
+            // Không có biến thể → lấy từ Model
+            availableQuantity = parseInt("@Model.Quantity") || 0;
+        }
 
         // Lấy số lượng người dùng nhập
         const quantityInputEl = document.getElementById("productQuantityInput");
         const requestedQuantity = parseInt(quantityInputEl?.value) || 1;
 
-        // Kiểm tra local (nếu vượt quá tồn kho trực tiếp thì không gửi request)
+        // Kiểm tra vượt tồn kho
         if (requestedQuantity > availableQuantity) {
             errors.push(`Số lượng bạn chọn (${requestedQuantity}) vượt quá số lượng tồn (${availableQuantity}).`);
         }
 
-        // Kiểm tra biến thể (nếu có)
+        // Kiểm tra biến thể bắt buộc (nếu có)
         const variantGroups = document.querySelectorAll('[name^="variant_"]');
         if (variantGroups.length > 0) {
             const uniqueGroups = [...new Set(Array.from(variantGroups).map(v => v.name))];
@@ -430,15 +450,11 @@
             if (contentType.includes('application/json')) {
                 const data = await response.json();
 
-                // server trả success = true
                 if (response.ok && (data.success === undefined || data.success === true)) {
-                    // hiển thị success (dùng message nếu server trả)
                     showToast(data.message || 'Đã thêm vào giỏ hàng.', true);
-                    // tuỳ bạn có thể cập nhật UI giỏ hàng tại đây (số lượng, icon, ...)
                     return;
                 }
 
-                // xử lý lỗi cụ thể từ server
                 const errMsg = data.message || '';
                 const errCode = data.errorCode || '';
 
@@ -449,20 +465,15 @@
                 }
                 return;
             } else {
-                // Server trả HTML (ví dụ redirect). Nếu server redirect thì fetch sẽ trả nội dung cuối cùng.
-                // Nếu server response redirected => chuyển trang sang URL trả về
                 if (response.redirected) {
                     window.location.href = response.url;
                     return;
                 }
-                // Nếu không redirect, đọc text để dò lỗi (fallback)
                 const text = await response.text();
                 if (/vượt|tồn|exceed/i.test(text)) {
                     showToast('Bạn đã thêm vượt quá số lượng hiện có của sản phẩm.', false);
                 } else {
-                    // fallback success -> reload hoặc show thông báo
                     showToast('Hoàn tất. Vui lòng kiểm tra giỏ hàng.', true);
-                    // reload để cập nhật giỏ hàng
                     window.location.reload();
                 }
                 return;
@@ -473,4 +484,3 @@
         }
     });
 </script>
-
