@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace DATN_API.Models
 {
@@ -12,6 +13,7 @@ namespace DATN_API.Models
         public int ReviewId { get; set; }
         public string? Media { get; set; }
 
+        [JsonIgnore]
         public virtual Reviews? Review { get; set; }
     }
 }

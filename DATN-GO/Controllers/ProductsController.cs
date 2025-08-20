@@ -2,7 +2,8 @@
 using DATN_GO.Services; // Đảm bảo đúng namespace chứa các service
 using DATN_GO.Service;
 using DATN_GO.ViewModels;
-using DATN_GO.Models; // Nếu có tách riêng interface
+using DATN_GO.Models;
+using System.Text; // Nếu có tách riêng interface
 
 namespace DATN_GO.Controllers
 {
@@ -17,6 +18,7 @@ namespace DATN_GO.Controllers
         private readonly VariantCompositionService _variantCompositionService;
         private readonly PriceService _priceService;
         private readonly CategoryService _categoryService;
+        private readonly ReviewService _reviewService;
 
         public ProductsController(
             ProductService productService,
@@ -27,7 +29,8 @@ namespace DATN_GO.Controllers
             VariantValueService variantValueService,
             VariantCompositionService variantCompositionService,
             PriceService priceService,
-            CategoryService categoryService)
+            CategoryService categoryService,
+            ReviewService reviewService)
         {
             _productService = productService;
             _productVariantService = productVariantService;
@@ -38,6 +41,7 @@ namespace DATN_GO.Controllers
             _variantCompositionService = variantCompositionService;
             _priceService = priceService;
             _categoryService = categoryService;
+            _reviewService = reviewService;
         }
 
         public async Task<IActionResult> Products()
@@ -144,36 +148,28 @@ namespace DATN_GO.Controllers
 
         public async Task<IActionResult> DetailProducts(int id)
         {
-            // Lấy sản phẩm
             var product = await _productService.GetProductByIdAsync(id);
             if (product == null) return NotFound();
 
-            ViewBag.ProductName = product.Name;
-            var productvariant = await _productVariantService.GetByProductIdAsync(id);
-
+            // Ảnh sản phẩm
+            var productVariants = await _productVariantService.GetByProductIdAsync(id);
             var variantCombinations = await _productVariantService.GetVariantCombinationsByProductIdAsync(id);
-
-            // Lấy ảnh
-            var variantImages = await _productVariantService.GetImagesByProductIdAsync(id);
-
             var allImages = new List<string>();
+
             if (!string.IsNullOrEmpty(product.MainImage))
                 allImages.Add(product.MainImage);
-            if (productvariant != null)
+
+            if (productVariants != null)
             {
-                foreach (var variant in productvariant)
+                foreach (var variant in productVariants)
                 {
                     if (!string.IsNullOrEmpty(variant.Image))
-                    {
                         allImages.Add(variant.Image);
-                    }
                 }
             }
-
-
             ViewBag.Images = allImages;
 
-            // Lấy cửa hàng
+            // Store info
             var store = await _storeService.GetStoreByIdAsync(product.StoreId);
             if (store != null)
             {
@@ -182,22 +178,60 @@ namespace DATN_GO.Controllers
             }
 
             ViewBag.MinMaxPrice = await _priceService.GetMinMaxPriceByProductIdAsync(id);
-            ViewBag.Rating = 4.8;
-            ViewBag.Reviews = "1.2k";
 
-            // ✅ Lấy variants và values
+            // Reviews
+            ViewBag.Reviews = await _reviewService.GetReviewsByProductIdAsync(id) ?? new List<ReviewViewModel>();
+
+            // ===== Lấy UserId từ Session =====
+            if (!HttpContext.Session.TryGetValue("Id", out byte[] idBytes) ||
+                !int.TryParse(Encoding.UTF8.GetString(idBytes), out int userId))
+            {
+                ViewBag.CanReview = false;
+                ViewBag.VariantOptions = new List<VariantWithValuesViewModel>();
+                ViewBag.VariantCombinations = variantCombinations;
+                return View(product);
+            }
+
+            var completedOrders = await _reviewService.GetCompletedOrdersByUserAsync(userId);
+
+            // Lấy ra các orderId chứa sản phẩm này
+            var productOrders = completedOrders
+                .Where(o => o.Products.Any(p => p.ProductId == id))
+                .Select(o => o.OrderId)
+                .ToList();
+
+            // Nếu không có order nào thì không cho review
+            if (!productOrders.Any())
+            {
+                ViewBag.CanReview = false;
+                ViewBag.OrderId = null;
+            }
+            else
+            {
+                // Lấy danh sách order đã review
+                var reviewedOrderIds = (await _reviewService.GetReviewsByProductIdAsync(id))
+                    .Where(r => r.UserId == userId)
+                    .Select(r => r.OrderId)
+                    .ToList();
+
+                // Lấy order chưa review
+                var orderNotReviewed = productOrders.FirstOrDefault(o => !reviewedOrderIds.Contains(o));
+
+                ViewBag.OrderId = orderNotReviewed;
+                ViewBag.CanReview = orderNotReviewed != 0; // true nếu còn order chưa review
+            }
+
+
+            // Load variants
             var variants = await _variantService.GetByProductIdAsync(id);
-
             var variantViewModels = new List<VariantWithValuesViewModel>();
-
             foreach (var variant in variants)
             {
                 var values = await _variantValueService.GetByVariantIdAsync(variant.Id);
-
                 variantViewModels.Add(new VariantWithValuesViewModel
                 {
                     VariantName = variant.VariantName,
-                    VariantType = variant.Type, // Dùng làm name="size"/"color"
+                    VariantType = variant.Type,
                     Values = values.Select(v => new VariantValueItem
                     {
                         Id = v.Id,
@@ -206,14 +240,13 @@ namespace DATN_GO.Controllers
                     }).ToList()
                 });
             }
-
             ViewBag.VariantOptions = variantViewModels;
             ViewBag.VariantCombinations = variantCombinations;
 
             return View(product);
+
+
         }
-
-
 
     }
 }

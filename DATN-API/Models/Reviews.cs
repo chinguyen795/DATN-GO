@@ -14,7 +14,8 @@ namespace DATN_API.Models
 
         [ForeignKey("Product")]
         public int ProductId { get; set; }
-
+        [ForeignKey("Order")]
+        public int OrderId { get; set; }
         public int Rating { get; set; }
 
         public string CommentText { get; set; }
@@ -25,5 +26,10 @@ namespace DATN_API.Models
         public virtual Users? User { get; set; }
         [JsonIgnore]
         public virtual Products? Product { get; set; }
+        [JsonIgnore]
+        public virtual Orders? Order { get; set; }
+        public virtual ICollection<ReviewMedias>? ReviewMedias { get; set; }
+
     }
+
 }

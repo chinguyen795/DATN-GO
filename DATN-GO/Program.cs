@@ -75,6 +75,7 @@ builder.Services.AddHttpClient<OrderService>();
 builder.Services.AddHttpClient<DecoratesService>();
 builder.Services.AddHttpClient<CartService>();
 builder.Services.AddHttpClient<BlogService>();
+builder.Services.AddHttpClient<ReviewService>();
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
