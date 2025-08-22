@@ -188,5 +188,21 @@ namespace DATN_API.Controllers
             return Ok(data);
         }
 
+        [HttpGet("totalprice/by-month/{year}/store/{storeId}")]
+        public async Task<IActionResult> GetTotalPriceByMonth(int year, int storeId)
+        {
+            if (storeId <= 0)
+                return BadRequest("Sai storeId");
+
+            var result = await _service.GetTotalPriceByMonthAsync(year, storeId);
+            return Ok(result);
+        }
+        [HttpGet("count/store/{storeId}")]
+        public async Task<IActionResult> GetTotalOrdersByStoreId(int storeId)
+        {
+            var count = await _service.GetTotalOrdersByStoreIdAsync(storeId);
+            return Ok(count);
+        }
+
     }
 }

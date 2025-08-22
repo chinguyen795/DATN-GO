@@ -363,5 +363,12 @@ namespace DATN_API.Services
             await _context.SaveChangesAsync();
             return true;
         }
+        public async Task<int> GetProductCountByStoreIdAsync(int storeId)
+        {
+            return await _context.Products
+                .Where(p => p.StoreId == storeId)
+                .CountAsync();
+        }
+
     }
 }

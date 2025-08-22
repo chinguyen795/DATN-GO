@@ -56,6 +56,7 @@ namespace DATN_API.Services
             order.ShippingMethodId = model.ShippingMethodId;
             order.DeliveryFee = model.DeliveryFee;
             order.PaymentDate = model.PaymentDate;
+            order.OrderDate = model.OrderDate; 
 
             await _context.SaveChangesAsync();
             return true;
@@ -545,6 +546,34 @@ namespace DATN_API.Services
             o.LabelId = label;
             await _context.SaveChangesAsync();
             return label;
+        }
+        public async Task<Dictionary<string, decimal>> GetTotalPriceByMonthAsync(int year, int storeId)
+        {
+            // Lấy các order theo năm & storeId
+            var orders = await _context.Orders
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                .Where(o => o.OrderDate.Year == year &&
+                            o.OrderDetails.Any(od => od.Product.StoreId == storeId))
+                .ToListAsync();
+
+            // Tạo dictionary mặc định 12 tháng = 0
+            var result = Enumerable.Range(1, 12)
+                .ToDictionary(m => m.ToString(), m => 0m);
+
+            foreach (var order in orders)
+            {
+                int month = order.OrderDate.Month;
+                result[month.ToString()] += order.TotalPrice;
+            }
+
+            return result;
+        }
+        public async Task<int> GetTotalOrdersByStoreIdAsync(int storeId)
+        {
+            return await _context.Orders
+                .Where(o => o.ShippingMethod != null && o.ShippingMethod.StoreId == storeId)
+                .CountAsync();
         }
 
     }

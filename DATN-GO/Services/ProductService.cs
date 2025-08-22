@@ -173,5 +173,11 @@ namespace DATN_GO.Service
             var response = await _httpClient.DeleteAsync($"{_baseUrl}Products/DeleteProduct/{productId}");
             return response.IsSuccessStatusCode;
         }
+        public async Task<int> GetProductCountByStoreIdAsync(int storeId)
+        {
+            return await _httpClient.GetFromJsonAsync<int>($"{_baseUrl}products/count/store/{storeId}");
+        }
+
+
     }
 }

@@ -220,5 +220,40 @@ namespace DATN_GO.Service
                 return (false, null, ex.Message);
             }
         }
+        public async Task<(bool Success, Dictionary<int, decimal>? Data, string? Message)>
+    GetTotalPriceByMonthAsync(int year, int storeId)
+        {
+            try
+            {
+                var url = $"{_baseUrl}orders/totalprice/by-month/{year}/store/{storeId}";
+                var res = await _httpClient.GetAsync(url);
+
+                if (!res.IsSuccessStatusCode)
+                    return (false, null, $"API lỗi {res.StatusCode}");
+
+                // API giả sử trả về JSON kiểu { "1": 100000, "2": 200000, ... }
+                var data = await res.Content.ReadFromJsonAsync<Dictionary<int, decimal>>(_jsonOpts);
+
+                return (true, data ?? new Dictionary<int, decimal>(), null);
+            }
+            catch (Exception ex)
+            {
+                return (false, null, ex.Message);
+            }
+        }
+        public async Task<int> GetTotalOrdersByStoreIdAsync(int storeId)
+        {
+            try
+            {
+                var url = $"{_baseUrl}orders/count/store/{storeId}";
+                return await _httpClient.GetFromJsonAsync<int>(url);
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"❌ Lỗi gọi API GetTotalOrdersByStoreIdAsync: {ex.Message}");
+                return 0;
+            }
+        }
+
     }
 }

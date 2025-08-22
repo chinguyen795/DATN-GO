@@ -539,6 +539,53 @@
         tableBody.addEventListener('click', handleTableClick);
     }
 
+    function applyValuesToAll() {
+        const price = document.getElementById('applyAllPrice').value;
+        const cost = document.getElementById('applyAllCost').value;
+        const quantity = document.getElementById('applyAllQuantity').value;
+        const weight = document.getElementById('applyAllWeight').value;
+        const length = document.getElementById('applyAllLength').value;
+        const width = document.getElementById('applyAllWidth').value;
+        const height = document.getElementById('applyAllHeight').value;
+
+        document.querySelectorAll('#variantTableBody tr').forEach(tr => {
+            const key = tr.dataset.variantKey;
+            if (!variantData[key]) variantData[key] = {};
+
+            if (price) {
+                tr.querySelector('.variant-price').value = price;
+                variantData[key].price = price;
+            }
+            if (cost) {
+                tr.querySelector('.variant-cost-price').value = cost;
+                variantData[key].cost = cost;
+            }
+            if (quantity) {
+                tr.querySelector('.variant-quantity').value = quantity;
+                variantData[key].quantity = quantity;
+            }
+            if (weight) {
+                tr.querySelector('.variant-weight').value = weight;
+                variantData[key].weight = weight;
+            }
+            if (length || width || height) {
+                if (!variantData[key].dimensions) variantData[key].dimensions = {};
+                if (length) {
+                    tr.querySelector('.variant-length').value = length;
+                    variantData[key].dimensions.D = length;
+                }
+                if (width) {
+                    tr.querySelector('.variant-width').value = width;
+                    variantData[key].dimensions.R = width;
+                }
+                if (height) {
+                    tr.querySelector('.variant-height').value = height;
+                    variantData[key].dimensions.C = height;
+                }
+            }
+        });
+    }
+
     function handleTableInput(event) {
         const target = event.target;
         if (!target.matches('input[type="text"], input[type="number"]')) return;
@@ -621,7 +668,7 @@
 
         const tableContainer = document.querySelector('.variant-table');
         const tableBody = document.getElementById('variantTableBody');
-        const thead = document.querySelector('.variant-table thead tr');
+        const thead = document.querySelector('.variant-table thead');
 
         const validTypes = variantTypes.filter(type => type.name && type.values.some(v => v));
 
@@ -631,18 +678,49 @@
         }
 
         // Cập nhật tiêu đề bảng
-        thead.innerHTML = '';
-        validTypes.forEach(type => {
-            thead.insertAdjacentHTML('beforeend', `<th>${type.name}</th>`);
-        });
-        thead.insertAdjacentHTML('beforeend', `
-                <th>Giá Bán</th>
-                <th>Giá Vốn</th>
-                <th>Tồn Kho</th>
-                <th>KL (kg)</th>
-                <th>K.Thước (DxRxC)</th>
-                <th>Ảnh</th>
-            `);
+        // Clear thead trước
+        // Xóa nội dung cũ
+        thead.innerHTML = "";
+
+        // Tạo tr nhập nhanh
+        let applyAllRow = document.createElement("tr");
+        applyAllRow.id = "applyAllRow";
+        applyAllRow.style.background = "#f9f9f9";
+
+        applyAllRow.innerHTML = `
+        <th colspan="${validTypes.length + 6}">
+            <div class="d-flex gap-2 flex-wrap">
+                <input type="number" id="applyAllPrice" class="form-control form-control-sm" placeholder="Giá bán cho tất cả" style="max-width: 150px;">
+                <input type="number" id="applyAllCost" class="form-control form-control-sm" placeholder="Giá vốn cho tất cả" style="max-width: 150px;">
+                <input type="number" id="applyAllQuantity" class="form-control form-control-sm" placeholder="Số lượng cho tất cả" style="max-width: 150px;">
+                <input type="number" id="applyAllWeight" class="form-control form-control-sm" placeholder="Khối lượng cho tất cả" style="max-width: 150px;">
+                <input type="number" id="applyAllLength" class="form-control form-control-sm" placeholder="D" style="max-width: 80px;">
+                <input type="number" id="applyAllWidth" class="form-control form-control-sm" placeholder="R" style="max-width: 80px;">
+                <input type="number" id="applyAllHeight" class="form-control form-control-sm" placeholder="C" style="max-width: 80px;">
+                <button type="button" class="btn btn-primary btn-sm" onclick="applyValuesToAll()">Áp dụng cho tất cả</button>
+            </div>
+        </th>
+    `;
+
+        // Tạo tr header
+        let headerRow = document.createElement("tr");
+        headerRow.innerHTML = `
+        ${validTypes.map(type => `<th>${type.name}</th>`).join('')}
+        <th>Giá Bán</th>
+        <th>Giá Vốn</th>
+        <th>Tồn Kho</th>
+        <th>KL (kg)</th>
+        <th>K.Thước (DxRxC)</th>
+        <th>Ảnh</th>
+    `;
+
+        // Thêm từng cái vào thead
+        thead.appendChild(applyAllRow);
+        thead.appendChild(headerRow);
+
+
+
+
 
         // Tạo các kết hợp và cập nhật phần thân bảng
         const combinations = generateVariantCombinations();

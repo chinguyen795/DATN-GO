@@ -23,5 +23,8 @@ namespace DATN_API.Services.Interfaces
         Task<string?> PushOrderToGhtkAndSaveLabelAsync(int orderId);
 
         Task<object> GetStatisticsByUserAsync(int userId, DateTime? start, DateTime? end, DateTime? startCompare, DateTime? endCompare);
+        Task<Dictionary<string, decimal>> GetTotalPriceByMonthAsync(int year, int storeId);
+        Task<int> GetTotalOrdersByStoreIdAsync(int storeId);
+
     }
 }

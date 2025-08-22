@@ -26,6 +26,7 @@ namespace DATN_API.Services.Interfaces
 
 
         Task<bool> UpdateStatusAsync(int id, string status);
+        Task<int> GetProductCountByStoreIdAsync(int storeId);
 
     }
 }

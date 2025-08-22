@@ -13,16 +13,20 @@ namespace DATN_GO.Areas.Seller.Controllers
     public class HomeController : Controller
     {
         private readonly StoreService _storeService;
+        private readonly OrderService _orderService;
         private readonly UserService _userService;
+        private readonly ProductService _productService;
         private readonly GoogleCloudStorageService _gcsService;
         private readonly ILogger<HomeController> _logger;
 
-        public HomeController(StoreService storeService, UserService userService, GoogleCloudStorageService gcsService, ILogger<HomeController> logger)
+        public HomeController(StoreService storeService,OrderService orderSerivce, UserService userService, GoogleCloudStorageService gcsService, ILogger<HomeController> logger, ProductService productService)
         {
             _storeService = storeService;
             _userService = userService;
             _gcsService = gcsService;
             _logger = logger;
+            _orderService = orderSerivce;
+            _productService = productService;
         }
 
         public async Task<IActionResult> Index()
@@ -234,6 +238,23 @@ namespace DATN_GO.Areas.Seller.Controllers
                 return BadRequest("Đã xảy ra lỗi khi cập nhật hình ảnh.");
             }
         }
+        [HttpGet("/api/Orders/totalprice/by-month/{year}/store/{storeId}")]
+        public async Task<IActionResult> GetTotalPriceCountByMonth(int year)
+        {
+            var userId = HttpContext.Session.GetString("Id");
+            if (string.IsNullOrEmpty(userId)) return RedirectToAction("Index", "Home");
+
+            var user = await _userService.GetUserByIdAsync(int.Parse(userId));
+            var store = await _storeService.GetStoreByUserIdAsync(int.Parse(userId));
+            var storeId = store.Id;
+            var data = await _orderService.GetTotalPriceByMonthAsync(year, storeId);
+
+            // Đảm bảo đủ 12 tháng (1 -> 12)
+            var result = new Dictionary<int, decimal>();
+            for (int month = 1; month <= 12; month++)
+            {
+                result[month] = data.Data != null && data.Data.ContainsKey(month) ? data.Data[month] : 0;
+            }
 
         // Đăng xuất
         [HttpGet]
