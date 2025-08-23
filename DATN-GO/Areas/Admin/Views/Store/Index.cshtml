@@ -1,8 +1,6 @@
-﻿@model List<DATN_GO.ViewModels.Store.StoreAdminViewModel>
-
+﻿@model List<DATN_GO.ViewModels.AdminStorelViewModels>
 
 <div class="page-wrapper">
-
     <header class="main-header" id="header">
         <nav class="navbar navbar-expand-lg navbar-light" id="navbar">
             <!-- Sidebar toggle button -->
@@ -10,15 +8,12 @@
                 <span class="sr-only">Toggle navigation</span>
             </button>
 
-            <span class="page-title">Quản lý cửa hàng</span>
+            <span class="page-title" id="pageTitle">Quản lý cửa hàng</span>
 
             <div class="navbar-right ">
-
                 <!-- search form -->
                 <div class="search-form">
-
                     <ul class="dropdown-menu dropdown-menu-search">
-
                         <li class="nav-item">
                             <a class="nav-link" href="index.html">Morbi leo risus</a>
                         </li>
@@ -31,9 +26,7 @@
                         <li class="nav-item">
                             <a class="nav-link" href="index.html">Vestibulum at eros</a>
                         </li>
-
                     </ul>
-
                 </div>
 
                 <ul class="nav navbar-nav">
@@ -50,7 +43,6 @@
                             <span class="badge badge-xs rounded-circle">21</span>
                         </button>
                         <div class="dropdown-notify">
-
                             <header>
                                 <div class="nav nav-underline" id="nav-tab" role="tablist">
                                     <a class="nav-item nav-link active" id="all-tabs" data-toggle="tab" href="#all" role="tab"
@@ -64,9 +56,7 @@
 
                             <div class="" data-simplebar style="height: 325px;">
                                 <div class="tab-content" id="myTabContent">
-
                                     <div class="tab-pane fade show active" id="all" role="tabpanel" aria-labelledby="all-tabs">
-
                                         <div class="media media-sm bg-warning-10 p-4 mb-0">
                                             <div class="media-sm-wrapper">
                                                 <a href="user-profile.html">
@@ -86,222 +76,6 @@
                                                 </a>
                                             </div>
                                         </div>
-
-                                        <div class="media media-sm p-4 bg-light mb-0">
-                                            <div class="media-sm-wrapper bg-primary">
-                                                <a href="user-profile.html">
-                                                    <i class="mdi mdi-calendar-check-outline"></i>
-                                                </a>
-                                            </div>
-                                            <div class="media-body">
-                                                <a href="user-profile.html">
-                                                    <span class="title mb-0">New event added</span>
-                                                    <span class="discribe">1/3/2014 (1pm - 2pm)</span>
-                                                    <span class="time">
-                                                        <time>10 min ago...</time>...
-                                                    </span>
-                                                </a>
-                                            </div>
-                                        </div>
-
-                                        <div class="media media-sm p-4 mb-0">
-                                            <div class="media-sm-wrapper">
-                                                <a href="user-profile.html">
-                                                    <img src="images/user/user-sm-03.jpg" alt="User Image">
-                                                </a>
-                                            </div>
-                                            <div class="media-body">
-                                                <a href="user-profile.html">
-                                                    <span class="title mb-0">Sagge Hudson</span>
-                                                    <span class="discribe">
-                                                        On disposal of as landlord Afraid at highly months do things on
-                                                        at.
-                                                    </span>
-                                                    <span class="time">
-                                                        <time>1 hrs ago</time>...
-                                                    </span>
-                                                </a>
-                                            </div>
-                                        </div>
-
-                                        <div class="media media-sm p-4 mb-0">
-                                            <div class="media-sm-wrapper bg-info-dark">
-                                                <a href="user-profile.html">
-                                                    <i class="mdi mdi-account-multiple-check"></i>
-                                                </a>
-                                            </div>
-                                            <div class="media-body">
-                                                <a href="user-profile.html">
-                                                    <span class="title mb-0">Add request</span>
-                                                    <span class="discribe">Add Dany Jones as your contact.</span>
-                                                    <div class="buttons">
-                                                        <a href="#" class="btn btn-sm btn-success shadow-none text-white">accept</a>
-                                                        <a href="#" class="btn btn-sm shadow-none">delete</a>
-                                                    </div>
-                                                    <span class="time">
-                                                        <time>6 hrs ago</time>...
-                                                    </span>
-                                                </a>
-                                            </div>
-                                        </div>
-
-                                        <div class="media media-sm p-4 mb-0">
-                                            <div class="media-sm-wrapper bg-info">
-                                                <a href="user-profile.html">
-                                                    <i class="mdi mdi-playlist-check"></i>
-                                                </a>
-                                            </div>
-                                            <div class="media-body">
-                                                <a href="user-profile.html">
-                                                    <span class="title mb-0">Task complete</span>
-                                                    <span class="discribe">Afraid at highly months do things on at.</span>
-                                                    <span class="time">
-                                                        <time>1 hrs ago</time>...
-                                                    </span>
-                                                </a>
-                                            </div>
-                                        </div>
-
-                                    </div>
-
-                                    <div class="tab-pane fade" id="message" role="tabpanel" aria-labelledby="message-tab">
-
-                                        <div class="media media-sm p-4 mb-0">
-                                            <div class="media-sm-wrapper">
-                                                <a href="user-profile.html">
-                                                    <img src="images/user/user-sm-01.jpg" alt="User Image">
-                                                </a>
-                                            </div>
-                                            <div class="media-body">
-                                                <a href="user-profile.html">
-                                                    <span class="title mb-0">Selena Wagner</span>
-                                                    <span class="discribe">Lorem ipsum dolor sit amet, consectetur adipisicing elit.</span>
-                                                    <span class="time">
-                                                        <time>15 min ago</time>...
-                                                    </span>
-                                                </a>
-                                            </div>
-                                        </div>
-
-                                        <div class="media media-sm p-4 mb-0">
-                                            <div class="media-sm-wrapper">
-                                                <a href="user-profile.html">
-                                                    <img src="images/user/user-sm-03.jpg" alt="User Image">
-                                                </a>
-                                            </div>
-                                            <div class="media-body">
-                                                <a href="user-profile.html">
-                                                    <span class="title mb-0">Sagge Hudson</span>
-                                                    <span class="discribe">
-                                                        On disposal of as landlord Afraid at highly months do things on
-                                                        at.
-                                                    </span>
-                                                    <span class="time">
-                                                        <time>1 hrs ago</time>...
-                                                    </span>
-                                                </a>
-                                            </div>
-                                        </div>
-
-                                        <div class="media media-sm bg-warning-10 p-4 mb-0">
-                                            <div class="media-sm-wrapper">
-                                                <a href="user-profile.html">
-                                                    <img src="images/user/user-sm-02.jpg" alt="User Image">
-                                                </a>
-                                            </div>
-                                            <div class="media-body">
-                                                <a href="user-profile.html">
-                                                    <span class="title mb-0">John Doe</span>
-                                                    <span class="discribe">
-                                                        Extremity sweetness difficult behaviour he of. On disposal of as
-                                                        landlord horrible. Afraid
-                                                        at highly months do things on at.
-                                                    </span>
-                                                    <span class="time">
-                                                        <time>Just now</time>...
-                                                    </span>
-                                                </a>
-                                            </div>
-                                        </div>
-
-                                        <div class="media media-sm p-4 mb-0">
-                                            <div class="media-sm-wrapper">
-                                                <a href="user-profile.html">
-                                                    <img src="images/user/user-sm-04.jpg" alt="User Image">
-                                                </a>
-                                            </div>
-                                            <div class="media-body">
-                                                <a href="user-profile.html">
-                                                    <span class="title mb-0">Albrecht Straub</span>
-                                                    <span class="discribe">
-                                                        Beatae quia natus assumenda laboriosam, nisi perferendis aliquid
-                                                        consectetur expedita non tenetur.
-                                                    </span>
-                                                    <span class="time">
-                                                        <time>Just now</time>...
-                                                    </span>
-                                                </a>
-                                            </div>
-                                        </div>
-
-                                    </div>
-                                    <div class="tab-pane fade" id="other" role="tabpanel" aria-labelledby="contact-tab">
-
-                                        <div class="media media-sm p-4 bg-light mb-0">
-                                            <div class="media-sm-wrapper bg-primary">
-                                                <a href="user-profile.html">
-                                                    <i class="mdi mdi-calendar-check-outline"></i>
-                                                </a>
-                                            </div>
-                                            <div class="media-body">
-                                                <a href="user-profile.html">
-                                                    <span class="title mb-0">New event added</span>
-                                                    <span class="discribe">1/3/2014 (1pm - 2pm)</span>
-                                                    <span class="time">
-                                                        <time>10 min ago...</time>...
-                                                    </span>
-                                                </a>
-                                            </div>
-                                        </div>
-
-                                        <div class="media media-sm p-4 mb-0">
-                                            <div class="media-sm-wrapper bg-info-dark">
-                                                <a href="user-profile.html">
-                                                    <i class="mdi mdi-account-multiple-check"></i>
-                                                </a>
-                                            </div>
-                                            <div class="media-body">
-                                                <a href="user-profile.html">
-                                                    <span class="title mb-0">Add request</span>
-                                                    <span class="discribe">Add Dany Jones as your contact.</span>
-                                                    <div class="buttons">
-                                                        <a href="#" class="btn btn-sm btn-success shadow-none text-white">accept</a>
-                                                        <a href="#" class="btn btn-sm shadow-none">delete</a>
-                                                    </div>
-                                                    <span class="time">
-                                                        <time>6 hrs ago</time>...
-                                                    </span>
-                                                </a>
-                                            </div>
-                                        </div>
-
-                                        <div class="media media-sm p-4 mb-0">
-                                            <div class="media-sm-wrapper bg-info">
-                                                <a href="user-profile.html">
-                                                    <i class="mdi mdi-playlist-check"></i>
-                                                </a>
-                                            </div>
-                                            <div class="media-body">
-                                                <a href="user-profile.html">
-                                                    <span class="title mb-0">Task complete</span>
-                                                    <span class="discribe">Afraid at highly months do things on at.</span>
-                                                    <span class="time">
-                                                        <time>1 hrs ago</time>...
-                                                    </span>
-                                                </a>
-                                            </div>
-                                        </div>
-
                                     </div>
                                 </div>
                             </div>
@@ -346,7 +120,6 @@
                                     <span class="nav-text">Account Setting</span>
                                 </a>
                             </li>
-
                             <li class="dropdown-footer">
                                 <a class="dropdown-link-item" href="sign-in.html"> <i class="mdi mdi-logout"></i> Log Out </a>
                             </li>
@@ -355,24 +128,22 @@
                 </ul>
             </div>
         </nav>
-
-
     </header>
-
 
     <!-- CONTENT WRAPPER -->
     <div class="content-wrapper">
         <div class="content">
-            <!-- Bảng danh sách cửa hàng -->
-            <div class="row">
+            <!-- Store List View -->
+            <div id="storeListView" class="row">
                 <div class="col-12">
                     <div class="card card-default">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h2 class="text-danger mb-0">Quản lý cửa hàng</h2>
                             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                                <button id="backBtn" class="btn btn-outline-primary me-3" style="display: none;">
+                                    <i class="mdi mdi-arrow-left"></i> Quay lại
+                                </button>
                             </div>
-
-
                         </div>
 
                         <div class="card-body">
@@ -386,6 +157,7 @@
                                         <th>Ngày đăng ký</th>
                                         <th>Trạng thái</th>
                                         <th>Thao tác</th>
+
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -394,7 +166,13 @@
                                         int index = 1;
                                         foreach (var store in Model)
                                         {
-                                            <tr>
+                                            <tr class="store-row" style="cursor: pointer;"
+                                                data-store-id="@store.Id"
+                                                data-name="@store.Name"
+                                                data-owner="@store.OwnerName"
+                                                data-date="@store.CreateAt.ToString("dd/MM/yyyy")"
+                                                data-status="@store.Status"
+                                                data-image="@store.Avatar">
                                                 <td>@index</td>
                                                 <td>
                                                     @if (!string.IsNullOrEmpty(store.Avatar))
@@ -411,26 +189,25 @@
                                                 <td>@store.OwnerName</td>
                                                 <td>@store.CreateAt.ToString("dd/MM/yyyy")</td>
                                                 <td>
-                                                    @if (store.Status == DATN_GO.Models.StoreStatus.Active)
+                                                    @if (store.Status == "Active")
                                                     {
-                                                        <span class="badge badge-success  rounded-pill px-2 py-1" style="font-size: 0.75rem;">Đang hoạt động</span>
+                                                        <span class="badge badge-success">Đang hoạt động</span>
                                                     }
-                                                    else
+                                                    else if (store.Status == "Pending")
                                                     {
-                                                        <span class="badge badge-warning rounded-pill px-2 py-1" style="font-size: 0.75rem;">Chờ duyệt</span>
+                                                        <span class="badge badge-warning">Chờ duyệt</span>
                                                     }
-                                                </td>
+                                                    else if (store.Status == "Rejected")
+                                                    {
+                                                        <span class="badge badge-danger">Đã từ chối</span>
+                                                    }
 
-                                                <td>
-                                                    <button type="button" class="btn btn-sm btn-info view-store"
-                                                            data-name="@store.Name"
-                                                            data-owner="@store.OwnerName"
-                                                            data-date="@store.CreateAt.ToString("dd/MM/yyyy")"
-                                                            data-status="@store.Status"
-                                                            data-image="@store.Avatar">
-                                                        <i class="mdi mdi-eye-outline"></i> Xem
-                                                    </button>
                                                 </td>
+                                                <td>
+													<button class="btn btn-sm btn-primary" onclick="showStoreDetail('@store.Id', '@store.Name', '@store.OwnerName', '@store.CreateAt.ToString("dd/MM/yyyy")', '@store.Status.ToString()', '@store.Avatar')">
+														<i class="mdi mdi-eye"></i> Xem chi tiết
+													</button>
+</td>
                                             </tr>
                                             index++;
                                         }
@@ -438,7 +215,7 @@
                                     else
                                     {
                                         <tr>
-                                            <td colspan="7" class="text-center text-muted">Không có cửa hàng nào.</td>
+                                            <td colspan="6" class="text-center text-muted">Không có cửa hàng nào.</td>
                                         </tr>
                                     }
                                 </tbody>
@@ -448,53 +225,210 @@
                 </div>
             </div>
 
-            <!-- Modal xem chi tiết -->
-            <div class="modal fade" id="storeModal" tabindex="-1" role="dialog" aria-labelledby="storeModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-xl" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="storeModalLabel">Chi tiết cửa hàng</h5>
-                            <button type="button" class="close" data-bs-dismiss="modal" aria-label="Đóng">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-
-                        <div class="modal-body">
-                            <div class="row">
-                                <div class="col-xl-4">
-                                    <p class="text-dark font-weight-medium pt-4 mb-2">Tên cửa hàng:</p>
-                                    <p><span id="storeName">...</span></p>
-                                </div>
-                                <div class="col-xl-4">
-                                    <p class="text-dark font-weight-medium pt-4 mb-2">Chủ sở hữu:</p>
-                                    <p><span id="storeOwner">...</span></p>
-                                </div>
-                                <div class="col-xl-4">
-                                    <p class="text-dark font-weight-medium pt-4 mb-2">Ngày đăng ký:</p>
-                                    <p><span id="storeDate">...</span></p>
-                                </div>
-                                <div class="col-xl-4">
-                                    <p class="text-dark font-weight-medium pt-4 mb-2">Trạng thái:</p>
-                                    <p><span id="storeStatus">...</span></p>
-                                </div>
-                                <div class="col-xl-4">
-                                    <p class="text-dark font-weight-medium pt-4 mb-2">Ảnh đại diện:</p>
-                                    <div class="border rounded p-2 bg-white d-inline-block">
-                                        <img id="storeImage" src="" alt="Ảnh cửa hàng"
-                                             class="img-thumbnail"
-                                             style="width: 100px; height: 100px; object-fit: cover;">
+            <!-- Store Detail View -->
+            <div id="storeDetailView" style="display: none;">
+                <!-- Store Info Card -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card card-default shadow-sm border-0">
+                            <div class="card-body p-4">
+                                <div class="row align-items-center">
+                                    <div class="col-md-2 text-center mb-3 mb-md-0">
+                                        <div class="store-avatar-wrapper position-relative">
+                                            <img id="storeDetailImage" src="" alt="Ảnh cửa hàng"
+                                                 class="rounded-circle border border-3 border-light shadow-sm clickable-image"
+                                                 style="width: 120px; height: 120px; object-fit: cover; cursor: pointer;"
+                                                 data-src="">
+                                            <div class="position-absolute bottom-0 end-0">
+                                                <span id="storeDetailStatus" class="badge fs-6 shadow-sm"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="store-info">
+                                            <h3 id="storeDetailName" class="text-primary mb-3 fw-bold"></h3>
+                                            <div class="info-item d-flex align-items-center mb-2">
+                                                <i class="mdi mdi-account-circle text-muted me-2" style="font-size: 1.2rem;"></i>
+                                                <div>
+                                                    <span id="storeDetailOwner" class="fw-medium"></span>
+                                                </div>
+                                            </div>
+                                            <div class="info-item d-flex align-items-center mb-2">
+                                                <i class="mdi mdi-calendar text-muted me-2" style="font-size: 1.2rem;"></i>
+                                                <div>
+                                                    <span id="storeDetailDate" class="fw-medium"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 text-md-end">
+                                        <div class="store-stats">
+                                            <div class="row text-center">
+                                                <div class="col-4">
+                                                    <div class="stat-item p-3 bg-light rounded">
+                                                        <h5 class="mb-0 text-primary fw-bold" id="productCount">0</h5>
+                                                        <small class="text-muted">Sản phẩm</small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="stat-item p-3 bg-light rounded">
+                                                        <h5 class="mb-0 text-success fw-bold" id="orderCount">0</h5>
+                                                        <small class="text-muted">Đơn hàng</small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="stat-item p-3 bg-light rounded">
+                                                        <h5 class="mb-0 text-info fw-bold" id="revenueCount">0</h5>
+                                                        <small class="text-muted">Doanh thu</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            @* <div class="mt-3">
+                                                <button class="btn btn-outline-primary btn-sm me-2">
+                                                    <i class="mdi mdi-pencil"></i> Chỉnh sửa
+                                                </button>
+                                                <button class="btn btn-outline-secondary btn-sm">
+                                                    <i class="mdi mdi-cog"></i> Cài đặt
+                                                </button>
+                                            </div> *@
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-danger btn-pill" data-bs-dismiss="modal">Đóng</button>
+
+                <!-- Tabs -->
+                <div class="row">
+                    <div class="col-12">
+                        <ul class="nav nav-tabs" id="storeDetailTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button" role="tab">
+                                    <i class="mdi mdi-package-variant"></i> Sản phẩm
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="orders-tab" data-bs-toggle="tab" data-bs-target="#orders" type="button" role="tab">
+                                    <i class="mdi mdi-cart"></i> Đơn hàng
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="payment-tab" data-bs-toggle="tab" data-bs-target="#payment" type="button" role="tab">
+                                    <i class="mdi mdi-credit-card"></i> Thông tin chuyển khoản
+                                </button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content" id="storeDetailTabContent">
+                            <!-- Products Tab -->
+                            <div class="tab-pane fade show active" id="products" role="tabpanel">
+                                <div class="card card-default">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">Danh sách sản phẩm</h5>
+                                        <button class="btn btn-sm btn-primary">
+                                            <i class="mdi mdi-plus"></i> Thêm sản phẩm
+                                        </button>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>Ảnh</th>
+                                                        <th>Tên sản phẩm</th>
+                                                        <th>Giá</th>
+                                                        <th>Tồn kho</th>
+                                                        <th>Danh mục</th>
+                                                        <th>Trạng thái</th>
+                                                        <th>Thao tác</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="productsTableBody">
+                                                    <tr>
+                                                        <td colspan="8" class="text-center text-muted py-4">
+                                                            <i class="mdi mdi-package-variant-closed" style="font-size: 2rem;"></i>
+                                                            <p class="mt-2">Chưa có sản phẩm nào</p>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Orders Tab -->
+                            <div class="tab-pane fade" id="orders" role="tabpanel">
+                                <div class="card card-default">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Danh sách đơn hàng</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Mã đơn hàng</th>
+                                                        <th>Khách hàng</th>
+                                                        <th>Ngày đặt</th>
+                                                        <th>Tổng tiền</th>
+                                                        <th>Trạng thái</th>
+                                                        <th>Thao tác</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="ordersTableBody">
+                                                    <tr>
+                                                        <td colspan="6" class="text-center text-muted py-4">
+                                                            <i class="mdi mdi-cart-outline" style="font-size: 2rem;"></i>
+                                                            <p class="mt-2">Chưa có đơn hàng nào</p>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Payment Info Tab -->
+                            <div class="tab-pane fade" id="payment" role="tabpanel">
+                                <div class="card card-default">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Thông tin chuyển khoản</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label text-dark font-weight-medium"><strong>Tên ngân hàng:</strong></label>
+                                                    <p id="bankName" class="form-control-plaintext text-muted">Chưa cập nhật</p>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label text-dark font-weight-medium"><strong>Số tài khoản:</strong></label>
+                                                    <p id="accountNumber" class="form-control-plaintext text-muted">Chưa cập nhật</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label text-dark font-weight-medium"><strong>Tên chủ tài khoản:</strong></label>
+                                                    <p id="accountHolder" class="form-control-plaintext text-muted">Chưa cập nhật</p>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label text-dark font-weight-medium"><strong>Chi nhánh:</strong></label>
+                                                    <p id="bankBranch" class="form-control-plaintext text-muted">Chưa cập nhật</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-
 
             <!-- Modal ảnh phóng to -->
             <div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-hidden="true">
@@ -515,50 +449,48 @@
 
 @section Scripts {
     <script>
+        let currentStoreId = null;
 
-           document.querySelectorAll('.clickable-image').forEach(img => {
-            img.addEventListener('click', function () {
-                document.getElementById('modalImage').src = this.dataset.src;
-                $('#imageModal').modal('show');
-            });
-        });
-             $('.close').on('click', function () {
-            $('#imageModal').modal('hide'); // Dùng Bootstrap API
-        });
+        // DOM elements
+        const storeListView = document.getElementById('storeListView');
+        const storeDetailView = document.getElementById('storeDetailView');
+        const backBtn = document.getElementById('backBtn');
+        const pageTitle = document.querySelector('.page-title');
+
         $(document).ready(function () {
-            $('.view-store').click(function () {
-                $('#storeName').text($(this).data('name'));
-                $('#storeOwner').text($(this).data('owner'));
-                $('#storeDate').text($(this).data('date'));
-                $('#storeStatus').text($(this).data('status'));
-                $('#storeImage').attr('src', $(this).data('image'));
-                $('#storeModal').modal('show');
-            });
-        });
-        $(document).ready(function () {
-            // Inject nút vào bên cạnh ô search
+            // Thêm nút duyệt cửa hàng vào DataTable
             const browseButton = `
-                <a href="/Admin/Store/BrowseStore"
-                   class="btn btn-danger ms-2"
-                   style="min-width: 160px;">
-                    <i class="mdi mdi-check-circle-outline mr-1"></i> Duyệt cửa hàng
-                </a>`;
+                        <a href="/Admin/Store/BrowseStore"
+                           class="btn btn-danger ms-2"
+                           style="min-width: 160px;">
+                            <i class="mdi mdi-check-circle-outline mr-1"></i> Duyệt cửa hàng
+                        </a>`;
+            $('#productsTable_filter')
+                .addClass('d-flex align-items-center justify-content-between')
+                .append(browseButton);
 
-            // Thêm nút vào cạnh search box
-            $('#productsTable_filter').addClass('d-flex align-items-center justify-content-between').append(browseButton);
+            // Click vào 1 row cửa hàng
+            $('.store-row').on('click', function (e) {
+                if (!$(e.target).hasClass('clickable-image')) {
+                    const storeId = $(this).data('store-id');
+                    const storeName = $(this).data('name');
+                    const storeOwner = $(this).data('owner');
+                    const storeDate = $(this).data('date');
+                    const storeStatus = $(this).data('status');
+                    const storeImage = $(this).data('image');
 
-            // Modal xử lý
-            $('.view-store').click(function () {
-                $('#storeName').text($(this).data('name'));
-                $('#storeOwner').text($(this).data('owner'));
-                $('#storeDate').text($(this).data('date'));
-                $('#storeStatus').text($(this).data('status'));
-                $('#storeImage').attr('src', $(this).data('image'));
-                $('#storeModal').modal('show');
+                    showStoreDetail(storeId, storeName, storeOwner, storeDate, storeStatus, storeImage);
+                }
+            });
+
+            // Nút quay lại
+            $('#backBtn').on('click', function () {
+                goBack();
             });
 
             // Zoom ảnh
-            $('.clickable-image').on('click', function () {
+            $('.clickable-image').on('click', function (e) {
+                e.stopPropagation();
                 $('#modalImage').attr('src', $(this).data('src'));
                 $('#imageModal').modal('show');
             });
@@ -566,6 +498,162 @@
             $('.close').on('click', function () {
                 $('#imageModal').modal('hide');
             });
+
+            // Tab switching
+            $('[data-bs-toggle="tab"]').on('click', function (e) {
+                e.preventDefault();
+                const target = $(this).data('bs-target');
+
+                $('.nav-link').removeClass('active');
+                $('.tab-pane').removeClass('show active');
+
+                $(this).addClass('active');
+                $(target).addClass('show active');
+            });
+
+            // Bổ sung: ESC key = quay lại
+            $(document).on('keydown', function (e) {
+                if (e.key === "Escape" && storeDetailView.style.display === 'block') {
+                    goBack();
+                }
+            });
         });
+
+        // Show store detail
+        function showStoreDetail(storeId, storeName, storeOwner, storeDate, storeStatus, storeImage) {
+            currentStoreId = storeId;
+
+            storeListView.style.display = 'none';
+            storeDetailView.style.display = 'block';
+            backBtn.style.display = 'inline-block';
+            pageTitle.textContent = `Chi tiết cửa hàng: ${storeName}`;
+
+            document.getElementById('storeDetailName').textContent = storeName;
+            document.getElementById('storeDetailOwner').textContent = storeOwner;
+            document.getElementById('storeDetailDate').textContent = storeDate;
+
+            // Badge status
+            const statusBadge = document.getElementById('storeDetailStatus');
+            if (storeStatus === 'Active') {
+                statusBadge.className = 'badge badge-success fs-6';
+                statusBadge.textContent = 'Đang hoạt động';
+            } else {
+                statusBadge.className = 'badge badge-warning fs-6';
+                statusBadge.textContent = 'Chờ duyệt';
+            }
+
+            // Store image
+            const storeDetailImage = document.getElementById('storeDetailImage');
+            if (storeImage && storeImage.trim() !== '') {
+                storeDetailImage.src = storeImage;
+                storeDetailImage.style.display = 'block';
+            } else {
+                storeDetailImage.style.display = 'none';
+            }
+
+            // Gọi Ajax load data
+            loadStoreData(storeId);
+        }
+
+        // Go back
+        function goBack() {
+            storeDetailView.style.display = 'none';
+            storeListView.style.display = 'block';
+            backBtn.style.display = 'none';
+            pageTitle.textContent = 'Quản lý cửa hàng';
+            currentStoreId = null;
+        }
+
+        // Load store data bằng Ajax
+        function loadStoreData(storeId) {
+            $.ajax({
+                url: `/Admin/Store/GetDetail/${storeId}`,
+                type: "GET",
+                success: function (store) {
+                    // === PRODUCTS ===
+                    let productsHtml = "";
+                    if (store.products && store.products.length > 0) {
+                        store.products.forEach(p => {
+                            let priceDisplay = p.minPrice && p.maxPrice && p.minPrice !== p.maxPrice
+                                ? `${p.minPrice.toLocaleString()} - ${p.maxPrice.toLocaleString()} đ`
+                                : `${(p.price || 0).toLocaleString()} đ`;
+
+                            let statusHtml = "";
+                            switch (p.status) {
+                                case "Pending": statusHtml = '<span class="badge badge-warning">Chờ duyệt</span>'; break;
+                                case "Approved": statusHtml = '<span class="badge badge-success">Đã duyệt</span>'; break;
+                                default: statusHtml = '<span class="badge badge-secondary">Ẩn</span>'; break;
+                            }
+
+                            productsHtml += `
+                                        <tr>
+                                            <td>${p.id}</td>
+                                            <td><img src="${p.image}" width="50" class="rounded"/></td>
+                                            <td>${p.name}</td>
+                                            <td>${priceDisplay}</td>
+                                            <td>${p.stock}</td>
+                                            <td>${p.category}</td>
+                                            <td>${statusHtml}</td>
+                                            <td><button class="btn btn-sm btn-outline-info">Chi tiết</button></td>
+                                        </tr>`;
+                        });
+                    } else {
+                        productsHtml = `<tr><td colspan="8" class="text-center text-muted">Chưa có sản phẩm nào</td></tr>`;
+                    }
+                    $("#productsTableBody").html(productsHtml);
+
+                    // === ORDERS ===
+                    let ordersHtml = "";
+                    if (store.orders && store.orders.length > 0) {
+                        store.orders.forEach(o => {
+                            let statusHtml = "";
+                            switch (o.status) {
+                                case "ChoXuLy": statusHtml = '<span class="badge badge-warning">Chờ xử lý</span>'; break;
+                                case "ChoLayHang": statusHtml = '<span class="badge badge-info">Chờ lấy hàng</span>'; break;
+                                case "DangGiao": statusHtml = '<span class="badge badge-primary">Đang giao</span>'; break;
+                                case "DaHoanThanh": statusHtml = '<span class="badge badge-success">Hoàn tất</span>'; break;
+                                case "DaHuy": statusHtml = '<span class="badge badge-danger">Đã hủy</span>'; break;
+                                default: statusHtml = '<span class="badge badge-secondary">Không rõ</span>'; break;
+                            }
+
+                            ordersHtml += `
+                                        <tr>
+                                            <td>${o.id}</td>
+                                            <td>${o.customerName}</td>
+                                            <td>${new Date(o.createAt).toLocaleDateString("vi-VN")}</td>
+                                            <td>${o.totalAmount.toLocaleString()} đ</td>
+                                            <td>${statusHtml}</td>
+                                            <td><button class="btn btn-sm btn-outline-primary">Xem</button></td>
+                                        </tr>`;
+                        });
+                    } else {
+                        ordersHtml = `<tr><td colspan="6" class="text-center text-muted">Chưa có đơn hàng nào</td></tr>`;
+                    }
+                    $("#ordersTableBody").html(ordersHtml);
+
+                    // === PAYMENT INFO ===
+                    $("#bankName").text(store.bankName || "Chưa cập nhật");
+                    $("#accountNumber").text(store.bankAccount || "Chưa cập nhật");
+                    $("#accountHolder").text(store.accountHolder || "Chưa cập nhật");
+                    $("#bankBranch").text(store.bankBranch || "Chưa cập nhật");
+
+                    // === STATS ===
+                    $("#productCount").text(store.products?.length || 0);
+                    $("#orderCount").text(store.orders?.length || 0);
+                    $("#revenueCount").text(
+                        store.orders?.reduce((sum, o) => sum + o.totalAmount, 0).toLocaleString() || 0
+                    );
+
+                    // Reset về tab sản phẩm
+                    $('.nav-link').removeClass('active');
+                    $('.tab-pane').removeClass('show active');
+                    $('#products-tab').addClass('active');
+                    $('#products').addClass('show active');
+                },
+                error: function () {
+                    console.error("Không load được chi tiết cửa hàng");
+                }
+            });
+        }
     </script>
 }

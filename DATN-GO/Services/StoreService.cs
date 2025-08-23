@@ -1,4 +1,5 @@
 ﻿using DATN_GO.Models;
+using DATN_GO.ViewModels;
 using DATN_GO.ViewModels.Store;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -231,6 +232,41 @@ namespace DATN_GO.Service
         }
 
 
+        // Lấy chi tiết store cho admin
+        public async Task<AdminStorelViewModels?> GetAdminDetailAsync(int id)
+        {
+            var response = await _httpClient.GetAsync($"{_baseUrl}Stores/admin/{id}");
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"❌ Lỗi lấy chi tiết admin store {id}: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
+                return null;
+            }
+
+            var json = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<AdminStorelViewModels>(json, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                Converters = { new JsonStringEnumConverter() }
+            });
+        }
+
+        // Lấy toàn bộ stores cho admin
+        public async Task<List<AdminStorelViewModels>> GetAllAdminStoresAsync()
+        {
+            var response = await _httpClient.GetAsync($"{_baseUrl}Stores/admin");
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"❌ Lỗi lấy danh sách admin stores: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
+                return new();
+            }
+
+            var json = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<List<AdminStorelViewModels>>(json, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                Converters = { new JsonStringEnumConverter() }
+            }) ?? new();
+        }
 
 
 

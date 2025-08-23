@@ -3,6 +3,8 @@ using Newtonsoft.Json;
 using System.Net.Http.Headers;
 using DATN_GO.Models;
 using DATN_GO.ViewModels.Store;
+using DATN_GO.Service;
+using DATN_GO.ViewModels;
 
 namespace DATN_GO.Areas.Admin.Controllers
 {
@@ -10,22 +12,21 @@ namespace DATN_GO.Areas.Admin.Controllers
     public class StoreController : Controller
     {
         private readonly HttpClient _http;
+        private readonly StoreService _storeService;
 
-        public StoreController(IHttpClientFactory factory)
+     
+        public StoreController(IHttpClientFactory factory, StoreService storeService)
         {
             _http = factory.CreateClient();
             _http.BaseAddress = new Uri("https://localhost:7096"); // <-- sửa lại URL nếu cần
+            _storeService = storeService;
+
         }
 
         public async Task<IActionResult> Index()
         {
-            var response = await _http.GetAsync("/api/Stores");
-            if (!response.IsSuccessStatusCode)
-                return View(new List<StoreAdminViewModel>());
-
-            var json = await response.Content.ReadAsStringAsync();
-            var stores = JsonConvert.DeserializeObject<List<StoreAdminViewModel>>(json);
-            return View(stores);
+            var stores = await _storeService.GetAllAdminStoresAsync();
+            return View(stores ?? new List<AdminStorelViewModels>());
         }
         // Hiển thị danh sách cửa hàng chờ duyệt
         public async Task<IActionResult> BrowseStore()
@@ -62,6 +63,20 @@ namespace DATN_GO.Areas.Admin.Controllers
             }
 
             return Json(new { success = false, message = "Đã xảy ra lỗi khi từ chối cửa hàng!" });
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> GetDetail(int id)
+        {
+            var response = await _http.GetAsync($"/api/Stores/admin/{id}");
+            if (!response.IsSuccessStatusCode)
+                return NotFound();
+
+            var json = await response.Content.ReadAsStringAsync();
+            var store = JsonConvert.DeserializeObject<AdminStorelViewModels>(json);
+
+            return Json(store); // trả JSON cho Ajax
         }
 
 

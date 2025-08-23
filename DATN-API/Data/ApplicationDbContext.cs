@@ -139,7 +139,7 @@ namespace DATN_API.Data
 
             modelBuilder.Entity<ProductVariants>()
                 .HasOne(pv => pv.Product)
-                .WithMany()
+                .WithMany(p => p.ProductVariants)
                 .HasForeignKey(pv => pv.ProductId)
                 .OnDelete(DeleteBehavior.Cascade);
 

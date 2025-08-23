@@ -1,6 +1,7 @@
-using DATN_API.Data;
+﻿using DATN_API.Data;
 using DATN_API.Interfaces;
 using DATN_API.Models;
+using DATN_API.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -91,7 +92,7 @@ namespace DATN_API.Services
                 .Select(g => new { Month = g.Key, Count = g.Count() })
                 .ToDictionaryAsync(x => x.Month, x => x.Count);
 
-            // ??m b?o ?? 12 th�ng, n?u thi?u th� th�m v?i gi� tr? 0
+            // ??m b?o ?? 12 tháng, n?u thi?u thì thêm v?i giá tr? 0
             var fullMonthData = Enumerable.Range(1, 12)
                 .ToDictionary(month => month, month => storeCounts.ContainsKey(month) ? storeCounts[month] : 0);
 
@@ -128,6 +129,123 @@ namespace DATN_API.Services
 
             await _context.SaveChangesAsync();
             return true;
+        }
+
+
+        public async Task<AdminStorelViewModels?> GetAdminDetailAsync(int id)
+        {
+            var store = await _context.Stores
+                .Include(s => s.User) // load chủ cửa hàng
+                .Include(s => s.Products)
+                    .ThenInclude(p => p.ProductVariants) // load variants (có Price ở đây)
+                .Include(s => s.Products)
+                    .ThenInclude(p => p.Prices)          // load prices (sp không có variant)
+                .Include(s => s.Products)
+                    .ThenInclude(p => p.Category)        // load category
+                .Include(s => s.Products)
+                    .ThenInclude(p => p.OrderDetails)
+                        .ThenInclude(od => od.Order)
+                            .ThenInclude(o => o.User)    // khách hàng
+                .FirstOrDefaultAsync(s => s.Id == id);
+
+            if (store == null) return null;
+
+            return new AdminStorelViewModels
+            {
+                Id = store.Id,
+                Name = store.Name,
+                OwnerName = store.RepresentativeName,
+                OwnerEmail = store.User?.Email,
+                Avatar = store.Avatar,
+                CoverPhoto = store.CoverPhoto,
+                Address = store.Address,
+                Status = store.Status.ToString(),
+                CreateAt = store.CreateAt,
+                UpdateAt = store.UpdateAt,
+                BankAccount = store.BankAccount,
+                AccountHolder = store.BankAccountOwner,
+                BankName = store.Bank,
+
+                // Danh sách sản phẩm
+                Products = store.Products.Select(p =>
+                {
+                    // Nếu có variant → lấy min/max từ variant
+                    if (p.ProductVariants != null && p.ProductVariants.Any(v => v.Price > 0))
+                    {
+                        var minPrice = p.ProductVariants.Min(v => v.Price);
+                        var maxPrice = p.ProductVariants.Max(v => v.Price);
+                        var totalStock = p.ProductVariants.Sum(v => v.Quantity);
+
+                        return new StoreProductViewModel
+                        {
+                            Id = p.Id,
+                            Name = p.Name,
+                            Price = minPrice,   // gán giá mặc định là giá thấp nhất
+                            MinPrice = minPrice,
+                            MaxPrice = maxPrice,
+                            Stock = totalStock,
+                            Status = p.Status.ToString(),
+                            Image = p.MainImage,
+                            Category = p.Category?.Name
+                        };
+                    }
+
+                    // Nếu không có variant → lấy giá từ Prices
+                    decimal productPrice = 0;
+                    if (p.Prices != null && p.Prices.Any())
+                        productPrice = p.Prices.Min(pr => pr.Price);
+
+                    return new StoreProductViewModel
+                    {
+                        Id = p.Id,
+                        Name = p.Name,
+                        Price = productPrice,
+                        MinPrice = null,
+                        MaxPrice = null,
+                        Stock = p.Quantity,
+                        Status = p.Status.ToString(),
+                        Image = p.MainImage,
+                        Category = p.Category?.Name
+                    };
+                }).ToList(),
+
+                // Danh sách đơn hàng (qua OrderDetails -> Orders)
+                Orders = store.Products
+                    .SelectMany(p => p.OrderDetails ?? new List<OrderDetails>())
+                    .Where(od => od.Order != null)
+                    .GroupBy(od => od.Order.Id) // tránh trùng đơn
+                    .Select(g => g.First().Order!)
+                    .Select(o => new StoreOrderViewModel
+                    {
+                        Id = o.Id,
+                        CustomerName = o.User?.FullName,
+                        Status = o.Status.ToString(),
+                        CreateAt = o.OrderDate,
+                        TotalAmount = o.TotalPrice
+                    }).ToList()
+            };
+        }
+
+        public async Task<IEnumerable<AdminStorelViewModels>> GetAllAdminStoresAsync()
+        {
+            return await _context.Stores
+                .Include(s => s.User)
+                .Select(s => new AdminStorelViewModels
+                {
+                    Id = s.Id,
+                    Name = s.Name,
+                    OwnerName = s.User.FullName,
+                    OwnerEmail = s.User.Email,
+                    Avatar = s.Avatar,
+                    CoverPhoto = s.CoverPhoto,
+                    Address = s.Address,
+                    Status = s.Status.ToString(),
+                    CreateAt = s.CreateAt,
+                    UpdateAt = s.UpdateAt,
+                    BankAccount = s.BankAccount,
+                    AccountHolder = s.BankAccountOwner,
+                    BankName = s.Bank
+                }).ToListAsync();
         }
     }
 }

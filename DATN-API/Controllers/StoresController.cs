@@ -144,5 +144,21 @@ namespace DATN_API.Controllers
             return Ok("Cửa hàng đã bị từ chối.");
         }
 
+        [HttpGet("admin/{id}")]
+        public async Task<IActionResult> GetDetail(int id)
+        {
+            var store = await _service.GetAdminDetailAsync(id);
+            if (store == null) return NotFound();
+            return Ok(store);
+        }
+
+        [HttpGet("admin")]
+        public async Task<IActionResult> GetAllAdminStores()
+        {
+            var stores = await _service.GetAllAdminStoresAsync();
+            return Ok(stores);
+        }
+
+
     }
 }

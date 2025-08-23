@@ -6,6 +6,26 @@
     List<DATN_GO.ViewModels.VariantCombinationViewModel>();
     var priceInfo = ViewBag.MinMaxPrice as DATN_GO.ViewModels.MinMaxPriceResponse;
 }
+@{
+    var reviews = (List<ReviewViewModel>)ViewBag.Reviews ?? new List<ReviewViewModel>();
+    var ratingCounts = reviews
+        .GroupBy(r => r.Rating)
+        .ToDictionary(g => g.Key, g => g.Count());
+
+    var totalReviews = reviews.Count;
+    var averageRating = totalReviews > 0 ? reviews.Average(r => r.Rating) : 0;
+}
+
+<style>
+    .rating i {
+        cursor: pointer;
+        transition: color 0.2s ease;
+    }
+
+        .rating i.text-warning {
+            color: gold !important;
+        }
+</style>
 
 <div class="row mb-5">
     <!-- Product Image Section -->
@@ -210,6 +230,342 @@
         <li><strong>Mô tả:</strong> @Model.Description</li>
     </ul>
 </div>
+
+<!-- Comments Section -->
+
+<div class="d-flex align-items-center container mb-3 p-0">
+    <hr class="flex-grow-1 border-danger border-1 opacity-100">
+</div>
+
+<div class="row mt-4">
+    <h3>Đánh giá sản phẩm</h3>
+
+    <div class="col-12">
+
+        <div id="commentsSection">
+            <div class="mb-3">
+                <h5 class="mb-1">Sản phẩm đạt: </h5>
+                <div class="d-flex align-items-center">
+                    <div class="text-warning me-2">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            if (i <= Math.Floor(averageRating))
+                            {
+                                <i class="fas fa-star"></i>
+                            }
+                            else if (i - averageRating < 1)  // sao nửa
+                            {
+                                <i class="fas fa-star-half-alt"></i>
+                            }
+                            else
+                            {
+                                <i class="far fa-star"></i>
+                            }
+                        }
+                    </div>
+                    <span class="fw-bold">@averageRating.ToString("0.0")/5</span>
+                    <span class="text-muted ms-2">(@totalReviews đánh giá)</span>
+                </div>
+            </div>
+
+            <!-- Comment Filters -->
+            <div class="d-flex flex-wrap gap-3 mb-4 align-items-center">
+                <div class="d-flex align-items-center">
+                    <span class="me-2">Sắp xếp theo:</span>
+                    <select class="form-select form-select-sm" style="width: auto;">
+                        <option value="latest">Mới nhất</option>
+                        <option value="oldest">Cũ nhất</option>
+                    </select>
+
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <button class="btn btn-outline-danger btn-sm rating-filter active" data-rating="">
+                        Tất cả (@totalReviews)
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm rating-filter" data-rating="5">
+                        5 <i class="fas fa-star text-warning"></i> (@(ratingCounts.ContainsKey(5) ? ratingCounts[5] : 0))
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm rating-filter" data-rating="4">
+                        4 <i class="fas fa-star text-warning"></i> (@(ratingCounts.ContainsKey(4) ? ratingCounts[4] : 0))
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm rating-filter" data-rating="3">
+                        3 <i class="fas fa-star text-warning"></i> (@(ratingCounts.ContainsKey(3) ? ratingCounts[3] : 0))
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm rating-filter" data-rating="2">
+                        2 <i class="fas fa-star text-warning"></i> (@(ratingCounts.ContainsKey(2) ? ratingCounts[2] : 0))
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm rating-filter" data-rating="1">
+                        1 <i class="fas fa-star text-warning"></i> (@(ratingCounts.ContainsKey(1) ? ratingCounts[1] : 0))
+                    </button>
+
+                </div>
+
+            </div>
+            <!-- Write Comment -->
+            @if (ViewBag.CanReview)
+            {
+                <div class="mb-4 border-bottom pb-4">
+                    <form id="commentForm" asp-action="Create" asp-controller="Review" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="ProductId" value="@Model.Id" />
+                        <input type="hidden" name="Rating" id="ratingInput" value="5" />
+                        <input type="hidden" id="OrderId" name="OrderId" value="@ViewBag.OrderId" />
+
+                        <div class="mb-3">
+                            <label class="form-label">Đánh giá của bạn</label>
+                            <div class="rating mb-3">
+                                <i class="far fa-star fs-5" data-rating="1"></i>
+                                <i class="far fa-star fs-5" data-rating="2"></i>
+                                <i class="far fa-star fs-5" data-rating="3"></i>
+                                <i class="far fa-star fs-5" data-rating="4"></i>
+                                <i class="far fa-star fs-5" data-rating="5"></i>
+                            </div>
+                            <textarea id="comment" name="CommentText" class="form-control" rows="4" required></textarea>
+
+
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Thêm hình ảnh (tối đa 3 ảnh)</label>
+                            <div class="d-flex gap-3">
+                                @for (int i = 1; i <= 3; i++)
+                                {
+                                    var inputId = $"imageInput{i}";
+                                    var previewId = $"imagePreview{i}";
+                                    <div class="position-relative d-inline-block text-center">
+                                        <img id="@previewId" src="https://via.placeholder.com/120?text=Ảnh+@i"
+                                             style="width:120px;height:120px;object-fit:cover;cursor:pointer;">
+                                        <input type="file" id="@inputId" name="mediaFiles" accept="image/*" class="d-none">
+                                        <label for="@inputId" class="position-absolute bottom-0 end-0 bg-white p-2 shadow-sm"
+                                               style="cursor:pointer;">
+                                            <i class="bi bi-camera-fill text-crimson"></i>
+                                        </label>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-crimson">Gửi đánh giá</button>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted"></p>
+            }
+            <!-- Comments List -->
+            <div class="comments-list">
+                @if (ViewBag.Reviews != null && ((List<ReviewViewModel>)ViewBag.Reviews).Any())
+                {
+                    @foreach (var review in (List<ReviewViewModel>)ViewBag.Reviews)
+                    {
+                        <div class="review-item mb-3 pb-3 border-bottom"
+                             data-rating="@review.Rating"
+                             data-date="@review.CreatedDate.ToString("yyyy-MM-ddTHH:mm:ss")">
+                            <div class="d-flex mb-3">
+                                <img src="@review.AvatarUrl" class="rounded-circle me-2" alt="User Avatar" style="width:40px;height:40px;">
+                                <div>
+                                    <h6 class="mb-1">@review.UserName</h6>
+                                    <div class="text-warning mb-1">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            if (i <= review.Rating)
+                                            {
+                                                <i class="fas fa-star"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="far fa-star"></i>
+                                            }
+                                        }
+                                    </div>
+                                    <small class="text-muted">@review.CreatedDate.ToString("dd/MM/yyyy")</small>
+                                </div>
+                            </div>
+
+                            <p>@review.CommentText</p>
+
+                            @if (review.MediaUrls != null && review.MediaUrls.Any())
+                            {
+                                <div class="d-flex gap-2 mb-2">
+                                    @foreach (var img in review.MediaUrls)
+                                    {
+                                        <img src="@img" alt="Review Image" class="rounded" style="width:80px;height:80px;object-fit:cover;">
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted">Chưa có đánh giá nào cho sản phẩm này.</p>
+                }
+            </div>
+            <div class="text-center mt-3">
+                <button id="loadMoreBtn" class="btn btn-outline-crimson btn-sm my-3">Xem thêm</button>
+            </div>
+
+        </div>
+
+
+    </div>
+</div>
+
+
+
+<script>
+    let currentRating = 5; // Mặc định 5 sao
+
+    document.querySelectorAll(".rating i").forEach(star => {
+        // Hover: highlight tạm
+        star.addEventListener("mouseenter", function () {
+            let hoverValue = parseInt(this.getAttribute("data-rating"));
+            highlightStars(hoverValue);
+        });
+
+        // Rời chuột: quay lại trạng thái đã chọn
+        star.addEventListener("mouseleave", function () {
+            highlightStars(currentRating);
+        });
+
+        // Click: chọn cố định
+        star.addEventListener("click", function () {
+            currentRating = parseInt(this.getAttribute("data-rating"));
+            document.getElementById("ratingInput").value = currentRating;
+            highlightStars(currentRating);
+        });
+    });
+
+    // Hàm đổi màu sao
+    function highlightStars(rating) {
+        document.querySelectorAll(".rating i").forEach((s, idx) => {
+            if (idx < rating) {
+                s.classList.add("fas", "text-warning");
+                s.classList.remove("far");
+            } else {
+                s.classList.add("far");
+                s.classList.remove("fas", "text-warning");
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Gọi mặc định highlight 5 sao khi load trang
+        highlightStars(5);
+        document.getElementById("ratingInput").value = 5;
+
+        // Preview ảnh upload
+        for (let i = 1; i <= 3; i++) {
+            const input = document.getElementById('imageInput' + i);
+            const img = document.getElementById('imagePreview' + i);
+
+            if (input) {
+                input.addEventListener('change', function () {
+                    if (this.files && this.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                            img.src = e.target.result;
+                        };
+                        reader.readAsDataURL(this.files[0]);
+                    }
+                });
+            }
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        for (let i = 1; i <= 3; i++) {
+            const input = document.getElementById('imageInput' + i);
+            const img = document.getElementById('imagePreview' + i);
+
+            if (input) {
+                input.addEventListener('change', function () {
+                    if (this.files && this.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                            img.src = e.target.result;
+                        };
+                        reader.readAsDataURL(this.files[0]);
+                    }
+                });
+            }
+        }
+    });
+
+    document.querySelectorAll(".rating-filter").forEach(btn => {
+        btn.addEventListener("click", function () {
+            // Xóa active cũ, thêm active cho nút hiện tại
+            document.querySelectorAll(".rating-filter").forEach(b => b.classList.remove("active"));
+            this.classList.add("active");
+
+            let rating = this.dataset.rating; // lấy số sao từ button
+
+            // Lọc danh sách review
+            document.querySelectorAll(".review-item").forEach(item => {
+                if (!rating || item.dataset.rating === rating) {
+                    item.style.display = "";
+                } else {
+                    item.style.display = "none";
+                }
+            });
+        });
+    });
+
+    const sortSelect = document.querySelector(".form-select");
+
+    sortSelect.addEventListener("change", function () {
+        const sortValue = this.value;
+        const reviewsContainer = document.querySelector(".comments-list");
+        const reviews = Array.from(reviewsContainer.querySelectorAll(".review-item"));
+
+        reviews.sort((a, b) => {
+            const dateA = new Date(a.dataset.date);
+            const dateB = new Date(b.dataset.date);
+
+            if (sortValue === "latest") {
+                return dateB - dateA; // mới nhất trước
+            } else if (sortValue === "oldest") {
+                return dateA - dateB; // cũ nhất trước
+            }
+        });
+
+        // Clear và append lại review theo thứ tự mới
+        reviewsContainer.innerHTML = "";
+        reviews.forEach(r => reviewsContainer.appendChild(r));
+    });
+
+    const reviews = document.querySelectorAll(".review-item");
+    const loadMoreBtn = document.getElementById("loadMoreBtn");
+    let visibleCount = 5; // ban đầu hiển thị 5
+
+    function showReviews() {
+        reviews.forEach((review, index) => {
+            if (index < visibleCount) {
+                review.style.display = "block";
+            } else {
+                review.style.display = "none";
+            }
+        });
+
+        // Ẩn nút nếu không còn review để load
+        if (visibleCount >= reviews.length) {
+            loadMoreBtn.style.display = "none";
+        } else {
+            loadMoreBtn.style.display = "inline-block";
+        }
+    }
+
+    // Lần đầu gọi
+    showReviews();
+
+    // Khi bấm Xem thêm
+    loadMoreBtn.addEventListener("click", () => {
+        visibleCount += 5;
+        showReviews();
+    });
+</script>
+
 <script>
     const variantCombinations = @Html.Raw(Json.Serialize(variantCombinations));
     console.log("Variant Combinations:", variantCombinations);

@@ -1,4 +1,5 @@
 using DATN_API.Models;
+using DATN_API.ViewModels;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -21,5 +22,7 @@ namespace DATN_API.Interfaces
 
         Task<IEnumerable<Stores>> GetByStatusAsync(string status);
         Task<bool> UpdateStatusAsync(int id, string status);
+        Task<AdminStorelViewModels?> GetAdminDetailAsync(int id);
+        Task<IEnumerable<AdminStorelViewModels>> GetAllAdminStoresAsync();
     }
 }
