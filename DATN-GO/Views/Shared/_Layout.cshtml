@@ -1,4 +1,4 @@
-﻿@{
+﻿﻿﻿@{
     var useContainer = ViewData["UseContainer"] as bool? ?? true;
 }
 <!doctype html>
@@ -519,7 +519,7 @@
         <div id="aiChatHeader">
             <div class="d-flex align-items-center gap-2">
                 <i class="bi bi-robot"></i>
-                <strong>Trợ lý Gờ Ô</strong>
+                <strong>GO Assistant</strong>
             </div>
             <button id="aiChatClose" class="btn btn-sm btn-light">Đóng</button>
         </div>
@@ -527,9 +527,8 @@
         <div id="aiChatMessages"></div>
 
         <div id="aiChatInputBar">
-            <input type="text" class="form-control" placeholder="Hỏi về TMĐT: sản phẩm, đơn, dc">
-            <button class="btn btn-crimson text-white fw-bold">GỬI</button>
-
+            <input id="aiMsg" class="form-control" placeholder="Hỏi về TMĐT: sản phẩm, đơn, doanh thu...">
+            <button id="aiSend" class="btn btn-primary">Gửi</button>
         </div>
     </div>
     <!-- /Floating Chat AI -->
