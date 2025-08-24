@@ -256,6 +256,8 @@ namespace DATN_GO.Areas.Seller.Controllers
                 result[month] = data.Data != null && data.Data.ContainsKey(month) ? data.Data[month] : 0;
             }
 
+            return Json(result);
+        }
         // Đăng xuất
         [HttpGet]
         public IActionResult Logout()

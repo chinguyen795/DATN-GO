@@ -7,6 +7,7 @@ using System.Text;
 using DATN_API.Services.Interfaces;
 using DATN_API.Services;
 using DATN_API.Interfaces;
+using DATN_API.Services.Ai;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -72,7 +73,7 @@ builder.Services.AddScoped<IPostsService, PostsService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IVariantCompositionService, VariantCompositionService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
-
+builder.Services.AddScoped<IAiChatService, AiChatService>();
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
