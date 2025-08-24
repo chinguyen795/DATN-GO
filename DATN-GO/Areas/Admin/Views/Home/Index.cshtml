@@ -112,17 +112,18 @@
                         <div class="card-body">
                             <p class="mb-1">
                                 Doanh thu gốc:
-                                <strong id="originalRevenue" class="text-dark float-right">0 ₫</strong>
+                                <strong id="originalRevenue" class="text-dark float-right">
+                                    @string.Format(new System.Globalization.CultureInfo("vi-VN"), "{0:N0}", ViewBag.TotalRevenue) ₫
+                                </strong>
                             </p>
                             <p class="mb-1">
-                                Phí nền tảng (2%):
-                                <strong id="platformFee" class="text-danger float-right">0 ₫</strong>
+                                Phí nền tảng (5%):
+                                <strong id="platformFee" class="text-danger float-right">
+                                    @string.Format(new System.Globalization.CultureInfo("vi-VN"), "{0:N0}", ViewBag.NetRevenue) ₫
+                                </strong>
                             </p>
+
                             <hr class="my-2" />
-                            <p class="mb-0">
-                                Doanh thu sau phí:
-                                <strong id="finalRevenue" class="text-success float-right">0 ₫</strong>
-                            </p>
                             <button id="btnSendReport" class="btn btn-primary">Gửi báo cáo tháng này</button>
                         </div>
                     </div>

@@ -216,5 +216,11 @@ namespace DATN_API.Controllers
                 return BadRequest(new { success = false, message = $"Lỗi: {ex.Message}" });
             }
         }
+        [HttpGet("total-revenue")]
+        public async Task<IActionResult> GetTotalRevenue()
+        {
+            var total = await _service.GetTotalRevenueAsync();
+            return Ok(total);
+        }
     }
 }

@@ -269,6 +269,15 @@ namespace DATN_GO.Service
                 return (false, $"Lỗi khi gọi API: {ex.Message}");
             }
         }
+        public async Task<decimal> GetTotalRevenueAsync()
+        {
+            var url = $"{_baseUrl}orders/total-revenue"; // ✅ dùng baseUrl để tránh sai endpoint
+            var response = await _httpClient.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            var revenue = await response.Content.ReadFromJsonAsync<decimal>(_jsonOpts);
+            return revenue;
+        }
 
     }
 }

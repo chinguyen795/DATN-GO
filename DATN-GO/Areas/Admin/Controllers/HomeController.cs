@@ -25,6 +25,10 @@ namespace DATN_GO.Areas.Admin.Controllers
             ViewBag.TotalShops = totalShops;
             ViewBag.TotalActiveShops = totalActiveShops;
 
+            var totalRevenue = await _orderService.GetTotalRevenueAsync();
+            var netRevenue = totalRevenue * 0.05m; // Giả sử 0.5% là phí dịch vụ
+            ViewBag.TotalRevenue = totalRevenue;
+            ViewBag.NetRevenue = netRevenue;
             return View();
         }
         public async Task<IActionResult> StoreStats(int month, int year)
@@ -74,5 +78,6 @@ namespace DATN_GO.Areas.Admin.Controllers
             else
                 return Json(new { success = false, message = result.Message });
         }
+        
     }
 }

@@ -620,5 +620,17 @@ namespace DATN_API.Services
 
             await Task.WhenAll(tasks);
         }
+        public async Task<decimal> GetTotalRevenueAsync()
+        {
+            var now = DateTime.Now;
+            var startOfMonth = new DateTime(now.Year, now.Month, 1);
+            var startOfNextMonth = startOfMonth.AddMonths(1);
+
+            return await _context.Orders
+                .Where(o => o.Status == OrderStatus.DaHoanThanh
+                         && o.OrderDate >= startOfMonth
+                         && o.OrderDate < startOfNextMonth) // chỉ tính trong tháng hiện tại
+                .SumAsync(o => (decimal?)o.TotalPrice) ?? 0;
+        }
     }
 }
