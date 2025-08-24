@@ -1112,12 +1112,12 @@
                 contentType: false,
                 processData: false,
                 success: function (res) {
-                        showCustomToast('Thêm thành công');
+                    showCustomToast('Thêm thành công', true);
                         location.href = '/Seller/Product/Product';
                 },
                 error: function (xhr) {
                     console.error('❌ Lỗi khi gửi request:', xhr);
-                    showCustomToast('Thêm thành công');
+                    showCustomToast('Thêm thành công', true);
                 }
             });
         }

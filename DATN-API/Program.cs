@@ -41,7 +41,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
         };
     });
-
+builder.Services.Configure<EmailSettings>(
+    builder.Configuration.GetSection("EmailSettings")
+);
 builder.Services.AddScoped<IRolesService, RolesService>();
 builder.Services.AddScoped<IVouchersService, VouchersService>();
 builder.Services.AddScoped<ICategoriesService, CategoriesService>();
@@ -69,6 +71,8 @@ builder.Services.AddScoped<IOcrService, OcrService>();
 builder.Services.AddScoped<IPostsService, PostsService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IVariantCompositionService, VariantCompositionService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>

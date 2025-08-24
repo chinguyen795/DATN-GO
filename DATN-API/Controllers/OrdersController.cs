@@ -203,6 +203,18 @@ namespace DATN_API.Controllers
             var count = await _service.GetTotalOrdersByStoreIdAsync(storeId);
             return Ok(count);
         }
-
+        [HttpPost("send/all/current-month")]
+        public async Task<IActionResult> SendAllStoresRevenueReportCurrentMonth()
+        {
+            try
+            {
+                await _service.SendRevenueReportAllStoresCurrentMonthAsync();
+                return Ok(new { success = true, message = "Đã gửi báo cáo doanh thu tháng hiện tại cho toàn bộ store!" });
+            }
+            catch (System.Exception ex)
+            {
+                return BadRequest(new { success = false, message = $"Lỗi: {ex.Message}" });
+            }
+        }
     }
 }

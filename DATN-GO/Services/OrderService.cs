@@ -254,6 +254,21 @@ namespace DATN_GO.Service
                 return 0;
             }
         }
+        public async Task<(bool Success, string Message)> SendRevenueReportAllStoresCurrentMonthAsync()
+        {
+            try
+            {
+                var url = $"{_baseUrl}orders/send/all/current-month";
+                var response = await _httpClient.PostAsync(url, null); // POST không có body
+
+                var message = await response.Content.ReadAsStringAsync();
+                return (response.IsSuccessStatusCode, message);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Lỗi khi gọi API: {ex.Message}");
+            }
+        }
 
     }
 }

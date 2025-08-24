@@ -16,11 +16,13 @@ namespace DATN_API.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly IGHTKService _ghtk;   // <-- thêm
+        private readonly IEmailService _emailService;
 
-        public OrdersService(ApplicationDbContext context, IGHTKService ghtk) // <-- inject GHTK
+        public OrdersService(ApplicationDbContext context, IGHTKService ghtk, IEmailService emailService) // <-- inject GHTK
         {
             _context = context;
             _ghtk = ghtk;
+            _emailService = emailService;   
         }
 
         public async Task<IEnumerable<Orders>> GetAllAsync()
@@ -575,6 +577,48 @@ namespace DATN_API.Services
                 .Where(o => o.ShippingMethod != null && o.ShippingMethod.StoreId == storeId)
                 .CountAsync();
         }
+        public async Task SendRevenueReportAllStoresCurrentMonthAsync()
+        {
+            int year = DateTime.Now.Year;
+            int month = DateTime.Now.Month;
 
+            var stores = await _context.Stores
+                .Include(s => s.User) // join lấy user
+                .ToListAsync();
+
+            if (stores == null || stores.Count == 0)
+                throw new Exception("Không có store nào trong hệ thống");
+
+            var tasks = stores
+                .Where(s => s.User != null && !string.IsNullOrEmpty(s.User.Email))
+                .Select(async store =>
+                {
+                    var revenueData = await GetTotalPriceByMonthAsync(year, store.Id);
+                    decimal revenue = revenueData.ContainsKey(month.ToString())
+                        ? revenueData[month.ToString()]
+                        : 0;
+                    var totalRevenue = revenue; // doanh thu gốc
+                    var platformFee = totalRevenue * 0.05m; // phí 5%
+                    var netRevenue = totalRevenue - platformFee; // cửa hàng nhận
+                    string subject = $"Báo cáo doanh thu tháng {month}/{year}";
+                    string body = $@"
+                            <h2 style='font-size:22px; color:#333;'>📊 Báo cáo doanh thu tháng {month}/{year}</h2>
+                            <p style='font-size:18px;'>Kính gửi cửa hàng: <b>{store.Name}</b></p>
+                            <p style='font-size:18px;'>Tổng doanh thu tháng {month}/{year} của quý cửa hàng: 
+                                <b style='color:blue;'>{totalRevenue:N0} VNĐ</b></p>
+                            <p style='font-size:18px;'>Phí kinh doanh (5%): 
+                                <b style='color:red;'>{platformFee:N0} VNĐ</b></p>
+                            <p style='font-size:20px;'>💰 Doanh thu thực nhận: 
+                                <b style='color:green;'>{netRevenue:N0} VNĐ</b></p>
+                            <p style='font-size:16px; color:#555;'>Doanh thu của quý cửa hàng sẽ được gửi trước ngày 10/{month}/{year}</p>
+                                <hr/>
+                            <p style='font-size:14px; color:#888;'>Hệ thống quản lý bán hàng GoTeam</p>
+                    ";
+
+                    await _emailService.SendEmailAsync(store.User.Email, subject, body);
+                });
+
+            await Task.WhenAll(tasks);
+        }
     }
 }

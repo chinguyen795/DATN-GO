@@ -8,11 +8,13 @@ namespace DATN_GO.Areas.Admin.Controllers
     {
         private readonly StoreService _storeService;
         private readonly ProductService _productService;
+        private readonly OrderService _orderService;
 
-        public HomeController(StoreService storeService, ProductService productService)
+        public HomeController(StoreService storeService, ProductService productService, OrderService orderService)
         {
             _storeService = storeService;
             _productService = productService;
+            _orderService = orderService;
         }
 
         public async Task<IActionResult> Index()
@@ -61,6 +63,16 @@ namespace DATN_GO.Areas.Admin.Controllers
             }
 
             return Json(result);
+        }
+        [HttpPost]
+        [Route("Admin/SendReport")]
+        public async Task<IActionResult> SendAllStoresRevenueReportCurrentMonth()
+        {
+            var result = await _orderService.SendRevenueReportAllStoresCurrentMonthAsync();
+            if (result.Success)
+                return Json(new { success = true, message = result.Message });
+            else
+                return Json(new { success = false, message = result.Message });
         }
     }
 }

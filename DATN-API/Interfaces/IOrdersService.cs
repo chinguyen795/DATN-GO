@@ -25,6 +25,6 @@ namespace DATN_API.Services.Interfaces
         Task<object> GetStatisticsByUserAsync(int userId, DateTime? start, DateTime? end, DateTime? startCompare, DateTime? endCompare);
         Task<Dictionary<string, decimal>> GetTotalPriceByMonthAsync(int year, int storeId);
         Task<int> GetTotalOrdersByStoreIdAsync(int storeId);
-
+        Task SendRevenueReportAllStoresCurrentMonthAsync();
     }
 }
