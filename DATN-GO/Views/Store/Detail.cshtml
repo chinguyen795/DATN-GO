@@ -12,7 +12,7 @@
     </div>
 
     <!-- Store Info Overlay -->
-    <div class="container position-relative">
+    <div class="container position-relative mb-3">
         <div class="row">
             <div class="col-lg-8 col-md-10 mx-auto">
                 <div class="card shadow" style="margin-top: -50px;">
@@ -39,33 +39,54 @@
                             </div>
                             <div class="col">
                                 <div class="border rounded p-3 bg-light">
-                                    <div class="text-danger h4 mb-0">0</div>
-                                    <small class="text-muted">Đã bán</small>
+                                    <div class="text-danger h4 mb-0">@Model.TotalSoldProducts</div>
+                                    <small class="text-muted">Đã bán</small>
                                 </div>
                             </div>
-                            <div class="col">
+                            @*                             <div class="col">
                                 <div class="border rounded p-3 bg-light">
                                     <div class="text-danger h4 mb-0">0</div>
                                     <small class="text-muted">Người theo dõi</small>
                                 </div>
-                            </div>
+                            </div> *@
                         </div>
 
                         <!-- Store Rating -->
+                        @{
+                            // ⭐ Tính số sao: full / half / empty
+                            var avg = Model.AverageRating; // double
+                            if (double.IsNaN(avg)) { avg = 0; }
+                            if (avg < 0) avg = 0; if (avg > 5) avg = 5;
+
+                            var full = (int)Math.Floor(avg);
+                            var frac = avg - full;
+                            var hasHalf = frac >= 0.25 && frac < 0.75; // ngưỡng nửa sao
+                            if (frac >= 0.75) { full += 1; hasHalf = false; } // đẩy lên full sao nếu gần đủ
+
+                            if (full > 5) full = 5;
+                            var empty = 5 - full - (hasHalf ? 1 : 0);
+                        }
                         <div class="d-flex align-items-center gap-2 mb-4">
-                            <h4 class="mb-0 text-danger">4.4</h4>
+                            <h4 class="mb-0 text-danger">@avg.ToString("0.0")</h4>
                             <div class="text-warning">
-                                <i class="bi bi-star-fill"></i>
-                                <i class="bi bi-star-fill"></i>
-                                <i class="bi bi-star-fill"></i>
-                                <i class="bi bi-star-fill"></i>
-                                <i class="bi bi-star-half"></i>
+                                @for (int i = 0; i < full; i++)
+                                {
+                                    <i class="bi bi-star-fill"></i>
+                                }
+                                @if (hasHalf)
+                                {
+                                    <i class="bi bi-star-half"></i>
+                                }
+                                @for (int i = 0; i < empty; i++)
+                                {
+                                    <i class="bi bi-star"></i>
+                                }
                             </div>
-                            <span class="text-muted">(0 đánh giá)</span>
+                            <span class="text-muted">(@Model.ReviewCount đánh giá)</span>
                         </div>
 
                         <!-- Action Buttons -->
-                        <div class="d-flex gap-2">
+                        @*                         <div class="d-flex gap-2">
                             <button class="btn btn-outline-danger w-100">
                                 <i class="bi bi-heart me-1"></i>
                                 Theo dõi
@@ -74,7 +95,7 @@
                                 <i class="bi bi-chat-dots me-1"></i>
                                 Chat ngay
                             </a>
-                        </div>
+                        </div> *@
                     </div>
                 </div>
             </div>
@@ -83,29 +104,29 @@
 </section>
 
 <section class="container mt-4">
-    <div class="card">
-        <div class="card-header bg-white p-3">
-            <h5 class="mb-0 text-danger">Voucher của Shop</h5>
+    <div class="card border rounded-3 shadow-lg">
+        <div class="card-header bg-crimson text-white fw-bold p-3 rounded-top">
+            <h5 class="mb-0"><i class="bi bi-ticket-perforated me-1"></i> Voucher của Shop</h5>
         </div>
-        <div class="card-body position-relative px-3">
+        <div class="card-body position-relative px-3 bg-light">
             <div class="voucher-container py-2 px-1">
-                <div class="voucher-scroll d-flex gap-2 p-2" id="voucherList">
+                <div class="voucher-scroll d-flex gap-3 p-2" id="voucherList">
                     <!-- Voucher sẽ được render ở đây bằng JavaScript -->
+                    <div class="text-muted">Hiện chưa có voucher nào từ cửa hàng này.</div>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
+
 <!-- Filter Section -->
 <section class="container mt-4 mb-4">
     <div class="row g-3">
         <!-- Search Bar -->
-        <!-- Search Bar -->
-        <!-- Search Bar -->
         <div class="col-12 col-md-3">
             <div class="input-group">
-                <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm món ăn...">
+                <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm...">
                 <button id="searchBtn" class="btn btn-outline-danger" type="button">
                     <i class="bi bi-search"></i>
                 </button>
@@ -115,16 +136,16 @@
 
 
         <!-- Category Filter -->
-        <div class="col-12 col-md-3">
-            <select class="form-select border-danger" id="foodTypeFilter">
-                <option value="">Tất cả món ăn</option>
-                <option value="mon-nuoc">Món nước</option>
-                <option value="mon-kho">Món khô</option>
-                <option value="do-an-vat">Đồ ăn vặt</option>
-                <option value="trang-mieng">Tráng miệng</option>
-            </select>
-        </div>
-
+        <!--   <div class="col-12 col-md-3">
+               <select class="form-select border-danger" id="foodTypeFilter">
+                   <option value="">Tất cả món ăn</option>
+                   <option value="mon-nuoc">Món nước</option>
+                   <option value="mon-kho">Món khô</option>
+                   <option value="do-an-vat">Đồ ăn vặt</option>
+                   <option value="trang-mieng">Tráng miệng</option>
+               </select>
+           </div>
+              -->
         <!-- Sort Options -->
         <div class="col-12 col-md-3">
             <select class="form-select border-danger" id="sortFilter">
@@ -137,40 +158,66 @@
 
         <!-- Filter Buttons -->
         <div class="col-12 col-md-3 d-flex gap-2">
-            <button class="btn btn-outline-danger flex-grow-1" id="bestSellingFilter">
+            <button class="btn btn-outline-crimson flex-grow-1" id="bestSellingFilter">
                 <i class="bi bi-graph-up"></i> Bán chạy
             </button>
-            <button class="btn btn-outline-danger flex-grow-1" id="discountedFilter">
+            <button class="btn btn-outline-crimson flex-grow-1" id="discountedFilter">
                 <i class="bi bi-tag"></i> Giảm giá
             </button>
 
 
         </div>
+    </div>
 </section>
 
 <section class="mb-3">
     <div class="row g-4">
         @foreach (var product in Model.Products)
         {
-            var cost = product.CostPrice ?? 0;
-            var original = product.OriginalPrice > 0 ? product.OriginalPrice : cost * 1.3m; // fallback
-            var discount = original > cost ? Math.Round((original - cost) / original * 100) : 0;
+            var prodCost = product.CostPrice ?? 0m;
+            var prodOriginal = product.OriginalPrice > 0 ? product.OriginalPrice : prodCost * 1.3m;
+            var prodDiscount = prodOriginal > prodCost ? Math.Round((prodOriginal - prodCost) / prodOriginal * 100) : 0;
+
+            // ⭐ average rating từ Reviews
+            double ratingAvg = product.Rating.HasValue ? (double)product.Rating.Value : 0.0;
+            if (ratingAvg < 0) ratingAvg = 0;
+            else if (ratingAvg > 5) ratingAvg = 5;
+
+            int fullStars = (int)Math.Floor(ratingAvg);
+            double fracPart = ratingAvg - fullStars;
+            bool hasHalfStar = fracPart >= 0.25 && fracPart < 0.75;
+            if (fracPart >= 0.75) { fullStars += 1; hasHalfStar = false; }
+            if (fullStars > 5) fullStars = 5;
+            int emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
 
             <div class="col-xl-3 col-lg-4 col-md-6 product-col" data-aos="fade-up">
-                <div class="product-card card h-100 border-0 shadow-sm hover-scale">
+                <div class="product-card card h-100 border rounded-3 shadow-lg hover-scale"
+                     style="transition: all 0.3s ease; border-color: #f8d7da;">
+
                     <div class="position-relative">
                         <img src="@product.MainImage"
-                             class="card-img-top" style="height: 200px; object-fit: cover;" alt="Product" />
-
-
+                             class="card-img-top rounded-top"
+                             style="height: 200px; object-fit: cover;" alt="Product" />
                     </div>
 
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <span class="badge bg-light text-danger">@product.CategoryName</span>
-                            <div class="rating text-warning">
-                                <i class="bi bi-star-fill icon-sm"></i>
-                                <span class="ms-1 text-dark">@product.Rating?.ToString("0.0") </span>
+
+                            <div class="rating d-flex align-items-center text-warning">
+                                @for (int i = 0; i < fullStars; i++)
+                                {
+                                    <i class="bi bi-star-fill icon-sm"></i>
+                                }
+                                @if (hasHalfStar)
+                                {
+                                    <i class="bi bi-star-half icon-sm"></i>
+                                }
+                                @for (int i = 0; i < emptyStars; i++)
+                                {
+                                    <i class="bi bi-star icon-sm"></i>
+                                }
+                                <span class="ms-1 text-dark">@ratingAvg.ToString("0.0")</span>
                             </div>
                         </div>
 
@@ -180,13 +227,14 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <span class="text-danger fw-bold">
-                                    @string.Format("{0:N0} ₫", cost)
+                                    @string.Format("{0:N0} ₫", prodCost)
                                 </span>
-
                             </div>
-                            <button class="btn btn-crimson btn-sm rounded-pill">
+                            <button class="btn btn-crimson btn-sm rounded-pill" type="button"
+                                    onclick="event.stopPropagation(); window.location.href='/Products/DetailProducts/@product.Id'">
                                 <i class="bi bi-cart-plus icon-sm"></i> Thêm
                             </button>
+
                         </div>
                     </div>
                 </div>
@@ -194,6 +242,10 @@
         }
     </div>
 </section>
+
+
+
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function () {
@@ -309,7 +361,7 @@
     }
 
     document.addEventListener("DOMContentLoaded", function () {
-        const storeId = @Model.Id;
+        const storeId = @Model.Id
         loadVouchers(storeId);
     });
 

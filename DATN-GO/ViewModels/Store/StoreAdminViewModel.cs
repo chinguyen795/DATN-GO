@@ -7,6 +7,7 @@ namespace DATN_GO.ViewModels.Store
     public class StoreAdminViewModel
     {
         public int Id { get; set; }
+        public int UserId { get; set; }
         public string Name { get; set; }
         public string? Avatar { get; set; }
         public string? CoverPhoto { get; set; }
@@ -14,7 +15,7 @@ namespace DATN_GO.ViewModels.Store
         public float Latitude { get; set; }
         public float Longitude { get; set; }
         public float Rating { get; set; }
-        public string? District { get; set; }  // Add District here
+        public string? District { get; set; }
 
         public StoreStatus Status { get; set; }
         public string? StatusText => Status.GetDisplayName();
@@ -22,6 +23,11 @@ namespace DATN_GO.ViewModels.Store
         public string? BankAccount { get; set; }
         public DateTime CreateAt { get; set; }
         public DateTime UpdateAt { get; set; }
+
+        // -- //
+        public int TotalSoldProducts { get; set; }
+        public double AverageRating { get; set; }
+        public int ReviewCount { get; set; }
 
         public string? OwnerName { get; set; }
         public string? OwnerEmail { get; set; }

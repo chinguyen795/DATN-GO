@@ -420,6 +420,26 @@ namespace DATN_GO.Service
             return storeToSoldCount;
         }
 
+        // Lấy số sao cho product - detail
+        public async Task<Dictionary<int, (double Avg, int Count)>> GetProductRatingsAsync()
+        {
+            var resp = await _httpClient.GetAsync($"{_baseUrl}Reviews");
+            if (!resp.IsSuccessStatusCode) return new();
+
+            var reviews = JsonSerializer.Deserialize<List<Reviews>>(
+                await resp.Content.ReadAsStringAsync(),
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+            ) ?? new();
+
+            // Trung bình rating theo ProductId
+            return reviews
+                .Where(r => r.Rating > 0)
+                .GroupBy(r => r.ProductId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => (Avg: g.Average(x => x.Rating), Count: g.Count())
+                );
+        }
 
 
     }
