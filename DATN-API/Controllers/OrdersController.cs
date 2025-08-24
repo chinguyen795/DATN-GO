@@ -1,5 +1,6 @@
 ﻿using DATN_API.Data;
 using DATN_API.Models;
+using DATN_API.Services;
 using DATN_API.Services.Interfaces;
 using DATN_API.ViewModels.Orders;
 using Microsoft.AspNetCore.Mvc;
@@ -14,6 +15,7 @@ namespace DATN_API.Controllers
         private readonly ApplicationDbContext _db;
 
         private readonly IOrdersService _service;
+
 
         // ✅ Chỉ duy nhất 1 constructor – inject cả DbContext & Service
         public OrdersController(ApplicationDbContext db, IOrdersService service)
@@ -221,6 +223,23 @@ namespace DATN_API.Controllers
         {
             var total = await _service.GetTotalRevenueAsync();
             return Ok(total);
+        }
+        /// <summary>
+        /// Thanh toán COD (tạo đơn bên GHTK và trả lại LabelId)
+        /// </summary>
+        [HttpPost("cod/{orderId}")]
+        public async Task<IActionResult> CheckoutCOD(int orderId)
+        {
+            var label = await _service.PushOrderToGhtkAndSaveLabelAsync(orderId);
+
+            if (string.IsNullOrEmpty(label))
+                return BadRequest(new { message = "Không tạo được đơn hàng COD bên GHTK." });
+
+            return Ok(new
+            {
+                message = "Đặt hàng COD thành công.",
+                labelId = label
+            });
         }
     }
 }

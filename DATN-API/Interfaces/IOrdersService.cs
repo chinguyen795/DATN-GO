@@ -27,5 +27,7 @@ namespace DATN_API.Services.Interfaces
         Task<int> GetTotalOrdersByStoreIdAsync(int storeId);
         Task SendRevenueReportAllStoresCurrentMonthAsync();
         Task<decimal> GetTotalRevenueAsync();
+        Task<string?> PushOrderToGhtkAndSaveLabelCodAsync(int orderId);
+
     }
 }

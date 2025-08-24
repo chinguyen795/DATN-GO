@@ -262,10 +262,38 @@
           window.location.href = paymentUrl;
           return;
         }
+    if (method === 'cod') {
+      const userVoucherId = voucherSelect?.value ? Number(voucherSelect.value) : null;
+      const body = { userId, addressId, userVoucherId };
 
-        // Các phương thức khác (tạm chưa làm)
-        btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
-        toast('Phương thức này chưa hỗ trợ ở luồng hiện tại. Chọn VNPay để thanh toán nhé!');
+      const payRes = await fetch(`${API_BASE_URL}Payment/cod-create`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(body)
+      });
+
+      btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
+
+      if (!payRes.ok) {
+        const msg = await payRes.text();
+        return toast('Tạo đơn COD thất bại: ' + msg);
+      }
+
+      const { orderId, labelId } = await payRes.json();
+      toast(`Đặt hàng COD thành công${labelId ? ' - Mã vận đơn: ' + labelId : ''}`);
+      window.location.href = `/Checkout/Success?orderId=${orderId}`;
+      return;
+    }
+
+
+
+        if (method === 'momo') {
+          // TODO: sau này bạn bổ sung MoMo
+          btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
+          toast('MoMo chưa được tích hợp. Hãy chọn VNPay hoặc COD.');
+          return;
+        }
+
 
       } catch (e) {
         console.error(e);

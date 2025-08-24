@@ -219,6 +219,101 @@ namespace DATN_API.Controllers
             var label = await _orders.PushOrderToGhtkAndSaveLabelAsync(orderId);
             return Ok(new { orderId, label });
         }
+        [HttpPost("cod/{orderId}")]
+        public async Task<IActionResult> CheckoutCOD(int orderId)
+        {
+            var label = await _orders.PushOrderToGhtkAndSaveLabelCodAsync(orderId);
+
+            if (string.IsNullOrEmpty(label))
+                return BadRequest(new { message = "Không tạo được đơn COD bên GHTK." });
+
+            return Ok(new
+            {
+                message = "Đặt hàng COD thành công.",
+                labelId = label
+            });
+        }
+        [HttpPost("cod-create")]
+        public async Task<IActionResult> CreateCod([FromBody] CreateVnpOrderRequest req)
+        {
+            // 1) Lấy giỏ đã tick + phí ship
+            var cart = await _cartService.GetCartByUserIdAsync(req.UserId);
+            if (cart == null) return BadRequest("Cart not found");
+
+            var shippingGroups = await _cartService.GetShippingGroupsByUserIdAsync(req.UserId, req.AddressId);
+            var shippingFee = shippingGroups.Sum(g => g.ShippingFee);
+
+            var selected = cart.CartItems.Where(x => x.IsSelected).ToList();
+            if (!selected.Any()) return BadRequest("Không có sản phẩm nào được chọn.");
+
+            var subTotal = selected.Sum(x => x.TotalValue);
+            decimal voucherReduce = 0;
+            if (req.UserVoucherId.HasValue)
+            {
+                var voucher = cart.Vouchers.FirstOrDefault(v => v.Id == req.UserVoucherId.Value);
+                if (voucher != null) voucherReduce = voucher.Reduce;
+            }
+            var grandTotal = (long)Math.Max(0, subTotal + shippingFee - voucherReduce);
+
+            // 2) ShippingMethod đại diện (store của item đầu tiên)
+            var representativeStoreId = selected.First().StoreId;
+            var shipMethod = await _db.ShippingMethods
+                .FirstOrDefaultAsync(sm => sm.StoreId == representativeStoreId && sm.MethodName == "GHTK_AUTO");
+            if (shipMethod == null)
+            {
+                shipMethod = new ShippingMethods
+                {
+                    StoreId = representativeStoreId,
+                    MethodName = "GHTK_AUTO",
+                    Price = 0 // phí thực tế nằm trong Orders.DeliveryFee
+                };
+                _db.ShippingMethods.Add(shipMethod);
+                await _db.SaveChangesAsync();
+            }
+
+            // 3) Tạo đơn COD
+            var order = new Orders
+            {
+                UserId = req.UserId,
+                OrderDate = DateTime.UtcNow,
+                PaymentMethod = "COD",
+                PaymentStatus = "Unpaid",          // COD: chưa thanh toán
+                Status = OrderStatus.ChoXuLy,      // vừa đặt, chuẩn bị đẩy hãng vận chuyển
+                TotalPrice = grandTotal,
+                DeliveryFee = shippingFee,
+                VoucherId = null,
+                ShippingMethodId = shipMethod.Id
+            };
+            _db.Orders.Add(order);
+            await _db.SaveChangesAsync();
+
+            foreach (var item in selected)
+            {
+                _db.OrderDetails.Add(new OrderDetails
+                {
+                    OrderId = order.Id,
+                    ProductId = item.ProductId,
+                    Quantity = item.Quantity,
+                    Price = item.Price
+                });
+            }
+            await _db.SaveChangesAsync();
+
+            // 4) Đẩy đơn sang GHTK với COD (thu hộ)
+            string? label = await _orders.PushOrderToGhtkAndSaveLabelCodAsync(order.Id);
+            if (string.IsNullOrWhiteSpace(label))
+                return BadRequest(new { message = "Không tạo được đơn COD bên GHTK." });
+
+            // 5) Cập nhật trạng thái hợp lý & dọn giỏ
+            order.Status = OrderStatus.ChoLayHang;   // đã có vận đơn, chờ GHTK đến lấy hàng
+            await _db.SaveChangesAsync();
+
+            try { await _cartService.ClearSelectedAsync(order.UserId); } catch { /* optional log */ }
+
+            // 6) Trả về cho MVC
+            return Ok(new { orderId = order.Id, labelId = label });
+        }
+
 
     }
 }

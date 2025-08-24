@@ -530,9 +530,10 @@ namespace DATN_API.Services
                     Transport = "road",
 
                     // VNPay đã thanh toán => KHÔNG thu hộ
-                    PickMoney = 0,
+                    // 🔥 KHÁC BIỆT: COD => thu hộ tiền đơn
+                    PickMoney = o.TotalPrice,
                     Value = o.TotalPrice,
-                    Note = ""
+                    Note = "Thanh toán khi nhận hàng (COD)"
                 }
             };
 
@@ -549,6 +550,7 @@ namespace DATN_API.Services
             await _context.SaveChangesAsync();
             return label;
         }
+
         public async Task<Dictionary<string, decimal>> GetTotalPriceByMonthAsync(int year, int storeId)
         {
             // Lấy các order theo năm & storeId
@@ -571,6 +573,95 @@ namespace DATN_API.Services
 
             return result;
         }
+        // ===== NEW: Đẩy đơn COD lên GHTK & lưu LabelId =====
+        public async Task<string?> PushOrderToGhtkAndSaveLabelCodAsync(int orderId)
+        {
+            var o = await _context.Orders
+                .Include(x => x.User)
+                .Include(x => x.OrderDetails).ThenInclude(od => od.Product)
+                .Include(x => x.ShippingMethod)
+                .FirstOrDefaultAsync(x => x.Id == orderId);
+            if (o == null) return null;
+
+            // Lấy địa chỉ mặc định/ mới nhất
+            var addr = await _context.Addresses
+                .Include(a => a.City)
+                .OrderByDescending(a => a.Id)
+                .FirstOrDefaultAsync(a => a.UserId == o.UserId);
+            if (addr == null) return null;
+
+            // TRÁNH CS8072: tách ra biến trước khi query
+            var cityId = addr.City?.Id ?? 0;
+            var district = await _context.Districts.FirstOrDefaultAsync(d => d.CityId == cityId);
+            var districtId = district?.Id ?? 0;
+            var ward = await _context.Wards.FirstOrDefaultAsync(w => w.DistrictId == districtId);
+
+            var receiverProvince = addr.City?.CityName ?? "";
+            var receiverDistrict = district?.DistrictName ?? "";
+            var receiverWard = ward?.WardName ?? "";
+
+            Stores? store = null;
+            if (o.ShippingMethodId != 0)
+                store = await _context.Stores.FirstOrDefaultAsync(s => s.Id == o.ShippingMethod!.StoreId);
+            store ??= new Stores
+            {
+                Name = "Shop GO",
+                RepresentativeName = "Shop GO",
+                Phone = "0900000000",
+                Address = "Kho tổng",
+                PickupAddress = "Kho tổng",
+                Province = "TP. Hồ Chí Minh",
+                District = "Quận 1",
+                Ward = "Phường Bến Nghé"
+            };
+
+            var products = o.OrderDetails.Select(od => new ViewModels.GHTK.GHTKProduct
+            {
+                Name = od.Product?.Name ?? "Sản phẩm",
+                Weight = Math.Max(0.1m, ((decimal)(od.Product?.Weight ?? 0)) / 1000m),
+                Quantity = od.Quantity
+            }).ToList();
+
+            var payload = new ViewModels.GHTK.GHTKCreateOrderRequest
+            {
+                Products = products,
+                Order = new ViewModels.GHTK.GHTKOrder
+                {
+                    Id = $"ORD-{o.Id}-{DateTime.UtcNow.Ticks}",
+                    PickName = store.RepresentativeName ?? store.Name ?? "Shop",
+                    PickAddress = store.PickupAddress ?? store.Address ?? "",
+                    PickProvince = store.Province ?? "",
+                    PickDistrict = store.District ?? "",
+                    PickWard = store.Ward ?? "",
+                    PickTel = store.Phone ?? "0000000000",
+
+                    Name = o.User?.FullName ?? "Khách hàng",
+                    Address = addr.Description ?? "Địa chỉ nhận",
+                    Province = receiverProvince,
+                    District = receiverDistrict,
+                    Ward = receiverWard,
+                    Tel = o.User?.Phone ?? "0000000000",
+
+                    Hamlet = "Khác",
+                    DeliverOption = "none",
+                    Transport = "road",
+
+                    // COD: thu hộ toàn bộ tiền
+                    PickMoney = o.TotalPrice,
+                    Value = o.TotalPrice,
+                    Note = "COD"
+                }
+            };
+
+            var label = await _ghtk.CreateOrderAsync(payload);
+            if (string.IsNullOrWhiteSpace(label)) return null;
+
+            o.LabelId = label;
+            await _context.SaveChangesAsync();
+            return label;
+        }
+
+
         public async Task<int> GetTotalOrdersByStoreIdAsync(int storeId)
         {
             return await _context.Orders
@@ -632,5 +723,6 @@ namespace DATN_API.Services
                          && o.OrderDate < startOfNextMonth) // chỉ tính trong tháng hiện tại
                 .SumAsync(o => (decimal?)o.TotalPrice) ?? 0;
         }
+
     }
 }

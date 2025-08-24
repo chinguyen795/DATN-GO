@@ -76,5 +76,19 @@ namespace DATN_GO.Controllers
 
             return View(result.Data); // View dùng @model List<OrderViewModel>
         }
+        [HttpPost]
+        public async Task<IActionResult> CheckoutCOD(int id)
+        {
+            var (success, msg) = await _orderService.CheckoutCODAsync(id);
+            if (!success)
+            {
+                TempData["ErrorMessage"] = msg;
+                return RedirectToAction("DetailOrder", new { id });
+            }
+
+            TempData["SuccessMessage"] = "Đặt hàng COD thành công!";
+            return RedirectToAction("DetailOrder", new { id });
+        }
+
     }
 }

@@ -278,6 +278,19 @@ namespace DATN_GO.Service
             var revenue = await response.Content.ReadFromJsonAsync<decimal>(_jsonOpts);
             return revenue;
         }
+        public async Task<(bool Success, string Message)> CheckoutCODAsync(int orderId)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsync($"{_baseUrl}payment/cod/{orderId}", null);
+                var msg = await response.Content.ReadAsStringAsync();
+                return (response.IsSuccessStatusCode, msg);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Lỗi gọi API COD: {ex.Message}");
+            }
+        }
 
     }
 }
