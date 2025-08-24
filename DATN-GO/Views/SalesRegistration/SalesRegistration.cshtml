@@ -133,7 +133,7 @@
                                             <option value="">-- Chọn ngân hàng --</option>
                                             @foreach (var bank in ViewBag.Banks as List<BankModel>)
                                             {
-                                                <option value="@bank.Bin">@bank.Name (@bank.ShortName)</option>
+                                                <option value="@bank.ShortName">@bank.Name (@bank.ShortName)</option>
                                             }
                                         </select>
 
@@ -177,6 +177,20 @@
                             </div>
                         </div>
 
+                        <!-- Địa chỉ lấy hàng -->
+                        <div class="mb-4">
+                            <label class="form-label">Địa chỉ lấy hàng <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text text-danger">
+                                    <i class="bi bi-geo-alt"></i>
+                                </span>
+                                <input asp-for="PickupAddress" class="form-control" id="pickupAddress"
+                                       placeholder="Nhập địa chỉ lấy hàng" />
+                            </div>
+                            <span asp-validation-for="PickupAddress" class="text-danger"></span>
+                        </div>
+
+
                         <div class="d-grid">
                             <button type="submit" class="btn btn-crimson">
                                 <i class="bi bi-shop me-2"></i>Đăng ký
@@ -189,6 +203,10 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
 
 
 <script>
@@ -393,5 +411,3 @@
         stylePanelLayout: 'compact'
     });
 </script>
-
-

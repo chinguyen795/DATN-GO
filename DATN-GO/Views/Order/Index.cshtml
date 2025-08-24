@@ -163,10 +163,11 @@
                                                 <div class="col-md-7">
                                                     <h6>
                                                         @(order.OrderDetails.Any()
-                                                            ? (order.OrderDetails.Count == 1
+                                                            ? (order.TotalQuantity == 1
                                                             ? order.OrderDetails[0].ProductName
-                                                            : $"{order.OrderDetails[0].ProductName} + {order.OrderDetails.Count - 1} sản phẩm khác")
+                                                            : $"{order.OrderDetails[0].ProductName} + {order.TotalQuantity - 1} sản phẩm khác")
                                                             : "Không có sản phẩm")
+
                                                     </h6>
                                                     <p class="text-muted mb-0">Số lượng: @order.TotalQuantity</p>
                                                 </div>

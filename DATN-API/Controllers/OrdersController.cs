@@ -114,6 +114,12 @@ namespace DATN_API.Controllers
             var result = await _service.GetStatisticsAsync(storeId, start, end, startCompare, endCompare);
             return Ok(result);
         }
+        [HttpGet("statistics-by-user/{userId}")]
+        public async Task<IActionResult> GetStatisticsByUser(int userId, DateTime? start, DateTime? end, DateTime? startCompare, DateTime? endCompare)
+        {
+            var result = await _service.GetStatisticsByUserAsync(userId, start, end, startCompare, endCompare);
+            return Ok(result);
+        }
 
         // ================== Helpers ==================
         private async Task<OrderDetailDto?> BuildOrderDetailDtoAsync(int id)

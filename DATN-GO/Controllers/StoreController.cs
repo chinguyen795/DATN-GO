@@ -34,6 +34,16 @@ namespace DATN_GO.Controllers
                 Console.WriteLine("[DEBUG] Không có store nào.");
                 return View(new List<StoreViewModel>());
             }
+            // ⭐ rating theo UserId (từ Reviews)
+            var ratingMap = await _storeService.GetRatingsByStoreUserAsync();
+
+            // 🔢 tổng sản phẩm theo StoreId (Products)
+            var productCounts = await _storeService.GetTotalProductsByStoreAsync(onlyApproved: false);
+
+            // 🧾 tổng sản phẩm đã bán theo StoreId (Reviews)
+            var soldCounts = await _storeService.GetTotalSoldProductsByStoreAsync();
+
+
 
             var quantities = await _storeService.GetStoreQuantitiesAsync();
 
@@ -56,11 +66,11 @@ namespace DATN_GO.Controllers
                     Bank = store.Bank,
                     BankAccount = store.BankAccount,
                     BankAccountOwner = store.BankAccountOwner,
-                    Rating = store.Rating,
+                    
                     CreateAt = store.CreateAt,
                     UpdateAt = store.UpdateAt,
                     TotalProductQuantity = matched?.TotalProductQuantity ?? 0,
-                    TotalCartQuantity = matched?.TotalCartQuantity ?? 0
+                   
                 };
             }).ToList();
 

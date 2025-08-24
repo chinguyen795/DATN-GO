@@ -10,7 +10,13 @@
 
         // Từ bảng Stores
         public string StoreName { get; set; }
-        public string Address { get; set; }
+
+        // Địa chỉ chi tiết 
+        public string? Ward { get; set; }
+        public string? District { get; set; }
+        public string? Province { get; set; }
+        public string? PickupAddress { get; set; }
+
         public DateTime? CreateAt { get; set; }
         public string Avatar { get; set; }
         public string CoverImage { get; set; }

@@ -172,6 +172,87 @@ namespace DATN_API.Services
             }).ToList();
 
         }
+        public async Task<object> GetStatisticsByUserAsync(int userId, DateTime? start, DateTime? end, DateTime? startCompare, DateTime? endCompare)
+        {
+            // ✅ Tìm store theo userId
+            var store = await _context.Stores.FirstOrDefaultAsync(s => s.UserId == userId);
+            if (store == null)
+            {
+                return new
+                {
+                    totalOrders = 0,
+                    pendingOrders = 0,
+                    shippingOrders = 0,
+                    completedOrders = 0,
+                    totalOrdersPercentChange = 0,
+                    pendingOrdersPercentChange = 0,
+                    shippingOrdersPercentChange = 0,
+                    completedOrdersPercentChange = 0
+                };
+            }
+
+            // ✅ Query current range
+            var queryCurrent = _context.Orders
+                .Where(o => o.ShippingMethod != null && o.ShippingMethod.StoreId == store.Id);
+
+            if (start.HasValue)
+                queryCurrent = queryCurrent.Where(o => o.OrderDate >= start.Value);
+
+            if (end.HasValue)
+                queryCurrent = queryCurrent.Where(o => o.OrderDate <= end.Value);
+
+            var currentStats = await queryCurrent
+                .GroupBy(o => 1)
+                .Select(g => new
+                {
+                    TotalOrders = g.Count(),
+                    PendingOrders = g.Count(o => o.Status == OrderStatus.ChoXuLy),
+                    ShippingOrders = g.Count(o => o.Status == OrderStatus.DangGiao),
+                    CompletedOrders = g.Count(o => o.Status == OrderStatus.DaHoanThanh)
+                })
+                .FirstOrDefaultAsync() ?? new { TotalOrders = 0, PendingOrders = 0, ShippingOrders = 0, CompletedOrders = 0 };
+
+            // ✅ Query compare range
+            var queryCompare = _context.Orders
+                .Where(o => o.ShippingMethod != null && o.ShippingMethod.StoreId == store.Id);
+
+            if (startCompare.HasValue)
+                queryCompare = queryCompare.Where(o => o.OrderDate >= startCompare.Value);
+
+            if (endCompare.HasValue)
+                queryCompare = queryCompare.Where(o => o.OrderDate <= endCompare.Value);
+
+            var compareStats = await queryCompare
+                .GroupBy(o => 1)
+                .Select(g => new
+                {
+                    TotalOrders = g.Count(),
+                    PendingOrders = g.Count(o => o.Status == OrderStatus.ChoXuLy),
+                    ShippingOrders = g.Count(o => o.Status == OrderStatus.DangGiao),
+                    CompletedOrders = g.Count(o => o.Status == OrderStatus.DaHoanThanh)
+                })
+                .FirstOrDefaultAsync() ?? new { TotalOrders = 0, PendingOrders = 0, ShippingOrders = 0, CompletedOrders = 0 };
+
+            // ✅ Tính % thay đổi
+            double CalculatePercentChange(int current, int previous)
+            {
+                if (previous == 0) return current == 0 ? 0 : 100;
+                return ((double)(current - previous) / previous) * 100;
+            }
+
+            return new
+            {
+                totalOrders = currentStats.TotalOrders,
+                pendingOrders = currentStats.PendingOrders,
+                shippingOrders = currentStats.ShippingOrders,
+                completedOrders = currentStats.CompletedOrders,
+
+                totalOrdersPercentChange = CalculatePercentChange(currentStats.TotalOrders, compareStats.TotalOrders),
+                pendingOrdersPercentChange = CalculatePercentChange(currentStats.PendingOrders, compareStats.PendingOrders),
+                shippingOrdersPercentChange = CalculatePercentChange(currentStats.ShippingOrders, compareStats.ShippingOrders),
+                completedOrdersPercentChange = CalculatePercentChange(currentStats.CompletedOrders, compareStats.CompletedOrders),
+            };
+        }
 
         public async Task<object> GetStatisticsAsync(int storeId, DateTime? start, DateTime? end, DateTime? startCompare, DateTime? endCompare)
         {

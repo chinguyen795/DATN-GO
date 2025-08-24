@@ -109,7 +109,8 @@ namespace DATN_API.Services
                     // Các trường mới 
                     Province = request.Province,
                     District = request.District,
-                    Ward = request.Ward
+                    Ward = request.Ward,
+                    PickupAddress = request.PickupAddress
                 };
                 _context.Stores.Add(store);
             }

@@ -25,6 +25,7 @@ namespace DATN_API.Models
         public string? Province { get; set; }
         public string? District { get; set; }
         public string? Ward { get; set; }
+        public string? PickupAddress { get; set; }
     }
 
 }

@@ -268,7 +268,157 @@ namespace DATN_GO.Service
             }) ?? new();
         }
 
+        // Lấy rating từ reviews
+        public async Task<Dictionary<int, (double AvgRating, int ReviewCount)>> GetRatingsByStoreUserAsync()
+        {
+            // 1) Reviews
+            var rv = await _httpClient.GetAsync($"{_baseUrl}Reviews");
+            if (!rv.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"[REVIEWS] {rv.StatusCode} - {await rv.Content.ReadAsStringAsync()}");
+                return new();
+            }
+            var reviews = JsonSerializer.Deserialize<List<Reviews>>(
+                await rv.Content.ReadAsStringAsync(),
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+            ) ?? new();
 
+            // 2) Products (để có StoreId)
+            var pr = await _httpClient.GetAsync($"{_baseUrl}Products");
+            var products = new List<Products>();
+            if (pr.IsSuccessStatusCode)
+            {
+                products = JsonSerializer.Deserialize<List<Products>>(
+                    await pr.Content.ReadAsStringAsync(),
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                ) ?? new();
+            }
+            else
+            {
+                Console.WriteLine($"[PRODUCTS] {pr.StatusCode} - {await pr.Content.ReadAsStringAsync()}");
+            }
+
+            // 3) Stores (để có UserId)
+            var st = await _httpClient.GetAsync($"{_baseUrl}Stores");
+            var stores = new List<Stores>();
+            if (st.IsSuccessStatusCode)
+            {
+                stores = JsonSerializer.Deserialize<List<Stores>>(
+                    await st.Content.ReadAsStringAsync(),
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                ) ?? new();
+            }
+            else
+            {
+                Console.WriteLine($"[STORES] {st.StatusCode} - {await st.Content.ReadAsStringAsync()}");
+            }
+
+            // 🔎 Debug count
+            Console.WriteLine($"[DEBUG] reviews={reviews.Count}, products={products.Count}, stores={stores.Count}");
+
+            // Build map để truy vấn O(1)
+            var productId_to_storeId = products
+                .Where(p => p != null)                           // phòng null
+                .GroupBy(p => p.Id)
+                .ToDictionary(g => g.Key, g => g.First().StoreId);  // ⬅️ yêu cầu Products phải có StoreId
+
+            var storeId_to_userId = stores
+                .GroupBy(s => s.Id)
+                .ToDictionary(g => g.Key, g => g.First().UserId);
+
+            // Group theo UserId (chủ shop)
+            var grouped = reviews
+                .Where(r => r.Rating > 0)
+                .Select(r =>
+                {
+                    if (!productId_to_storeId.TryGetValue(r.ProductId, out var storeId))
+                        return (HasUser: false, UserId: -1, Rating: r.Rating);
+
+                    if (!storeId_to_userId.TryGetValue(storeId, out var userId))
+                        return (HasUser: false, UserId: -1, Rating: r.Rating);
+
+                    return (HasUser: true, UserId: userId, Rating: r.Rating);
+                })
+                .Where(x => x.HasUser)
+                .GroupBy(x => x.UserId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => (
+                        AvgRating: g.Average(x => x.Rating),
+                        ReviewCount: g.Count()
+                    )
+                );
+
+            Console.WriteLine($"[DEBUG] grouped_user_count={grouped.Count}");
+            return grouped;
+        }
+        // Lấy tổng products
+        public async Task<Dictionary<int, int>> GetTotalProductsByStoreAsync(bool onlyApproved = false)
+        {
+            var resp = await _httpClient.GetAsync($"{_baseUrl}Products");
+            if (!resp.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"[PRODUCTS] {resp.StatusCode} - {await resp.Content.ReadAsStringAsync()}");
+                return new();
+            }
+
+            var json = await resp.Content.ReadAsStringAsync();
+            var products = JsonSerializer.Deserialize<List<Products>>(json, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                // 👇 QUAN TRỌNG: để đọc enum dạng string ("Approved") từ API
+                Converters = { new JsonStringEnumConverter() }
+            }) ?? new();
+
+            // Nếu API trả enum là số (0/1) thì dòng trên vẫn ok.
+            // Nếu muốn đếm tất, để onlyApproved = false
+            if (onlyApproved)
+                products = products.Where(p => p.Status == ProductStatus.Approved).ToList();
+
+            var counts = products
+                .GroupBy(p => p.StoreId)
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            Console.WriteLine($"[DEBUG] products={products.Count}, groups={counts.Count}");
+            return counts;
+        }
+
+        // Lấy tổng đơn hàng đã bán
+        public async Task<Dictionary<int, int>> GetTotalSoldProductsByStoreAsync()
+        {
+            // 1) Reviews
+            var rv = await _httpClient.GetAsync($"{_baseUrl}Reviews");
+            if (!rv.IsSuccessStatusCode) return new();
+            var reviews = JsonSerializer.Deserialize<List<Reviews>>(
+                await rv.Content.ReadAsStringAsync(),
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+            ) ?? new();
+
+            // 2) Products (để map ProductId -> StoreId)
+            var pr = await _httpClient.GetAsync($"{_baseUrl}Products");
+            if (!pr.IsSuccessStatusCode) return new();
+            var products = JsonSerializer.Deserialize<List<Products>>(
+                await pr.Content.ReadAsStringAsync(),
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+            ) ?? new();
+
+            var prodToStore = products.ToDictionary(p => p.Id, p => p.StoreId);
+
+            // 3) Gom theo StoreId và đếm số lượng review (mỗi review = 1 sp đã bán)
+            var storeToSoldCount = new Dictionary<int, int>();
+
+            foreach (var r in reviews.Where(x => x.Rating > 0))
+            {
+                if (!prodToStore.TryGetValue(r.ProductId, out var storeId)) continue;
+
+                if (!storeToSoldCount.ContainsKey(storeId))
+                    storeToSoldCount[storeId] = 0;
+
+                storeToSoldCount[storeId] += 1;
+            }
+
+            return storeToSoldCount;
+        }
 
 
 

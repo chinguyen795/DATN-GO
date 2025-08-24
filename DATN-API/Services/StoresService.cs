@@ -35,25 +35,39 @@ namespace DATN_API.Services
             await _context.SaveChangesAsync();
             return model;
         }
-
         public async Task<bool> UpdateAsync(int id, Stores model)
         {
-            if (id != model.Id) return false;
+            if (model == null || id != model.Id) return false;
 
             var store = await _context.Stores.FindAsync(id);
             if (store == null) return false;
 
+            // Basic
             store.Name = model.Name;
             store.Status = model.Status;
-            store.Address = model.Address;
+
+            // Địa lý & địa chỉ (mới)
+            store.Ward = model.Ward;
+            store.District = model.District;
+            store.Province = model.Province;
+            store.PickupAddress = model.PickupAddress;
+            // store.Address = model.Address; // ĐÃ BỎ
+
+            // Media & banking
             store.CoverPhoto = model.CoverPhoto;
             store.Avatar = model.Avatar;
             store.Bank = model.Bank;
             store.BankAccount = model.BankAccount;
+            // Nếu dùng luôn thì mở:
+            // store.BankAccountOwner = model.BankAccountOwner;
+
+            // Location & misc
             store.Longitude = model.Longitude;
             store.Latitude = model.Latitude;
             store.Slug = model.Slug;
             store.Rating = model.Rating;
+
+            // Audit
             store.UpdateAt = DateTime.Now;
 
             await _context.SaveChangesAsync();

@@ -1,4 +1,4 @@
-﻿@using DATN_GO.ViewModels
+﻿﻿@using DATN_GO.ViewModels
 @model StoreProfileViewModel
 
 @{
@@ -40,14 +40,14 @@
 
                         <ul class="dropdown-menu dropdown-menu-right">
                             <li>
-                                <a asp-area="Seller" asp-controller="Home" asp-action="Index" class="dropdown-link-item">
+                                <a class="dropdown-link-item" asp-controller="Profile" asp-action="Index" asp-area="">
                                     <i class="mdi mdi-account-outline"></i>
                                     <span class="nav-text">Hồ Sơ</span>
                                 </a>
                             </li>
                             <li class="dropdown-footer">
-                                <a asp-area="" asp-controller="Account" asp-action="Logout" class="dropdown-link-item">
-                                    <i class="mdi mdi-logout"></i> Đăng Xuất
+                                <a class="dropdown-link-item" href="/Admin/Decorates/Logout">
+                                    <i class="mdi mdi-logout"></i> Đăng Xuất
                                 </a>
                             </li>
                         </ul>
@@ -57,7 +57,24 @@
             </div>
         </nav>
     </header>
-
+    <div style="position: fixed; top: 20px; right: 20px; z-index: 2000; width: 360px;">
+        @if (TempData["Success"] != null)
+        {
+            <div id="autoAlert" class="alert alert-success alert-dismissible fade show shadow" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div id="autoAlert" class="alert alert-danger alert-dismissible fade show shadow" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+            </div>
+        }
+    </div>
     <div class="content-wrapper">
         <div class="content">
             <div class="card card-default card-profile">
@@ -109,8 +126,17 @@
                             <p class="text-dark font-weight-bold">Số điện thoại:</p>
                             <p>@Model.Phone</p>
 
-                            <p class="text-dark font-weight-bold">Địa chỉ:</p>
-                            <p>@Model.Address</p>
+                            <p class="text-dark font-weight-bold">Địa chỉ lấy hàng:</p>
+                            <p>@Model.PickupAddress</p>
+
+                            <p class="text-dark font-weight-bold">Phường/Xã:</p>
+                            <p>@Model.Ward</p>
+
+                            <p class="text-dark font-weight-bold">Quận/Huyện:</p>
+                            <p>@Model.District</p>
+
+                            <p class="text-dark font-weight-bold">Tỉnh/Thành phố:</p>
+                            <p>@Model.Province</p>
 
                             <p class="text-dark font-weight-bold">Ngày tạo:</p>
                             <p>
@@ -118,7 +144,6 @@
                                     ? Model.CreateAt.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss")
                                     : "Chưa có dữ liệu")
                             </p>
-
                         </div>
                     </div>
                 </div>
@@ -139,6 +164,7 @@
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 </div>
@@ -153,28 +179,64 @@
                     <h5 class="modal-title text-white">Sửa Thông Tin Cơ Bản</h5>
                     <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
                 </div>
+
                 <div class="modal-body">
                     <div class="form-group">
                         <label>Tên cửa hàng</label>
                         <input type="text" class="form-control" name="StoreName" id="storeName" value="@Model.StoreName">
                     </div>
+
                     <div class="form-group">
                         <label>Người đại diện</label>
                         <input type="text" class="form-control" name="FullName" id="fullName" value="@Model.FullName" readonly>
                     </div>
+
                     <div class="form-group">
                         <label>Địa chỉ Email</label>
                         <input type="email" class="form-control" name="Email" id="email" value="@Model.Email" readonly>
                     </div>
+
                     <div class="form-group">
                         <label>Số điện thoại</label>
-                        <input type="text" class="form-control" name="Phone" id="phone" value="@Model.Phone" readonly>
+                        <input type="text" class="form-control" name="Phone" id="phone" value="@Model.Phone">
                     </div>
+
+                    <!-- Địa chỉ -->
                     <div class="form-group">
-                        <label>Địa chỉ</label>
-                        <input type="text" class="form-control" name="Address" id="address" value="@Model.Address">
+                        <label>Địa chỉ lấy hàng</label>
+                        <input type="text" class="form-control" name="PickupAddress" id="pickupAddress" value="@Model.PickupAddress">
                     </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label>Tỉnh/Thành phố</label>
+                            <select class="form-control" id="provinceSelect" name="Province">
+                                <option value="">-- Chọn Tỉnh/Thành phố --</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label>Quận/Huyện</label>
+                            <select class="form-control" id="districtSelect" name="District">
+                                <option value="">-- Chọn Quận/Huyện --</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label>Phường/Xã</label>
+                            <select class="form-control" id="wardSelect" name="Ward">
+                                <option value="">-- Chọn Phường/Xã --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Pre-fill từ server -->
+                    <input type="hidden" id="preProvince" value="@Model.Province" />
+                    <input type="hidden" id="preDistrict" value="@Model.District" />
+                    <input type="hidden" id="preWard" value="@Model.Ward" />
+
+
+                    <!-- End thay đổi -->
                 </div>
+
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-dismiss="modal">Đóng</button>
                     <button type="submit" class="btn btn-danger">Lưu thay đổi</button>
@@ -183,6 +245,7 @@
         </div>
     </div>
 </form>
+
 
 
 <form asp-action="UpdatePaymentInfo" asp-controller="Home" asp-area="Seller" method="post">
@@ -217,6 +280,101 @@
         </div>
     </div>
 </form>
+
+
+<script>
+    (function () {
+      const provinceSelect = document.getElementById('provinceSelect');
+      const districtSelect = document.getElementById('districtSelect');
+      const wardSelect = document.getElementById('wardSelect');
+
+      if (!provinceSelect || !districtSelect || !wardSelect) return;
+
+      let LOCATIONS = [];
+
+      const preProvince = document.getElementById('preProvince').value;
+      const preDistrict = document.getElementById('preDistrict').value;
+      const preWard = document.getElementById('preWard').value;
+
+      function clearSelect(sel, placeholder) {
+        sel.innerHTML = '';
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = placeholder || '-- Chọn --';
+        sel.appendChild(opt);
+      }
+
+      function fillSelect(sel, items, textKey, selectedValue = '') {
+        items.forEach(item => {
+          const text = typeof item === 'string' ? item : item[textKey];
+          const opt = document.createElement('option');
+          opt.value = text;
+          opt.textContent = text;
+          if (text === selectedValue) opt.selected = true;
+          sel.appendChild(opt);
+        });
+      }
+
+      function findCityByName(name) {
+        return LOCATIONS.find(c => c.CityName === name);
+      }
+
+      function findDistrictByName(city, name) {
+        return (city?.Districts || []).find(d => d.DistrictName === name);
+      }
+
+      async function initLocations() {
+        try {
+          const res = await fetch('/data/locations.json', { cache: 'no-store' });
+          if (!res.ok) throw new Error('Failed to load locations.json');
+          LOCATIONS = await res.json();
+
+          // Province
+          clearSelect(provinceSelect, '-- Chọn Tỉnh/Thành phố --');
+          fillSelect(provinceSelect, LOCATIONS, 'CityName', preProvince);
+
+          // District
+          clearSelect(districtSelect, '-- Chọn Quận/Huyện --');
+          if (preProvince) {
+            const city = findCityByName(preProvince);
+            if (city) {
+              fillSelect(districtSelect, city.Districts, 'DistrictName', preDistrict);
+            }
+          }
+
+          // Ward
+          clearSelect(wardSelect, '-- Chọn Phường/Xã --');
+          if (preDistrict) {
+            const city = findCityByName(preProvince);
+            const district = findDistrictByName(city, preDistrict);
+            if (district) {
+              fillSelect(wardSelect, district.Wards, 'WardName', preWard);
+            }
+          }
+        } catch (err) {
+          console.error('[locations] load error:', err);
+        }
+      }
+
+      provinceSelect.addEventListener('change', () => {
+        const city = findCityByName(provinceSelect.value);
+        clearSelect(districtSelect, '-- Chọn Quận/Huyện --');
+        clearSelect(wardSelect, '-- Chọn Phường/Xã --');
+        if (!city) return;
+        fillSelect(districtSelect, city.Districts, 'DistrictName');
+      });
+
+      districtSelect.addEventListener('change', () => {
+        const city = findCityByName(provinceSelect.value);
+        const district = findDistrictByName(city, districtSelect.value);
+        clearSelect(wardSelect, '-- Chọn Phường/Xã --');
+        if (!district) return;
+        fillSelect(wardSelect, district.Wards, 'WardName');
+      });
+
+      document.addEventListener('DOMContentLoaded', initLocations);
+    })();
+</script>
 
 
 
@@ -334,49 +492,18 @@
         });
 
     }
-    document.addEventListener("DOMContentLoaded", function () {
-        var toastEl = document.getElementById('autoToast');
-        if (toastEl) {
-            var bsToast = new bootstrap.Toast(toastEl, { delay: 3000 });
-            bsToast.show();
-        }
-    });
+
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<div class="position-fixed top-0 end-0 p-3" style="z-index: 2000;">
-    @if (TempData["ToastMessage"] != null && TempData["ToastType"] != null)
-    {
-        var toastType = TempData["ToastType"].ToString();
-        var isSuccess = toastType == "success";
-
-        <div class="toast shadow-lg" role="alert" aria-live="assertive" aria-atomic="true"
-             id="autoToast" style="min-width: 320px; font-size: 1.1rem;">
-            <div class="toast-header @(isSuccess ? "bg-success" : "bg-danger") text-white">
-                <img src="@(isSuccess ? "/icons/happy.gif" : "/icons/sad.gif")"
-                     class="rounded me-2" alt="@(isSuccess ? "Success" : "Error")" width="24" height="24">
-                <strong class="me-auto">@((isSuccess) ? "Thành công" : "Lỗi")</strong>
-                <small>Vừa xong</small>
-                <button type="button" class="btn-close btn-close-white" style="
-                           width: 26.4px !important;
-                           height: 26.4px !important;" data-bs-dismiss="toast"
-                        aria-label="Close"></button>
-            </div>
-            <div class="toast-body fw-semibold">
-                @TempData["ToastMessage"]
-            </div>
-        </div>
-    }
-</div>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        var toastEl = document.getElementById('autoToast');
-        if (toastEl) {
-            var bsToast = new bootstrap.Toast(toastEl, { autohide: false });
-            bsToast.show();
-
+        // Tìm tất cả alert có class .alert
+        var alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function (alert) {
             setTimeout(function () {
-                bsToast.hide();
-            }, 3000);
-        }
+                var bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close(); // auto close sau 2s
+            }, 2000);
+        });
     });
 </script>

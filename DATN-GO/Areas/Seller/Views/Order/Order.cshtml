@@ -1,22 +1,20 @@
 ﻿@model List<DATN_GO.ViewModels.OrderViewModel>
 @using DATN_GO.Models
-
-@functions {
-
-    public OrderStatus MapGhtkStatusToEnum(int ghtkStatus)
+@{
+    var userIdStr = Context.Session.GetString("Id");  
+    if (string.IsNullOrEmpty(userIdStr))
     {
-        return ghtkStatus switch
-        {
-            1 => OrderStatus.ChoXuLy,  // Chưa tiếp nhận -> Chờ xử lý
-            2 => OrderStatus.ChoXuLy,  // Đã tiếp nhận -> cũng coi là Chờ xử lý
-            3 => OrderStatus.ChoLayHang,
-            4 => OrderStatus.DangGiao,
-            5 => OrderStatus.DangGiao,
-            6 => OrderStatus.DaHoanThanh,
-            -1 => OrderStatus.DaHuy,
-            _ => OrderStatus.ChoXuLy     // Mặc định
-        };
+        Context.Response.Redirect("https://localhost:7180/Login");  
     }
+    else
+    {
+        var userId = int.Parse(userIdStr);
+        <script>
+            const userId = @userId; // inject sang JS
+        </script>
+    }
+}
+@functions {
     public string MapStatusToText(string status)
     {
         if (!Enum.TryParse<OrderStatus>(status, out var s))
@@ -54,72 +52,10 @@
         return string.Format(new System.Globalization.CultureInfo("vi-VN"), "{0:C0}", amount);
     }
 
-    public void RenderOrdersTable(IEnumerable<DATN_GO.ViewModels.OrderViewModel> orders, bool showActions = false)
-    {
-        <table class="table table-hover align-middle mb-0">
-            <thead class="bg-danger text-dark">
-                <tr>
-                    <th class="fw-bold text-dark">Mã Đơn</th>
-                    <th class="fw-bold text-dark">Khách Hàng</th>
-                    <th class="fw-bold text-dark">Số Lượng</th>
-                    <th class="fw-bold text-dark">Tổng Tiền</th>
-                    <th class="fw-bold text-dark">Ngày Đặt</th>
-                    @if (showActions)
-                    {
-                        <th class="fw-bold text-dark">Thao Tác</th>
-                    }
-                    else
-                    {
-                        <th class="fw-bold text-dark">Trạng Thái</th>
-                    }
-                </tr>
-            </thead>
-            <tbody>
-                @if (orders != null && orders.Any())
-                {
-                    foreach (var order in orders)
-                    {
-                        order.Status = MapGhtkStatusToEnum(order.GHTKStatus.Status).ToString();
-                        <tr data-bs-toggle="modal" data-bs-target="#orderDetailsModal" data-order-id="@order.Id">
-                            <td>#@order.Id</td>
-                            <td>@order.CustomerName</td>
-                            <td>@order.TotalQuantity món</td>
-                            <td class="fw-semibold">@FormatCurrency(order.GrandTotal)</td>
-                            <td>@order.CreatedAt.ToString("dd/MM/yyyy")</td>
-                            @if (showActions)
-                            {
-                                <td>
-                                    <span class="badge @MapStatusToBadgeClass(order.Status) px-3 py-2 rounded-pill">
-                                        @MapStatusToText(order.Status)
-                                    </span>
-                                </td>
-                               
-                            }
-                            else
-                            {
-                                <td>
-                                    <button class="btn btn-sm btn-success rounded-pill me-2" type="button">
-                                        Xác nhận
-                                    </button>
-                                    <button class="btn btn-sm btn-danger rounded-pill" type="button" data-bs-toggle="modal" data-bs-target="#rejectOrderModal">
-                                        Từ chối
-                                    </button>
-                                </td>
-                            }
-                        </tr>
-                    }
-                }
-                else
-                {
-                    <tr><td colspan="6" class="text-center">Không có đơn hàng</td></tr>
-                }
-            </tbody>
-        </table>
-    }
 }
 
 <style>
-     
+    /* Giảm kích thước chữ tiêu đề tab và padding để các tab nằm trên 1 hàng, không wrap chữ trong tab */
     .nav-pills .nav-link {
         font-size: 0.75rem;
         padding: 0.1rem 0.3rem;
@@ -130,11 +66,13 @@
         gap: 0.15em;
         min-width: unset;
     }
- 
+
+        /* Giảm kích thước icon trong tab */
         .nav-pills .nav-link i {
             font-size: 1em;
         }
-         
+
+    /* Cho phép các tab tự động xuống dòng nếu không đủ chỗ, không có thanh cuộn ngang */
     #orderTabs {
         flex-wrap: wrap;
         gap: 0.02rem !important;
@@ -179,7 +117,7 @@
                 <span class="sr-only">Toggle navigation</span>
             </button>
 
-            <span class="page-title">ĐƠN HÀNG</span>
+            <span class="page-title">ĐƠN HÀNG @userIdStr</span>
 
             <div class="navbar-right ">
 
@@ -298,12 +236,12 @@
                                         data-bs-dismiss="modal">
                                     Đóng
                                 </button>
-                              @*   <button type="button" class="btn btn-success rounded-pill px-4"
+                                <button type="button" class="btn btn-success rounded-pill px-4"
                                         id="btnUpdateStatus">
                                     Cập nhật
                                     trạng
                                     thái
-                                </button> *@
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -316,69 +254,287 @@
                             </div>
                             <div class="card-body pt-0">
                                 <ul class="nav nav-pills mb-3 px-2" id="orderTabs" role="tablist" style="gap: 0.5rem;">
-                                    <li class="nav-item flex-fill text-center">
-                                        <a class="nav-link active fw-bold py-2 px-2 text-black" id="allOrdersTab" data-bs-toggle="pill" href="#allOrders">
+                                    <li class="nav-item flex-fill text-center" role="presentation">
+                                        <a class="nav-link active fw-bold py-2 px-2 text-black" id="allOrdersTab" data-bs-toggle="pill" href="#allOrders" role="tab" aria-controls="allOrders" aria-selected="true">
                                             <i class="mdi mdi-format-list-bulleted"></i> TẤT CẢ
                                         </a>
                                     </li>
-                                    <li class="nav-item flex-fill text-center">
-                                        <a class="nav-link fw-bold py-2 px-2 text-black" id="pendingTab" data-bs-toggle="pill" href="#pendingOrders">
+                                    <li class="nav-item flex-fill text-center" role="presentation">
+                                        <a class="nav-link fw-bold text-black py-2 px-2" id="pendingTab" data-bs-toggle="pill" href="#pendingOrders" role="tab" aria-controls="pendingOrders" aria-selected="false">
                                             <i class="mdi mdi-clock-outline"></i> CHỜ XỬ LÝ
                                         </a>
                                     </li>
-                                    <li class="nav-item flex-fill text-center">
-                                        <a class="nav-link fw-bold py-2 px-2 text-black" id="readyTab" data-bs-toggle="pill" href="#readyOrders">
+                                    <li class="nav-item flex-fill text-center" role="presentation">
+                                        <a class="nav-link fw-bold text-black py-2 px-2" id="readyTab" data-bs-toggle="pill" href="#readyOrders" role="tab" aria-controls="readyOrders" aria-selected="false">
                                             <i class="mdi mdi-package-variant"></i> CHỜ LẤY HÀNG
                                         </a>
                                     </li>
-                                    <li class="nav-item flex-fill text-center">
-                                        <a class="nav-link fw-bold py-2 px-2 text-black" id="shippingTab" data-bs-toggle="pill" href="#shippingOrders">
+                                    <li class="nav-item flex-fill text-center" role="presentation">
+                                        <a class="nav-link fw-bold text-black py-2 px-2" id="shippingTab" data-bs-toggle="pill" href="#shippingOrders" role="tab" aria-controls="shippingOrders" aria-selected="false">
                                             <i class="mdi mdi-truck-delivery"></i> ĐANG GIAO
                                         </a>
                                     </li>
-                                    <li class="nav-item flex-fill text-center">
-                                        <a class="nav-link fw-bold py-2 px-2 text-black" id="completedTab" data-bs-toggle="pill" href="#completedOrders">
+                                    <li class="nav-item flex-fill text-center" role="presentation">
+                                        <a class="nav-link fw-bold text-black py-2 px-2" id="completedTab" data-bs-toggle="pill" href="#completedOrders" role="tab" aria-controls="completedOrders" aria-selected="false">
                                             <i class="mdi mdi-check-circle-outline"></i> ĐÃ HOÀN THÀNH
                                         </a>
                                     </li>
-                                    <li class="nav-item flex-fill text-center">
-                                        <a class="nav-link fw-bold py-2 px-2 text-black" id="cancelledTab" data-bs-toggle="pill" href="#cancelledOrders">
+                                    <li class="nav-item flex-fill text-center" role="presentation">
+                                        <a class="nav-link fw-bold text-black py-2 px-2" id="cancelledTab" data-bs-toggle="pill" href="#cancelledOrders" role="tab" aria-controls="cancelledOrders" aria-selected="false">
                                             <i class="mdi mdi-close-circle-outline"></i> ĐÃ HỦY
                                         </a>
                                     </li>
                                 </ul>
 
+                                <div class="tab-content pt-3" id="orderTabsContent">
+                                    <!-- TẤT CẢ -->
+                                    <div class="tab-pane fade show active" id="allOrders" role="tabpanel" aria-labelledby="allOrdersTab">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover align-middle mb-0">
+                                                <thead class="bg-danger text-dark">
+                                                    <tr>
+                                                        <th scope="col" class="fw-bold text-dark">Mã Đơn</th>
+                                                        <th scope="col" class="fw-bold text-dark">Khách Hàng</th>
+                                                        <th scope="col" class="fw-bold text-dark">Số Lượng</th>
+                                                        <th scope="col" class="fw-bold text-dark">Tổng Tiền</th>
+                                                        <th scope="col" class="fw-bold text-dark">Ngày Đặt</th>
+                                                        <th scope="col" class="fw-bold text-dark">Trạng Thái</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @if (Model?.Any() == true)
+                                                    {
+                                                        foreach (var order in Model)
+                                                        {
+                                                            <tr data-bs-toggle="modal" data-bs-target="#orderDetailsModal" data-order-id="@order.Id">
+                                                                <td>#@order.Id</td>
+                                                                <td>@order.CustomerName</td>
+                                                                <td>@order.TotalQuantity món</td>
+                                                                <td class="fw-semibold">@FormatCurrency(order.GrandTotal)</td>
+                                                                <td>@order.CreatedAt.ToString("dd/MM/yyyy")</td>
+                                                                <td>
+                                                                    <span class="badge @MapStatusToBadgeClass(order.Status) px-3 py-2 rounded-pill">
+                                                                        @MapStatusToText(order.Status)
+                                                                    </span>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <tr><td colspan="6" class="text-center">Không có đơn hàng</td></tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
 
-                                <div class="tab-content pt-3">
-                                    <div class="tab-pane fade show active" id="allOrders">
-                                        @{
-                                            RenderOrdersTable(Model, true);
-                                        }
+                                    <!-- CHỜ XỬ LÝ -->
+                                    <div class="tab-pane fade" id="pendingOrders" role="tabpanel" aria-labelledby="pendingTab">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover align-middle mb-0">
+                                                <thead class="bg-danger text-dark">
+                                                    <tr>
+                                                        <th scope="col" class="fw-bold text-dark">Mã Đơn</th>
+                                                        <th scope="col" class="fw-bold text-dark">Khách Hàng</th>
+                                                        <th scope="col" class="fw-bold text-dark">Số Lượng</th>
+                                                        <th scope="col" class="fw-bold text-dark">Tổng Tiền</th>
+                                                        <th scope="col" class="fw-bold text-dark">Ngày Đặt</th>
+                                                        <th scope="col" class="fw-bold text-dark">Thao Tác</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @if (Model != null && Model.Any(o => o.Status == OrderStatus.ChoXuLy.ToString()))
+                                                    {
+                                                        foreach (var order in Model.Where(o => o.Status == OrderStatus.ChoXuLy.ToString()))
+                                                        {
+                                                            <tr data-order-id="@order.Id">
+
+                                                                <td>#@order.Id</td>
+                                                                <td>@order.CustomerName</td>
+                                                                <td>@order.TotalQuantity món</td>
+                                                                <td class="fw-semibold">@FormatCurrency(order.TotalPrice)</td>
+                                                                <td>@order.CreatedAt.ToString("dd/MM/yyyy")</td>
+                                                                <td>
+                                                                    <button class="btn btn-sm btn-success rounded-pill me-2" type="button">
+                                                                        Xác nhận
+                                                                    </button>
+                                                                    <button class="btn btn-sm btn-danger rounded-pill" type="button" data-bs-toggle="modal" data-bs-target="#rejectOrderModal">
+                                                                        Từ chối
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <tr><td colspan="6" class="text-center">Không có đơn hàng</td></tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
-                                    <div class="tab-pane fade" id="pendingOrders">
-                                        @{
-                                            RenderOrdersTable(Model?.Where(o => o.Status == OrderStatus.ChoXuLy.ToString()), showActions: true);
-                                        }
+
+                                    <!-- CHỜ LẤY HÀNG -->
+                                    <div class="tab-pane fade" id="readyOrders" role="tabpanel" aria-labelledby="readyTab">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover align-middle mb-0">
+                                                <thead class="bg-danger text-dark">
+                                                    <tr>
+                                                        <th scope="col" class="fw-bold text-dark">Mã Đơn</th>
+                                                        <th scope="col" class="fw-bold text-dark">Khách Hàng</th>
+                                                        <th scope="col" class="fw-bold text-dark">Số Lượng</th>
+                                                        <th scope="col" class="fw-bold text-dark">Tổng Tiền</th>
+                                                        <th scope="col" class="fw-bold text-dark">Ngày Đặt</th>
+                                                        <th scope="col" class="fw-bold text-dark">Trạng Thái</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @if (Model != null && Model.Any(o => o.Status == OrderStatus.ChoLayHang.ToString()))
+                                                    {
+                                                        foreach (var order in Model.Where(o => o.Status == OrderStatus.ChoLayHang.ToString()))
+                                                        {
+                                                            <tr data-bs-toggle="modal" data-bs-target="#orderDetailsModal" data-order-id="@order.Id">
+                                                                <td>#@order.Id</td>
+                                                                <td>@order.CustomerName</td>
+                                                                <td>@order.TotalQuantity món</td>
+                                                                <td class="fw-semibold">@FormatCurrency(order.TotalPrice)</td>
+                                                                <td>@order.CreatedAt.ToString("dd/MM/yyyy")</td>
+                                                                <td>
+                                                                    <span class="badge @MapStatusToBadgeClass(order.Status) px-3 py-2 rounded-pill">@MapStatusToText(order.Status)</span>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <tr><td colspan="6" class="text-center">Không có đơn hàng</td></tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
-                                    <div class="tab-pane fade" id="readyOrders">
-                                        @{
-                                            RenderOrdersTable(Model?.Where(o => o.Status == OrderStatus.ChoLayHang.ToString()));
-                                        }
+
+                                    <!-- ĐANG GIAO -->
+                                    <div class="tab-pane fade" id="shippingOrders" role="tabpanel" aria-labelledby="shippingTab">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover align-middle mb-0">
+                                                <thead class="bg-danger text-dark">
+                                                    <tr>
+                                                        <th scope="col" class="fw-bold text-dark">Mã Đơn</th>
+                                                        <th scope="col" class="fw-bold text-dark">Khách Hàng</th>
+                                                        <th scope="col" class="fw-bold text-dark">Số Lượng</th>
+                                                        <th scope="col" class="fw-bold text-dark">Tổng Tiền</th>
+                                                        <th scope="col" class="fw-bold text-dark">Ngày Đặt</th>
+                                                        <th scope="col" class="fw-bold text-dark">Trạng Thái</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @if (Model != null && Model.Any(o => o.Status == OrderStatus.DangGiao.ToString()))
+                                                    {
+                                                        foreach (var order in Model.Where(o => o.Status == OrderStatus.DangGiao.ToString()))
+                                                        {
+                                                            <tr data-bs-toggle="modal" data-bs-target="#orderDetailsModal" data-order-id="@order.Id">
+                                                                <td>#@order.Id</td>
+                                                                <td>@order.CustomerName</td>
+                                                                <td>@order.TotalQuantity món</td>
+                                                                <td class="fw-semibold">@FormatCurrency(order.TotalPrice)</td>
+                                                                <td>@order.CreatedAt.ToString("dd/MM/yyyy")</td>
+                                                                <td>
+                                                                    <span class="badge @MapStatusToBadgeClass(order.Status) px-3 py-2 rounded-pill">@MapStatusToText(order.Status)</span>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <tr><td colspan="6" class="text-center">Không có đơn hàng</td></tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
-                                    <div class="tab-pane fade" id="shippingOrders">
-                                        @{
-                                            RenderOrdersTable(Model?.Where(o => o.Status == OrderStatus.DangGiao.ToString()));
-                                        }
+
+                                    <!-- ĐÃ HOÀN THÀNH -->
+                                    <div class="tab-pane fade" id="completedOrders" role="tabpanel" aria-labelledby="completedTab">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover align-middle mb-0">
+                                                <thead class="bg-danger text-dark">
+                                                    <tr>
+                                                        <th scope="col" class="fw-bold text-dark">Mã Đơn</th>
+                                                        <th scope="col" class="fw-bold text-dark">Khách Hàng</th>
+                                                        <th scope="col" class="fw-bold text-dark">Số Lượng</th>
+                                                        <th scope="col" class="fw-bold text-dark">Tổng Tiền</th>
+                                                        <th scope="col" class="fw-bold text-dark">Ngày Đặt</th>
+                                                        <th scope="col" class="fw-bold text-dark">Trạng Thái</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @if (Model != null && Model.Any(o => o.Status == OrderStatus.DaHoanThanh.ToString()))
+                                                    {
+                                                        foreach (var order in Model.Where(o => o.Status == OrderStatus.DaHoanThanh.ToString()))
+                                                        {
+                                                            <tr data-bs-toggle="modal" data-bs-target="#orderDetailsModal" data-order-id="@order.Id">
+                                                                <td>#@order.Id</td>
+                                                                <td>@order.CustomerName</td>
+                                                                <td>@order.TotalQuantity món</td>
+                                                                <td class="fw-semibold">@FormatCurrency(order.TotalPrice)</td>
+                                                                <td>@order.CreatedAt.ToString("dd/MM/yyyy")</td>
+                                                                <td>
+                                                                    <span class="badge @MapStatusToBadgeClass(order.Status) px-3 py-2 rounded-pill">@MapStatusToText(order.Status)</span>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <tr><td colspan="6" class="text-center">Không có đơn hàng</td></tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
-                                    <div class="tab-pane fade" id="completedOrders">
-                                        @{
-                                            RenderOrdersTable(Model?.Where(o => o.Status == OrderStatus.DaHoanThanh.ToString()));
-                                        }
-                                    </div>
-                                    <div class="tab-pane fade" id="cancelledOrders">
-                                        @{
-                                            RenderOrdersTable(Model?.Where(o => o.Status == OrderStatus.DaHuy.ToString()));
-                                        }
+
+                                    <!-- ĐÃ HỦY -->
+                                    <div class="tab-pane fade" id="cancelledOrders" role="tabpanel" aria-labelledby="cancelledTab">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover align-middle mb-0">
+                                                <thead class="bg-danger text-dark">
+                                                    <tr>
+                                                        <th scope="col" class="fw-bold text-dark">Mã Đơn</th>
+                                                        <th scope="col" class="fw-bold text-dark">Khách Hàng</th>
+                                                        <th scope="col" class="fw-bold text-dark">Số Lượng</th>
+                                                        <th scope="col" class="fw-bold text-dark">Tổng Tiền</th>
+                                                        <th scope="col" class="fw-bold text-dark">Ngày Đặt</th>
+                                                        <th scope="col" class="fw-bold text-dark">Lý Do Hủy</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @if (Model != null && Model.Any(o => o.Status == OrderStatus.DaHuy.ToString()))
+                                                    {
+                                                        foreach (var order in Model.Where(o => o.Status == OrderStatus.DaHuy.ToString()))
+                                                        {
+                                                            <tr data-bs-toggle="modal" data-bs-target="#orderDetailsModal" data-order-id="@order.Id">
+                                                                <td>#@order.Id</td>
+                                                                <td>@order.CustomerName</td>
+                                                                <td>@order.TotalQuantity món</td>
+                                                                <td class="fw-semibold">@FormatCurrency(order.TotalPrice)</td>
+                                                                <td>@order.CreatedAt.ToString("dd/MM/yyyy")</td>
+                                                                <td>
+                                                                    <span class="badge @MapStatusToBadgeClass(order.Status) px-3 py-2 rounded-pill">
+                                                                        @MapStatusToText(order.Status)
+                                                                    </span>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <tr><td colspan="6" class="text-center">Không có đơn hàng</td></tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
 
                                 </div>
@@ -463,7 +619,7 @@
                                                     <i class="bi bi-cart-check text-danger fs-3"></i>
                                                 </div>
                                                 <div class="text-center">
-                                                    <h3 class="display-6 fw-bold mb-1">28</h3>
+                                                    <h3 class="display-6 fw-bold mb-1" id="totalOrders">0</h3>
                                                     <p class="mb-2 fw-light">Tổng Đơn hàng</p>
                                                     <div class="progress bg-white"
                                                          style="height: 8px; border-radius: 5px;">
@@ -471,10 +627,7 @@
                                                              style="width: 60%;" aria-valuenow="60"
                                                              aria-valuemin="0" aria-valuemax="100"></div>
                                                     </div>
-                                                    <small class="mt-2 d-block fw-light">
-                                                        +12% so với kỳ
-                                                        trước
-                                                    </small>
+                                                    <small id="totalOrdersChange" class="mt-2 d-block fw-light">0% so với kỳ trước</small>
                                                 </div>
                                             </div>
                                         </div>
@@ -488,7 +641,7 @@
                                                     <i class="bi bi-hourglass-split text-warning fs-3"></i>
                                                 </div>
                                                 <div class="text-center">
-                                                    <h3 class="display-6 fw-bold mb-1">45</h3>
+                                                    <h3 class="display-6 fw-bold mb-1" id="pendingOrders">0</h3>
                                                     <p class="mb-2 fw-light">Chờ xử lý Hàng</p>
                                                     <div class="progress bg-white"
                                                          style="height: 8px; border-radius: 5px;">
@@ -496,10 +649,7 @@
                                                              style="width: 45%;" aria-valuenow="45"
                                                              aria-valuemin="0" aria-valuemax="100"></div>
                                                     </div>
-                                                    <small class="mt-2 d-block fw-light">
-                                                        +5% so với kỳ
-                                                        trước
-                                                    </small>
+                                                    <small id="pendingOrdersChange" class="mt-2 d-block fw-light">0% so với kỳ trước</small>
                                                 </div>
                                             </div>
                                         </div>
@@ -513,7 +663,7 @@
                                                     <i class="bi bi-truck text-success fs-3"></i>
                                                 </div>
                                                 <div class="text-center">
-                                                    <h3 class="display-6 fw-bold mb-1">1.567</h3>
+                                                    <h3 class="display-6 fw-bold mb-1" id="shippingOrders">0</h3>
                                                     <p class="mb-2 fw-light">Đang giao hàng</p>
                                                     <div class="progress bg-white"
                                                          style="height: 8px; border-radius: 5px;">
@@ -521,10 +671,7 @@
                                                              style="width: 75%;" aria-valuenow="75"
                                                              aria-valuemin="0" aria-valuemax="100"></div>
                                                     </div>
-                                                    <small class="mt-2 d-block fw-light">
-                                                        +8% so với kỳ
-                                                        trước
-                                                    </small>
+                                                    <small id="shippingOrdersChange" class="mt-2 d-block fw-light">0% so với kỳ trước</small>
                                                 </div>
                                             </div>
                                         </div>
@@ -538,7 +685,7 @@
                                                     <i class="bi bi-check-circle text-primary fs-3"></i>
                                                 </div>
                                                 <div class="text-center">
-                                                    <h3 class="display-6 fw-bold mb-1">200</h3>
+                                                    <h3 class="display-6 fw-bold mb-1" id="completedOrders">0</h3>
                                                     <p class="mb-2 fw-light">Đã hoàn thành</p>
                                                     <div class="progress bg-white"
                                                          style="height: 8px; border-radius: 5px;">
@@ -546,10 +693,7 @@
                                                              style="width: 85%;" aria-valuenow="85"
                                                              aria-valuemin="0" aria-valuemax="100"></div>
                                                     </div>
-                                                    <small class="mt-2 d-block fw-light">
-                                                        +0,5% so với kỳ
-                                                        trước
-                                                    </small>
+                                                    <small id="completedOrdersChange" class="mt-2 d-block fw-light">0% so với kỳ trước</small>
                                                 </div>
                                             </div>
                                         </div>
@@ -666,7 +810,7 @@
                     const createdAt = new Date(order.createdAt);
                     document.getElementById('modalOrderDate').textContent = createdAt.toLocaleDateString('vi-VN');
                     document.getElementById('modalQuantity').textContent = `${order.totalQuantity} món`;
-                    document.getElementById('modalTotalAmount').textContent = formatCurrency(order.GrandTotal);
+                    document.getElementById('modalTotalAmount').textContent = formatCurrency(order.grandTotal);
 
                     const [statusText, statusClass] = mapStatus(order.status);
                     const modalStatus = document.getElementById('modalStatus');
@@ -778,16 +922,13 @@
             updateOrderStatus(orderId, 'DaHuy'); // Gọi hàm cập nhật trạng thái
             rejectOrderModal.hide(); // Đóng modal
         });
-
-          
-        document.addEventListener('DOMContentLoaded', function () {
-        const API_BASE_URL = '/api'; // TODO: đổi theo backend thực tế
-        const storeId = window.storeId || 1;
+        // --- PHẦN QUẢN LÝ THỐNG KÊ ---
+        const userId = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(userIdStr));
 
         const startDateInput = document.getElementById('startDate');
         const endDateInput = document.getElementById('endDate');
         const quickDateSelectButton = document.getElementById('quickDateSelectButton');
-        const dropdownItems = document.querySelectorAll('.dropdown-menu .dropdown-item');
+        const dropdownItems = document.querySelectorAll('#quickDateSelectButton + .dropdown-menu .dropdown-item');
 
         function formatNumber(num) {
             return num.toLocaleString('vi-VN');
@@ -800,13 +941,18 @@
 
         async function fetchStatistics(start, end) {
             try {
-                let url = `${API_BASE_URL}/orders/statistics?storeId=${storeId}`;
-                if (start) url += `&start=${start.toISOString()}`;
-                if (end) url += `&end=${end.toISOString()}`;
+                let url = `${API_BASE_URL}/orders/statistics-by-user/${userId}`;
+                const params = [];
+                if (start) params.push(`start=${encodeURIComponent(start.toISOString())}`);
+                if (end) params.push(`end=${encodeURIComponent(end.toISOString())}`);
+                if (params.length > 0) url += "?" + params.join("&");
 
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(await response.text() || 'Lỗi lấy dữ liệu thống kê');
-                return await response.json();
+
+                const json = await response.json();
+                console.log("📊 API response:", json);
+                return json;
             } catch (error) {
                 alert('Không tải được số liệu: ' + error.message);
                 return null;
@@ -826,6 +972,7 @@
                 if (typeof data[key] !== 'undefined') {
                     const card = document.querySelector(cardMap[key]);
                     if (!card) continue;
+
                     const h3 = card.querySelector('h3.display-6');
                     if (h3) h3.textContent = formatNumber(data[key] || 0);
 
@@ -852,16 +999,16 @@
             switch (value) {
                 case 'today':
                     start = today;
-                    end = new Date(today.getTime() + 86400000);
+                    end = new Date(today.getTime() + 24 * 60 * 60 * 1000);
                     break;
                 case 'yesterday':
-                    start = new Date(today.getTime() - 86400000);
+                    start = new Date(today.getTime() - 24 * 60 * 60 * 1000);
                     end = today;
                     break;
                 case 'thisWeek':
                     start = new Date(today);
                     start.setDate(today.getDate() - today.getDay());
-                    end = new Date(today.getTime() + 86400000);
+                    end = new Date(today.getTime() + 24 * 60 * 60 * 1000);
                     break;
                 case 'lastWeek':
                     start = new Date(today);
@@ -917,5 +1064,4 @@
         loadStatistics();
     });
 </script>
-
  

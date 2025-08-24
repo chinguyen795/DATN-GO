@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using DATN_GO.Models;
+
 namespace DATN_GO.ViewModels.Store
 {
     public class StoreViewModel
@@ -18,12 +19,13 @@ namespace DATN_GO.ViewModels.Store
         public string? BankAccount { get; set; }
         public string? Bank { get; set; }
         public string? BankAccountOwner { get; set; }
-        public float Rating { get; set; }
+
+        public double AverageRating { get; set; }
+        public int ReviewCount { get; set; }
+
         public DateTime CreateAt { get; set; }
         public DateTime UpdateAt { get; set; }
         public int TotalProductQuantity { get; set; }
-        public int TotalCartQuantity { get; set; }
+        public int TotalSoldProducts { get; set; }
     }
-
-
 }

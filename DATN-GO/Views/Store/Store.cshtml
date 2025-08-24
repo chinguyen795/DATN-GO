@@ -180,7 +180,7 @@
             @foreach (var store in Model)
             {
                 var quantity = store.TotalProductQuantity;
-                var cartQuantity = store.TotalCartQuantity;
+                var cartQuantity = store.TotalSoldProducts;
                 // Gán key trạng thái
                 var statusKey = store.Status switch
                 {
@@ -220,7 +220,7 @@
                          data-address="@store.Address?.ToLower()"
                          data-status="@statusText.ToLower()"
                          data-status-key="@statusKey"
-                         data-rating="@store.Rating.ToString("0.0")"
+                         data-rating="@store.AverageRating.ToString("0.0")"
                          data-quantity="@quantity"
                          data-cart="@cartQuantity"
                          data-created-at="@store.CreateAt.ToString("yyyy-MM-ddTHH:mm:ss")">
@@ -241,18 +241,24 @@
                                             <i class="bi bi-shop text-crimson me-1"></i>
                                             <span class="badge @statusClass ms-2">@statusText</span>
                                         </div>
-                                        <div class="row text-nowrap">
-                                            <div class="col-4 d-flex align-items-center">
-                                                <span class="fw-bold">@store.Rating.ToString("0.0")</span>
+                                        <div class="row text-nowrap align-items-center gx-2">
+                                            <!-- Rating -->
+                                            <div class="col d-flex align-items-center">
+                                                <span class="fw-bold">@store.AverageRating.ToString("0.0")</span>
                                                 <i class="bi bi-star-fill text-crimson ms-1"></i>
+                                                <small class="text-muted ms-1">(@store.ReviewCount)</small>
                                             </div>
-                                            <div class="col-4 d-flex align-items-center">
-                                                <span>@store.TotalCartQuantity</span>
+
+                                            <!-- Orders -->
+                                            <div class="col d-flex align-items-center justify-content-center">
+                                                <span>@store.TotalSoldProducts</span>
                                                 <i class="bi bi-cart-check-fill text-crimson ms-1"></i>
                                             </div>
-                                            <div class="col-4 d-flex align-items-center">
+
+                                            <!-- Products -->
+                                            <div class="col d-flex align-items-center justify-content-end">
                                                 <span>@store.TotalProductQuantity</span>
-                                                <i class="bi bi-box text-crimson ms-1"></i>
+                                                <i class="bi bi-box-fill text-crimson ms-1"></i>
                                             </div>
                                         </div>
                                     </div>
@@ -260,10 +266,10 @@
                             </div>
                         </a>
                         <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center p-3">
-                            <a href="@Url.Action("Chat", "Chat", new { storeId = store.Id })" class="btn btn-outline-crimson btn-sm">
+@*                             <a href="@Url.Action("Chat", "Chat", new { storeId = store.Id })" class="btn btn-outline-crimson btn-sm">
                                 <i class="bi bi-chat-dots"></i>
-                            </a>
-                            <a href="@Url.Action("Detail", "Store", new { id = store.Id })" class="btn btn-crimson flex-grow-1 ms-2" style="text-transform: capitalize;">
+                            </a> *@
+                            <a href="@Url.Action("Detail", "Store", new { id = store.Id })" class="btn btn-crimson flex-grow-1" style="text-transform: capitalize;">
                                 <i class="bi bi-shop me-2"></i>Xem cửa hàng
                             </a>
                         </div>

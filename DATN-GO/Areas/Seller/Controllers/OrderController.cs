@@ -1,4 +1,4 @@
-﻿using DATN_GO.ViewModels;  // Dùng ViewModel chuẩn, thay vì Models EF
+﻿using DATN_GO.ViewModels;
 using DATN_GO.Service;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -78,24 +78,48 @@ namespace DATN_GO.Areas.Seller.Controllers
 
             return Json(result);
         }
-
         // Lấy thống kê
         [HttpGet]
-        public async Task<IActionResult> Statistics(DateTime? start, DateTime? end)
+        public async Task<IActionResult> Statistics(DateTime? start, DateTime? end, DateTime? startCompare, DateTime? endCompare)
         {
-            var (success, data, message) = await _orderService.GetStatisticsAsync(start, end);
+            var userIdStr = HttpContext.Session.GetString("Id");
+            if (string.IsNullOrEmpty(userIdStr))
+                return Redirect("https://localhost:7180/Login");
+
+            int userId = int.Parse(userIdStr);
+
+            // gọi service: userId chính là storeUserId
+            var (success, data, message) = await _orderService.GetStatisticsAsync(userId, start, end, startCompare, endCompare);
 
             if (!success || data == null)
-                return Json(new { totalOrders = 0, pendingOrders = 0, shippingOrders = 0, completedOrders = 0 });
+            {
+                return Json(new
+                {
+                    totalOrders = 0,
+                    pendingOrders = 0,
+                    shippingOrders = 0,
+                    completedOrders = 0,
+                    totalOrdersPercentChange = 0,
+                    pendingOrdersPercentChange = 0,
+                    shippingOrdersPercentChange = 0,
+                    completedOrdersPercentChange = 0
+                });
+            }
 
             return Json(new
             {
                 totalOrders = data.TotalOrders,
                 pendingOrders = data.PendingOrders,
                 shippingOrders = data.ShippingOrders,
-                completedOrders = data.CompletedOrders
+                completedOrders = data.CompletedOrders,
+
+                totalOrdersPercentChange = data.TotalOrdersPercentChange,
+                pendingOrdersPercentChange = data.PendingOrdersPercentChange,
+                shippingOrdersPercentChange = data.ShippingOrdersPercentChange,
+                completedOrdersPercentChange = data.CompletedOrdersPercentChange
             });
         }
+
 
     }
 }

@@ -83,7 +83,7 @@ namespace DATN_GO.Service
         {
             try
             {
-                var response = await _httpClient.GetAsync($"{_baseUrl}orders/user/{userId}");
+                var response = await _httpClient.GetAsync($"{_baseUrl}orders/all-by-user/{userId}");
                 if (!response.IsSuccessStatusCode) return (false, null, $"Lỗi {response.StatusCode}");
                 var data = await response.Content.ReadFromJsonAsync<List<OrderViewModel>>(_jsonOpts);
                 return (true, data ?? new List<OrderViewModel>(), null);
@@ -94,18 +94,31 @@ namespace DATN_GO.Service
             }
         }
 
-        public async Task<(bool Success, Statistics? Data, string? Message)> GetStatisticsAsync(DateTime? start, DateTime? end)
+        public async Task<(bool Success, Statistics? Data, string? Message)> GetStatisticsAsync(
+    int userId, DateTime? start, DateTime? end, DateTime? startCompare = null, DateTime? endCompare = null)
         {
             try
             {
-                int storeId = 1;  // TODO: bind theo user đăng nhập nếu cần
-                var url = $"{_baseUrl}orders/statistics?storeId={storeId}";
-                if (start.HasValue) url += $"&start={start.Value:O}";
-                if (end.HasValue) url += $"&end={end.Value:O}";
+                // ✅ Gọi API mới: statistics-by-user/{userId}
+                var url = $"{_baseUrl}orders/statistics-by-user/{userId}";
+
+                if (start.HasValue)
+                    url += $"&start={start.Value:O}";
+                if (end.HasValue)
+                    url += $"&end={end.Value:O}";
+                if (startCompare.HasValue)
+                    url += $"&startCompare={startCompare.Value:O}";
+                if (endCompare.HasValue)
+                    url += $"&endCompare={endCompare.Value:O}";
+
+                // Vì dùng query string nên cần thêm "?" trước tham số đầu tiên
+                url = url.Replace($"{userId}&", $"{userId}?");
 
                 var response = await _httpClient.GetAsync(url);
-                if (!response.IsSuccessStatusCode) return (false, null, $"Lỗi {response.StatusCode}");
-                var data = await response.Content.ReadFromJsonAsync<Statistics>(_jsonOpts);
+                if (!response.IsSuccessStatusCode)
+                    return (false, null, $"Lỗi {response.StatusCode}");
+
+                var data = await response.Content.ReadFromJsonAsync<Statistics>();
                 return (true, data, null);
             }
             catch (Exception ex)
@@ -113,6 +126,9 @@ namespace DATN_GO.Service
                 return (false, null, ex.Message);
             }
         }
+
+
+
 
         public async Task<(bool Success, string Message)> UpdateStatusAsync(int id, string newStatus)
         {
