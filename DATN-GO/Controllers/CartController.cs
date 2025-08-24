@@ -165,5 +165,91 @@ namespace DATN_GO.Controllers
 
 
 
+        // HIỂN THỊ CART
+        private int GetUserIdOr0()
+        {
+            if (!HttpContext.Session.TryGetValue("Id", out byte[] idBytes)) return 0;
+            return int.TryParse(Encoding.UTF8.GetString(idBytes), out int userId) ? userId : 0;
+        }
+
+        private static int CalcTotalQuantity(CartSummaryViewModel? summary)
+        {
+            // Đổi "CartItems" và "Quantity" cho đúng model của bạn nếu khác tên
+            if (summary?.CartItems != null && summary.CartItems.Count > 0)
+                return summary.CartItems.Sum(i => (int)(i?.Quantity ?? 0));
+
+            return 0;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Count()
+        {
+            var userId = GetUserIdOr0();
+            if (userId == 0)
+            {
+                HttpContext.Session.SetInt32("CartCount", 0);
+                return Json(new { count = 0 });
+            }
+
+            int total = 0;
+            try
+            {
+                var summary = await _cartService.GetCartByUserIdAsync(userId);
+                total = CalcTotalQuantity(summary);
+            }
+            catch
+            {
+                // Lỗi API hoặc network => cứ trả 0 cho an toàn
+                total = 0;
+            }
+
+            // Lưu session để layout render ngay lần sau
+            HttpContext.Session.SetInt32("CartCount", total);
+
+            return Json(new { count = total }); // nếu không có cart -> 0
+        }
+
+
+        // THÊM PRODUCT NULL VARIANT
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> QuickAdd([FromForm] int productId, [FromForm] int quantity = 1)
+        {
+            // dùng helper cũ của bạn (nếu chưa có thì thêm y như trước)
+            int userId = 0;
+            if (!HttpContext.Session.TryGetValue("Id", out var idBytes) ||
+                !int.TryParse(Encoding.UTF8.GetString(idBytes), out userId))
+            {
+                // không login → count = 0
+                HttpContext.Session.SetInt32("CartCount", 0);
+                return Json(new { success = false, message = "Bạn cần đăng nhập.", cartCount = 0 });
+            }
+
+            var req = new AddToCartRequest
+            {
+                UserId = userId,
+                ProductId = productId,
+                Quantity = quantity,
+                VariantValueIds = new List<int>() // không biến thể
+            };
+
+            var ok = await _cartService.AddToCartAsync(req);
+
+            // tính lại tổng item để trả về/ghi session
+            var sum = await _cartService.GetCartByUserIdAsync(userId);
+            var total = (sum?.CartItems != null) ? sum.CartItems.Sum(i => i.Quantity) : 0;
+            HttpContext.Session.SetInt32("CartCount", total);
+
+            return Json(new
+            {
+                success = ok,
+                message = ok ? "Đã thêm vào giỏ hàng." : "Thêm sản phẩm vào giỏ hàng thất bại.",
+                cartCount = total
+            });
+        }
+
+
+
+
     }
 }

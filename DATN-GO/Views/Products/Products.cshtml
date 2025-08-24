@@ -211,6 +211,7 @@
                 var images = imagesDict.ContainsKey(item.Id) ? imagesDict[item.Id] : new List<string>();
                 var priceInfo = priceDict.ContainsKey(item.Id) ? priceDict[item.Id] : null;
                 var store = storeDict.ContainsKey(item.Id) ? storeDict[item.Id] : null;
+                var hasVariant = (priceInfo?.IsVariant ?? false);
 
                 decimal? salePrice = null;
                 if (priceInfo != null)
@@ -264,7 +265,11 @@
                                             <span class="text-muted">Chưa có giá</span>
                                         }
                                     </div>
-                                    <button class="btn btn-crimson btn-sm rounded-pill" type="button" onclick="event.stopPropagation(); window.location.href='/Products/DetailProducts/@item.Id'">
+                                    <button class="btn btn-crimson btn-sm rounded-pill add-to-cart-btn"
+                                            type="button"
+                                            data-product-id="@item.Id"
+                                            data-has-variant="@(hasVariant.ToString().ToLower())"
+                                            onclick="event.stopPropagation();">
                                         <i class="bi bi-cart-plus"></i> Thêm
                                     </button>
                                 </div>
@@ -282,6 +287,11 @@
         </div>
     </div>
 </div>
+
+<!-- Anti-forgery token cho QuickAdd -->
+<form id="__quickAddToken" method="post">
+    @Html.AntiForgeryToken()
+</form>
 
 <!-- Optional: Bạn có thể bổ sung đoạn script JS bên dưới để xử lý filter/sort frontend -->
 @section Scripts {
@@ -465,5 +475,77 @@
         });
 
         document.getElementById("sortPriceSelect").addEventListener("change", filterProducts);
+    </script>
+
+    <!-- ✅ Thêm mới QuickAdd Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          const tokenEl = document.querySelector('#__quickAddToken input[name="__RequestVerificationToken"]');
+          const ANTIFORGERY = tokenEl ? tokenEl.value : null;
+
+          function toastOk(msg){ if (window.showToast) showToast(msg, true); else alert(msg); }
+          function toastErr(msg){ if (window.showToast) showToast(msg, false); else alert(msg); }
+
+          document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+
+              const pid = btn.dataset.productId;
+              const hasVariant = (btn.dataset.hasVariant === 'true');
+
+              // Có biến thể → sang trang chi tiết
+              if (hasVariant) {
+                window.location.href = `/Products/DetailProducts/${pid}`;
+                return;
+              }
+
+              // Không có biến thể → QuickAdd
+              try {
+                const fd = new FormData();
+                fd.append('productId', pid);
+                fd.append('quantity', '1');
+
+                const headers = { 'X-Requested-With': 'XMLHttpRequest' };
+                if (ANTIFORGERY) headers['RequestVerificationToken'] = ANTIFORGERY;
+
+                const res = await fetch('/Cart/QuickAdd', {
+                  method: 'POST',
+                  body: fd,
+                  headers,
+                  credentials: 'same-origin'
+                });
+
+                const data = await res.json().catch(() => ({}));
+
+                if (res.ok && data.success) {
+                  // Cập nhật badge nếu có
+                  if (typeof window.__CartBadge?.set === 'function' && typeof data.cartCount === 'number') {
+                    window.__CartBadge.set(data.cartCount);
+                  } else if (typeof window.__CartBadge?.add === 'function') {
+                    window.__CartBadge.add(1);
+                  }
+                  // (tuỳ chọn) hiển thị toast nhanh
+                  // toastOk(data.message || 'Đã thêm vào giỏ hàng.');
+
+                  // ✅ Chuyển sang trang giỏ hàng
+                  window.location.href = '/Cart/Index';
+                  return;
+                }
+
+                // Trường hợp lỗi / chưa đăng nhập
+                if (res.status === 401 || String(data.message || '').toLowerCase().includes('đăng nhập')) {
+                  window.location.href = '/UserAuthentication/Login';
+                  return;
+                }
+
+                toastErr(data.message || 'Thêm sản phẩm vào giỏ hàng thất bại.');
+              } catch (err) {
+                console.error(err);
+                toastErr('Lỗi kết nối. Vui lòng thử lại.');
+              }
+            });
+          });
+        });
     </script>
 }

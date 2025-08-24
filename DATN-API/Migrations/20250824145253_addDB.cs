@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DATN_API.Migrations
 {
     /// <inheritdoc />
-    public partial class GO : Migration
+    public partial class addDB : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -534,8 +534,7 @@ namespace DATN_API.Migrations
                     Quantity = table.Column<int>(type: "int", nullable: false),
                     Height = table.Column<float>(type: "real", nullable: true),
                     Width = table.Column<float>(type: "real", nullable: true),
-                    Length = table.Column<float>(type: "real", nullable: true),
-                    ProductsId = table.Column<int>(type: "int", nullable: true)
+                    Length = table.Column<float>(type: "real", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -546,11 +545,6 @@ namespace DATN_API.Migrations
                         principalTable: "Products",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ProductVariants_Products_ProductsId",
-                        column: x => x.ProductsId,
-                        principalTable: "Products",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -584,7 +578,6 @@ namespace DATN_API.Migrations
                     VoucherId = table.Column<int>(type: "int", nullable: true),
                     ShippingMethodId = table.Column<int>(type: "int", nullable: false),
                     LabelId = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    GhtkStatusCode = table.Column<int>(type: "int", nullable: true),
                     OrderDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     TotalPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(50)", nullable: false),
@@ -801,20 +794,21 @@ namespace DATN_API.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: false),
                     ProductId = table.Column<int>(type: "int", nullable: false),
+                    OrderId = table.Column<int>(type: "int", nullable: false),
                     Rating = table.Column<int>(type: "int", nullable: false),
                     CommentText = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreateAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdateAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    OrdersId = table.Column<int>(type: "int", nullable: true)
+                    UpdateAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Reviews", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Reviews_Orders_OrdersId",
-                        column: x => x.OrdersId,
+                        name: "FK_Reviews_Orders_OrderId",
+                        column: x => x.OrderId,
                         principalTable: "Orders",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Reviews_Products_ProductId",
                         column: x => x.ProductId,
@@ -1152,11 +1146,6 @@ namespace DATN_API.Migrations
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ProductVariants_ProductsId",
-                table: "ProductVariants",
-                column: "ProductsId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_ProductVouchers_ProductId",
                 table: "ProductVouchers",
                 column: "ProductId");
@@ -1182,9 +1171,9 @@ namespace DATN_API.Migrations
                 column: "ReviewId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Reviews_OrdersId",
+                name: "IX_Reviews_OrderId",
                 table: "Reviews",
-                column: "OrdersId");
+                column: "OrderId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Reviews_ProductId",

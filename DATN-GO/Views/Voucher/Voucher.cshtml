@@ -55,12 +55,42 @@
                 </div>
 
                 <ul class="nav flex-column p-3">
-                    <li class="nav-item mb-2"><a asp-controller="Profile" asp-action="Index" class="nav-link text-dark"><i class="bi bi-person-circle me-2"></i>Thông tin cá nhân</a></li>
-                    <li class="nav-item mb-2"><a href="./Orders.html" class="nav-link text-dark"><i class="bi bi-box-seam me-2"></i>Đơn hàng của tôi</a></li>
-                    <li class="nav-item mb-2"><a asp-controller="Voucher" asp-action="Voucher" class="nav-link text-danger active"><i class="bi bi-ticket-perforated me-2"></i>Voucher của tôi</a></li>
-                    <li class="nav-item mb-2"><a href="./Address.html" class="nav-link text-dark"><i class="bi bi-geo-alt me-2"></i>Địa chỉ</a></li>
-                    <li class="nav-item mb-2"><a href="./Notification.html" class="nav-link text-dark"><i class="bi bi-bell me-2"></i>Thông báo</a></li>
-                    <li class="nav-item"><a href="./Home.html" class="nav-link text-dark"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li>
+                    <li class="nav-item mb-2">
+                        <a asp-action="Index" asp-controller="Profile" class="nav-link text-dark">
+                            <i class="bi bi-person-circle me-2"></i>
+                            Thông tin cá nhân
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a asp-action="Index" asp-controller="Order" class="nav-link text-dark">
+                            <i class="bi bi-box-seam me-2"></i>
+                            Đơn hàng của tôi
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a asp-action="address" asp-controller="Address" class="nav-link text-dark">
+                            <i class="bi bi-geo-alt me-2"></i>
+                            Địa chỉ
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a asp-action="Voucher" asp-controller="Voucher" class="nav-link active text-crimson">
+                            <i class="bi bi-ticket-perforated me-2"></i>
+                            Voucher
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a asp-action="ChangePassword" asp-controller="UserAuthentication" class="nav-link text-dark">
+                            <i class="bi bi-bell me-2"></i>
+                            Đổi mật khẩu
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/Voucher/Logout" class="nav-link text-dark">
+                            <i class="bi bi-box-arrow-right me-2"></i>
+                            Đăng xuất
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>

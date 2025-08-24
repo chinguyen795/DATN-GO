@@ -1,5 +1,7 @@
 ﻿﻿﻿@{
-    var useContainer = ViewData["UseContainer"] as bool? ?? true;
+var useContainer = ViewData["UseContainer"] as bool? ?? true;
+var cartCount = Context.Session.GetInt32("CartCount") ?? 0;
+
 }
 <!doctype html>
 <html lang="en">
@@ -159,21 +161,23 @@
                                             Sản phẩm
                                         </a>
                                     </li>
-                                    <li class="nav-item">
+                                    @*                                     <li class="nav-item">
                                         <a class="nav-link text-crimson d-flex align-items-center gap-1"
                                            asp-controller="Blog" asp-action="Blog">
                                             Bài viết
                                         </a>
-                                    </li>
+                                    </li> *@
                                 </ul>
                             </div>
                         </div>
                         <!-- Cart -->
-                        <a asp-action="index" asp-controller="cart" class="nav-link position-relative align-items-center p-0">
+                        <a asp-action="Index" asp-controller="Cart" class="nav-link position-relative align-items-center p-0">
                             <i class="bi bi-cart-fill text-white icon-md header-icon"></i>
-                            @* <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-white text-crimson"
-                                  style="font-size:0.7rem;">99</span> *@
+                            <span class="cart-count-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-white text-crimson"
+                                  style="font-size:0.7rem; @(cartCount > 0 ? "" : "display:none;")">@cartCount</span>
                         </a>
+
+
                         <!-- Account -->
                         @{
                             var fullName = Context.Session.GetString("FullName");
@@ -589,6 +593,98 @@
 
 
 </html>
+
+
+
+<script>
+    (function () {
+      const getBadges = () => Array.from(document.querySelectorAll('.cart-count-badge'));
+      const style = document.createElement('style');
+      style.textContent = `
+        @@keyframes cart-bump { 0%{transform:translate(-50%,-50%) scale(1)} 30%{scale:1.15} 100%{scale:1} }
+        .cart-count-badge.bump { animation: cart-bump 250ms ease; }
+      `;
+      document.head.appendChild(style);
+
+      function show(el, n){ el.style.display = n>0 ? '' : 'none'; }
+
+      function animateTo(el, target){
+        const current = parseInt(el.textContent||'0')||0;
+        if (current === target) {           // đảm bảo ẩn/hiện đúng cả khi không đổi số
+          show(el, target);
+          return;
+        }
+        const diff = target-current, steps = Math.min(12, Math.abs(diff)), step = diff/steps;
+        let i=0; el.classList.add('bump');
+        const t=setInterval(()=>{
+          i++;
+          const v = i<steps ? Math.round(current+step*i) : target;
+          el.textContent = v;
+          show(el, v);
+          if(i>=steps){ clearInterval(t); setTimeout(()=>el.classList.remove('bump'),200); }
+        },20);
+      }
+
+      function setCartCount(n){
+        const nn = Math.max(0, parseInt(n)||0);
+        getBadges().forEach(b=>animateTo(b, nn));
+        try{ localStorage.setItem('cartCount', String(nn)); }catch{}
+      }
+
+      window.__CartBadge = {
+        set: setCartCount,
+        add(delta){
+          const bs = getBadges();
+          const cur = bs.length ? (parseInt(bs[0].textContent||'0')||0) : 0;
+          setCartCount(Math.max(0, cur + (parseInt(delta)||0)));
+        }
+      };
+
+      async function init(){
+        let n = null;
+        let trusted = false;
+
+        // (A) Ưu tiên số render từ server (layout có thể set: window.__CART_COUNT_INIT = @cartCount;)
+        if (typeof window.__CART_COUNT_INIT === 'number') {
+          n = window.__CART_COUNT_INIT;
+          trusted = true;                  // kể cả 0 cũng được tin cậy
+        }
+
+        // (B) Gọi API /Cart/Count -> ghi đè nếu có (kể cả 0)
+        try{
+          const r = await fetch('/Cart/Count', { credentials:'same-origin' });
+          if(r.ok){
+            const d = await r.json();
+            if(typeof d.count==='number'){
+              n = d.count;
+              trusted = true;
+            }
+          }
+        }catch{}
+
+        // (C) Chỉ fallback localStorage khi chưa có dữ liệu đáng tin (A,B)
+        if (!trusted) {
+          try { n = parseInt(localStorage.getItem('cartCount')||'0'); } catch {}
+        }
+
+        // (D) Cuối cùng mặc định 0 nếu vẫn null/NaN
+        if (!Number.isFinite(n)) n = 0;
+
+        setCartCount(n);
+      }
+
+      window.addEventListener('storage', (e)=>{
+        if(e.key==='cartCount' && e.newValue!=null){
+          const v = parseInt(e.newValue||'0')||0;
+          setCartCount(v);
+        }
+      });
+
+      document.addEventListener('DOMContentLoaded', init);
+    })();
+</script>
+
+
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 

@@ -130,5 +130,16 @@ namespace DATN_GO.Controllers
 
             return View("Index", currentUser);
         }
+        // Logout
+        [HttpGet]
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+
+            TempData["ToastMessage"] = "Bạn đã đăng xuất thành công!";
+            TempData["ToastType"] = "success";
+
+            return RedirectToAction("Index", "Home", new { area = "" });
+        }
     }
 }

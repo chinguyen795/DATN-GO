@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DATN_API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250813075416_GO")]
-    partial class GO
+    [Migration("20250824145253_addDB")]
+    partial class addDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -505,9 +505,6 @@ namespace DATN_API.Migrations
                     b.Property<decimal>("DeliveryFee")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int?>("GhtkStatusCode")
-                        .HasColumnType("int");
-
                     b.Property<string>("LabelId")
                         .HasColumnType("nvarchar(max)");
 
@@ -707,9 +704,6 @@ namespace DATN_API.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ProductsId")
-                        .HasColumnType("int");
-
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
@@ -725,8 +719,6 @@ namespace DATN_API.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ProductId");
-
-                    b.HasIndex("ProductsId");
 
                     b.ToTable("ProductVariants");
                 });
@@ -903,7 +895,7 @@ namespace DATN_API.Migrations
                     b.Property<DateTime>("CreateAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("OrdersId")
+                    b.Property<int>("OrderId")
                         .HasColumnType("int");
 
                     b.Property<int>("ProductId")
@@ -920,7 +912,7 @@ namespace DATN_API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OrdersId");
+                    b.HasIndex("OrderId");
 
                     b.HasIndex("ProductId");
 
@@ -1600,14 +1592,10 @@ namespace DATN_API.Migrations
             modelBuilder.Entity("DATN_API.Models.ProductVariants", b =>
                 {
                     b.HasOne("DATN_API.Models.Products", "Product")
-                        .WithMany()
+                        .WithMany("ProductVariants")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("DATN_API.Models.Products", null)
-                        .WithMany("ProductVariants")
-                        .HasForeignKey("ProductsId");
 
                     b.Navigation("Product");
                 });
@@ -1672,7 +1660,7 @@ namespace DATN_API.Migrations
             modelBuilder.Entity("DATN_API.Models.ReviewMedias", b =>
                 {
                     b.HasOne("DATN_API.Models.Reviews", "Review")
-                        .WithMany()
+                        .WithMany("ReviewMedias")
                         .HasForeignKey("ReviewId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1682,9 +1670,11 @@ namespace DATN_API.Migrations
 
             modelBuilder.Entity("DATN_API.Models.Reviews", b =>
                 {
-                    b.HasOne("DATN_API.Models.Orders", null)
+                    b.HasOne("DATN_API.Models.Orders", "Order")
                         .WithMany("Reviews")
-                        .HasForeignKey("OrdersId");
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("DATN_API.Models.Products", "Product")
                         .WithMany("Reviews")
@@ -1697,6 +1687,8 @@ namespace DATN_API.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Order");
 
                     b.Navigation("Product");
 
@@ -1910,6 +1902,11 @@ namespace DATN_API.Migrations
                     b.Navigation("Reviews");
 
                     b.Navigation("Variants");
+                });
+
+            modelBuilder.Entity("DATN_API.Models.Reviews", b =>
+                {
+                    b.Navigation("ReviewMedias");
                 });
 
             modelBuilder.Entity("DATN_API.Models.Roles", b =>
