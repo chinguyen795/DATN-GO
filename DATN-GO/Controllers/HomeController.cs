@@ -15,12 +15,14 @@ namespace DATN_GO.Controllers
         private readonly StoreService _storeService;
         private readonly ProductService _productService;
         private readonly CategoryService _categoryService;
+        private readonly PriceService _priceService;
 
-        public HomeController(StoreService storeService, ProductService productService, CategoryService categoryService)
+        public HomeController(StoreService storeService, ProductService productService, CategoryService categoryService, PriceService priceService)
         {
             _storeService = storeService;
             _productService = productService;
             _categoryService = categoryService;
+            _priceService = priceService;
         }
 
         public async Task<IActionResult> Index()
@@ -33,17 +35,42 @@ namespace DATN_GO.Controllers
 
             // 2) Cửa hàng
             var stores = await _storeService.GetAllStoresAsync() ?? new();
-            var storeDict = stores.ToDictionary(s => s.Id, s => s.Name); // dùng tra nhanh theo StoreId
+            var storeDict = stores.ToDictionary(s => s.Id, s => s.Name);
 
             // 3) Sản phẩm
             var products = await _productService.GetAllProductsAsync() ?? new();
 
-            // 4) Đếm sản phẩm theo danh mục (để tính xu hướng)
+            // 4) Lấy giá từ bảng Price (đơn giản)
+            var priceInfos = new Dictionary<int, decimal>();
+
+            foreach (var product in products)
+            {
+                try
+                {
+                    var priceInfo = await _priceService.GetPriceByProductIdAsync(product.Id);
+                    if (priceInfo.HasValue)
+                    {
+                        priceInfos[product.Id] = priceInfo.Value;
+                    }
+                    else
+                    {
+                        // Fallback về CostPrice nếu không có trong bảng Price
+                        priceInfos[product.Id] = product.CostPrice ?? 0;
+                    }
+                }
+                catch
+                {
+                    // Fallback về CostPrice nếu có lỗi
+                    priceInfos[product.Id] = product.CostPrice ?? 0;
+                }
+            }
+
+            // 5) Đếm sản phẩm theo danh mục (để tính xu hướng)
             var categoryProductCounts = products
                 .GroupBy(p => p.CategoryId)
                 .ToDictionary(g => g.Key, g => g.Count());
 
-            // 5) Top 4 danh mục xu hướng
+            // 6) Top 4 danh mục xu hướng
             var trendCategories = visibleCategories
                 .OrderByDescending(c => categoryProductCounts.TryGetValue(c.Id, out var cnt) ? cnt : 0)
                 .Take(4)
@@ -57,7 +84,7 @@ namespace DATN_GO.Controllers
                 })
                 .ToList();
 
-            // 6) Build ViewModel
+            // 7) Build ViewModel
             var vm = new HomeViewModel
             {
                 Stores = stores.Take(4).Select(s => new StoreHomeViewModel
@@ -79,12 +106,12 @@ namespace DATN_GO.Controllers
                         MainImage = string.IsNullOrEmpty(p.MainImage) ? "/images/no-image.png" : p.MainImage,
                         CategoryName = categoryDict.TryGetValue(p.CategoryId, out var cname) ? cname : "Chưa phân loại",
                         StoreName = storeDict.TryGetValue(p.StoreId, out var sname) ? sname : "Đang cập nhật",
-                        Price = p.CostPrice ?? 0,
+                        Price = priceInfos.TryGetValue(p.Id, out var price) ? price : 0,
                         Rating = p.Rating ?? 0
                     }).ToList(),
 
                 SuggestedProducts = products
-                    .OrderBy(_ => Guid.NewGuid()).Take(8) // View đang .Take(4) nên ở đây lấy 8 cũng ok
+                    .OrderBy(_ => Guid.NewGuid()).Take(8)
                     .Select(p => new ProductHomeViewModel
                     {
                         Id = p.Id,
@@ -92,7 +119,7 @@ namespace DATN_GO.Controllers
                         MainImage = string.IsNullOrEmpty(p.MainImage) ? "/images/no-image.png" : p.MainImage,
                         CategoryName = categoryDict.TryGetValue(p.CategoryId, out var cname) ? cname : "Chưa phân loại",
                         StoreName = storeDict.TryGetValue(p.StoreId, out var sname) ? sname : "Đang cập nhật",
-                        Price = p.CostPrice ?? 0,
+                        Price = priceInfos.TryGetValue(p.Id, out var price) ? price : 0,
                         Rating = p.Rating ?? 0
                     }).ToList(),
 

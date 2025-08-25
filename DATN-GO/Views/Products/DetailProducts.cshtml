@@ -566,8 +566,113 @@
     });
 </script>
 
+<!-- Debug Script 1 - Kiểm tra dữ liệu variant combinations -->
 <script>
-    const variantCombinations = @Html.Raw(Json.Serialize(variantCombinations))
+    // Debug variant combinations data structure
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log("=== VARIANT COMBINATIONS DEBUG ===");
+        console.log("Raw variantCombinations:", variantCombinations);
+
+        if (variantCombinations && variantCombinations.length > 0) {
+            console.log("First combination keys:", Object.keys(variantCombinations[0]));
+
+            variantCombinations.forEach((combo, index) => {
+                console.log(`Combination ${index}:`, {
+                    variantValueIds: combo.variantValueIds,
+                    quantity: combo.quantity,
+                    Quantity: combo.Quantity, // Kiểm tra cả viết hoa
+                    price: combo.price,
+                    Price: combo.Price, // Kiểm tra cả viết hoa
+                    image: combo.image,
+                    Image: combo.Image // Kiểm tra cả viết hoa
+                });
+            });
+        } else {
+            console.log("No variant combinations found");
+        }
+    });
+</script>
+
+<!-- Debug Script 2 - Kiểm tra việc chọn variant -->
+<script>
+    // Debug script - thêm vào trước các script khác
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log("=== DEBUGGING VARIANT SELECTION ===");
+
+        // Kiểm tra các elements
+        const variantInputs = document.querySelectorAll('[name^="variant_"]');
+        console.log("Found variant inputs:", variantInputs.length);
+
+        variantInputs.forEach((input, index) => {
+            console.log(`Input ${index}:`, {
+                name: input.name,
+                value: input.value,
+                type: input.type,
+                checked: input.checked
+            });
+        });
+
+        // Kiểm tra form submit
+        const form = document.getElementById("addToCartForm");
+        if (form) {
+            console.log("Form found:", form);
+
+            form.addEventListener("submit", function (e) {
+                console.log("=== FORM SUBMIT TRIGGERED ===");
+
+                // Kiểm tra các input đã check
+                const checkedInputs = document.querySelectorAll('[name^="variant_"]:checked');
+                console.log("Checked variant inputs:", checkedInputs.length);
+
+                checkedInputs.forEach((input, index) => {
+                    console.log(`Checked input ${index}:`, {
+                        name: input.name,
+                        value: input.value,
+                        checked: input.checked
+                    });
+                });
+
+                // Kiểm tra unique groups
+                const allVariantInputs = document.querySelectorAll('[name^="variant_"]');
+                const uniqueGroups = [...new Set(Array.from(allVariantInputs).map(v => v.name))];
+                console.log("Unique groups:", uniqueGroups);
+
+                // Kiểm tra từng group
+                uniqueGroups.forEach(groupName => {
+                    const checked = document.querySelector(`input[name="${groupName}"]:checked`);
+                    console.log(`Group ${groupName}:`, checked ? "HAS SELECTION" : "NO SELECTION");
+                    if (checked) {
+                        console.log("Selected value:", checked.value);
+                    }
+                });
+            });
+        }
+
+        // Thêm event listener cho các button variant
+        const variantButtons = document.querySelectorAll('.btn-check');
+        console.log("Found variant buttons:", variantButtons.length);
+
+        variantButtons.forEach((button, index) => {
+            console.log(`Button ${index}:`, {
+                name: button.name,
+                value: button.value,
+                id: button.id
+            });
+
+            button.addEventListener('change', function () {
+                console.log(`Button ${index} changed:`, {
+                    name: this.name,
+                    value: this.value,
+                    checked: this.checked
+                });
+            });
+        });
+    });
+</script>
+
+<!-- Main Variant Script -->
+<script>
+    const variantCombinations = @Html.Raw(Json.Serialize(variantCombinations));
     console.log("Variant Combinations:", variantCombinations);
 
     let currentVariantPrice = parseFloat("@((priceInfo != null && !priceInfo.IsVariant && priceInfo.Price.HasValue) ? priceInfo.Price.Value.ToString("0.##") : "0")");
@@ -578,7 +683,7 @@
     let totalQuantity = 0;
     if (@(priceInfo != null && priceInfo.IsVariant ? "true" : "false")) {
         // Có biến thể -> cộng tất cả quantity của variant combinations
-        totalQuantity = variantCombinations.reduce((sum, v) => sum + v.quantity, 0);
+        totalQuantity = variantCombinations.reduce((sum, v) => sum + (v.quantity || v.Quantity || 0), 0);
     } else {
         // Không có biến thể -> lấy quantity trực tiếp từ Model
         totalQuantity = parseInt("@Model.Quantity") || 0;
@@ -586,12 +691,21 @@
 
     let availableStock = totalQuantity;
 
+    // FIX: Hiển thị thông báo phù hợp cho sản phẩm có variant
     const quantityDisplay = document.getElementById("productQuantityDisplay");
     if (quantityDisplay) {
-        quantityDisplay.textContent = `Còn lại: ${totalQuantity} sản phẩm`;
+        if (@(priceInfo != null && priceInfo.IsVariant ? "true" : "false")) {
+            quantityDisplay.textContent = `Còn lại: ${totalQuantity} sản phẩm (chọn biến thể để xem chi tiết)`;
+        } else {
+            quantityDisplay.textContent = `Còn lại: ${totalQuantity} sản phẩm`;
+        }
     }
 
     const selectedVariantsMap = new Map();
+
+    // FIX: Đếm tổng số variant groups
+    const totalVariantGroups = @(variants?.Count ?? 0);
+    console.log("Total variant groups:", totalVariantGroups);
 
     function updateTotalPrice() {
         const quantity = parseInt(document.getElementById("productQuantityInput").value) || 1;
@@ -599,39 +713,69 @@
         document.getElementById("productPriceDisplay").textContent = total.toLocaleString("vi-VN") + " đ";
     }
 
-    // Xử lý chọn biến thể
+    // FIX: Xử lý chọn biến thể - hỗ trợ cả 1 và nhiều biến thể
     document.querySelectorAll('.btn-check').forEach(input => {
         input.addEventListener('change', () => {
             selectedVariantsMap.set(input.name, parseInt(input.value));
 
             const selectedArray = Array.from(selectedVariantsMap.values()).sort((a, b) => a - b);
+            console.log("Selected variants:", selectedArray);
+            console.log("Total variant groups:", totalVariantGroups);
+            console.log("All variant combinations:", variantCombinations);
 
-            // Kiểm tra và tìm variant combination phù hợp
-            const match = variantCombinations.find(variant => {
-                const sortedIds = [...variant.variantValueIds].sort((a, b) => a - b);
-                return JSON.stringify(sortedIds) === JSON.stringify(selectedArray);
-            });
+            // FIX: Kiểm tra match dựa trên số lượng variant đã chọn
+            let match = null;
+
+            if (totalVariantGroups === 1) {
+                // Chỉ có 1 variant group -> tìm combination có chứa giá trị đã chọn
+                const selectedValue = selectedArray[0];
+                match = variantCombinations.find(variant => {
+                    console.log("Checking variant:", variant.variantValueIds, "against selected:", selectedValue);
+                    return variant.variantValueIds.length === 1 && variant.variantValueIds[0] === selectedValue;
+                });
+            } else {
+                // Có nhiều variant groups -> cần chọn đủ tất cả
+                if (selectedArray.length === totalVariantGroups) {
+                    match = variantCombinations.find(variant => {
+                        const sortedIds = [...variant.variantValueIds].sort((a, b) => a - b);
+                        return JSON.stringify(sortedIds) === JSON.stringify(selectedArray);
+                    });
+                }
+            }
+
+            console.log("Found match:", match);
 
             // Nếu tìm thấy match, cập nhật giá và số lượng
             if (match) {
-                currentVariantPrice = match.price;
+                // FIX: Xử lý cả viết thường và viết hoa
+                currentVariantPrice = match.price || match.Price || 0;
                 updateTotalPrice();
 
                 if (quantityDisplay) {
-                    quantityDisplay.textContent = `Còn lại: ${match.quantity} sản phẩm`;
+                    const matchQuantity = match.quantity || match.Quantity || 0;
+                    quantityDisplay.textContent = `Còn lại: ${matchQuantity} sản phẩm`;
                 }
 
                 const mainImage = document.getElementById('mainProductImage');
-                if (mainImage && match.image) {
-                    mainImage.src = match.image;
+                const matchImage = match.image || match.Image;
+                if (mainImage && matchImage) {
+                    mainImage.src = matchImage;
                 }
             } else {
-                // Nếu không có kết hợp đầy đủ
-                currentVariantPrice = 0;
-                updateTotalPrice();
+                // Nếu không có kết hợp đầy đủ hoặc chưa chọn đủ
+                if (totalVariantGroups === 1 || selectedArray.length < totalVariantGroups) {
+                    // Giữ nguyên hiển thị ban đầu cho đến khi chọn đủ
+                    const defaultPrice = @((priceInfo != null && priceInfo.MinPrice.HasValue) ? priceInfo.MinPrice.Value.ToString("0.##") : "0");
+                    currentVariantPrice = parseFloat(defaultPrice);
+                    updateTotalPrice();
+                } else {
+                    // Không tìm thấy combination phù hợp
+                    currentVariantPrice = 0;
+                    updateTotalPrice();
 
-                if (quantityDisplay) {
-                    quantityDisplay.textContent = `Còn lại: ${totalQuantity} sản phẩm`;
+                    if (quantityDisplay) {
+                        quantityDisplay.textContent = `Còn lại: ${totalQuantity} sản phẩm`;
+                    }
                 }
             }
 
@@ -721,19 +865,32 @@
         });
     });
 
+    // FIX: Cập nhật logic cho cả 1 và nhiều biến thể
     document.querySelectorAll('.btn-check').forEach(input => {
         input.addEventListener('change', () => {
             if (!input.checked) return;
 
             const selectedValues = Array.from(document.querySelectorAll('.btn-check:checked')).map(i => parseInt(i.value));
 
-            const match = variantCombinations.find(v => {
-                return v.variantValueIds.every(id => selectedValues.includes(id));
-            });
+            let match = null;
+            if (totalVariantGroups === 1) {
+                // Chỉ có 1 variant group - tìm combination có đúng 1 giá trị khớp
+                const selectedValue = selectedValues[0];
+                match = variantCombinations.find(v => {
+                    return v.variantValueIds.length === 1 && v.variantValueIds[0] === selectedValue;
+                });
+            } else {
+                // Có nhiều variant groups
+                match = variantCombinations.find(v => {
+                    return v.variantValueIds.every(id => selectedValues.includes(id)) &&
+                        selectedValues.every(id => v.variantValueIds.includes(id));
+                });
+            }
 
-            if (match && match.image) {
-                setMainImage(match.image);
-                highlightThumbnailBySrc(match.image);
+            if (match && (match.image || match.Image)) {
+                const matchImage = match.image || match.Image;
+                setMainImage(matchImage);
+                highlightThumbnailBySrc(matchImage);
             }
         });
     });
@@ -741,65 +898,147 @@
     updateFormHiddenInputs();
 </script>
 
+<!-- Cart Validation Script - FIXED -->
 <script>
 document.getElementById("addToCartForm").addEventListener("submit", async function (e) {
   e.preventDefault();
 
-  // đảm bảo các input ẩn variant đã được cập nhật
-  updateFormHiddenInputs();
+        // Đảm bảo các input ẩn variant đã được cập nhật
+        updateFormHiddenInputs();
 
   let errors = [];
 
-  // -------------------------
-  // Kiểm tra tồn kho theo 2 trường hợp
-  // -------------------------
-  let availableQuantity = 0;
-  if (@(priceInfo != null && priceInfo.IsVariant ? "true" : "false")) {
-    // Lấy số lượng tồn kho từ text hiển thị (biến thể)
-    const quantityDisplayText = document.getElementById("productQuantityDisplay")?.textContent || "";
-    const availableMatch = quantityDisplayText.match(/Còn lại:\s*(\d+)/);
-    availableQuantity = availableMatch ? parseInt(availableMatch[1]) : 0;
-  } else {
-    // Không có biến thể → lấy từ Model
-    availableQuantity = parseInt("@Model.Quantity") || 0;
-  }
+        // -------------------------
+        // FIX: Kiểm tra biến thể bắt buộc TRƯỚC khi kiểm tra tồn kho
+        // -------------------------
+        const isVariantProduct = @(priceInfo != null && priceInfo.IsVariant ? "true" : "false");
+        console.log("Is variant product:", isVariantProduct);
+
+        let selectedVariantCombination = null;
+
+        if (isVariantProduct) {
+            // Kiểm tra tất cả các input variant
+            const allVariantInputs = document.querySelectorAll('[name^="variant_"]');
+            const uniqueGroups = [...new Set(Array.from(allVariantInputs).map(v => v.name))];
+
+            // Kiểm tra xem đã chọn đủ biến thể chưa
+            for (const groupName of uniqueGroups) {
+                const checked = document.querySelector(`input[name="${groupName}"]:checked`);
+                if (!checked) {
+                    errors.push(`Vui lòng chọn ${groupName.replace("variant_", "")}.`);
+                }
+            }
+
+            // Nếu đã chọn đủ biến thể, tìm combination tương ứng
+            if (errors.length === 0) {
+                const selectedValues = Array.from(document.querySelectorAll('.btn-check:checked')).map(i => parseInt(i.value));
+
+                if (uniqueGroups.length === 1) {
+                    // 1 variant group
+                    selectedVariantCombination = variantCombinations.find(v => {
+                        return v.variantValueIds.length === 1 && v.variantValueIds[0] === selectedValues[0];
+                    });
+                } else {
+                    // Nhiều variant groups
+                    selectedVariantCombination = variantCombinations.find(v => {
+                        return v.variantValueIds.every(id => selectedValues.includes(id)) &&
+                            selectedValues.every(id => v.variantValueIds.includes(id));
+                    });
+                }
+
+                if (!selectedVariantCombination) {
+                    errors.push("Combination không tồn tại cho các biến thể đã chọn.");
+                }
+            }
+        }
+
+        // Nếu có lỗi về variant, dừng ngay
+        if (errors.length > 0) {
+            showToast(errors.join("\n"), false);
+            return;
+        }
+
+        // -------------------------
+        // FIX: Lấy availableQuantity CHÍNH XÁC theo logic hiển thị
+        // -------------------------
+        let availableQuantity = 0;
+
+        if (isVariantProduct) {
+            if (selectedVariantCombination) {
+                // Đã chọn variant cụ thể -> lấy quantity từ combination đó
+                availableQuantity = selectedVariantCombination.quantity || selectedVariantCombination.Quantity || 0;
+                console.log("Available quantity from selected combination:", availableQuantity);
+            } else {
+                // Chưa chọn đủ variant -> lấy tổng quantity (như hiển thị ban đầu)
+                availableQuantity = totalQuantity; // Sử dụng biến totalQuantity đã tính ở trên
+                console.log("Available quantity from total (no specific variant selected):", availableQuantity);
+            }
+        } else {
+            // Không có biến thể -> lấy từ Model
+            availableQuantity = parseInt("@Model.Quantity") || 0;
+            console.log("Available quantity from model (no variants):", availableQuantity);
+        }
+
+        // -------------------------
+        // ALTERNATIVE: Lấy trực tiếp từ text hiển thị (đảm bảo 100% khớp)
+        // -------------------------
+        const quantityDisplayEl = document.getElementById("productQuantityDisplay");
+        if (quantityDisplayEl) {
+            const displayText = quantityDisplayEl.textContent || "";
+            console.log("Current display text:", displayText);
+
+            // Extract số từ text hiển thị: "Còn lại: 100 sản phẩm" -> 100
+            const quantityMatch = displayText.match(/Còn lại:\s*(\d+)/);
+            if (quantityMatch) {
+                const displayedQuantity = parseInt(quantityMatch[1]);
+                console.log("Quantity from display:", displayedQuantity);
+
+                // SỬ DỤNG SỐ LƯỢNG TỪ HIỂN THỊ (chính xác 100%)
+                availableQuantity = displayedQuantity;
+                console.log("Using displayed quantity as final available:", availableQuantity);
+            }
+        }
 
   // Lấy số lượng người dùng nhập
   const quantityInputEl = document.getElementById("productQuantityInput");
   const requestedQuantity = parseInt(quantityInputEl?.value) || 1;
 
-  // Kiểm tra vượt tồn kho
-  if (requestedQuantity > availableQuantity) {
-    errors.push(`Số lượng bạn chọn (${requestedQuantity}) vượt quá số lượng tồn (${availableQuantity}).`);
-  }
+        console.log("=== QUANTITY VALIDATION ===");
+        console.log("Requested quantity:", requestedQuantity);
+        console.log("Available quantity:", availableQuantity);
 
-  // Kiểm tra biến thể bắt buộc (nếu có)
-  const variantGroups = document.querySelectorAll('[name^="variant_"]');
-  if (variantGroups.length > 0) {
-    const uniqueGroups = [...new Set(Array.from(variantGroups).map(v => v.name))];
-    uniqueGroups.forEach(groupName => {
-      const checked = document.querySelector(`input[name="${groupName}"]:checked`);
-      if (!checked) {
-        errors.push(`Vui lòng chọn ${groupName.replace("variant_", "")}.`);
-      }
-    });
-  }
+        // Kiểm tra hết hàng
+        if (availableQuantity === 0) {
+            errors.push("Sản phẩm này hiện đã hết hàng.");
+        }
+        // Kiểm tra vượt tồn kho
+        else if (requestedQuantity > availableQuantity) {
+            errors.push(`Số lượng bạn chọn (${requestedQuantity}) vượt quá số lượng tồn (${availableQuantity}).`);
+        }
 
-  if (errors.length > 0) {
-    showToast(errors.join("\n"), false);
-    return;
-  }
+        if (errors.length > 0) {
+            showToast(errors.join("\n"), false);
+            return;
+        }
 
-  const form = this;
-  const formData = new FormData(form);
+        // -------------------------
+        // Submit form
+        // -------------------------
+        const form = this;
+        const formData = new FormData(form);
 
-  try {
-    const response = await fetch(form.action, {
-      method: (form.method || "POST").toUpperCase(),
-      body: formData,
-      headers: { 'X-Requested-With': 'XMLHttpRequest' },
-      credentials: 'same-origin'
-    });
+        console.log("=== SUBMITTING FORM ===");
+        for (let [key, value] of formData.entries()) {
+            console.log(key + ': ' + value);
+        }
+
+        try {
+            const response = await fetch(form.action, {
+                method: (form.method || "POST").toUpperCase(),
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                credentials: 'same-origin'
+            });
 
     const contentType = response.headers.get('content-type') || '';
     // Lấy qty người dùng chọn để cộng badge khi thành công
@@ -808,52 +1047,82 @@ document.getElementById("addToCartForm").addEventListener("submit", async functi
     if (contentType.includes('application/json')) {
       const data = await response.json();
 
-      if (response.ok && (data.success === undefined || data.success === true)) {
-        // ✅ Cập nhật badge giỏ hàng
-        if (typeof window.__CartBadge?.set === 'function' && typeof data.cartCount === 'number') {
-          window.__CartBadge.set(data.cartCount);           // nếu server trả tổng
-        } else if (typeof window.__CartBadge?.add === 'function') {
-          window.__CartBadge.add(qty);                      // nếu không có tổng → cộng local
+                if (response.ok && (data.success === undefined || data.success === true)) {
+                    showToast(data.message || 'Đã thêm vào giỏ hàng thành công!', true);
+                    return;
+                }
+
+                const errMsg = data.message || '';
+                const errCode = data.errorCode || '';
+
+                if (errCode === 'EXCEEDED_STOCK' || /vượt|tồn|exceed/i.test(errMsg)) {
+                    showToast('Số lượng bạn chọn vượt quá số lượng hiện có.', false);
+                } else {
+                    showToast(errMsg || 'Có lỗi xảy ra khi thêm vào giỏ hàng.', false);
+                }
+                return;
+            } else {
+                if (response.redirected) {
+                    window.location.href = response.url;
+                    return;
+                }
+
+                const text = await response.text();
+                if (/vượt|tồn|exceed/i.test(text)) {
+                    showToast('Số lượng bạn chọn vượt quá số lượng hiện có.', false);
+                } else if (response.ok) {
+                    showToast('Đã thêm vào giỏ hàng thành công!', true);
+                    // Optional: refresh page or update cart count
+                    // window.location.reload();
+                } else {
+                    showToast('Có lỗi xảy ra. Vui lòng thử lại.', false);
+                }
+                return;
+            }
+        } catch (err) {
+            console.error("Submit error:", err);
+            showToast('Lỗi kết nối. Vui lòng thử lại sau.', false);
+        }
+    });
+
+    // Toast notification function (nếu chưa có)
+    function showToast(message, isSuccess = true) {
+        // Tạo toast element nếu chưa có
+        let toast = document.getElementById('toast-notification');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'toast-notification';
+            toast.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 20px;
+                    border-radius: 5px;
+                    color: white;
+                    font-weight: 500;
+                    z-index: 10000;
+                    max-width: 300px;
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                    transition: all 0.3s ease;
+                    transform: translateX(100%);
+                `;
+            document.body.appendChild(toast);
         }
 
-        showToast(data.message || 'Đã thêm vào giỏ hàng.', true);
-        return;
-      }
+        // Set style và message
+        toast.style.backgroundColor = isSuccess ? '#28a745' : '#dc3545';
+        toast.textContent = message;
+        toast.style.transform = 'translateX(0)';
 
-      const errMsg = data.message || '';
-      const errCode = data.errorCode || '';
-      if (errCode === 'EXCEEDED_STOCK' || /vượt|tồn|exceed/i.test(errMsg)) {
-        showToast('Bạn đã thêm vượt quá số lượng hiện có của sản phẩm.', false);
-      } else {
-        showToast(errMsg || 'Lỗi thêm vào giỏ hàng.', false);
-      }
-      return;
-    } else {
-      // Fallback HTML
-      if (response.redirected) {
-        // Có thể là flow chuyển trang → cứ chuyển
-        window.location.href = response.url;
-        return;
-      }
-
-      // ✅ Không redirect: coi như thành công -> cộng local cho mượt
-      if (typeof window.__CartBadge?.add === 'function') {
-        window.__CartBadge.add(qty);
-      }
-
-      const text = await response.text();
-      if (/vượt|tồn|exceed/i.test(text)) {
-        showToast('Bạn đã thêm vượt quá số lượng hiện có của sản phẩm.', false);
-      } else {
-        showToast('Hoàn tất. Vui lòng kiểm tra giỏ hàng.', true);
-        // Nếu muốn reload thì mở dòng dưới, còn không thì để UX mượt hơn
-        // window.location.reload();
-      }
-      return;
+        // Auto hide sau 3 giây
+        setTimeout(() => {
+            toast.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 300);
+        }, 3000);
     }
-  } catch (err) {
-    console.error(err);
-    showToast('Lỗi kết nối. Vui lòng thử lại.', false);
-  }
-});
 </script>
+

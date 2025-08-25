@@ -209,7 +209,14 @@ namespace DATN_API.Services
                 {
                     // Dùng để map ValueName -> (VariantId, VariantValueId)
                     var variantDict = new Dictionary<string, (int variantId, int variantValueId)>(StringComparer.OrdinalIgnoreCase);
-
+                    var price = new Prices
+                    {
+                        ProductId = product.Id,
+                        Price = model.Price ?? 0,
+                        VariantCompositionId = null
+                    };
+                    _context.Prices.Add(price);
+                    await _context.SaveChangesAsync();
                     // Tạo Variant và VariantValue
                     foreach (var variant in model.Variants.Take(2))
                     {

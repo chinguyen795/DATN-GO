@@ -678,8 +678,6 @@
         }
 
         // Cập nhật tiêu đề bảng
-        // Clear thead trước
-        // Xóa nội dung cũ
         thead.innerHTML = "";
 
         // Tạo tr nhập nhanh
@@ -714,13 +712,8 @@
         <th>Ảnh</th>
     `;
 
-        // Thêm từng cái vào thead
         thead.appendChild(applyAllRow);
         thead.appendChild(headerRow);
-
-
-
-
 
         // Tạo các kết hợp và cập nhật phần thân bảng
         const combinations = generateVariantCombinations();
@@ -734,130 +727,162 @@
         });
         variantImages = newVariantImages;
 
-        tableBody.innerHTML = combinations.map(({ values }) => {
-            const key = values.join('|');
-            const imgSrc = variantImages[key] || '';
-            const savedData = variantData[key] || {};
+        // QUAN TRỌNG: Tạo unique key cho mỗi row để tránh conflict
+        tableBody.innerHTML = combinations.map(({ values }, rowIndex) => {
+            const originalKey = values.join('|');
+            // Tạo unique key bằng cách thêm rowIndex và timestamp
+            const uniqueKey = `${originalKey}_row${rowIndex}_${Date.now()}`;
+
+            const imgSrc = variantImages[originalKey] || '';
+            const savedData = variantData[originalKey] || {};
 
             return `
-            <tr class="align-middle" data-variant-key="${key}">
-                ${values.map((value, i) => `
-                    <td class='align-middle' style='min-width: 100px; text-align: center;'>
-                        <input type="text"
-                            class="form-control form-control-sm variant-value-cell"
-                            data-index="${i}"
-                            value="${value}"
-                            tabindex="0" />
+                <tr class="align-middle" data-variant-key="${originalKey}" data-row-index="${rowIndex}">
+                    ${values.map((value, i) => `
+                        <td class='align-middle' style='min-width: 100px; text-align: center;'>
+                            <input type="text"
+                                class="form-control form-control-sm variant-value-cell"
+                                data-index="${i}"
+                                value="${value}"
+                                tabindex="0" />
+                        </td>
+                    `).join('')}
+
+                    <td class='align-middle' style='min-width: 120px;'>
+                        <input type="number"
+                            class="form-control form-control-sm variant-price"
+                            placeholder="Giá bán"
+                            value="${savedData.price || ''}"
+                            tabindex="0">
                     </td>
-                `).join('')}
 
-                <td class='align-middle' style='min-width: 120px;'>
-                    <input type="number"
-                        class="form-control form-control-sm variant-price"
-                        placeholder="Giá bán"
-                        value="${savedData.price || ''}"
-                        tabindex="0">
-                </td>
-
-                <td class='align-middle' style='min-width: 120px;'>
-                    <input type="number"
-                        class="form-control form-control-sm variant-cost-price"
-                        placeholder="Giá vốn"
-                        value="${savedData.cost || ''}"
-                        tabindex="0">
-                </td>
-
-                <td class='align-middle' style='min-width: 120px;'>
-                    <input type="number"
-                        class="form-control form-control-sm variant-quantity"
-                        placeholder="Số lượng"
-                        value="${savedData.quantity || ''}"
-                        tabindex="0">
-                </td>
-
-                <td class='align-middle' style='min-width: 120px;'>
-                    <input type="number"
-                        class="form-control form-control-sm variant-weight"
-                        placeholder="Khối lượng"
-                        value="${savedData.weight || ''}"
-                        tabindex="0">
-                </td>
-
-                <td class='align-middle' style='min-width: 180px;'>
-                    <div class="d-flex gap-1 align-items-center">
+                    <td class='align-middle' style='min-width: 120px;'>
                         <input type="number"
-                            class="form-control form-control-sm variant-length"
-                            placeholder="D"
-                            value="${savedData.dimensions?.D || ''}"
+                            class="form-control form-control-sm variant-cost-price"
+                            placeholder="Giá vốn"
+                            value="${savedData.cost || ''}"
                             tabindex="0">
-                        <input type="number"
-                            class="form-control form-control-sm variant-width"
-                            placeholder="R"
-                            value="${savedData.dimensions?.R || ''}"
-                            tabindex="0">
-                        <input type="number"
-                            class="form-control form-control-sm variant-height"
-                            placeholder="C"
-                            value="${savedData.dimensions?.C || ''}"
-                            tabindex="0">
-                    </div>
-                </td>
+                    </td>
 
-                <td class='align-middle' style='min-width: 120px; text-align: center;'>
-                    <div id="imgPreview-${key}" style="margin-top: 8px; display: block; position: relative; width: max-content; margin-left: auto; margin-right: auto;">
-                        ${imgSrc
-                    ? `<div style="position: relative;">
-                                 <img src="${imgSrc}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 8px #0001;" />
-                                 <button type="button" class="btn btn-sm btn-primary" style="position: absolute; top: 2px; right: 2px; width: 24px; height: 24px; padding: 0; border-radius: 50%;" onclick="document.getElementById('file-${key}').click()">
-                                     <i class="mdi mdi-pencil" style="font-size: 12px;"></i>
-                                 </button>
-                               </div>`
-                    : `<button type="button" class="btn btn-outline-secondary image-upload-btn" style="width: 100px; height: 100px; border: 2px dashed #ccc; border-radius: 8px;" onclick="document.getElementById('file-${key}').click()">
-                                 <i class="mdi mdi-image-area" style="font-size: 24px; color: #bbb;"></i><br>
-                                 <small>Upload</small>
-                               </button>`
-                }
-                        <input type="file"
-                            id="file-${key}"
-                            data-key="${key}"
-                            accept="image/*"
-                            style="display: none;">
-                    </div>
-                </td>
+                    <td class='align-middle' style='min-width: 120px;'>
+                        <input type="number"
+                            class="form-control form-control-sm variant-quantity"
+                            placeholder="Số lượng"
+                            value="${savedData.quantity || ''}"
+                            tabindex="0">
+                    </td>
 
-            </tr>
-        `;
+                    <td class='align-middle' style='min-width: 120px;'>
+                        <input type="number"
+                            class="form-control form-control-sm variant-weight"
+                            placeholder="Khối lượng"
+                            value="${savedData.weight || ''}"
+                            tabindex="0">
+                    </td>
+
+                    <td class='align-middle' style='min-width: 180px;'>
+                        <div class="d-flex gap-1 align-items-center">
+                            <input type="number"
+                                class="form-control form-control-sm variant-length"
+                                placeholder="D"
+                                value="${savedData.dimensions?.D || ''}"
+                                tabindex="0">
+                            <input type="number"
+                                class="form-control form-control-sm variant-width"
+                                placeholder="R"
+                                value="${savedData.dimensions?.R || ''}"
+                                tabindex="0">
+                            <input type="number"
+                                class="form-control form-control-sm variant-height"
+                                placeholder="C"
+                                value="${savedData.dimensions?.C || ''}"
+                                tabindex="0">
+                        </div>
+                    </td>
+
+                    <td class='align-middle' style='min-width: 120px; text-align: center;'>
+                        <div id="imgPreview-${uniqueKey}" data-original-key="${originalKey}" data-row-index="${rowIndex}" style="margin-top: 8px; display: block; position: relative; width: max-content; margin-left: auto; margin-right: auto;">
+                            ${imgSrc ? `
+                                <div style="position: relative;">
+                                    <img src="${imgSrc}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 8px #0001;" />
+                                    <button type="button" class="btn btn-sm btn-primary"
+                                        style="position: absolute; top: 2px; right: 2px; width: 24px; height: 24px; padding: 0; border-radius: 50%;"
+                                        onclick="triggerFileInput('${uniqueKey}')">
+                                        <i class="mdi mdi-pencil" style="font-size: 12px;"></i>
+                                    </button>
+                                </div>
+                            ` : `
+                                <div class="preview-box" style="width:100px; height:100px; border:2px dashed #ccc; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer;"
+                                     onclick="triggerFileInput('${uniqueKey}')">
+                                    <i class="mdi mdi-image-area" style="font-size: 24px; color: #bbb;"></i>
+                                </div>
+                            `}
+                            <input type="file"
+                                   id="file-${uniqueKey}"
+                                   data-unique-key="${uniqueKey}"
+                                   data-original-key="${originalKey}"
+                                   data-row-index="${rowIndex}"
+                                   accept="image/*"
+                                   style="display: none;"
+                                   onchange="uploadVariantImage(this, '${uniqueKey}', '${originalKey}', ${rowIndex})">
+                        </div>
+                    </td>
+                </tr>
+            `;
         }).join('');
 
         tableContainer.style.display = 'block';
         setupTableEventListeners();
     }
 
-    // Upload ảnh biến thể - CẢI THIỆN
-    async function uploadVariantImage(input, key) {
+    // Function helper để trigger file input
+    function triggerFileInput(uniqueKey) {
+        const fileInput = document.getElementById(`file-${uniqueKey}`);
+        if (fileInput) {
+            fileInput.click();
+        }
+    }
+
+    // Sửa đổi hàm uploadVariantImage
+    async function uploadVariantImage(input, uniqueKey, originalKey, rowIndex) {
         if (!input.files || !input.files[0]) return;
+
+        console.log(`Uploading image for row ${rowIndex}, uniqueKey: ${uniqueKey}, originalKey: ${originalKey}`);
 
         const file = input.files[0];
 
-        // Hiển thị preview ngay lập tức
+        // Đảm bảo chọn đúng preview div cho row này
+        const previewDiv = document.getElementById(`imgPreview-${uniqueKey}`);
+        if (!previewDiv) {
+            console.error(`Preview div not found for uniqueKey: ${uniqueKey}`);
+            return;
+        }
+
+        // Kiểm tra row index
+        const previewRowIndex = previewDiv.getAttribute('data-row-index');
+        if (previewRowIndex != rowIndex) {
+            console.error(`Row index mismatch. Expected: ${rowIndex}, Found: ${previewRowIndex}`);
+            return;
+        }
+
+        // Hiển thị preview ngay lập tức (base64)
         const reader = new FileReader();
         reader.onload = function (e) {
-            const previewDiv = document.getElementById(`imgPreview-${key}`);
-            if (previewDiv) {
-                previewDiv.innerHTML = `
-                    <div style="position: relative;">
-                        <img src="${e.target.result}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 8px #0001;" />
-                        <button type="button" class="btn btn-sm btn-primary" style="position: absolute; top: 2px; right: 2px; width: 24px; height: 24px; padding: 0; border-radius: 50%;" onclick="document.getElementById('file-${key}').click()">
-                            <i class="mdi mdi-pencil" style="font-size: 12px;"></i>
-                        </button>
-                        <div style="position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); font-size: 10px; color: orange;">
-                            Uploading...
-                        </div>
+            previewDiv.innerHTML = `
+                <div style="position: relative;">
+                    <img src="${e.target.result}"
+                         style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 8px #0001;" />
+                    <button type="button" class="btn btn-sm btn-primary"
+                        style="position: absolute; top: 2px; right: 2px; width: 24px; height: 24px; padding: 0; border-radius: 50%;"
+                        onclick="triggerFileInput('${uniqueKey}')">
+                        <i class="mdi mdi-pencil" style="font-size: 12px;"></i>
+                    </button>
+                    <div id="uploadStatus-${uniqueKey}"
+                         style="position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); font-size: 10px; color: orange;">
+                         Uploading...
                     </div>
-                `;
-
-                // Lưu file tạm thời
-            }
+                </div>
+            `;
         };
         reader.readAsDataURL(file);
 
@@ -873,56 +898,38 @@
 
             const data = await res.json();
 
-
             if (data.success) {
-                // Cập nhật với URL từ server
-                const previewDiv = document.getElementById(`imgPreview-${key}`);
-                if (previewDiv) {
-                    previewDiv.innerHTML = `
-                        <div style="position: relative;">
-                            <img src="${data.url}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 8px #0001;" />
-                            <button type="button" class="btn btn-sm btn-primary" style="position: absolute; top: 2px; right: 2px; width: 24px; height: 24px; padding: 0; border-radius: 50%;" onclick="document.getElementById('file-${key}').click()">
-                                <i class="mdi mdi-pencil" style="font-size: 12px;"></i>
-                            </button>
-                        </div>
-                    `;
-                }
+                previewDiv.innerHTML = `
+                    <div style="position: relative;">
+                        <img src="${data.url}"
+                             style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 8px #0001;" />
+                        <button type="button" class="btn btn-sm btn-primary"
+                            style="position: absolute; top: 2px; right: 2px; width: 24px; height: 24px; padding: 0; border-radius: 50%;"
+                            onclick="triggerFileInput('${uniqueKey}')">
+                            <i class="mdi mdi-pencil" style="font-size: 12px;"></i>
+                        </button>
+                    </div>
+                `;
 
-                // Lưu URL để gửi khi submit
-                variantImages[key] = data.url;
+                // Lưu ảnh với originalKey (để có thể share giữa các variant giống nhau)
+                variantImages[originalKey] = data.url;
+
+                console.log(`Image uploaded successfully for row ${rowIndex}, saved with key: ${originalKey}`);
             } else {
                 alert(data.message || 'Upload thất bại');
-                // Khôi phục trạng thái ban đầu nếu upload fail
-                const previewDiv = document.getElementById(`imgPreview-${key}`);
-                if (previewDiv) {
-                    previewDiv.innerHTML = `
-                        <button type="button" class="btn btn-outline-secondary image-upload-btn" style="width: 100px; height: 100px; border: 2px dashed #ccc; border-radius: 8px;" onclick="document.getElementById('file-${key}').click()">
-                            <i class="mdi mdi-image-area" style="font-size: 24px; color: #bbb;"></i><br>
-                            <small>Upload</small>
-                        </button>
-                    `;
-                }
-                delete variantImages[key];
+                delete variantImages[originalKey];
             }
         } catch (err) {
             console.error('Upload error:', err);
             alert('Lỗi khi upload ảnh');
-
-            // Khôi phục trạng thái ban đầu nếu có lỗi
-            const previewDiv = document.getElementById(`imgPreview-${key}`);
-            if (previewDiv) {
-                previewDiv.innerHTML = `
-                    <button type="button" class="btn btn-outline-secondary image-upload-btn" style="width: 100px; height: 100px; border: 2px dashed #ccc; border-radius: 8px;" onclick="document.getElementById('file-${key}').click()">
-                        <i class="mdi mdi-image-area" style="font-size: 24px; color: #bbb;"></i><br>
-                        <small>Upload</small>
-                    </button>
-                `;
-            }
-            delete variantImages[key];
+            delete variantImages[originalKey];
+        } finally {
+            // Reset input sau khi xử lý xong
+            input.value = "";
         }
     }
 
-    // Các function xử lý ảnh chính của sản phẩm - GIỮ NGUYÊN
+    // Giữ nguyên function previewImage cho ảnh chính
     function previewImage(input) {
         const preview = document.getElementById('preview');
         const previewDiv = document.getElementById('imagePreview');
@@ -934,7 +941,7 @@
 
             reader.onload = function (e) {
                 preview.src = e.target.result;
-                previewDiv.classList.remove('d-none'); // Hiển thị ảnh
+                previewDiv.classList.remove('d-none');
                 previewDiv.classList.add('d-block');
                 uploadContent.classList.add('d-none');
                 dropZone.classList.add('bg-white');
@@ -944,7 +951,6 @@
             reader.readAsDataURL(input.files[0]);
         }
     }
-
     function removeImage(event) {
         event.stopPropagation();
         const input = document.getElementById('productImage');
