@@ -311,42 +311,42 @@
 
 
 
-@section Scripts {
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            // --- Cửa hàng nổi bật ---
-            const storeBtn = document.getElementById("toggleStoresBtn");
-            const storeCards = document.querySelectorAll(".store-card");
-            let storeExpanded = false;
-            const defaultStoreVisible = 2;
+    @section Scripts {
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                // --- Cửa hàng nổi bật ---
+                const storeBtn = document.getElementById("toggleStoresBtn");
+                const storeCards = document.querySelectorAll(".store-card");
+                let storeExpanded = false;
+                const defaultStoreVisible = 2;
 
-            storeBtn.addEventListener("click", function () {
-                storeExpanded = !storeExpanded;
-                storeCards.forEach((card, index) => {
-                    if (index >= defaultStoreVisible) {
-                        card.classList.toggle("d-none", !storeExpanded);
-                    }
+                storeBtn.addEventListener("click", function () {
+                    storeExpanded = !storeExpanded;
+                    storeCards.forEach((card, index) => {
+                        if (index >= defaultStoreVisible) {
+                            card.classList.toggle("d-none", !storeExpanded);
+                        }
+                    });
+                    storeBtn.textContent = storeExpanded ? "Thu gọn" : "Xem tất cả";
                 });
-                storeBtn.textContent = storeExpanded ? "Thu gọn" : "Xem tất cả";
-            });
 
-            // --- Sản phẩm nổi bật ---
-            const btn = document.getElementById("toggleProductsBtn");
-            // CHỈ bắt các thẻ trong #productList, không đụng "Gợi ý cho bạn"
-            const cards = document.querySelectorAll("#productList .product-card");
-            let expanded = false;
+                // --- Sản phẩm nổi bật ---
+                const btn = document.getElementById("toggleProductsBtn");
+                // CHỈ bắt các thẻ con trực tiếp trong #productList
+                const cards = document.querySelectorAll("#productList > .product-card"); // <--- đã sửa
+                let expanded = false;
 
-            btn.addEventListener("click", function () {
-                expanded = !expanded;
-                cards.forEach((card, index) => {
-                    if (!expanded && index >= 4) {
-                        card.classList.add("d-none");
-                    } else {
-                        card.classList.remove("d-none");
-                    }
+                btn.addEventListener("click", function () {
+                    expanded = !expanded;
+                    cards.forEach((card, index) => {
+                        if (!expanded && index >= 4) {
+                            card.classList.add("d-none");
+                        } else {
+                            card.classList.remove("d-none");
+                        }
+                    });
+                    btn.textContent = expanded ? "Thu gọn" : "Xem tất cả";
                 });
-                btn.textContent = expanded ? "Thu gọn" : "Xem tất cả";
             });
-        });
-    </script>
-}
+        </script>
+    }
