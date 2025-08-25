@@ -11,7 +11,15 @@ namespace DATN_GO.ViewModels
         public List<CategoryHomeViewModel> TrendCategories { get; set; }
         public List<CategoryHomeViewModel> Categories { get; set; } = new();
         public List<Categories> Categoriess { get; set; } = new();
+        public List<SlideViewModel> Slides { get; set; } = new();
 
+
+    }
+    public class SlideViewModel
+    {
+        public string? Image { get; set; }
+        public string? Title { get; set; }
+        public string? Description { get; set; }
     }
     public class CategoryHomeViewModel
     {
