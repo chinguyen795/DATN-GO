@@ -299,20 +299,31 @@ namespace DATN_API.Services
             var product = await _context.Products
                 .Include(p => p.ProductVariants)
                     .ThenInclude(pv => pv.VariantCompositions)
+                .Include(p => p.Variants)
+                .ThenInclude(v => v.VariantValues)
                 .FirstOrDefaultAsync(p => p.Id == productId);
 
             if (product == null) return false;
 
-            // Xóa tất cả VariantCompositions
+            // Xoá tất cả VariantCompositions
             foreach (var variant in product.ProductVariants)
             {
                 _context.VariantCompositions.RemoveRange(variant.VariantCompositions);
             }
 
-            // Xóa tất cả ProductVariants
+            // Xoá tất cả ProductVariants
             _context.ProductVariants.RemoveRange(product.ProductVariants);
 
-            // Xóa chính Product
+            // Xoá tất cả VariantValues của từng Variant
+            foreach (var variant in product.Variants)
+            {
+                _context.VariantValues.RemoveRange(variant.VariantValues);
+            }
+
+            // Xoá tất cả Variants
+            _context.Variants.RemoveRange(product.Variants);
+
+            // Xoá sản phẩm
             _context.Products.Remove(product);
 
             await _context.SaveChangesAsync();

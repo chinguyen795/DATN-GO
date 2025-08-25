@@ -1,5 +1,4 @@
-﻿
-﻿@{
+﻿﻿@{
     Layout = "~/Areas/Seller/Views/Shared/_LayoutSeller.cshtml";
     var products = ViewBag.Products as List<DATN_GO.Models.Products>;
     var categoryNames = ViewBag.CategoryNames as Dictionary<int, string>;
@@ -17,23 +16,21 @@
 
             <span class="page-title">SẢN PHẨM</span>
 
-            <div class="navbar-right ">
-
+            <div class="navbar-right">
                 <ul class="nav navbar-nav">
                     <li class="custom-dropdown">
                         <a asp-area="Seller" asp-controller="Notification" asp-action="Notification" class="notify-toggler custom-dropdown-toggler">
                             <i class="mdi mdi-bell-outline icon"></i>
                         </a>
                     </li>
+
                     <!-- User Account -->
                     <li class="dropdown user-menu">
-                        <button class="dropdown-toggle nav-link" data-toggle="dropdown">
-                            <img src="@ViewBag.UserAvatar" alt="User Profile" width="32" height="32"
-                                 style="object-fit: cover;" loading="lazy">
+                        <button class="dropdown-toggle nav-link" data-bs-toggle="dropdown">
+                            <img src="@ViewBag.UserAvatar" alt="User Profile" width="32" height="32" style="object-fit: cover;" loading="lazy">
                             <span class="d-none d-lg-inline-block">@ViewBag.UserName</span>
-
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-right">
+                        <ul class="dropdown-menu dropdown-menu-end">
                             <li>
                                 <a class="dropdown-link-item" href="user-profile.html">
                                     <i class="mdi mdi-account-outline"></i>
@@ -50,28 +47,22 @@
                 </ul>
             </div>
         </nav>
-
-
     </header>
 
-    <!-- ====================================
-    ——— CONTENT WRAPPER
-    ===================================== -->
+    <!-- CONTENT WRAPPER -->
     <div class="content-wrapper">
         <div class="content">
-            <!-- For Components documentaion -->
-            <!-- Products Inventory -->
             <div class="card card-default">
-                <div class="card-header">
-                    <h2>Danh sách sản phẩm</h2>
-                    <div class="btn-group">
-                        <a href="@Url.Action("CreateProduct", "Product", new { area = "Seller" })" class="btn btn-danger" style="text-transform: capitalize;">
-                            <i class="bi bi-plus-circle-fill"></i> Thêm sản phẩm
-                        </a>
-                    </div>
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h2 class="mb-0">Danh sách sản phẩm</h2>
+                    <a href="@Url.Action("CreateProduct", "Product", new { area = "Seller" })"
+                       class="btn btn-danger" style="text-transform: capitalize; min-width: 160px;">
+                        <i class="bi bi-plus-circle-fill"></i> Thêm sản phẩm
+                    </a>
                 </div>
+
                 <div class="card-body">
-                    <table id="productsTable" class="table table-hover table-product" style="width:100%">
+                    <table id="sellerProductsTable" class="table table-hover table-product w-100">
                         <thead>
                             <tr>
                                 <th>ID</th>
@@ -79,143 +70,143 @@
                                 <th>Tên sản phẩm</th>
                                 <th>Danh mục</th>
                                 <th>Trạng thái</th>
-                                <th>Thao tác</th>
+                                <th>Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
                             @if (products != null && products.Any())
-{
-                            @foreach (var item in products)
                             {
-                                <tr>
-                                    <td>@item.Id</td>
-                                    <td class="py-0">
-                                        <img src="@item.MainImage" alt="Product Image" style="width: 50px; height: 50px;">
-                                    </td>
-                                    <td>@item.Name</td>
-                                    <td>@(ViewBag.CategoryNames[item.Id])</td>
-                                    <td>
-                                        @switch (item.Status)
-                                        {
-                                            case ProductStatus.Pending:
-                                                <span class="badge badge-warning">Chờ duyệt</span>
-                                                break;
-                                            case ProductStatus.Approved:
-                                                <span class="badge badge-success">Đã duyệt</span>
-                                                break;
-                                            default:
-                                                <span class="badge badge-light">Không rõ</span>
-                                                break;
-                                        }
+                                foreach (var item in products)
+                                {
+                                    <tr>
+                                        <td>@item.Id</td>
+                                        <td class="py-0">
+                                            <img src="@item.MainImage" alt="Product Image" style="width:50px;height:50px;object-fit:cover">
+                                        </td>
+                                        <td>@item.Name</td>
+                                        <td>@(categoryNames != null && categoryNames.ContainsKey(item.CategoryId) ? categoryNames[item.CategoryId] : "—")</td>
+                                        <td>
+                                            @switch (item.Status)
+                                            {
+                                                case ProductStatus.Pending:
+                                                    <span class="badge bg-warning text-dark">Chờ duyệt</span>
+                                                    break;
+                                                case ProductStatus.Approved:
+                                                    <span class="badge bg-success">Đã duyệt</span>
+                                                    break;
+                                                default:
+                                                    <span class="badge bg-light text-dark">Không rõ</span>
+                                                    break;
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="dropdown">
+                                                <a class="dropdown-toggle icon-burger-mini" href="#" role="button"
+                                                   data-bs-toggle="dropdown" aria-expanded="false"></a>
+                                                <div class="dropdown-menu dropdown-menu-end">
+                                                    <a class="dropdown-item btn-detail" href="#"
+                                                       data-bs-toggle="modal" data-bs-target="#exampleModallarge"
+                                                       data-product-id="@item.Id">Chi tiết sản phẩm</a>
 
-                                    </td>
-                                    <td>
-                                        <div class="dropdown">
-                                            <a class="dropdown-toggle icon-burger-mini" href="#" role="button"
-                                               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
-                                            <div class="dropdown-menu dropdown-menu-right">
-                                                <a class="dropdown-item btn-detail" href="#" data-toggle="modal"
-                                                   data-target="#exampleModallarge"
-                                                   data-product-id="@item.Id">Chi tiết sản phẩm</a>
-                                                <a class="dropdown-item" href="#">Sửa</a>
-                                                <a class="dropdown-item btn-delete" href="#" data-toggle="modal"
-                                                   data-target="#deleteConfirmModal"
-                                                   data-product-id="@item.Id">Xóa</a>
+                                                    <a class="dropdown-item" href="#"
+                                                       data-bs-toggle="modal" data-bs-target="#editProductModal"
+                                                       data-product-id="@item.Id">Sửa</a>
 
+                                                    <a class="dropdown-item btn-delete"
+                                                       href="#"
+                                                       data-bs-toggle="modal"
+                                                       data-bs-target="#deleteConfirmModal"
+                                                       data-product-id="@item.Id">
+                                                        Xóa
+                                                    </a>
+
+                                                </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                }}
+                                        </td>
+                                    </tr>
+                                }
+                            }
                             else
                             {
                                 <tr>
-                                    <td colspan="5" class="text-center text-muted">Không có sản phẩm nào</td>
+                                    <td colspan="6" class="text-center text-muted">Không có sản phẩm nào</td>
                                 </tr>
                             }
                         </tbody>
-
                     </table>
                 </div>
             </div>
         </div>
-
     </div>
 </div>
 
-<!-- Modal chi tiết-->
-<div class="modal fade" id="exampleModallarge" tabindex="-1" role="dialog" aria-labelledby="exampleModalLarge"
-     aria-hidden="true">
-    <div class="modal-dialog modal-xl" role="document">
+<!-- Modal: Chi tiết -->
+<div class="modal fade" id="exampleModallarge" tabindex="-1" aria-labelledby="exampleModalLarge" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header bg-danger">
                 <h5 class="modal-title text-white" id="exampleModalLabel">Chi Tiết Sản Phẩm</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            
+
             <div class="modal-body">
                 <div class="row">
                     <div class="col-xl-4">
-                        <p class="text-dark font-weight-medium pt-4 mb-2">Tên sản phẩm</p>
-                        <p id="modal-name"></p>
+                        <p class="text-dark fw-medium pt-4 mb-2">Tên sản phẩm</p>
+                        <p id="modal-name" class="mb-0"></p>
                     </div>
                     <div class="col-xl-4">
-                        <p class="text-dark font-weight-medium pt-4 mb-2">Xuất xứ</p>
-                        <p id="modal-origin"></p>
+                        <p class="text-dark fw-medium pt-4 mb-2">Xuất xứ</p>
+                        <p id="modal-origin" class="mb-0"></p>
                     </div>
                     <div class="col-xl-4">
-                        <p class="text-dark font-weight-medium pt-4 mb-2">Thương hiệu</p>
-                        <p <span id="modal-brand"></p>
+                        <p class="text-dark fw-medium pt-4 mb-2">Thương hiệu</p>
+                        <p id="modal-brand" class="mb-0"></p>
                     </div>
 
                     <div class="col-xl-4">
-                        <p class="text-dark font-weight-medium pt-4 mb-2">Số lượng</p>
-                        <p id="modal-totalQuantity"></p>
+                        <p class="text-dark fw-medium pt-4 mb-2">Số lượng</p>
+                        <p id="modal-totalQuantity" class="mb-0"></p>
                     </div>
                     <div class="col-xl-4">
-                        <p class="text-dark font-weight-medium pt-4 mb-2">Giá bán</p>
-                        <p id="modal-price"></p>
+                        <p class="text-dark fw-medium pt-4 mb-2">Giá bán</p>
+                        <p id="modal-price" class="mb-0"></p>
                     </div>
                     <div class="col-xl-4">
-                        <p class="text-dark font-weight-medium pt-4 mb-2">Ngày tạo</p>
-                        <p id="modal-createAt"></p>
+                        <p class="text-dark fw-medium pt-4 mb-2">Ngày tạo</p>
+                        <p id="modal-createAt" class="mb-0"></p>
                     </div>
                 </div>
 
-                <div class="table-responsive">
-                    <table class="table table-hover">
+                <div class="table-responsive mt-3">
+                    <table class="table table-hover mb-0" id="variantsTable">
                         <thead>
                             <tr>
-                                <th scope="col">Variant 1</th>
-                                <th scope="col">Variant 2</th>
-                                <th scope="col">Giá vốn</th>
-                                <th scope="col">Giá bán</th>
-                                <th scope="col">Số lượng</th>
-                                <th scope="col">Khối lượng (Grams)</th>
-                                <th scope="col">Kích thước (Dài x Rộng x Cao) cm</th>
-                                
+                                <th>Variant 1</th>
+                                <th>Variant 2</th>
+                                <th>Giá vốn</th>
+                                <th>Giá bán</th>
+                                <th>Số lượng</th>
+                                <th>Khối lượng (Grams)</th>
+                                <th>Kích thước (D x R x C) cm</th>
+                                <th>Ảnh</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <th scope="col">Không có biến thể</th>
-                            </tr>
+                            <tr><td colspan="8" class="text-center text-muted">Không có biến thể</td></tr>
                         </tbody>
                     </table>
                 </div>
 
-
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-light btn-pill" data-dismiss="modal" style="text-transform: capitalize;">Đóng</button>
+                <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal" style="text-transform: capitalize;">Đóng</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal sửa -->
+<!-- Modal: Sửa -->
 <div class="modal fade" id="editProductModal" tabindex="-1" role="dialog" aria-labelledby="editProductModalLabel"
      aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
@@ -278,121 +269,253 @@
     </div>
 </div>
 
-
-<!-- Modal xác nhận xóa -->
-<div class="modal fade" id="deleteConfirmModal" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmLabel"
-     aria-hidden="true">
-    <div class="modal-dialog" role="document">
+<!-- Modal: Xác nhận xóa -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-danger">
                 <h5 class="modal-title text-white">Xác nhận xóa</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 Bạn có chắc chắn muốn xóa sản phẩm này và toàn bộ thông tin liên quan không?
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-light btn-pill" data-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal">Đóng</button>
                 <button type="button" class="btn btn-danger btn-pill" id="confirmDeleteBtn">Xóa</button>
             </div>
         </div>
     </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<!-- DataTables Initialization Script -->
-<script>
-        let productIdToDelete = null;
+<style>
+    /* Top bar: Length + Search cân hàng, bằng nhau */
+    #sellerProductsTable_wrapper .dataTables_length,
+    #sellerProductsTable_wrapper .dataTables_filter {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
 
-    // Khi click vào nút "Xóa"
-    $(document).on("click", ".btn-delete", function () {
-        productIdToDelete = $(this).data("product-id");
+    #sellerProductsTable_wrapper .dataTables_length {
+        width: 50%;
+    }
+
+    #sellerProductsTable_wrapper .dataTables_filter {
+        width: 50%;
+        justify-content: flex-end;
+    }
+
+        #sellerProductsTable_wrapper .dataTables_length label,
+        #sellerProductsTable_wrapper .dataTables_filter label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0;
+            font-weight: 500;
+            color: #333;
+        }
+
+        #sellerProductsTable_wrapper .dataTables_length select,
+        #sellerProductsTable_wrapper .dataTables_filter input {
+            height: 38px;
+            width: 260px;
+            max-width: 100%;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 6px 10px;
+            outline: none;
+            transition: all .15s ease-in-out;
+            background-color: #fff;
+        }
+
+            #sellerProductsTable_wrapper .dataTables_length select:focus,
+            #sellerProductsTable_wrapper .dataTables_filter input:focus {
+                border-color: #dc3545;
+                box-shadow: 0 0 0 3px rgba(220,53,69,0.15);
+            }
+
+    /* Pagination đỏ */
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        padding: 6px 12px;
+        border-radius: 6px;
+        margin: 0 3px;
+        border: 1px solid #dc3545 !important;
+        color: #dc3545 !important;
+        background: #fff !important;
+    }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background: #dc3545 !important;
+            color: #fff !important;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: #dc3545 !important;
+            color: #fff !important;
+        }
+
+    /* Hover danger + chữ trắng đậm */
+    #sellerProductsTable.table-hover {
+        --bs-table-hover-bg: #dc3545;
+        --bs-table-hover-color: #fff;
+    }
+
+    table#sellerProductsTable.dataTable tbody tr:hover,
+    table#sellerProductsTable.dataTable.display tbody tr:hover,
+    table#sellerProductsTable.dataTable.stripe tbody tr.odd:hover,
+    table#sellerProductsTable.dataTable.stripe tbody tr.even:hover {
+        background-color: var(--bs-table-hover-bg) !important;
+        color: var(--bs-table-hover-color) !important;
+        font-weight: 600;
+        transition: background-color .12s ease-in-out, color .12s ease-in-out;
+    }
+
+    #sellerProductsTable tbody tr:hover td,
+    #sellerProductsTable tbody tr:hover th {
+        color: #fff !important;
+        font-weight: 600;
+    }
+</style>
+
+<!-- jQuery (nếu layout chưa có, giữ dòng dưới; nếu layout đã có thì bỏ) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    // ===== TOAST =====
+    function showToast(message, isSuccess = true) {
+        const iconUrl = isSuccess ? "/icons/happy.gif" : "/icons/sad.gif";
+        const title = isSuccess ? "Thành công" : "Lỗi";
+        const html = `
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" id="dynamicToast"
+                 style="position: fixed; top: 1rem; right: 1rem; z-index: 9999; min-width: 320px;">
+              <div class="toast-header ${isSuccess ? "bg-success" : "bg-danger"} text-white">
+                <img src="${iconUrl}" width="20" height="20" class="me-2" />
+                <strong class="me-auto">${title}</strong>
+                <small>Vừa xong</small>
+                <button type="button" class="btn-close btn-close-white ms-2" onclick="this.closest('.toast').remove()"></button>
+              </div>
+              <div class="toast-body">${message}</div>
+            </div>`;
+        document.body.insertAdjacentHTML('beforeend', html);
+        setTimeout(() => document.getElementById('dynamicToast')?.remove(), 3000);
+    }
+
+    // ===== DataTables =====
+    $(function () {
+        if ($('#sellerProductsTable').length) {
+            $('#sellerProductsTable').DataTable({
+                pageLength: 10,
+                lengthChange: true,
+                order: [[0, 'desc']],
+                language: {
+                    search: "Tìm kiếm:",
+                    lengthMenu: "Hiển thị _MENU_ dòng",
+                    info: "Hiển thị _START_ - _END_ / _TOTAL_",
+                    paginate: { previous: "Trước", next: "Sau" },
+                    zeroRecords: "Không có dữ liệu phù hợp"
+                }
+            });
+        }
     });
 
-    // Khi xác nhận xóa
-    $("#confirmDeleteBtn").click(function () {
-        if (!productIdToDelete) return;
+    // ===== Xem chi tiết =====
+    $(document).on("click", ".btn-detail", function (e) {
+        e.preventDefault();
+        const productId = $(this).data("product-id");
 
         $.ajax({
-            url: `/Seller/Product/DeleteProduct/${productIdToDelete}`,
-            type: 'DELETE',
-            success: function (res) {
-                $('#deleteConfirmModal').modal('hide');
-                alert("Xóa sản phẩm thành công.");
-                location.reload(); // Load lại trang
+            url: '@Url.Action("GetProductDetail", "Product", new { area = "Seller" })/' + productId,
+            type: 'GET',
+            success: function (data) {
+                $("#modal-name").text(data.name || "");
+                $("#modal-origin").text(data.placeoforigin || "");
+                $("#modal-brand").text(data.brand || "");
+                $("#modal-totalQuantity").text(data.totalQuantity || 0);
+                $("#modal-price").text(data.price > 0 ? data.price.toLocaleString('vi-VN') + " đ" : "Chưa có giá");
+                $("#modal-createAt").text(data.createat || "");
+
+                const $thead = $("#variantsTable thead tr");
+                $thead.html(`
+                <th>${data.variantName1 || "Biến thể 1"}</th>
+                <th>${data.variantName2 || "Biến thể 2"}</th>
+                <th>Giá vốn</th>
+                <th>Giá bán</th>
+                <th>Số lượng</th>
+                <th>Khối lượng (Grams)</th>
+                <th>Kích thước (D x R x C) cm</th>
+                <th>Ảnh</th>
+              `);
+
+                const $tbody = $("#variantsTable tbody");
+                $tbody.empty();
+
+                if (data.variants && data.variants.length > 0) {
+                    data.variants.forEach(function (v) {
+                        $tbody.append(`
+                    <tr>
+                      <td>${v.variantValue1 || ""}</td>
+                      <td>${v.variantValue2 || ""}</td>
+                      <td>${(v.costPrice || 0).toLocaleString('vi-VN')} đ</td>
+                      <td>${(v.price || 0).toLocaleString('vi-VN')} đ</td>
+                      <td>${v.quantity || 0}</td>
+                      <td>${v.weight || 0} g</td>
+                      <td>${v.length || 0} x ${v.width || 0} x ${v.height || 0} cm</td>
+                      <td>${v.image ? `<img src="${v.image}" style="width:50px;height:50px;object-fit:cover">` : ''}</td>
+                    </tr>
+                  `);
+                    });
+                } else {
+                    $tbody.html(`<tr><td colspan="8" class="text-center text-muted">Không có biến thể</td></tr>`);
+                }
+
+                const el = document.getElementById('exampleModallarge');
+                (bootstrap.Modal.getInstance(el) || new bootstrap.Modal(el)).show();
             },
             error: function () {
-                alert("Xóa sản phẩm thất bại.");
+                showToast("Không thể lấy dữ liệu sản phẩm.", false);
             }
         });
     });
 
-    $(document).on('hidden.bs.modal', '.modal', function () {
-        if ($('.modal.show').length === 0) {
-            $('body').removeClass('modal-open');
-            $('.modal-backdrop').remove();
-        }
+    // ===== Xóa sản phẩm (DUY NHẤT 1 BỘ HANDLER) =====
+    let productIdToDelete = null; // <== CHỈ KHAI BÁO 1 LẦN
+
+    $(document).on("click", ".btn-delete", function () {
+        productIdToDelete = $(this).data("product-id") || null;
     });
-    $(document).ready(function () {
-        $(".btn-detail").click(function (e) {
-    e.preventDefault();
-    var productId = $(this).data("product-id");
 
-    $.ajax({
-        url: 'https://localhost:7180/Seller/Product/GetProductDetail/' + productId,
-        type: 'GET',
-        success: function (data) {
-            $("#modal-name").text(data.name || "");
-            $("#modal-origin").text(data.placeoforigin || "");
-            $("#modal-brand").text(data.brand || "");
-            $("#modal-totalQuantity").text(data.totalQuantity || 0);
-            $("#modal-price").text(data.price > 0 ? data.price.toLocaleString() + "đ" : "Chưa có giá");
-            $("#modal-createAt").text(data.createat || "");
+    $("#confirmDeleteBtn").on("click", function () {
+        if (!productIdToDelete) return;
 
-            var thead = $("#exampleModallarge table thead");
-            thead.html(`
-                <tr>
-                    <th>${data.variantName1 || "Biến thể 1"}</th>
-                    <th>${data.variantName2 || "Biến thể 2"}</th>
-                    <th>Giá vốn</th>
-                    <th>Giá bán</th>
-                    <th>Số lượng</th>
-                    <th>Khối lượng (Grams)</th>
-                    <th>Kích thước (Dài x Rộng x Cao) cm</th>
-                    <th>Ảnh</th>
-                </tr>
-            `);
+        $.ajax({
+            url: '@Url.Content("~/Seller/Product/DeleteProduct/")' + productIdToDelete,
 
-            var tbody = $("#exampleModallarge table tbody");
-            tbody.empty();
+            type: 'DELETE',
+            success: function (res) {
+                const el = document.getElementById('deleteConfirmModal');
+                (bootstrap.Modal.getInstance(el) || new bootstrap.Modal(el)).hide();
+                showToast(res?.message || "Xóa sản phẩm thành công.", true);
 
-            if (data.variants && data.variants.length > 0) {
-                data.variants.forEach(function (v) {
-                    var row = `
-                        <tr>
-                            <td>${v.variantValue1 || ""}</td>
-                            <td>${v.variantValue2 || ""}</td>
-                            <td>${v.costPrice.toLocaleString()}đ</td>
-                            <td>${v.price.toLocaleString()}đ</td>
-                            <td>${v.quantity}</td>
-                            <td>${v.weight}g</td>
-                            <td>${v.length}cm x ${v.width}cm x ${v.height}cm</td>
-                            <td><img src="${v.image}" style="width: 50px; height: 50px;" /></td>
-                        </tr>
-                    `;
-                    tbody.append(row);
-                });
-            } else {
-                tbody.html(`<tr><td colspan="8" class="text-center">Không có biến thể</td></tr>`);
+                // Xóa dòng khỏi bảng (mượt)
+                $(`#sellerProductsTable tr td:first-child:contains(${productIdToDelete})`)
+                    .closest('tr').fadeOut(300, function () { $(this).remove(); });
+
+                productIdToDelete = null;
+            },
+            error: function (xhr) {
+                const msg = xhr.responseJSON?.message || "Xóa sản phẩm thất bại.";
+                showToast(msg, false);
             }
-        },
-        error: function () {
-            alert("Không thể lấy dữ liệu sản phẩm.");
-        }
+        });
     });
-});
 
+    // Cleanup backdrop
+    document.addEventListener('hidden.bs.modal', function () {
+        if (document.querySelectorAll('.modal.show').length === 0) {
+            document.body.classList.remove('modal-open');
+            document.querySelectorAll('.modal-backdrop').forEach(e => e.remove());
+        }
     });
 </script>

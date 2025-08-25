@@ -20,5 +20,7 @@ namespace DATN_API.Models
         [JsonIgnore]
 
         public virtual Products? Product { get; set; }
+        [JsonIgnore]
+        public virtual ICollection<VariantValues>? VariantValues { get; set; }
     }
 }
