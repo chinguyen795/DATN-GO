@@ -1,136 +1,143 @@
-﻿@using Google.Apis.Util
-@using System.ComponentModel.DataAnnotations
+﻿﻿@using System.ComponentModel.DataAnnotations
+@using System.Reflection
 @model DATN_GO.Models.Users
+
 @{
     ViewData["Title"] = "Profile Page";
-}
-@{
     ViewData["UseContainer"] = false;
-}
-@{
-    var storeStatus = ViewBag.StoreStatus as StoreStatus?;
-}
 
+    var storeStatus = ViewBag.StoreStatus as StoreStatus?;
+
+    // Avatar helper (chuẩn hoá cả URL tuyệt đối & tương đối, có cache-buster)
+    string fallbackAvatar = "https://i.pinimg.com/736x/f0/cd/c4/f0cdc47ddb7f9dd5e86c3e7915c8b337.jpg";
+    string BuildAvatarUrl(string? avatar)
+    {
+        if (string.IsNullOrWhiteSpace(avatar)) return fallbackAvatar;
+
+        // URL tuyệt đối
+        if (avatar.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            return avatar + "?v=" + Guid.NewGuid();
+
+        // Tương đối -> đảm bảo có tiền tố "~/" để Url.Content xử lý
+        var normalized = avatar.StartsWith("~/")
+            ? avatar
+            : "~/" + avatar.TrimStart('/');
+
+        return Url.Content(normalized) + "?v=" + Guid.NewGuid();
+    }
+
+    var avatarUrl = BuildAvatarUrl(Model?.Avatar);
+}
 <!-- Offcanvas Sidebar for Mobile -->
 <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
     <div class="offcanvas-header bg-crimson text-white">
         <h5 class="offcanvas-title" id="sidebarMenuLabel">Menu Tài Khoản</h5>
         <button type="button" class="btn-close text-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
+
     <div class="offcanvas-body">
         <div class="p-3 border-bottom">
             <div class="d-flex align-items-center mb-3">
-                <img src="https://i.pinimg.com/736x/f0/cd/c4/f0cdc47ddb7f9dd5e86c3e7915c8b337.jpg" alt="Profile"
-                     class="rounded-circle me-2" style="width: 45px; height: 45px;">
+                <img src="@avatarUrl"
+                     alt="Profile"
+                     class="rounded-circle me-2"
+                     style="width:45px;height:45px;object-fit:cover;">
                 <div>
-                    <h6 class="mb-0">Nguyễn Văn A</h6>
-                    <small class="text-muted">nguyenvana</small>
+                    <h6 class="mb-0">@Model.FullName</h6>
+                    <small class="text-muted">@Model.Email</small>
                 </div>
             </div>
         </div>
 
         <ul class="nav flex-column p-3">
             <li class="nav-item mb-2">
-                <a asp-action="Profile" asp-controller="Index" class="nav-link active text-crimson">
-                    <i class="bi bi-person-circle me-2"></i>
-                    Thông tin cá nhân
+                <a asp-controller="Profile" asp-action="Index" class="nav-link active text-crimson">
+                    <i class="bi bi-person-circle me-2"></i> Thông tin cá nhân
                 </a>
             </li>
             <li class="nav-item mb-2">
-                <a asp-action="Order" asp-controller="Index" class="nav-link text-dark">
-                    <i class="bi bi-box-seam me-2"></i>
-                    Đơn hàng của tôi
+                <a asp-controller="Order" asp-action="Index" class="nav-link text-dark">
+                    <i class="bi bi-box-seam me-2"></i> Đơn hàng của tôi
                 </a>
             </li>
             <li class="nav-item mb-2">
-                <a asp-action="Voucher" asp-controller="Voucher" class="nav-link text-dark">
-                    <i class="bi bi-ticket-perforated me-2"></i>
-                    Voucher của tôi
+                <a asp-controller="Voucher" asp-action="Voucher" class="nav-link text-dark">
+                    <i class="bi bi-ticket-perforated me-2"></i> Voucher của tôi
                 </a>
             </li>
             <li class="nav-item mb-2">
-                <a asp-action="Address" asp-controller="address" class="nav-link text-dark">
-                    <i class="bi bi-geo-alt me-2"></i>
-                    Địa chỉ
+                <a asp-controller="Address" asp-action="Index" class="nav-link text-dark">
+                    <i class="bi bi-geo-alt me-2"></i> Địa chỉ
                 </a>
             </li>
             <li class="nav-item mb-2">
-                <a asp-action="UserAuthentication" asp-controller="ChangePassword" class="nav-link text-dark">
-                    <i class="bi bi-shield-lock me-2"></i>
-                    Đổi mật khẩu
+                <a asp-controller="UserAuthentication" asp-action="ChangePassword" class="nav-link text-dark">
+                    <i class="bi bi-shield-lock me-2"></i> Đổi mật khẩu
                 </a>
             </li>
             <li class="nav-item">
-                <a href="/Profile/Logout" class="nav-link text-dark">
-                    <i class="bi bi-box-arrow-right me-2"></i>
-                    Đăng xuất
+                <a asp-controller="Auth" asp-action="Logout" class="nav-link text-dark">
+                    <i class="bi bi-box-arrow-right me-2"></i> Đăng xuất
                 </a>
             </li>
         </ul>
     </div>
 </div>
 
-
 <div class="container-fluid">
-
     <div class="row">
-        <!-- Button to toggle sidebar on mobile -->
+        <!-- Nút mở offcanvas (mobile) -->
         <div class="d-lg-none p-3">
-            <button class="btn btn-outline-danger" type="button" data-bs-toggle="offcanvas"
-                    data-bs-target="#sidebarMenu">
+            <button class="btn btn-outline-danger" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu">
                 <i class="bi bi-list"></i>
             </button>
         </div>
 
-        <!-- Sidebar for desktop -->
+        <!-- Sidebar desktop (DUY NHẤT 1 LẦN) -->
         <div class="col-lg-3 col-xl-2 d-none d-lg-block sidebar bg-white border-end">
-            <div class="position-sticky" style="top: 1rem;">
+            <div class="position-sticky" style="top:1rem;">
                 <div class="p-3 border-bottom">
                     <div class="d-flex align-items-center mb-3">
-                        <img src="https://i.pinimg.com/736x/f0/cd/c4/f0cdc47ddb7f9dd5e86c3e7915c8b337.jpg" alt="Profile"
-                             class="rounded-circle me-2" style="width: 45px; height: 45px;">
+                        <img src="@avatarUrl"
+                             alt="Profile"
+                             class="rounded-circle me-2"
+                             style="width:45px;height:45px;object-fit:cover;">
                         <div>
-                            <h6 class="mb-0">Nguyễn Văn A</h6>
-                            <small class="text-muted">nguyenvana</small>
+                            <h6 class="mb-0">@Model.FullName</h6>
+                            <small class="text-muted">@Model.Email</small>
                         </div>
                     </div>
                 </div>
 
                 <ul class="nav flex-column p-3">
                     <li class="nav-item mb-2">
-                        <a asp-action="Index" asp-controller="Profile" class="nav-link active text-crimson">
-                            <i class="bi bi-person-circle me-2"></i>
-                            Thông tin cá nhân
+                        <a asp-controller="Profile" asp-action="Index" class="nav-link active text-crimson">
+                            <i class="bi bi-person-circle me-2"></i> Thông tin cá nhân
                         </a>
                     </li>
                     <li class="nav-item mb-2">
-                        <a asp-action="Index" asp-controller="Order" class="nav-link text-dark">
-                            <i class="bi bi-box-seam me-2"></i>
-                            Đơn hàng của tôi
+                        <a asp-controller="Order" asp-action="Index" class="nav-link text-dark">
+                            <i class="bi bi-box-seam me-2"></i> Đơn hàng của tôi
                         </a>
                     </li>
                     <li class="nav-item mb-2">
-                        <a asp-action="address" asp-controller="Address" class="nav-link text-dark">
-                            <i class="bi bi-geo-alt me-2"></i>
-                            Địa chỉ
+                        <a asp-controller="Address" asp-action="Index" class="nav-link text-dark">
+                            <i class="bi bi-geo-alt me-2"></i> Địa chỉ
                         </a>
                     </li>
                     <li class="nav-item mb-2">
-                        <a asp-action="Voucher" asp-controller="Voucher" class="nav-link text-dark">
-                            <i class="bi bi-ticket-perforated me-2"></i>
-                            Voucher
+                        <a asp-controller="Voucher" asp-action="Voucher" class="nav-link text-dark">
+                            <i class="bi bi-ticket-perforated me-2"></i> Voucher
                         </a>
                     </li>
                     <li class="nav-item mb-2">
-                        <a asp-action="ChangePassword" asp-controller="UserAuthentication" class="nav-link text-dark">
-                            <i class="bi bi-bell me-2"></i>
-                            Đổi mật khẩu
+                        <a asp-controller="Notification" asp-action="Index" class="nav-link text-dark">
+                            <i class="bi bi-bell me-2"></i> Thông báo
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="/Seller/Voucher/Logout"  class="nav-link text-dark">
-                            <i class="bi bi-box-arrow-right me-2"></i>
-                            Đăng xuất
+                        <a asp-controller="Auth" asp-action="Logout" class="nav-link text-dark">
+                            <i class="bi bi-box-arrow-right me-2"></i> Đăng xuất
                         </a>
                     </li>
                 </ul>
@@ -142,23 +149,21 @@
             <div class="row justify-content-center mt-4">
                 <div class="col-lg-10">
                     <div class="bg-white rounded-4 shadow-lg overflow-hidden">
-                        <form asp-action="Update" asp-controller="Profile" method="post"
-                              enctype="multipart/form-data" class="needs-validation" novalidate>
+                        <form asp-action="Update" asp-controller="Profile" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
                             @Html.AntiForgeryToken()
                             <div class="row g-0">
-                                <!-- Profile Banner & Avatar Section -->
+                                <!-- Banner + Avatar -->
                                 <div class="col-12">
                                     <div class="bg-danger bg-opacity-10 position-relative pt-5 pb-4 px-4">
                                         <div class="text-center">
                                             <div class="position-relative d-inline-block">
-                                                <img id="avatar-img" src="@(string.IsNullOrEmpty(Model.Avatar) ? "https://i.pinimg.com/736x/f0/cd/c4/f0cdc47ddb7f9dd5e86c3e7915c8b337.jpg" : Model.Avatar + "?v=" + Guid.NewGuid())"
+                                                <img id="avatar-img"
+                                                     src="@BuildAvatarUrl(Model.Avatar)"
                                                      alt="Avatar"
                                                      class="rounded-circle border border-4 border-white shadow-lg"
-                                                     style="width: 150px; height: 150px; object-fit: cover;">
-                                                <input type="file" id="profile-image" name="avatarFile" accept="image/*"
-                                                       class="d-none">
-                                                <label for="profile-image" class="position-absolute bottom-0 end-0 bg-white rounded-circle px-2 py-1 shadow-sm cursor-pointer"
-                                                       style="cursor: pointer;">
+                                                     style="width:150px;height:150px;object-fit:cover;">
+                                                <input type="file" id="profile-image" name="avatarFile" accept="image/*" class="d-none">
+                                                <label for="profile-image" class="position-absolute bottom-0 end-0 bg-white rounded-circle px-2 py-1 shadow-sm" style="cursor:pointer;">
                                                     <i class="bi bi-camera-fill text-crimson"></i>
                                                 </label>
                                             </div>
@@ -171,7 +176,7 @@
                                     </div>
                                 </div>
 
-                                <!-- User Details Form -->
+                                <!-- Form thông tin -->
                                 <div class="col-12">
                                     <div class="p-4 p-lg-5">
                                         <div class="row g-4">
@@ -179,8 +184,7 @@
                                                 <label for="fullName" class="form-label text-crimson fw-bold">
                                                     <i class="bi bi-person-fill me-2"></i>Họ và tên
                                                 </label>
-                                                <input type="text" class="form-control form-control-lg border-crimson"
-                                                       id="fullName" name="FullName" value="@Model.FullName" required />
+                                                <input type="text" class="form-control form-control-lg border-crimson" id="fullName" name="FullName" value="@Model.FullName" required />
                                                 <span asp-validation-for="FullName" class="text-danger"></span>
                                             </div>
 
@@ -199,19 +203,12 @@
                                                 <label for="gender" class="form-label text-crimson fw-bold">
                                                     <i class="bi bi-gender-ambiguous me-2"></i>Giới tính
                                                 </label>
-                                                <select class="form-select form-select-lg border-crimson" id="gender"
-                                                        name="Gender" required>
+                                                <select class="form-select form-select-lg border-crimson" id="gender" name="Gender" required>
                                                     @foreach (DATN_GO.Models.GenderType gender in Enum.GetValues(typeof(DATN_GO.Models.GenderType)))
                                                     {
-                                                        var displayAttr = gender.GetType()
-                                                        .GetMember(gender.ToString())[0]
-                                                        .GetCustomAttribute<DisplayAttribute>();
-
+                                                        var displayAttr = gender.GetType().GetMember(gender.ToString())[0].GetCustomAttribute<DisplayAttribute>();
                                                         var displayName = displayAttr?.Name ?? gender.ToString();
-                                                        <option value="@gender"
-                                                                selected="@(Model.Gender == gender ? "selected" : null)">
-                                                            @displayName
-                                                        </option>
+                                                        <option value="@gender" selected="@(Model.Gender == gender ? "selected" : null)">@displayName</option>
                                                     }
                                                 </select>
                                                 <span asp-validation-for="Gender" class="text-danger"></span>
@@ -222,23 +219,17 @@
                                                     <i class="bi bi-telephone-fill me-2"></i>Số điện thoại
                                                 </label>
                                                 <div class="input-group input-group-lg align-items-center">
-                                                    <input type="tel" class="form-control border-crimson" id="phone"
-                                                           value="@Model.Phone" readonly>
-                                                    @if (string.IsNullOrEmpty(Model.Phone))
-                                                    {
-                                                        <a asp-controller="UserAuthentication" asp-action="ChangeEmailPrompt"
-                                                           class="btn btn-crimson d-flex align-items-center px-4" style="height: 44px;">
-                                                            <i class="bi bi-plus-circle me-2"></i> Thêm số điện thoại
-                                                        </a>
-                                                    }
-                                                    else
-                                                    {
-                                                        <a asp-controller="UserAuthentication" asp-action="ChangeEmailPrompt"
-                                                           class="btn btn-crimson d-flex align-items-center px-4" style="height: 44px;">
-                                                            <i class="bi bi-pencil-square me-2"></i> Đổi số
-                                                        </a>
-                                                    }
+                                                    <input asp-for="Phone"
+                                                           type="tel"
+                                                           class="form-control border-crimson"
+                                                           id="phone"
+                                                           placeholder="Nhập số điện thoại"
+                                                           inputmode="tel"
+                                                           maxlength="11"
+                                                           pattern="^0\\d{9,10}$" />
                                                 </div>
+
+                                                <span asp-validation-for="Phone" class="text-danger"></span>
                                             </div>
 
                                             <div class="col-12">
@@ -246,19 +237,16 @@
                                                     <i class="bi bi-envelope-fill me-2"></i>Email
                                                 </label>
                                                 <div class="input-group input-group-lg align-items-center">
-                                                    <input type="email" class="form-control border-crimson" id="email"
-                                                           value="@Model.Email" readonly>
+                                                    <input type="email" class="form-control border-crimson" id="email" value="@Model.Email" readonly>
                                                     @if (string.IsNullOrEmpty(Model.Email))
                                                     {
-                                                        <a asp-controller="UserAuthentication" asp-action="ChangeEmailPrompt"
-                                                           class="btn btn-crimson d-flex align-items-center px-4" style="height: 44px;">
+                                                        <a asp-controller="UserAuthentication" asp-action="ChangeEmailPrompt" class="btn btn-crimson d-flex align-items-center px-4" style="height:44px;">
                                                             <i class="bi bi-plus-circle me-2"></i> Thêm email
                                                         </a>
                                                     }
                                                     else
                                                     {
-                                                        <a asp-controller="UserAuthentication" asp-action="ChangeEmailPrompt"
-                                                           class="btn btn-crimson d-flex align-items-center px-4" style="height: 44px;">
+                                                        <a asp-controller="UserAuthentication" asp-action="ChangeEmailPrompt" class="btn btn-crimson d-flex align-items-center px-4" style="height:44px;">
                                                             <i class="bi bi-pencil-square me-2"></i> Đổi email
                                                         </a>
                                                     }
@@ -266,35 +254,24 @@
                                             </div>
                                         </div>
 
-                                        <!-- Action Buttons -->
+                                        <!-- Buttons -->
                                         <div class="d-flex flex-wrap gap-2 justify-content-center mt-5">
                                             <button type="submit" class="btn btn-crimson btn-lg px-4">
                                                 <i class="bi bi-floppy me-2"></i>Lưu thay đổi
                                             </button>
-                                            <a asp-action="ChangePassword" asp-controller="UserAuthentication" class="btn btn-outline-crimson btn-lg px-4">
+                                            <a asp-controller="UserAuthentication" asp-action="ChangePassword" class="btn btn-outline-crimson btn-lg px-4">
                                                 <i class="bi bi-key me-2"></i>Đổi mật khẩu
                                             </a>
-                                            @if (storeStatus == StoreStatus.PendingApproval || storeStatus == StoreStatus.NotApproved)
+
+                                            @if (storeStatus == StoreStatus.PendingApproval)
                                             {
                                                 <a asp-action="PendingApproval" asp-controller="SalesRegistration" class="btn btn-warning btn-lg px-4">
                                                     <i class="bi bi-shop me-2"></i> Đăng ký bán hàng
                                                 </a>
                                             }
-                                            else if (storeStatus == StoreStatus.Rejected)
-                                            {
-                                                <a asp-action="SalesRegistration" asp-controller="SalesRegistration" class="btn btn-crimson btn-lg px-4">
-                                                    <i class="bi bi-shop me-2"></i> Đăng ký bán hàng
-                                                </a>
-                                            }
-                                            else if (storeStatus == StoreStatus.Active)
-                                            {
-                                                <a asp-action="Index" asp-controller="Home" asp-area="Seller" class="btn btn-success btn-lg px-4">
-                                                    <i class="bi bi-house-door me-2"></i> Đăng ký bán hàng
-                                                </a>
-                                            }
                                             else
                                             {
-                                                <a asp-action="SalesRegistration" asp-controller="SalesRegistration" class="btn btn-crimson btn-lg px-4">
+                                                <a asp-action="SalesRegistration" asp-controller="SalesRegistration" class="btn btn-warning btn-lg px-4">
                                                     <i class="bi bi-shop me-2"></i> Đăng ký bán hàng
                                                 </a>
                                             }
@@ -309,25 +286,20 @@
         </div>
     </div>
 </div>
+
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         function previewImage(input) {
             if (input.files && input.files[0]) {
                 var reader = new FileReader();
                 reader.onload = function (e) {
                     var avatarImg = document.getElementById('avatar-img');
-                    if (avatarImg) {
-                        avatarImg.src = e.target.result;
-                    }
+                    if (avatarImg) avatarImg.src = e.target.result;
                 }
                 reader.readAsDataURL(input.files[0]);
             }
         }
         var profileImageInput = document.getElementById('profile-image');
-        if (profileImageInput) {
-            profileImageInput.addEventListener('change', function() {
-                previewImage(this);
-            });
-        }
+        if (profileImageInput) profileImageInput.addEventListener('change', function () { previewImage(this); });
     });
 </script>

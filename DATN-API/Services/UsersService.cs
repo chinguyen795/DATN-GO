@@ -1,4 +1,4 @@
-using DATN_API.Data;
+﻿using DATN_API.Data;
 using DATN_API.Models;
 using DATN_API.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -36,31 +36,29 @@ namespace DATN_API.Services
         {
             if (id != model.Id) return false;
 
-            var user = await _context.Users.FindAsync(id);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
             if (user == null) return false;
 
-            user.FullName = model.FullName;
-            user.Email = model.Email;
-            user.Phone = model.Phone;
-            user.Avatar = model.Avatar;
-            // Update all properties
+            // Map các field được phép sửa
+            user.FullName = model.FullName?.Trim();
+            user.Email = model.Email?.Trim();
+            user.Phone = model.Phone?.Trim();
+            user.Avatar = model.Avatar?.Trim();
             user.Status = model.Status;
             user.Gender = model.Gender;
-            user.CitizenIdentityCard = model.CitizenIdentityCard;
+            user.CitizenIdentityCard = model.CitizenIdentityCard?.Trim();
             user.BirthDay = model.BirthDay;
-            user.UpdateAt = DateTime.Now;
 
-            user.Email = model.Email;
+            // Tùy chính sách: chỉ cho admin sửa Role/Password
             user.RoleId = model.RoleId;
-            user.Password = model.Password;
-            user.FullName = model.FullName;
-            user.Phone = model.Phone;
-            user.Avatar = model.Avatar;
-            user.Gender = model.Gender;
-            user.CitizenIdentityCard = model.CitizenIdentityCard;
-            user.BirthDay = model.BirthDay;
-            user.UpdateAt = model.UpdateAt;
-            // Do not update CreateAt, navigation properties, or collections here
+            user.Password = model.Password; // nếu nhận plaintext, hãy hash trước khi gán!
+
+            // Luôn do server quyết định
+            user.UpdateAt = DateTime.UtcNow;
+
+            // Không cho phép sửa CreateAt
+            _context.Entry(user).Property(u => u.CreateAt).IsModified = false;
+
             await _context.SaveChangesAsync();
             return true;
         }

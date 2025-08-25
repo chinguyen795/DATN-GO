@@ -38,12 +38,13 @@
                 <div class="carousel-inner">
                     @for (int i = 0; i < images.Count; i++)
                     {
-                        <div id="mainImage" class="carousel-item active">
-                            <img id="mainProductImage" src="@images.FirstOrDefault()" class="d-block w-100 border rounded"
+                        <div class="carousel-item @(i == 0 ? "active" : "")">
+                            <img src="@images[i]" class="d-block w-100 border rounded mainProductImage"
                                  alt="Hình ảnh sản phẩm">
                         </div>
                     }
                 </div>
+
                 <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                     <span class="visually-hidden">Previous</span>
