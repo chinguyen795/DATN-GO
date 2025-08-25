@@ -11,7 +11,6 @@ namespace DATN_GO.ViewModels
         public List<CategoryHomeViewModel> TrendCategories { get; set; }
         public List<CategoryHomeViewModel> Categories { get; set; } = new();
         public List<Categories> Categoriess { get; set; } = new();
-        public List<SlideViewModel> Slides { get; set; } = new();
 
 
     }
@@ -49,6 +48,7 @@ namespace DATN_GO.ViewModels
         public decimal Price { get; set; }
         public decimal? OldPrice { get; set; }
         public double Rating { get; set; }
+
     }
     public class SearchViewModel
     {

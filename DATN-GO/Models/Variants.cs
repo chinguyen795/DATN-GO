@@ -19,5 +19,7 @@ namespace DATN_GO.Models
         public string Type { get; set; }
 
         public virtual Products Product { get; set; }
+        [JsonIgnore]
+        public virtual ICollection<VariantValues>? VariantValues { get; set; }
     }
 }

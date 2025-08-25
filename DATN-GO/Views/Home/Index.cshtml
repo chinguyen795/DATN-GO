@@ -164,6 +164,143 @@
     </div>
 </section>
 
+<section class="all-products mb-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">Gợi ý cho bạn</h2>
+    </div>
+
+    @if (Model.SuggestedProducts != null && Model.SuggestedProducts.Any())
+    {
+        <div class="row g-4">
+            @foreach (var product in Model.SuggestedProducts.Take(4))
+            {
+                <div class="col-xl-3 col-lg-4 col-md-6">
+                    <div class="product-card card h-100 border-0 shadow-sm hover-scale">
+                        <div class="position-relative">
+                            <img src="@product.MainImage" class="card-img-top"
+                                 style="height: 200px; object-fit: cover;" alt="@product.Name" />
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-light text-danger">@product.CategoryName</span>
+                                <div class="rating text-warning">
+                                    <i class="bi bi-star-fill icon-sm"></i>
+                                    <span class="ms-1 text-dark">@product.Rating.ToString("0.0")</span>
+                                </div>
+                            </div>
+                            <h5 class="card-title fw-bold mb-1 text-truncate-1">@product.Name</h5>
+                            <p class="card-text text-muted small mb-2 text-truncate-1">@product.StoreName</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="text-danger fw-bold">@product.Price.ToString("N0")đ</span>
+                                </div>
+                                <a href="/Products/DetailProducts/@product.Id"
+                                   class="btn btn-crimson btn-sm rounded-pill">
+                                    <i class="bi bi-cart-plus icon-sm"></i> Thêm
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-muted">Chưa có sản phẩm gợi ý.</p>
+    }
+</section>
+
+<section class="hot-trend mb-3">
+	<div class="d-flex justify-content-between align-items-center mb-4">
+		<div class="d-flex align-items-center">
+			<h2 class="fw-bold mb-0 me-3">Thịnh hành</h2>
+			<div class="trending-badge d-flex align-items-center bg-danger text-white px-3 py-2 rounded-pill">
+				<i class="bi bi-fire me-2 icon-lg"></i>
+				<span>Xu hướng</span>
+			</div>
+		</div>
+	</div>
+	<div class="row g-4">
+		@if (Model.TrendCategories != null && Model.TrendCategories.Any())
+		{
+			foreach (var category in Model.TrendCategories)
+			{
+				<div class="col-lg-3 col-md-6" data-aos="fade-up">
+					<div class="trend-category-card position-relative overflow-hidden rounded-4">
+						<div class="trend-category-image">
+							<img src="@category.Image" class="w-100" alt="@category.Name">
+							<div class="trend-category-overlay"></div>
+						</div>
+						<div class="trend-category-content text-center text-white">
+							<div class="trend-category-icon mb-3">
+								<i class="bi bi-star-fill icon-lg"></i>
+							</div>
+							<h3 class="trend-category-title mb-2">@category.Name</h3>
+							<p class="trend-category-stat mb-3">
+								<span class="badge bg-danger me-2">Top @category.Rank</span>
+								<span>@category.TotalProducts món ăn</span>
+							</p>
+							<a href="#" class="btn btn-light rounded-pill px-4">Khám phá ngay</a>
+						</div>
+					</div>
+				</div>
+			}
+		}
+		else
+		{
+			<p class="text-muted">Chưa có danh mục xu hướng.</p>
+		}
+	</div>
+</section>
+
+
+<section class="all-products mb-3">
+	<div class="d-flex justify-content-between align-items-center mb-4">
+		<h2 class="fw-bold mb-0">Gợi ý cho bạn</h2>
+	</div>
+
+	@if (Model.SuggestedProducts != null && Model.SuggestedProducts.Any())
+	{
+		<div class="row g-4">
+			@foreach (var product in Model.SuggestedProducts.Take(4))
+			{
+				<div class="col-xl-3 col-lg-4 col-md-6">
+					<div class="product-card card h-100 border-0 shadow-sm hover-scale">
+						<div class="position-relative">
+							<img src="@product.MainImage" class="card-img-top"
+								 style="height: 200px; object-fit: cover;" alt="@product.Name" />
+						</div>
+						<div class="card-body">
+							<div class="d-flex justify-content-between align-items-center mb-2">
+								<span class="badge bg-light text-danger">@product.CategoryName</span>
+								<div class="rating text-warning">
+									<i class="bi bi-star-fill icon-sm"></i>
+									<span class="ms-1 text-dark">@product.Rating.ToString("0.0")</span>
+								</div>
+							</div>
+							<h5 class="card-title fw-bold mb-1 text-truncate-1">@product.Name</h5>
+							<p class="card-text text-muted small mb-2 text-truncate-1">@product.StoreName</p>
+							<div class="d-flex justify-content-between align-items-center">
+								<div>
+									<span class="text-danger fw-bold">@product.Price.ToString("N0")đ</span>
+								</div>
+                                <a href="/Products/DetailProducts/@product.Id"
+                                   class="btn btn-crimson btn-sm rounded-pill">
+                                    <i class="bi bi-cart-plus icon-sm"></i> Thêm
+                                </a>
+							</div>
+						</div>
+					</div>
+				</div>
+			}
+		</div>
+	}
+	else
+	{
+		<p class="text-muted">Chưa có sản phẩm gợi ý.</p>
+	}
+</section>
 
 <section class="featured-products mb-3">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -198,9 +335,10 @@
                                 <div>
                                     <span class="text-danger fw-bold">@product.Price.ToString("N0")đ</span>
                                 </div>
-                                <button class="btn btn-crimson btn-sm rounded-pill">
+                                <a href="/Products/DetailProducts/@product.Id"
+                                   class="btn btn-crimson btn-sm rounded-pill">
                                     <i class="bi bi-cart-plus icon-sm"></i> Thêm
-                                </button>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -217,96 +355,6 @@
 
 
 <!-- Trend Categories -->
-<!-- Trend Categories -->
-<section class="hot-trend mb-3">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div class="d-flex align-items-center">
-            <h2 class="fw-bold mb-0 me-3">Thịnh hành</h2>
-            <div class="trending-badge d-flex align-items-center bg-danger text-white px-3 py-2 rounded-pill">
-                <i class="bi bi-fire me-2 icon-lg"></i>
-                <span>Xu hướng</span>
-            </div>
-        </div>
-    </div>
-    <div class="row g-4">
-        @if (Model.TrendCategories != null && Model.TrendCategories.Any())
-        {
-            foreach (var category in Model.TrendCategories)
-            {
-                <div class="col-lg-3 col-md-6" data-aos="fade-up">
-                    <div class="trend-category-card position-relative overflow-hidden rounded-4">
-                        <div class="trend-category-image">
-                            <img src="@category.Image" class="w-100" alt="@category.Name">
-                            <div class="trend-category-overlay"></div>
-                        </div>
-                        <div class="trend-category-content text-center text-white">
-                            <div class="trend-category-icon mb-3">
-                                <i class="bi bi-star-fill icon-lg"></i>
-                            </div>
-                            <h3 class="trend-category-title mb-2">@category.Name</h3>
-                            <p class="trend-category-stat mb-3">
-                                <span class="badge bg-danger me-2">Top @category.Rank</span>
-                                <span>@category.TotalProducts món ăn</span>
-                            </p>
-                            <a href="#" class="btn btn-light rounded-pill px-4">Khám phá ngay</a>
-                        </div>
-                    </div>
-                </div>
-            }
-        }
-        else
-        {
-            <p class="text-muted">Chưa có danh mục xu hướng.</p>
-        }
-    </div>
-
-
-
-<section class="all-products mb-3">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold mb-0">Gợi ý cho bạn</h2>
-    </div>
-
-    @if (Model.SuggestedProducts != null && Model.SuggestedProducts.Any())
-    {
-        <div class="row g-4">
-            @foreach (var product in Model.SuggestedProducts.Take(4))
-            {
-                <div class="col-xl-3 col-lg-4 col-md-6">
-                    <div class="product-card card h-100 border-0 shadow-sm hover-scale">
-                        <div class="position-relative">
-                            <img src="@product.MainImage" class="card-img-top"
-                                 style="height: 200px; object-fit: cover;" alt="@product.Name" />
-                        </div>
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="badge bg-light text-danger">@product.CategoryName</span>
-                                <div class="rating text-warning">
-                                    <i class="bi bi-star-fill icon-sm"></i>
-                                    <span class="ms-1 text-dark">@product.Rating.ToString("0.0")</span>
-                                </div>
-                            </div>
-                            <h5 class="card-title fw-bold mb-1 text-truncate-1">@product.Name</h5>
-                            <p class="card-text text-muted small mb-2 text-truncate-1">@product.StoreName</p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <span class="text-danger fw-bold">@product.Price.ToString("N0")đ</span>
-                                </div>
-                                <button class="btn btn-crimson btn-sm rounded-pill">
-                                    <i class="bi bi-cart-plus icon-sm"></i> Thêm
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            }
-        </div>
-    }
-    else
-    {
-        <p class="text-muted">Chưa có sản phẩm gợi ý.</p>
-    }
-</section>
 
 
 

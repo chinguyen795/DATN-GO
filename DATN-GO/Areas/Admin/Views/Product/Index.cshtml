@@ -425,6 +425,10 @@
                                                 <button class="btn btn-sm btn-danger btn-reject" data-id="@p.Id">
                                                     <i class="mdi mdi-close-circle-outline"></i> Từ chối
                                                 </button>
+
+                                                <button class="btn btn-sm btn-info btn-detail" data-id="@p.Id">
+                                                    <i class="mdi mdi-eye-outline"></i> Xem
+                                                </button>
                                             </td>
                                         </tr>
                                     }
@@ -482,6 +486,84 @@
         </div>
     </div>
 </div>
+
+
+<div class="modal fade" id="detailModal" tabindex="-1" role="dialog" aria-hidden="true" aria-labelledby="detailModalTitle" aria-describedby="detailModalDesc">
+    <div class="modal-dialog modal-dialog-scrollable modal-xl" role="document">
+        <div class="modal-content modal-product">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title" id="detailModalTitle">Chi tiết sản phẩm</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div id="detailModalBody" class="modal-body">
+                <p id="detailModalDesc" class="sr-only">Thông tin đầy đủ sản phẩm, thuộc tính và các biến thể.</p>
+                <div class="text-center py-4" id="detailLoading">
+                    <div class="spinner-border" role="status" aria-label="Đang tải"></div>
+                    <div class="mt-2">Đang tải...</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .modal-product .product-hero img {
+        max-height: 260px;
+        object-fit: contain;
+    }
+
+    .modal-product figure {
+        margin: 0;
+    }
+
+    .modal-product .thumbs img {
+        width: 84px;
+        height: 84px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+
+    .modal-product .meta dl {
+        display: grid;
+        grid-template-columns: 160px 1fr;
+        gap: 8px 16px;
+    }
+
+    .modal-product .meta dt {
+        font-weight: 600;
+        color: #555;
+    }
+
+    .modal-product .meta dd {
+        margin: 0;
+    }
+
+    .modal-product .badge-soft {
+        background: #eef2ff;
+        color: #3b82f6;
+    }
+
+    .modal-product .kv {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: #f6f7f9;
+        font-size: 12px;
+    }
+
+    .modal-product .table caption {
+        caption-side: top;
+        text-align: left;
+        color: #6b7280;
+    }
+</style>
 
 
 @section Scripts {
@@ -683,7 +765,8 @@
                 };
             });
         }
+  
+
+
     </script>
 }
-
-

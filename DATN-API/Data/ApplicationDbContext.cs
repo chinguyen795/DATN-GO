@@ -133,8 +133,8 @@ namespace DATN_API.Data
 
             modelBuilder.Entity<VariantValues>()
                 .HasOne(vv => vv.Variant)
-                .WithMany()
-                .HasForeignKey(vv => vv.VariantId)
+.WithMany(v => v.VariantValues)
+.HasForeignKey(vv => vv.VariantId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<ProductVariants>()
