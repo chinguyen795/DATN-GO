@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DATN_API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250824151007_IntialCreate")]
-    partial class IntialCreate
+    [Migration("20250825051502_ádad")]
+    partial class ádad
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1784,7 +1784,7 @@ namespace DATN_API.Migrations
             modelBuilder.Entity("DATN_API.Models.VariantValues", b =>
                 {
                     b.HasOne("DATN_API.Models.Variants", "Variant")
-                        .WithMany()
+                        .WithMany("VariantValues")
                         .HasForeignKey("VariantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1945,6 +1945,11 @@ namespace DATN_API.Migrations
                     b.Navigation("SentMessages");
 
                     b.Navigation("Store");
+                });
+
+            modelBuilder.Entity("DATN_API.Models.Variants", b =>
+                {
+                    b.Navigation("VariantValues");
                 });
 
             modelBuilder.Entity("DATN_API.Models.Vouchers", b =>

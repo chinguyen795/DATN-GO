@@ -1,7 +1,5 @@
-﻿﻿﻿@{
-var useContainer = ViewData["UseContainer"] as bool? ?? true;
-var cartCount = Context.Session.GetInt32("CartCount") ?? 0;
-
+﻿@{
+    var useContainer = ViewData["UseContainer"] as bool? ?? true;
 }
 <!doctype html>
 <html lang="en">
@@ -115,6 +113,14 @@ var cartCount = Context.Session.GetInt32("CartCount") ?? 0;
         #aiMsg {
             flex: 1;
         }
+
+        #aiChatMessages a {
+            text-decoration: none;
+        }
+
+            #aiChatMessages a:hover {
+                text-decoration: underline;
+            }
     </style>
 
 </head>
@@ -161,23 +167,21 @@ var cartCount = Context.Session.GetInt32("CartCount") ?? 0;
                                             Sản phẩm
                                         </a>
                                     </li>
-                                    @*                                     <li class="nav-item">
+                                    <li class="nav-item">
                                         <a class="nav-link text-crimson d-flex align-items-center gap-1"
                                            asp-controller="Blog" asp-action="Blog">
                                             Bài viết
                                         </a>
-                                    </li> *@
+                                    </li>
                                 </ul>
                             </div>
                         </div>
                         <!-- Cart -->
-                        <a asp-action="Index" asp-controller="Cart" class="nav-link position-relative align-items-center p-0">
+                        <a asp-action="index" asp-controller="cart" class="nav-link position-relative align-items-center p-0">
                             <i class="bi bi-cart-fill text-white icon-md header-icon"></i>
-                            <span class="cart-count-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-white text-crimson"
-                                  style="font-size:0.7rem; @(cartCount > 0 ? "" : "display:none;")">@cartCount</span>
+                            @* <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-white text-crimson"
+                            style="font-size:0.7rem;">99</span> *@
                         </a>
-
-
                         <!-- Account -->
                         @{
                             var fullName = Context.Session.GetString("FullName");
@@ -523,7 +527,7 @@ var cartCount = Context.Session.GetInt32("CartCount") ?? 0;
         <div id="aiChatHeader">
             <div class="d-flex align-items-center gap-2">
                 <i class="bi bi-robot"></i>
-                <strong>GO Assistant</strong>
+                <strong>Trợ Lý Gờ Ô</strong>
             </div>
             <button id="aiChatClose" class="btn btn-sm btn-light">Đóng</button>
         </div>
@@ -532,159 +536,161 @@ var cartCount = Context.Session.GetInt32("CartCount") ?? 0;
 
         <div id="aiChatInputBar">
             <input id="aiMsg" class="form-control" placeholder="Hỏi về TMĐT: sản phẩm, đơn, doanh thu...">
-            <button id="aiSend" class="btn btn-primary">Gửi</button>
+            <button id="aiSend" class="btn btn-crimson">GỬI</button>
+
         </div>
     </div>
     <!-- /Floating Chat AI -->
+    // THAY THẾ đoạn script chatbox cũ bằng code này:
+
     <script>
         (function () {
-          const API_URL = 'https://localhost:7096/api/ai/chat';
+            const API_URL = 'https://localhost:7096/api/ai/chat';
 
-          const fab    = document.getElementById('aiChatFab');
-          const box    = document.getElementById('aiChatBox');
-          const close  = document.getElementById('aiChatClose');
-          const msgs   = document.getElementById('aiChatMessages');
-          const input  = document.getElementById('aiMsg');
-          const send   = document.getElementById('aiSend');
+            const fab = document.getElementById('aiChatFab');
+            const box = document.getElementById('aiChatBox');
+            const close = document.getElementById('aiChatClose');
+            const msgs = document.getElementById('aiChatMessages');
+            const input = document.getElementById('aiMsg');
+            const send = document.getElementById('aiSend');
 
-          function toggle() { box.style.display = (box.style.display === 'none' || !box.style.display) ? 'block' : 'none'; }
-          function addBubble(text, who) {
-            const div = document.createElement('div');
-            div.className = 'ai-bubble ' + (who === 'user' ? 'user' : 'bot');
-            div.textContent = text;
-            msgs.appendChild(div);
-            msgs.scrollTop = msgs.scrollHeight;
-          }
-
-          async function ask() {
-            const text = input.value.trim();
-            if (!text) return;
-            addBubble(text, 'user');
-            input.value = '';
-            const wait = document.createElement('div');
-            wait.className = 'ai-bubble bot';
-            wait.textContent = 'Đang suy nghĩ...';
-            msgs.appendChild(wait);
-            msgs.scrollTop = msgs.scrollHeight;
-
-            try {
-              const res = await fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: text })
-                // Nếu API yêu cầu token:
-                // headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + (localStorage.getItem('token')||'') }
-              });
-              const data = await res.json();
-              wait.textContent = data.answer || '[AI không phản hồi]';
-            } catch (e) {
-              wait.textContent = '[Lỗi gọi AI] ' + e;
+            function toggle() {
+                box.style.display = (box.style.display === 'none' || !box.style.display) ? 'block' : 'none';
             }
-          }
 
-          fab.addEventListener('click', toggle);
-          close.addEventListener('click', toggle);
-          send.addEventListener('click', ask);
-          input.addEventListener('keydown', e => { if (e.key === 'Enter') ask(); });
+            function addBubble(text, who) {
+                const div = document.createElement('div');
+                div.className = 'ai-bubble ' + (who === 'user' ? 'user' : 'bot');
+
+                if (who === 'user') {
+                    div.textContent = text; // User message dùng textContent
+                } else {
+                    // Bot message: convert text thành HTML có thể click
+                    div.innerHTML = formatBotMessage(text);
+                }
+
+                msgs.appendChild(div);
+                msgs.scrollTop = msgs.scrollHeight;
+            }
+
+            // Function chuyển đổi text thành HTML clickable
+            function formatBotMessage(text) {
+                if (!text) return '';
+
+                // Bước 1: Escape HTML nguy hiểm
+                let html = text
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;');
+
+                // Bước 2: Chuyển URLs thành links
+                html = html.replace(
+                    /(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/g,
+                    '<a href="$1" class="text-crimson fw-semibold text-decoration-underline" target="_blank" rel="noopener">🔗 XEM NGAY</a>'
+                );
+
+                // Bước 3: Chuyển **text** thành <strong>
+                html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+                // Bước 4: Chuyển \n thành <br>
+                html = html.replace(/\n/g, '<br>');
+
+                // Bước 5: Thêm style cho icons
+                html = html.replace(/🛍️/g, '<span style="color: #dc143c;">🛍️</span>');
+                html = html.replace(/💰/g, '<span style="color: #ffa500;">💰</span>');
+                html = html.replace(/📦/g, '<span style="color: #4169e1;">📦</span>');
+                html = html.replace(/🔗/g, '<span style="color: #dc143c;">🔗</span>');
+
+                return html;
+            }
+
+            async function ask() {
+                const text = input.value.trim();
+                if (!text) return;
+
+                // Hiển thị câu hỏi của user
+                addBubble(text, 'user');
+                input.value = '';
+
+                // Chặn spam trong lúc chờ
+                send.disabled = true;
+                input.disabled = true;
+
+                // Bubble chờ
+                const wait = document.createElement('div');
+                wait.className = 'ai-bubble bot';
+                wait.innerHTML = '<i class="bi bi-three-dots" style="animation: blink 1s infinite;"></i> Đang suy nghĩ...';
+                msgs.appendChild(wait);
+                msgs.scrollTop = msgs.scrollHeight;
+
+                try {
+                    const res = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: text })
+                    });
+
+                    // Cố đọc JSON; nếu lỗi thì data = {}
+                    let data = {};
+                    try {
+                        data = await res.json();
+                    } catch (e) {
+                        console.log('JSON parse error:', e);
+                    }
+
+                    // QUAN TRỌNG: Sử dụng innerHTML với formatBotMessage
+                    const botReply = (data && data.answer) ? data.answer : '[AI không phản hồi]';
+                    wait.innerHTML = formatBotMessage(botReply);
+                    msgs.scrollTop = msgs.scrollHeight;
+
+                } catch (e) {
+                    wait.innerHTML = '<span style="color: red;">[Lỗi kết nối AI] ' + e.message + '</span>';
+                    console.error('API error:', e);
+                } finally {
+                    send.disabled = false;
+                    input.disabled = false;
+                    input.focus();
+                }
+            }
+
+            fab.addEventListener('click', toggle);
+            close.addEventListener('click', toggle);
+            send.addEventListener('click', ask);
+            input.addEventListener('keydown', e => { if (e.key === 'Enter') ask(); });
+
+            // Auto focus khi mở chatbox
+            fab.addEventListener('click', () => {
+                setTimeout(() => input.focus(), 300);
+            });
         })();
     </script>
+
+    <style>
+        /* Thêm CSS cho chat links */
+        #aiChatMessages a {
+            color: #dc143c !important;
+            text-decoration: underline !important;
+            font-weight: 600 !important;
+            transition: all 0.2s ease;
+        }
+
+            #aiChatMessages a:hover {
+                color: #a01030 !important;
+                text-decoration: none !important;
+                background-color: rgba(220, 20, 60, 0.1);
+                padding: 2px 4px;
+                border-radius: 4px;
+            }
+
+        /* Animation cho loading */
+
+        }
+    </style>
 
 </body>
 
 
 </html>
-
-
-
-<script>
-    (function () {
-      const getBadges = () => Array.from(document.querySelectorAll('.cart-count-badge'));
-      const style = document.createElement('style');
-      style.textContent = `
-        @@keyframes cart-bump { 0%{transform:translate(-50%,-50%) scale(1)} 30%{scale:1.15} 100%{scale:1} }
-        .cart-count-badge.bump { animation: cart-bump 250ms ease; }
-      `;
-      document.head.appendChild(style);
-
-      function show(el, n){ el.style.display = n>0 ? '' : 'none'; }
-
-      function animateTo(el, target){
-        const current = parseInt(el.textContent||'0')||0;
-        if (current === target) {           // đảm bảo ẩn/hiện đúng cả khi không đổi số
-          show(el, target);
-          return;
-        }
-        const diff = target-current, steps = Math.min(12, Math.abs(diff)), step = diff/steps;
-        let i=0; el.classList.add('bump');
-        const t=setInterval(()=>{
-          i++;
-          const v = i<steps ? Math.round(current+step*i) : target;
-          el.textContent = v;
-          show(el, v);
-          if(i>=steps){ clearInterval(t); setTimeout(()=>el.classList.remove('bump'),200); }
-        },20);
-      }
-
-      function setCartCount(n){
-        const nn = Math.max(0, parseInt(n)||0);
-        getBadges().forEach(b=>animateTo(b, nn));
-        try{ localStorage.setItem('cartCount', String(nn)); }catch{}
-      }
-
-      window.__CartBadge = {
-        set: setCartCount,
-        add(delta){
-          const bs = getBadges();
-          const cur = bs.length ? (parseInt(bs[0].textContent||'0')||0) : 0;
-          setCartCount(Math.max(0, cur + (parseInt(delta)||0)));
-        }
-      };
-
-      async function init(){
-        let n = null;
-        let trusted = false;
-
-        // (A) Ưu tiên số render từ server (layout có thể set: window.__CART_COUNT_INIT = @cartCount;)
-        if (typeof window.__CART_COUNT_INIT === 'number') {
-          n = window.__CART_COUNT_INIT;
-          trusted = true;                  // kể cả 0 cũng được tin cậy
-        }
-
-        // (B) Gọi API /Cart/Count -> ghi đè nếu có (kể cả 0)
-        try{
-          const r = await fetch('/Cart/Count', { credentials:'same-origin' });
-          if(r.ok){
-            const d = await r.json();
-            if(typeof d.count==='number'){
-              n = d.count;
-              trusted = true;
-            }
-          }
-        }catch{}
-
-        // (C) Chỉ fallback localStorage khi chưa có dữ liệu đáng tin (A,B)
-        if (!trusted) {
-          try { n = parseInt(localStorage.getItem('cartCount')||'0'); } catch {}
-        }
-
-        // (D) Cuối cùng mặc định 0 nếu vẫn null/NaN
-        if (!Number.isFinite(n)) n = 0;
-
-        setCartCount(n);
-      }
-
-      window.addEventListener('storage', (e)=>{
-        if(e.key==='cartCount' && e.newValue!=null){
-          const v = parseInt(e.newValue||'0')||0;
-          setCartCount(v);
-        }
-      });
-
-      document.addEventListener('DOMContentLoaded', init);
-    })();
-</script>
-
-
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 
@@ -734,21 +740,27 @@ var cartCount = Context.Session.GetInt32("CartCount") ?? 0;
         const title = isSuccess ? "Thành công" : "Lỗi";
 
         const toastHtml = `
-                <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" id="dynamicToast"
-                     style="position: fixed; top: 1rem; right: 1rem; z-index: 1060; min-width: 320px;">
-                    <div class="toast-header d-flex align-items-center ${isSuccess ? "bg-success" : "bg-danger"} text-white">
-                        <img src="${iconUrl}" alt="icon" width="20" height="20" class="me-2" />
-                        <strong class="me-auto">${title}</strong>
-                        <small class="text-white">Vừa xong</small>
-                        <button type="button" class="btn-close btn-close-white ms-2" onclick="this.closest('.toast').remove()" aria-label="Close"></button>
-                    </div>
-                    <div class="toast-body">${message}</div>
-                </div>
-            `;
+                        <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" id="dynamicToast"
+                             style="position: fixed; top: 1rem; right: 1rem; z-index: 1060; min-width: 320px;">
+                            <div class="toast-header d-flex align-items-center ${isSuccess ? "bg-success" : "bg-danger"} text-white">
+                                <img src="${iconUrl}" alt="icon" width="20" height="20" class="me-2" />
+                                <strong class="me-auto">${title}</strong>
+                                <small class="text-white">Vừa xong</small>
+                                <button type="button" class="btn-close btn-close-white ms-2" onclick="this.closest('.toast').remove()" aria-label="Close"></button>
+                            </div>
+                            <div class="toast-body">${message}</div>
+                        </div>
+                    `;
         document.body.insertAdjacentHTML('beforeend', toastHtml);
         setTimeout(() => document.getElementById('dynamicToast')?.remove(), 3000);
     }
-
+    function mdToHtml(s) {
+        if (!s) return '';
+        return s
+            .replace(/\[([^\]]+)\]\(([^)]+)\)/g,
+                '<a href="$2" class="text-crimson fw-semibold" target="_self" rel="noopener">$1</a>')
+            .replace(/\n/g, '<br>');
+    }
     window.addEventListener('DOMContentLoaded', function () {
         const message = localStorage.getItem("toastMessage");
         const type = localStorage.getItem("toastType");

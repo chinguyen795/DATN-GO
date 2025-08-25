@@ -2,10 +2,11 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Globalization;
+using System.Linq;
 using DATN_API.Data;
 using Microsoft.EntityFrameworkCore;
 using DATN_API.Models;
-
 
 namespace DATN_API.Services.Ai
 {
@@ -24,68 +25,63 @@ namespace DATN_API.Services.Ai
 
         public async Task<string> AskAsync(string message)
         {
-            // 1) Chặn ngoài phạm vi TMĐT (lọc sơ bộ, phòng user hỏi lan man)
-            if (!IsEcommerceQuestion(message))
+            // 0) Trả lời nhanh cho các câu quen thuộc (không tốn gọi AI)
+            var quick = QuickAnswers(message);
+            if (!string.IsNullOrEmpty(quick)) return quick;
+
+            // 1) Chỉ nhận câu hỏi về THỜI TRANG
+            if (!IsCustomerFashionQuestion(message))
             {
-                return "Mình chỉ hỗ trợ các câu hỏi trong lĩnh vực sàn thương mại điện tử (sản phẩm, đơn hàng, cửa hàng, voucher, vận chuyển, khách hàng, doanh thu...) nhé.";
+                return "Xin lỗi, TRỢ LÝ GỜ Ô chỉ hỗ trợ các câu hỏi liên quan **thời trang** (áo, quần, váy, giày dép, túi xách, phụ kiện) trong sàn của chúng tôi ạ.";
             }
 
-            // 2) Lấy dữ liệu “grounding” từ DB (tóm tắt gọn + số liệu quan trọng)
-            var context = await BuildDbContextAsync(message);
+            // 1.1) THỬ TRẢ LỜI TRỰC TIẾP THEO DANH MỤC/TẦM GIÁ (không gọi AI)
+            var direct = await TryAnswerWithCatalogAsync(message);
+            if (!string.IsNullOrWhiteSpace(direct))
+                return direct;
 
-            // 3) Gọi Gemini
+            // 2) Ảnh chụp catalog thời trang (KHÔNG nhắc CSDL/DB), có kèm URL sản phẩm
+            var context = await BuildFashionCatalogContextAsync();
+
+            // 3) Gọi Gemini (ưu tiên model tiết kiệm quota)
             var apiKey = _cfg["Gemini:ApiKey"];
-            var model = _cfg["Gemini:Model"] ?? "gemini-1.5-pro";
-
+            var model = _cfg["Gemini:Model"] ?? "gemini-1.5-flash";
             var endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={apiKey}";
 
             var systemInstruction =
-@"Bạn là trợ lý AI của sàn TMĐT.
-QUY TẮC:
-- Luôn trả lời dứt khoát dựa trên dữ liệu CSDL cung cấp.
-- Nếu dữ liệu không có cho đúng chủ đề, trả lời bằng KẾT LUẬN HÀNH ĐỘNG, KHÔNG dùng câu chung chung như 'chưa có dữ liệu phù hợp'.
-- Kết luận hành động = nêu rõ tình trạng hiện tại + gợi ý bước tiếp theo cụ thể (ví dụ: tạo voucher mới, lọc ngày khác, vào trang cấu hình...).
-- Trả lời ngắn gọn, tiếng Việt, có số liệu nếu có.
+@"Bạn là **TRỢ LÝ GỜ Ô**, chuyên tư vấn mua sắm **thời trang**.
+- Chỉ nói về quần áo, váy đầm, giày dép, túi xách, balo, phụ kiện (mũ, thắt lưng, vớ/tất, trang sức thời trang...).
+- Khi khách hỏi danh mục/sản phẩm (ví dụ 'áo thun', 'quần jean', 'giày sneaker'): hãy gợi ý tên sản phẩm, giá, số lượng nếu có.
+- Khi liệt kê sản phẩm, hiển thị dạng: 
+  🛍️ **Tên sản phẩm** — Giá ~ SL
+  🔗 URL
+- Không tự bịa link; chỉ dùng trường Url đã cung cấp.
+- Khi khách hỏi cách mua: hướng dẫn 'Thêm vào giỏ' → 'Thanh toán' → chọn 'VNPay' hoặc 'COD (trả khi nhận hàng)'.
+- Có thể gợi ý size & phối đồ cơ bản nếu khách cần.
+- Tuyệt đối không nhắc tới nguồn dữ liệu kỹ thuật, CSDL, SQL, schema, backend.
+- Không trả lời câu hỏi ngoài thời trang.";
 
-Ví dụ TRÁNH: 'Chưa có dữ liệu phù hợp để trả lời.'
-Ví dụ ĐÚNG: 'Hiện không có voucher đang hiệu lực. Bạn có thể tạo voucher mới trong trang Quản trị > Voucher, hoặc thử thay đổi khoảng thời gian lọc.'";
-
-
-            // Kết hợp message + dữ liệu grounding
             var userPrompt =
-$@"DỮ LIỆU CSDL (tóm tắt từ SQL/EF - có thể rút gọn):
+$@"THÔNG TIN THỜI TRANG (tóm tắt để tư vấn):
 {context}
 
-CÂU HỎI NGƯỜI DÙNG:
+CÂU HỎI CỦA KHÁCH:
 {message}
 
-YÊU CẦU:
-- Chỉ trả lời dựa trên DỮ LIỆU CSDL nếu có.
-- Nếu cần tính toán, hãy tính chính xác từ số liệu đã cung cấp.
-- Nếu thiếu dữ liệu, nói rõ: 'Chưa có dữ liệu phù hợp để trả lời.' và gợi ý truy vấn/bộ lọc cụ thể (ví dụ khoảng ngày, mã đơn...).";
+HƯỚNG DẪN TRẢ LỜI:
+- Trả lời ngắn gọn, tiếng Việt, ưu tiên format có icon.
+- Format sản phẩm: 🛍️ **Tên** — Giá ~ SL, dòng tiếp theo: 🔗 URL
+- Có thể gợi ý sản phẩm thay thế cùng danh mục nếu từ khóa không đúng chính tả.
+- Nếu khách muốn đặt hàng: nhắc 2 cách thanh toán **VNPay** / **COD** và có thể nhập **voucher** nếu đủ điều kiện.";
 
             var payload = new
             {
-                system_instruction = new
-                {
-                    parts = new[] { new { text = systemInstruction } }
-                },
+                system_instruction = new { parts = new[] { new { text = systemInstruction } } },
                 contents = new[]
                 {
-                    new {
-                        role = "user",
-                        parts = new[] { new { text = userPrompt } }
-                    }
+                    new { role = "user", parts = new[] { new { text = userPrompt } } }
                 },
-                generationConfig = new
-                {
-                    temperature = 0.2,
-                    topK = 40,
-                    topP = 0.95,
-                    maxOutputTokens = 1024
-                }
-                // Bạn có thể bổ sung function-calling/tools nếu muốn mô hình chủ động gọi hàm (tài liệu: function calling). 
-                // Ở bản đơn giản này, mình feed thẳng số liệu vào prompt. :contentReference[oaicite:3]{index=3}
+                generationConfig = new { temperature = 0.2, topK = 40, topP = 0.95, maxOutputTokens = 1024 }
             };
 
             var json = JsonSerializer.Serialize(payload);
@@ -100,160 +96,406 @@ YÊU CẦU:
 
             if (!res.IsSuccessStatusCode)
             {
-                return $"[AI lỗi] Không gọi được Gemini: {res.StatusCode} - {resText}";
+                // Fallback mềm khi quota/lỗi, vẫn trả lời hữu ích cho khách
+                return SoftFallback(message) + $"\n\n_(Thông báo kỹ thuật: {res.StatusCode})_";
             }
 
             try
             {
                 using var doc = JsonDocument.Parse(resText);
-                // Trích xuất text từ candidates[0].content.parts[*].text
                 var root = doc.RootElement;
                 var textParts = new List<string>();
                 foreach (var cand in root.GetProperty("candidates").EnumerateArray())
                 {
-                    if (cand.TryGetProperty("content", out var content))
+                    if (cand.TryGetProperty("content", out var content) &&
+                        content.TryGetProperty("parts", out var parts))
                     {
-                        if (content.TryGetProperty("parts", out var parts))
+                        foreach (var p in parts.EnumerateArray())
                         {
-                            foreach (var p in parts.EnumerateArray())
-                            {
-                                if (p.TryGetProperty("text", out var t))
-                                    textParts.Add(t.GetString() ?? "");
-                            }
+                            if (p.TryGetProperty("text", out var t))
+                                textParts.Add(t.GetString() ?? "");
                         }
                     }
                 }
                 var answer = string.Join("\n", textParts).Trim();
-                return string.IsNullOrWhiteSpace(answer) ? "Mình chưa nhận được nội dung trả lời từ AI." : answer;
+                answer = SanitizeTechnicalHints(answer);
+
+                if (string.IsNullOrWhiteSpace(answer))
+                    answer = SoftFallback(message);
+
+                return answer;
             }
             catch
             {
-                return "Mình chưa trích xuất được câu trả lời từ AI (format response thay đổi?). Kiểm tra lại payload/response ở API Gemini.";
+                return SoftFallback(message);
             }
         }
 
-        private bool IsEcommerceQuestion(string msg)
+        // ================== Helpers ==================
+
+        // Dựng URL sản phẩm từ cấu hình
+        private string BuildProductUrl(int id, string? slug = null)
         {
-            if (string.IsNullOrWhiteSpace(msg)) return false;
-            // Heuristics đơn giản: chứa một số từ khóa TMĐT phổ biến (tiếng Việt & biến thể)
-            var keywords = new[]
+            var baseUrl = (_cfg["PublicSite:BaseUrl"] ?? "").TrimEnd('/');
+
+            // Nếu không có baseUrl trong config, dùng default
+            if (string.IsNullOrEmpty(baseUrl))
             {
-                "sản phẩm","đơn hàng","đơn","order","doanh thu","doanh số","revenue","voucher",
-                "mã giảm","khách hàng","người dùng","user","cửa hàng","store","ship","vận chuyển",
-                "giỏ hàng","cart","biến thể","variant","danh mục","category","review","đánh giá",
-                "tồn kho","inventory","kho","giá bán","giá vốn","lợi nhuận","top bán","bán chạy"
-            };
-            var hit = keywords.Any(k => msg.Contains(k, StringComparison.OrdinalIgnoreCase));
-            // Cho phép câu hỏi ngắn gọn nhưng có ý: ví dụ "doanh thu tháng này?"
-            return hit || msg.Length >= 8;
+                baseUrl = "https://localhost:7180"; // Thay bằng domain thật của bạn
+            }
+
+            var pattern = _cfg["PublicSite:ProductDetailPattern"] ?? "/Products/Detailproducts/{id}";
+            var url = pattern.Replace("{id}", id.ToString())
+                             .Replace("{slug}", string.IsNullOrWhiteSpace(slug) ? id.ToString() : slug);
+
+            var fullUrl = $"{baseUrl}{url}";
+
+            // Debug log để kiểm tra
+            Console.WriteLine($"BuildProductUrl - BaseUrl: {baseUrl}, Pattern: {pattern}, FullUrl: {fullUrl}");
+
+            return fullUrl;
         }
-        private bool IsVoucherQuestion(string msg)
+
+        // Trả lời nhanh các câu phổ biến
+        private string QuickAnswers(string msgRaw)
+        {
+            var msg = (msgRaw ?? "").ToLowerInvariant();
+
+            // Cách đặt hàng
+            if (Regex.IsMatch(msg, @"(đặt|mua).*(hàng|sp|sản phẩm)") || msg.Contains("cách mua") || msg.Contains("mua sao"))
+            {
+                return "📋 **Cách đặt hàng**:\n" +
+                       "1️⃣ Vào trang sản phẩm → bấm **Thêm vào giỏ**\n" +
+                       "2️⃣ Mở **Giỏ hàng** → bấm **Thanh toán**\n" +
+                       "3️⃣ Chọn **VNPay** (online) **hoặc COD** (trả khi nhận hàng)\n" +
+                       "4️⃣ Nhập **voucher** (nếu có) → kiểm tra phí ship & địa chỉ → **Đặt hàng**";
+            }
+
+            // Thanh toán
+            if (msg.Contains("thanh toán") || msg.Contains("payment") || msg.Contains("vnpay") || msg.Contains("cod"))
+            {
+                return "💳 **Thanh toán hỗ trợ**: **VNPay** (online) & **COD** (trả khi nhận hàng)\n" +
+                       "🎫 Nhập **voucher** ở bước thanh toán nếu đơn đủ điều kiện";
+            }
+
+            // Thời gian giao
+            if (msg.Contains("bao lâu") || msg.Contains("mấy ngày") || msg.Contains("thời gian giao"))
+            {
+                return "🚚 **Thời gian giao hàng**: nội thành ~1–3 ngày, ngoại tỉnh ~3–7 ngày (tùy tuyến & hãng vận chuyển)\n" +
+                       "📍 Dự kiến chính xác hiển thị ở bước **Thanh toán** sau khi nhập địa chỉ";
+            }
+
+            // Đổi trả
+            if (msg.Contains("đổi trả") || msg.Contains("trả hàng") || msg.Contains("đổi hàng"))
+            {
+                return "🔄 **Đổi/Trả hàng**: trong 7 ngày, sản phẩm còn nguyên tag/mác; liên hệ CSKH để được hướng dẫn chi tiết";
+            }
+
+            // Tra cứu đơn
+            if (msg.Contains("tra cứu") || msg.Contains("xem đơn") || msg.Contains("đơn của tôi") || msg.Contains("trạng thái đơn"))
+            {
+                return "📦 **Xem đơn hàng**: vào **Tài khoản → Đơn hàng** để theo dõi trạng thái vận chuyển & chi tiết đơn";
+            }
+
+            // Size
+            if (msg.Contains("size") || msg.Contains("kích cỡ") || msg.Contains("vừa không"))
+            {
+                return "📏 **Tư vấn size**: bạn cho mình chiều cao/cân nặng/thói quen mặc (ôm/thoải mái) để mình gợi ý size chuẩn\n" +
+                       "👟 Với giày: bạn cho số đo chiều dài bàn chân (cm) nhé";
+            }
+
+            return string.Empty;
+        }
+
+        // Chỉ cho câu hỏi THỜI TRANG
+        private bool IsCustomerFashionQuestion(string msg)
         {
             if (string.IsNullOrWhiteSpace(msg)) return false;
-            var keys = new[] { "voucher", "mã giảm", "mgg", "khuyến mãi", "phiếu giảm", "ưu đãi" };
-            return keys.Any(k => msg.Contains(k, StringComparison.OrdinalIgnoreCase));
+            string[] keys =
+            {
+                // Sản phẩm & danh mục thời trang
+                "áo","quần","váy","đầm","sơ mi","hoodie","áo khoác","quần jean","jeans","chân váy","áo thun",
+                "giày","dép","sandal","sneaker","boot","túi","balo","phụ kiện","mũ","nón","thắt lưng","tất","vớ",
+                "thời trang","size","kích cỡ","phối đồ","shop","cửa hàng",
+                // Quy trình mua sắm
+                "giỏ hàng","đặt hàng","mua hàng","thanh toán","vnpay","cod","voucher","khuyến mãi","giảm giá","ship","giao hàng","phí ship","đổi trả","bảo hành"
+            };
+            return keys.Any(k => msg.IndexOf(k, StringComparison.OrdinalIgnoreCase) >= 0) || msg.Length >= 6;
         }
 
-        private async Task<string> BuildDbContextAsync(string message)
+        // Build context CHỈ thời trang (có kèm URL sản phẩm)
+        private async Task<string> BuildFashionCatalogContextAsync()
         {
-            // Bạn có thể tùy biến theo nhu cầu: nếu câu hỏi chứa "doanh thu", lấy số liệu doanh thu; nếu "top bán", tính top...
-            // Ở bản mẫu, mình gom một snapshot gọn cho đa số câu hỏi phân tích:
-            var now = DateTime.UtcNow;
-            var from30 = now.AddDays(-30);
+            var fashionKeys = new[] {
+                "áo","quần","váy","đầm","giày","dép","sandal","sneaker","boot","túi","balo","phụ kiện",
+                "thời trang","jean","sơ mi","hoodie","khoác","chân váy","áo thun"
+            };
 
-            var productCount = await _db.Products.CountAsync();
-            var orderCount30 = await _db.Orders.Where(o => o.OrderDate >= from30).CountAsync();
-            var revenue30 = await _db.OrderDetails
-                                         .Where(od => od.Order.OrderDate >= from30)
-                                         .SumAsync(od => (decimal?)(od.Price * od.Quantity)) ?? 0m;
-
-            // Top 5 sản phẩm bán chạy 30 ngày (theo quantity)
-            var topProducts30 = await _db.OrderDetails
-                .Where(od => od.Order.OrderDate >= from30)
-                .GroupBy(od => new { od.ProductId, od.Product.Name })
-                .Select(g => new { g.Key.ProductId, g.Key.Name, Qty = g.Sum(x => x.Quantity), Sales = g.Sum(x => x.Price * x.Quantity) })
-                .OrderByDescending(x => x.Qty).Take(5).ToListAsync();
-
-            // Đếm đơn theo trạng thái
-            var statusCounts = await _db.Orders
-                .GroupBy(o => o.Status)
-                .Select(g => new { Status = g.Key, Count = g.Count() })
+            // Danh mục thời trang + 5 sản phẩm mới nhất (kèm URL)
+            var categoriesRaw = await _db.Categories
+                .Where(c => fashionKeys.Any(k => c.Name.Contains(k)))
+                .Select(c => new {
+                    c.Name,
+                    Products = c.Products
+                        .OrderByDescending(p => p.UpdateAt)
+                        .Select(p => new { p.Id, p.Slug, p.Name, Price = p.CostPrice, p.Quantity })
+                        .Take(5)
+                        .ToList()
+                })
                 .ToListAsync();
 
-            // Số SP theo danh mục (Top 10)
-            var catCounts = await _db.Products
-                .GroupBy(p => new { p.CategoryId, Cat = p.Category.Name })
-                .Select(g => new { g.Key.CategoryId, g.Key.Cat, Count = g.Count() })
-                .OrderByDescending(x => x.Count).Take(10).ToListAsync();
+            var categories = categoriesRaw.Select(c => new {
+                c.Name,
+                Products = c.Products.Select(p => new {
+                    p.Id,
+                    p.Name,
+                    p.Price,
+                    p.Quantity,
+                    Url = BuildProductUrl(p.Id, p.Slug)
+                }).ToList()
+            }).ToList();
 
-            // Cửa hàng top rating (Top 5)
-            var topStores = await _db.Stores
-                .OrderByDescending(s => s.Rating).Take(5)
-                .Select(s => new { s.Id, s.Name, s.Rating, s.Status })
+            // Top bán chạy 30 ngày (chỉ thời trang) + URL
+            var from30 = DateTime.UtcNow.AddDays(-30);
+            var topProducts30Raw = await _db.OrderDetails
+                .Where(od => od.Order.OrderDate >= from30 &&
+                             od.Product.Category != null &&
+                             fashionKeys.Any(k => od.Product.Category.Name.Contains(k)))
+                .GroupBy(od => new { od.ProductId, od.Product.Name, od.Product.Slug })
+                .Select(g => new { g.Key.ProductId, g.Key.Name, g.Key.Slug, Qty = g.Sum(x => x.Quantity) })
+                .OrderByDescending(x => x.Qty)
+                .Take(5)
                 .ToListAsync();
 
-            // Voucher đang hoạt động (còn hạn & còn số lượng & trạng thái Valid)
+            var topProductsLast30Days = topProducts30Raw.Select(t => new {
+                t.ProductId,
+                t.Name,
+                t.Qty,
+                Url = BuildProductUrl(t.ProductId, t.Slug)
+            }).ToList();
+
+            // Voucher còn hiệu lực
             var today = DateTime.UtcNow;
             var activeVouchers = await _db.Vouchers
-                .Where(v => v.StartDate <= today
-                         && v.EndDate >= today
-                         && v.Status == VoucherStatus.Valid
-                         && v.Quantity > 0)
-                .Select(v => new
-                {
-                    v.Id,
-                    v.Type,          // VoucherType (Platform/Shop)
-                    v.MinOrder,
-                    v.Reduce,
-                    v.Quantity,
-                    v.CategoryId,
-                    v.StoreId,
-                    v.StartDate,
-                    v.EndDate,
-                    v.Status         // để AI biết rõ trạng thái hiện tại là Valid
-                })
-                .ToListAsync();
-            // Categories với danh sách sản phẩm
-            var categoryProducts = await _db.Categories
-                .Select(c => new {
-                    c.Id,
-                    c.Name,
-                    Products = c.Products.Select(p => new {
-                        p.Id,
-                        p.Name,
-                        p.CostPrice,
-                        p.Quantity,
-                        p.Status,
-                        p.CreateAt
-                    }).ToList()
-                })
+                .Where(v => v.StartDate <= today &&
+                            v.EndDate >= today &&
+                            v.Status == VoucherStatus.Valid &&
+                            v.Quantity > 0)
+                .OrderByDescending(v => v.Reduce)
+                .Select(v => new { v.Id, v.MinOrder, v.Reduce, v.Quantity, v.EndDate })
+                .Take(5)
                 .ToListAsync();
 
-
-
-            // Gợi ý mở rộng: thêm các mảng dữ liệu khác khi cần (shipping, reviews, tồn kho, ...)
-
-            var obj = new
+            var overview = new
             {
-                Meta = new
-                {
-                    GeneratedAtUtc = now,
-                    Note = "Dữ liệu rút gọn để phục vụ trả lời; có độ trễ theo truy vấn."
-                },
-                Overview = new
-                {
-                    ProductCount = productCount,
-                    OrdersLast30Days = orderCount30,
-                    RevenueLast30Days = revenue30
-                },
-                StatusCounts = statusCounts,
-                TopProductsLast30Days = topProducts30,
-                CategoryProductCounts = catCounts,
-                TopStoresByRating = topStores,
-                ActiveVouchers = activeVouchers
+                Categories = categories,
+                TopSellersLast30Days = topProductsLast30Days,
+                VouchersAvailable = activeVouchers
             };
 
-            return JsonSerializer.Serialize(obj, new JsonSerializerOptions { WriteIndented = true });
+            return JsonSerializer.Serialize(overview, new JsonSerializerOptions { WriteIndented = true });
+        }
+
+        // ======== Các helper bổ sung để trả lời trực tiếp không gọi AI ========
+
+        // Cố gắng trả lời theo danh mục + tầm giá với link sản phẩm (Format mới)
+        private async Task<string?> TryAnswerWithCatalogAsync(string message)
+        {
+            var cats = await FindMatchingCategoriesAsync(message);
+            var (min, max) = ExtractBudget(message);
+
+            if (!cats.Any() && min == null && max == null)
+                return null; // để AI xử lý
+
+            // Không có danh mục nhưng có tầm giá → gợi ý top thời trang theo giá
+            if (!cats.Any())
+            {
+                var fashionKeys = new[] { "áo", "quần", "váy", "đầm", "jean", "giày", "dép", "sandal", "sneaker", "boot", "túi", "balo", "phụ kiện", "sơ mi", "hoodie", "khoác", "áo thun" };
+                var q = _db.Products.AsQueryable()
+                    .Where(p => p.Category != null && fashionKeys.Any(k => p.Category.Name.Contains(k)));
+
+                if (min != null) q = q.Where(p => p.CostPrice >= min);
+                if (max != null) q = q.Where(p => p.CostPrice <= max);
+
+                var items = await q.OrderByDescending(p => p.UpdateAt)
+                    .Take(5)
+                    .Select(p => new { p.Id, p.Slug, p.Name, p.CostPrice, p.Quantity })
+                    .ToListAsync();
+
+                if (!items.Any())
+                    return "❌ Mình chưa tìm thấy sản phẩm thời trang trong tầm giá bạn nêu. Bạn cho mình biết loại (áo/quần/váy/giày…) để mình gợi ý chính xác hơn nhé.";
+
+                var sbAny = new StringBuilder();
+                sbAny.AppendLine("💡 Mình gợi ý một vài mẫu trong tầm giá bạn quan tâm:");
+                sbAny.AppendLine();
+                foreach (var p in items)
+                {
+                    var url = BuildProductUrl(p.Id, p.Slug);
+                    sbAny.AppendLine($"🛍️ **{p.Name}** — Giá {p.CostPrice:N0}đ ~ SL {p.Quantity}");
+                    sbAny.AppendLine($"🔗 {url}");
+                    sbAny.AppendLine();
+                }
+                sbAny.AppendLine("📋 **Đặt hàng**: Thêm vào giỏ → Thanh toán → **VNPay** hoặc **COD**");
+                return sbAny.ToString().Trim();
+            }
+
+            // Có danh mục → trả lời từng danh mục
+            var sb = new StringBuilder();
+            foreach (var (catId, catName) in cats)
+            {
+                var q = _db.Products.Where(p => p.CategoryId == catId);
+                if (min != null) q = q.Where(p => p.CostPrice >= min);
+                if (max != null) q = q.Where(p => p.CostPrice <= max);
+
+                var products = await q.OrderByDescending(p => p.UpdateAt)
+                    .Take(6)
+                    .Select(p => new { p.Id, p.Slug, p.Name, p.CostPrice, p.Quantity })
+                    .ToListAsync();
+
+                if (!products.Any())
+                {
+                    sb.AppendLine($"❌ Hiện danh mục **{catName}** chưa có sản phẩm phù hợp{(min != null || max != null ? " theo tầm giá bạn nêu" : "")}. Bạn muốn xem danh mục khác không?");
+                    sb.AppendLine();
+                    continue;
+                }
+
+                sb.AppendLine($"📂 **{catName}**{(min != null || max != null ? " theo tầm giá" : "")}:");
+                sb.AppendLine();
+                foreach (var p in products)
+                {
+                    var url = BuildProductUrl(p.Id, p.Slug);
+                    sb.AppendLine($"🛍️ **{p.Name}** — Giá {p.CostPrice:N0}đ ~ SL {p.Quantity}");
+                    sb.AppendLine($"🔗 {url}");
+                    sb.AppendLine();
+                }
+            }
+
+            if (sb.Length == 0) return null;
+            sb.AppendLine("📋 **Đặt hàng**: Thêm vào giỏ → Thanh toán → **VNPay** hoặc **COD**");
+            return sb.ToString().Trim();
+        }
+
+        // Bóc tách tầm giá (dưới/trên/khoảng/200-400k/1 triệu…)
+        private (decimal? min, decimal? max) ExtractBudget(string raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw)) return (null, null);
+            var s = raw.ToLowerInvariant();
+
+            decimal ToVnd(decimal x, string unit)
+            {
+                unit = unit?.Trim() ?? "";
+                if (unit.StartsWith("k")) return x * 1000m;
+                if (unit.StartsWith("ngh") || unit.StartsWith("ngà")) return x * 1000m;
+                if (unit.StartsWith("tri")) return x * 1_000_000m;
+                if (unit.StartsWith("m")) return x * 1_000_000m; // phòng người dùng ghi "1m"
+                return x;
+            }
+
+            var matches = Regex.Matches(s, @"(\d+(?:[\.,]\d+)?)\s*(k|nghìn|ngàn|triệu|m)?");
+            var values = new List<decimal>();
+            foreach (Match m in matches)
+            {
+                if (decimal.TryParse(m.Groups[1].Value.Replace(".", "").Replace(",", "."), out var num))
+                {
+                    var unit = m.Groups[2].Success ? m.Groups[2].Value : "";
+                    values.Add(ToVnd(num, unit));
+                }
+            }
+
+            decimal? min = null, max = null;
+            if (values.Count >= 2)
+            {
+                min = Math.Min(values[0], values[1]);
+                max = Math.Max(values[0], values[1]);
+            }
+            else if (values.Count == 1)
+            {
+                if (s.Contains("dưới") || s.Contains("<") || s.Contains("<= "))
+                    max = values[0];
+                else if (s.Contains("trên") || s.Contains(">") || s.Contains(">= "))
+                    min = values[0];
+                else if (s.Contains("khoảng") || s.Contains("tầm") || s.Contains("cỡ"))
+                {
+                    min = values[0] * 0.8m; max = values[0] * 1.2m;
+                }
+                else max = values[0];
+            }
+
+            return (min, max);
+        }
+
+        // Bỏ dấu tiếng Việt
+        private string StripDiacritics(string input)
+        {
+            if (string.IsNullOrEmpty(input)) return input;
+            var normalized = input.Normalize(NormalizationForm.FormD);
+            var sb = new StringBuilder();
+            foreach (var c in normalized)
+            {
+                var uc = CharUnicodeInfo.GetUnicodeCategory(c);
+                if (uc != UnicodeCategory.NonSpacingMark) sb.Append(c);
+            }
+            return sb.ToString().Normalize(NormalizationForm.FormC);
+        }
+
+        // Tìm danh mục khớp với câu hỏi
+        private async Task<List<(int Id, string Name)>> FindMatchingCategoriesAsync(string message)
+        {
+            var m = StripDiacritics((message ?? "").ToLowerInvariant());
+            var allCats = await _db.Categories.Select(c => new { c.Id, c.Name }).ToListAsync();
+
+            var result = new List<(int, string)>();
+            foreach (var c in allCats)
+            {
+                var nameStripped = StripDiacritics((c.Name ?? "").ToLowerInvariant());
+                if (!string.IsNullOrWhiteSpace(nameStripped) && m.Contains(nameStripped))
+                    result.Add((c.Id, c.Name));
+            }
+
+            // Fallback heuristics: nếu người dùng nói chung chung, vẫn cố match theo từ khóa thời trang
+            if (!result.Any())
+            {
+                var fallbacks = new[] { "áo", "quần", "váy", "đầm", "jean", "giày", "dép", "sandal", "sneaker", "boot", "túi", "balo", "phụ kiện", "sơ mi", "hoodie", "khoác", "áo thun" };
+                foreach (var c in allCats)
+                {
+                    var ns = StripDiacritics((c.Name ?? "").ToLowerInvariant());
+                    if (fallbacks.Any(k => ns.Contains(StripDiacritics(k))) && m.Any())
+                    {
+                        // Nếu câu hỏi có chứa bất kỳ từ khóa fallback, và tên danh mục chứa cùng nhóm
+                        if (fallbacks.Any(k => m.Contains(StripDiacritics(k)) && ns.Contains(StripDiacritics(k))))
+                            result.Add((c.Id, c.Name));
+                    }
+                }
+            }
+
+            return result.Distinct().Take(3).ToList();
+        }
+
+        // Ẩn mọi từ khóa kỹ thuật nếu model lỡ nói
+        private string SanitizeTechnicalHints(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return s;
+            string[] banned = { "csdl", "cơ sở dữ liệu", "database", "sql", "bảng", "schema", "ef core", "context", "truy vấn", "grounding", "dữ liệu nội bộ" };
+            foreach (var b in banned)
+                s = Regex.Replace(s, b, "hệ thống", RegexOptions.IgnoreCase);
+            return s;
+        }
+
+        // Fallback hữu ích khi AI lỗi/hết quota
+        private string SoftFallback(string msg)
+        {
+            if (Regex.IsMatch(msg, "(quần áo|thời trang|áo|quần|váy|đầm)", RegexOptions.IgnoreCase))
+                return "📂 Danh mục **Thời trang** đang có nhiều mẫu mới (áo thun, sơ mi, quần jean, váy/đầm...). Bạn thích kiểu nào và tầm giá bao nhiêu ạ?\n" +
+                       "📋 **Cách mua**: Thêm vào giỏ → Thanh toán → **VNPay** hoặc **COD**. Có thể nhập **voucher** nếu có.";
+            if (Regex.IsMatch(msg, "(giày|dép|sandal|sneaker|boot)", RegexOptions.IgnoreCase))
+                return "👟 **Giày dép** có sneaker, sandal, boot,... Bạn cần kiểu nào và size bao nhiêu ạ?\n" +
+                       "📋 **Đặt hàng**: Thêm vào giỏ → Thanh toán → **VNPay**/**COD**.";
+            if (Regex.IsMatch(msg, "(túi|balo|phụ kiện|mũ|nón|thắt lưng|tất|vớ)", RegexOptions.IgnoreCase))
+                return "👜 **Túi/balo/phụ kiện** đang có sẵn. Bạn cần loại nào và tầm giá ạ?\n" +
+                       "📋 **Đặt hàng**: Thêm vào giỏ → Thanh toán → **VNPay**/**COD**.";
+
+            return "💬 Bạn muốn tìm sản phẩm thời trang nào (áo, quần, váy, giày, túi, phụ kiện)? Hãy cho mình biết tầm giá hoặc size để mình gợi ý phù hợp nhé.\n" +
+                   "📋 Khi chọn được, bấm **Thêm vào giỏ** rồi **Thanh toán** bằng **VNPay** hoặc **COD**.";
         }
     }
 }
