@@ -108,41 +108,38 @@ namespace DATN_GO.Service
         }
 
         // Tạo decorate
-        public async Task<(bool Success, Decorates Data, string Message)> CreateAsync(Decorates request)
+        public async Task<(bool Success, Decorates? Data, string Message)> CreateAsync(Decorates request)
         {
             try
             {
-                // Kiểm tra tồn tại
-                var existing = await GetDecorateByUserIdAsync(request.UserId);
+                // 1) Kiểm tra tồn tại global
+                var existing = await GetGlobalDecorateAsync();
                 if (existing != null)
                 {
-                    Console.WriteLine($"🔁 User {request.UserId} đã có decorate → update thay vì tạo mới.");
-
-                    // Gọi UpdateAsync thay vì Post
+                    Console.WriteLine("🔁 Đã có decorate global → update thay vì tạo mới.");
                     var (success, updated, msg) = await UpdateAsync(existing.Id, request);
                     return (success, updated, msg);
                 }
 
-                // Xử lý upload base64 cho các trường ảnh và video
+                // 2) Xử lý upload base64 cho ảnh/video
                 var uploadMap = new Dictionary<string, string>
-                {
-                    { "Video", "decorates/videos" },
-                    { "Slide1", "decorates/slideshow" },
-                    { "Slide2", "decorates/slideshow" },
-                    { "Slide3", "decorates/slideshow" },
-                    { "Slide4", "decorates/slideshow" },
-                    { "Slide5", "decorates/slideshow" },
-                    { "Image1", "decorates/images" },
-                    { "Image2", "decorates/images" }
-                };
+        {
+            { "Video",  "decorates/videos" },
+            { "Slide1", "decorates/slideshow" },
+            { "Slide2", "decorates/slideshow" },
+            { "Slide3", "decorates/slideshow" },
+            { "Slide4", "decorates/slideshow" },
+            { "Slide5", "decorates/slideshow" },
+            { "Image1", "decorates/images" },
+            { "Image2", "decorates/images" }
+        };
 
-                // Xử lý các file base64 và lưu lên server
                 foreach (var item in uploadMap)
                 {
                     var prop = typeof(Decorates).GetProperty(item.Key);
                     var base64 = prop?.GetValue(request) as string;
 
-                    if (!string.IsNullOrWhiteSpace(base64) && base64.StartsWith("data:"))
+                    if (!string.IsNullOrWhiteSpace(base64) && base64.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
                     {
                         var uploadedUrl = await UploadFileAsync(base64, item.Value);
                         if (string.IsNullOrEmpty(uploadedUrl))
@@ -155,23 +152,30 @@ namespace DATN_GO.Service
                     }
                 }
 
-                // Gửi POST nếu chưa có decorate
+                // 3) POST tạo mới
                 var json = JsonConvert.SerializeObject(request, Formatting.Indented);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
-
                 var apiUrl = $"{_baseUrl.TrimEnd('/')}/Decorates";
+
+                Console.WriteLine($"📤 POST tới {apiUrl}");
+                Console.WriteLine(json);
 
                 var response = await _httpClient.PostAsync(apiUrl, content);
                 var responseBody = await response.Content.ReadAsStringAsync();
 
                 if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"❌ API lỗi: {response.StatusCode} - {responseBody}");
                     return (false, null, $"❌ API lỗi: {response.StatusCode} - {responseBody}");
+                }
 
                 var decorate = JsonConvert.DeserializeObject<Decorates>(responseBody);
                 return (true, decorate, "✅ Tạo decorate thành công!");
             }
             catch (Exception ex)
             {
+                Console.WriteLine("🔥 Exception trong CreateAsync:");
+                Console.WriteLine(ex.ToString());
                 return (false, null, $"🔥 Lỗi tạo decorate: {ex.Message}");
             }
         }
@@ -181,52 +185,84 @@ namespace DATN_GO.Service
         {
             try
             {
-                // 🧠 Ensure ID trong body khớp với ID path
+                // 0) Nếu id không hợp lệ → lấy global decorate để cập nhật
+                if (id <= 0)
+                {
+                    var currentGlobal = await GetGlobalDecorateAsync();
+                    if (currentGlobal == null)
+                        return (false, null, "❌ Không tìm thấy decorate global để cập nhật.");
+                    id = currentGlobal.Id;
+                }
+
+                // 1) Lấy bản hiện tại (để merge tránh ghi đè null)
+                var urlGet = $"{_baseUrl.TrimEnd('/')}/Decorates/{id}";
+                var getRes = await _httpClient.GetAsync(urlGet);
+                if (!getRes.IsSuccessStatusCode)
+                    return (false, null, $"❌ Không lấy được decorate hiện tại (HTTP {(int)getRes.StatusCode}).");
+
+                var currentJson = await getRes.Content.ReadAsStringAsync();
+                var current = JsonConvert.DeserializeObject<Decorates>(currentJson);
+                if (current == null)
+                    return (false, null, "❌ JSON decorate hiện tại không hợp lệ.");
+
+                // 2) Chuẩn hoá ID body
                 request.Id = id;
 
+                // 3) Upload base64 nếu có
                 var uploadMap = new Dictionary<string, string>
+        {
+            { "Video",  "decorates/videos" },
+            { "Slide1", "decorates/slideshow" },
+            { "Slide2", "decorates/slideshow" },
+            { "Slide3", "decorates/slideshow" },
+            { "Slide4", "decorates/slideshow" },
+            { "Slide5", "decorates/slideshow" },
+            { "Image1", "decorates/images" },
+            { "Image2", "decorates/images" }
+        };
+
+                Console.WriteLine("🛠️ Đang xử lý upload base64 trong UpdateAsync...");
+                foreach (var kv in uploadMap)
                 {
-                    { "Video", "decorates/videos" },
-                    { "Slide1", "decorates/slideshow" },
-                    { "Slide2", "decorates/slideshow" },
-                    { "Slide3", "decorates/slideshow" },
-                    { "Slide4", "decorates/slideshow" },
-                    { "Slide5", "decorates/slideshow" },
-                    { "Image1", "decorates/images" },
-                    { "Image2", "decorates/images" }
-                };
+                    var prop = typeof(Decorates).GetProperty(kv.Key);
+                    if (prop == null) continue;
 
-
-                Console.WriteLine("🛠️ Đang xử lý upload base64 trong Update...");
-
-                foreach (var item in uploadMap)
-                {
-                    var prop = typeof(Decorates).GetProperty(item.Key);
-                    var base64 = prop?.GetValue(request) as string;
-
-                    if (!string.IsNullOrWhiteSpace(base64) && base64.StartsWith("data:"))
+                    var val = prop.GetValue(request) as string;
+                    if (!string.IsNullOrWhiteSpace(val) && val.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
                     {
-                        var uploadedUrl = await UploadFileAsync(base64, item.Value);
+                        var uploadedUrl = await UploadFileAsync(val, kv.Value);
                         if (string.IsNullOrEmpty(uploadedUrl))
-                        {
-                            Console.WriteLine($"❌ Upload thất bại: {item.Key}");
-                            return (false, null, $"❌ Upload {item.Key} thất bại!");
-                        }
+                            return (false, null, $"❌ Upload {kv.Key} thất bại!");
 
                         prop.SetValue(request, uploadedUrl);
                     }
                 }
 
-                // 🔧 Chuẩn bị gọi API PUT
+                // 4) Merge: nếu field string trong request == null → giữ nguyên từ current
+                //    (nếu bạn muốn cho phép xóa giá trị, gửi chuỗi rỗng "" thay vì null)
+                foreach (var p in typeof(Decorates).GetProperties())
+                {
+                    if (p.PropertyType == typeof(string))
+                    {
+                        var newVal = p.GetValue(request) as string;
+                        if (newVal == null)
+                        {
+                            var oldVal = p.GetValue(current) as string;
+                            p.SetValue(request, oldVal);
+                        }
+                    }
+                }
+
+                // 5) PUT cập nhật
+                var urlPut = $"{_baseUrl.TrimEnd('/')}/Decorates/{id}";
                 var json = JsonConvert.SerializeObject(request, Formatting.Indented);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var url = $"{_baseUrl.TrimEnd('/')}/Decorates/{id}";
-                Console.WriteLine($"🔄 PUT tới {url}");
+                Console.WriteLine($"🔄 PUT tới {urlPut}");
                 Console.WriteLine("📤 Payload gửi lên:");
                 Console.WriteLine(json);
 
-                var response = await _httpClient.PutAsync(url, content);
+                var response = await _httpClient.PutAsync(urlPut, content);
                 var responseBody = await response.Content.ReadAsStringAsync();
 
                 if (!response.IsSuccessStatusCode)
@@ -235,62 +271,62 @@ namespace DATN_GO.Service
                     return (false, null, $"❌ API PUT lỗi: {response.StatusCode} - {responseBody}");
                 }
 
-                // ✅ Không có body trả về thì return request luôn
-                return (true, request, "🔁 Cập nhật thành công!");
+                // 6) Thử parse body trả về; nếu rỗng thì trả request đã merge
+                Decorates? updated = null;
+                if (!string.IsNullOrWhiteSpace(responseBody))
+                {
+                    try
+                    {
+                        updated = JsonConvert.DeserializeObject<Decorates>(responseBody);
+                    }
+                    catch
+                    {
+                        // bỏ qua, dùng request thay thế
+                    }
+                }
+
+                return (true, updated ?? request, "🔁 Cập nhật thành công!");
             }
             catch (Exception ex)
             {
                 Console.WriteLine("🔥 Exception trong UpdateAsync:");
-                Console.WriteLine(ex.ToString());
+                Console.WriteLine(ex);
                 return (false, null, "🔥 Lỗi UpdateAsync: " + ex.Message);
             }
         }
 
-        // Lấy thông tin decorate của user theo UserId
-        public async Task<Decorates?> GetDecorateByUserIdAsync(int userId)
+
+        // ✅ Lấy thông tin decorate GLOBAL
+        public async Task<Decorates?> GetGlobalDecorateAsync()
         {
             try
             {
-                var apiUrl = $"{_baseUrl}Decorates/user/{userId}";
-                Console.WriteLine($"🌐 Gửi GET đến: {apiUrl}");
+                var apiUrl = $"{_baseUrl.TrimEnd('/')}/Decorates";
+                Console.WriteLine($"🌐 GET: {apiUrl}");
 
                 var response = await _httpClient.GetAsync(apiUrl);
-
                 var rawJson = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"📥 JSON nhận được: {rawJson}");
+                Console.WriteLine($"📥 JSON: {rawJson}");
 
-                if (!response.IsSuccessStatusCode)
-                {
-                    Console.WriteLine($"❌ API lỗi: {(int)response.StatusCode} - {response.ReasonPhrase}");
-                    return null;
-                }
+                if (!response.IsSuccessStatusCode) return null;
 
-                var decorate = JsonConvert.DeserializeObject<Decorates>(rawJson);
+                var list = JsonConvert.DeserializeObject<List<Decorates>>(rawJson);
+                if (list == null || list.Count == 0) return null;
 
-                if (decorate == null)
-                {
-                    Console.WriteLine("⚠️ Deserialize trả về null! Có thể JSON không khớp model.");
-                }
-                else
-                {
-                    Console.WriteLine("✅ Deserialize thành công.");
-                }
-
+                // tuỳ bạn: lấy bản ghi mới nhất theo Id
+                var decorate = list.OrderByDescending(x => x.Id).FirstOrDefault();
+                Console.WriteLine("✅ Deserialize OK (list) → lấy 1 bản ghi.");
                 return decorate;
-            }
-            catch (JsonException jsonEx)
-            {
-                Console.WriteLine("🔥 JSON deserialize lỗi:");
-                Console.WriteLine(jsonEx.Message);
-                return null;
             }
             catch (Exception ex)
             {
-                Console.WriteLine("🔥 Exception khác trong GetDecorateByUserIdAsync:");
+                Console.WriteLine("🔥 GetGlobalDecorateAsync error:");
                 Console.WriteLine(ex);
                 return null;
             }
         }
+
+
 
         // Lấy danh sách tất cả decorate
         public async Task<List<Decorates>> GetDecoratesAsync()

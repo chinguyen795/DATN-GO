@@ -172,14 +172,15 @@ namespace DATN_GO.Controllers
             return int.TryParse(Encoding.UTF8.GetString(idBytes), out int userId) ? userId : 0;
         }
 
-        private static int CalcTotalQuantity(CartSummaryViewModel? summary)
+        private static int CalcCartCount(CartSummaryViewModel? summary)
         {
-            // Đổi "CartItems" và "Quantity" cho đúng model của bạn nếu khác tên
+            // Nếu muốn đếm số cart item thay vì quantity
             if (summary?.CartItems != null && summary.CartItems.Count > 0)
-                return summary.CartItems.Sum(i => (int)(i?.Quantity ?? 0));
+                return summary.CartItems.Count;
 
             return 0;
         }
+
 
         [HttpGet]
         public async Task<IActionResult> Count()
@@ -195,7 +196,7 @@ namespace DATN_GO.Controllers
             try
             {
                 var summary = await _cartService.GetCartByUserIdAsync(userId);
-                total = CalcTotalQuantity(summary);
+                total = CalcCartCount(summary); // <-- đổi hàm
             }
             catch
             {
@@ -203,11 +204,11 @@ namespace DATN_GO.Controllers
                 total = 0;
             }
 
-            // Lưu session để layout render ngay lần sau
             HttpContext.Session.SetInt32("CartCount", total);
 
-            return Json(new { count = total }); // nếu không có cart -> 0
+            return Json(new { count = total });
         }
+
 
 
         // THÊM PRODUCT NULL VARIANT

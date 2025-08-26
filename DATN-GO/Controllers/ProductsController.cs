@@ -54,7 +54,10 @@ namespace DATN_GO.Controllers
             var allVariantOptions = new Dictionary<int, List<VariantWithValuesViewModel>>();
             var allVariantCombinations = new Dictionary<int, List<VariantCombinationViewModel>>();
             var allStores = new Dictionary<int, Stores>();
-                
+
+            // ⭐ lấy rating từ reviews
+            var ratingDict = await _storeService.GetProductRatingsAsync();
+
             foreach (var product in products)
             {
                 productCards.Add(product);
@@ -81,7 +84,7 @@ namespace DATN_GO.Controllers
                 if (store != null)
                     allStores[product.Id] = store;
 
-                // ✅ Xử lý giá
+                // ✅ giá
                 if (productVariants != null && productVariants.Any())
                 {
                     decimal min = productVariants.Min(v => v.Price);
@@ -98,17 +101,15 @@ namespace DATN_GO.Controllers
                 }
                 else
                 {
-
-
                     allMinMaxPrices[product.Id] = new MinMaxPriceResponse
                     {
                         IsVariant = false,
-                        Price = product.CostPrice, // ✅ giữ null nếu không có giá
+                        Price = product.CostPrice,
                         OriginalPrice = null
                     };
                 }
 
-                // ✅ Load variants & values
+                // ✅ variants & values
                 var variants = await _variantService.GetByProductIdAsync(product.Id);
                 var variantViewModels = new List<VariantWithValuesViewModel>();
 
@@ -140,11 +141,15 @@ namespace DATN_GO.Controllers
             ViewBag.VariantCombinationsDict = allVariantCombinations;
             ViewBag.StoreDict = allStores;
 
+            // ⭐ đẩy ratingDict ra ViewBag
+            ViewBag.RatingDict = ratingDict;
+
             ViewBag.Categories = (await _categoryService.GetAllCategoriesAsync()).Data;
             ViewBag.Provinces = new List<string> { "Cần Thơ", "TP. Hồ Chí Minh", "Hà Nội", "Đà Nẵng", "Tỉnh/TP khác" };
 
             return View();
         }
+
 
         public async Task<IActionResult> DetailProducts(int id)
         {

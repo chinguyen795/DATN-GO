@@ -233,6 +233,26 @@
             </div>
         </nav>
     </header>
+    <div style="position: fixed; top: 20px; right: 20px; z-index: 2000; width: 360px;">
+        @if (TempData["CustomToastMessage"] != null && TempData["CustomToastType"] != null)
+        {
+            var toastType = TempData["CustomToastType"].ToString();
+            var isSuccess = toastType == "success";
+            <div class="toast fade @(isSuccess ? "" : "mt-3")" role="alert" aria-live="assertive" aria-atomic="true"
+                 id="customToast">
+                <div class="toast-header @(isSuccess ? "bg-success" : "bg-danger") text-white">
+                    <img src="@(isSuccess ? "/icons/happy.gif" : "/icons/sad.gif")" class="rounded me-2" alt="@(isSuccess ? "Success" : "Error")" width="20" height="20" />
+                    <strong class="me-auto">@((isSuccess) ? "Thành công" : "Lỗi")</strong>
+                    <small>Vừa xong</small>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"
+                            aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                    @TempData["CustomToastMessage"]
+                </div>
+            </div>
+        }
+    </div>
     <div class="content-wrapper">
         <div class="content">
             <main>
@@ -257,6 +277,11 @@
                         <input type="hidden" id="formDescriptionSlide2" name="DescriptionSlide2" value="@Model.DescriptionSlide2" />
                         <input type="hidden" id="formTitleSlide3" name="TitleSlide3" value="@Model.TitleSlide3" />
                         <input type="hidden" id="formDescriptionSlide3" name="DescriptionSlide3" value="@Model.DescriptionSlide3" />
+                        <input type="hidden" id="formTitleSlide4" name="TitleSlide4" value="@Model.TitleSlide4" />
+                        <input type="hidden" id="formDescriptionSlide4" name="DescriptionSlide4" value="@Model.DescriptionSlide4" />
+                        <input type="hidden" id="formTitleSlide5" name="TitleSlide5" value="@Model.TitleSlide5" />
+                        <input type="hidden" id="formDescriptionSlide5" name="DescriptionSlide5" value="@Model.DescriptionSlide5" />
+
 
                         <input type="hidden" id="formTitle" name="Title1" value="@Model.Title1" />
                         <input type="hidden" id="formDescription" name="Description1" value="@Model.Description1" />
@@ -282,7 +307,8 @@
 
                                     <div class="preview-box flex-grow-1" id="slideShowPreview">
                                         @{
-                                            var slides = new[] { Model.Slide1Path, Model.Slide2Path, Model.Slide3Path }.Where(x => !string.IsNullOrEmpty(x)).ToList();
+                                            var slides = new[] { Model.Slide1Path, Model.Slide2Path, Model.Slide3Path, Model.Slide4Path, Model.Slide5Path }
+                                            .Where(x => !string.IsNullOrEmpty(x)).ToList();
                                         }
                                         @if (slides.Any())
                                         {
@@ -505,7 +531,7 @@
                 </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-pill" data-dismiss="modal" style="text-transform: capitalize;">
+                    <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal" style="text-transform: capitalize;">
                         Đóng
                     </button>
                     <button type="button" class="btn btn-danger btn-pill" id="modalSaveBtn" style="text-transform: capitalize;">
@@ -621,6 +647,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
+
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         let currentSlideIndex = 0;
@@ -650,18 +677,18 @@
             container.innerHTML = files.map((file, i) => {
                 const url = URL.createObjectURL(file);
                 return `
-                        <img src="${url}" class="slide-img ${i === 0 ? "" : "d-none"}"
-                            style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">
-                    `;
+                            <img src="${url}" class="slide-img ${i === 0 ? "" : "d-none"}"
+                                style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">
+                        `;
             }).join("") + `
-                    <button type="button" id="prevBtn" class="slide-nav-btn prev"
-                        style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
-                        background: rgba(0,0,0,0.5); color: white; border: none; padding: 10px; border-radius: 50%;">‹</button>
+                        <button type="button" id="prevBtn" class="slide-nav-btn prev"
+                            style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+                            background: rgba(0,0,0,0.5); color: white; border: none; padding: 10px; border-radius: 50%;">‹</button>
 
-                    <button type="button" id="nextBtn" class="slide-nav-btn next"
-                        style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
-                        background: rgba(0,0,0,0.5); color: white; border: none; padding: 10px; border-radius: 50%;">›</button>
-                `;
+                        <button type="button" id="nextBtn" class="slide-nav-btn next"
+                            style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+                            background: rgba(0,0,0,0.5); color: white; border: none; padding: 10px; border-radius: 50%;">›</button>
+                    `;
 
             currentSlideIndex = 0;
             showSlide(currentSlideIndex);
@@ -716,32 +743,8 @@
                 const slideshowInputs = document.querySelector(".slideshow-inputs");
                 slideshowInputs.classList.add("d-none");
                 slideshowInputs.innerHTML = `
-                        <label class="form-label">Chọn ảnh slideshow</label>
-                        <div class="slide-block mb-3">
-                            <input type="file" class="form-control slide-file" accept="image/*" />
-                            <div class="text-danger small mt-1 modal-error-msg"></div>
-
-                            <label class="form-label mt-2">Tiêu đề</label>
-                            <input type="text" class="form-control slide-title" />
-                            <div class="text-danger small mt-1 modal-error-msg"></div>
-
-                            <label class="form-label mt-2">Mô tả</label>
-                            <textarea class="form-control slide-description" rows="3"></textarea>
-                            <div class="text-danger small mt-1 modal-error-msg"></div>
-                        </div>
-                        <button type="button" id="addSlideBtn" class="btn btn-outline-danger btn-sm mt-2" style="text-transform: capitalize;">
-                            <i class="bi bi-plus-circle"></i> Thêm Slide
-                        </button>
-                    `;
-
-
-                if (type === "slideshow") {
-                    slideshowInputs.classList.remove("d-none");
-
-                    document.getElementById("addSlideBtn").addEventListener("click", () => {
-                        const newBlock = document.createElement("div");
-                        newBlock.className = "slide-block mb-2";
-                        newBlock.innerHTML = `
+                            <label class="form-label">Chọn ảnh slideshow</label>
+                            <div class="slide-block mb-3">
                                 <input type="file" class="form-control slide-file" accept="image/*" />
                                 <div class="text-danger small mt-1 modal-error-msg"></div>
 
@@ -752,7 +755,31 @@
                                 <label class="form-label mt-2">Mô tả</label>
                                 <textarea class="form-control slide-description" rows="3"></textarea>
                                 <div class="text-danger small mt-1 modal-error-msg"></div>
-                            `;
+                            </div>
+                            <button type="button" id="addSlideBtn" class="btn btn-outline-danger btn-sm mt-2" style="text-transform: capitalize;">
+                                <i class="bi bi-plus-circle"></i> Thêm Slide
+                            </button>
+                        `;
+
+
+                if (type === "slideshow") {
+                    slideshowInputs.classList.remove("d-none");
+
+                    document.getElementById("addSlideBtn").addEventListener("click", () => {
+                        const newBlock = document.createElement("div");
+                        newBlock.className = "slide-block mb-2";
+                        newBlock.innerHTML = `
+                                    <input type="file" class="form-control slide-file" accept="image/*" />
+                                    <div class="text-danger small mt-1 modal-error-msg"></div>
+
+                                    <label class="form-label mt-2">Tiêu đề</label>
+                                    <input type="text" class="form-control slide-title" />
+                                    <div class="text-danger small mt-1 modal-error-msg"></div>
+
+                                    <label class="form-label mt-2">Mô tả</label>
+                                    <textarea class="form-control slide-description" rows="3"></textarea>
+                                    <div class="text-danger small mt-1 modal-error-msg"></div>
+                                `;
 
                         slideshowInputs.insertBefore(newBlock, document.getElementById("addSlideBtn"));
                     });
@@ -822,18 +849,18 @@
             container.innerHTML = files.map((file, i) => {
                 const url = URL.createObjectURL(file);
                 return `
-                       <img src="${url}" class="slide-img ${i === 0 ? "" : "d-none"}"
-                           style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">
-                   `;
+                           <img src="${url}" class="slide-img ${i === 0 ? "" : "d-none"}"
+                               style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">
+                       `;
             }).join("") + `
-                   <button type="button" id="prevBtn" class="slide-nav-btn prev"
-                       style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
-                       background: rgba(0,0,0,0.5); color: white; border: none; padding: 10px; border-radius: 50%;">‹</button>
+                       <button type="button" id="prevBtn" class="slide-nav-btn prev"
+                           style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+                           background: rgba(0,0,0,0.5); color: white; border: none; padding: 10px; border-radius: 50%;">‹</button>
 
-                   <button type="button" id="nextBtn" class="slide-nav-btn next"
-                       style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
-                       background: rgba(0,0,0,0.5); color: white; border: none; padding: 10px; border-radius: 50%;">›</button>
-               `;
+                       <button type="button" id="nextBtn" class="slide-nav-btn next"
+                           style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+                           background: rgba(0,0,0,0.5); color: white; border: none; padding: 10px; border-radius: 50%;">›</button>
+                   `;
 
             let currentIndex = 0;
             const slides = container.querySelectorAll(".slide-img");
@@ -923,7 +950,7 @@
                 updateSlidePreview(files);
                 attachSlideNavEvents();
 
-                for (let i = 0; i < 3; i++) {
+                for (let i = 0; i < 5; i++) {
                     const t = titles[i] || "";
                     const d = descs[i] || "";
                     const titleInput = document.getElementById(`formTitleSlide${i + 1}`);
@@ -948,9 +975,9 @@
                 window.selectedVideoFile = file;
                 const videoUrl = URL.createObjectURL(file);
                 document.getElementById("videoPreview").innerHTML = `
-                    <video src="${videoUrl}" controls class="slide-video"
-                           style="width: 100%; height: 100%; object-fit: cover;"></video>
-                `;
+                        <video src="${videoUrl}" controls class="slide-video"
+                               style="width: 100%; height: 100%; object-fit: cover;"></video>
+                    `;
             }
 
             // ===== Decorate validate =====
@@ -1008,45 +1035,19 @@
             e.preventDefault();
             const formData = new FormData();
 
-            const userId = document.getElementById("userId")?.value;
-            if (userId) {
-                formData.append("UserId", userId);
-            }
-
-            // 🎲 Gọi API lấy danh sách AdminSettingId có thật trong DB
-            let adminSettingId = 1; // fallback nếu gọi API fail
-            try {
-                const res = await fetch("/api/AdminSettings"); // 👉 Đổi URL nếu API bạn khác nha
-                if (!res.ok) throw new Error("API AdminSetting fail");
-
-                const settings = await res.json();
-                const ids = settings.map(s => s.id);
-                if (ids.length > 0) {
-                    const randomIndex = Math.floor(Math.random() * ids.length);
-                    adminSettingId = ids[randomIndex];
-                }
-            } catch (err) {
-                console.warn("Không thể lấy AdminSettingId từ API:", err);
-            }
-
-            formData.append("AdminSettingId", adminSettingId);
-
             formData.append("Title1", document.getElementById("formTitle")?.value?.trim() || "");
             formData.append("Description1", document.getElementById("formDescription")?.value?.trim() || "");
             formData.append("Title2", document.getElementById("formTitle2")?.value?.trim() || "");
             formData.append("Description2", document.getElementById("formDescription2")?.value?.trim() || "");
 
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < 5; i++) {
                 const file = window.uploadedSlides?.[i] || null;
                 const title = window.uploadedSlideTitles?.[i] || document.getElementById(`formTitleSlide${i + 1}`)?.value?.trim() || "";
                 const desc = window.uploadedSlideDescs?.[i] || document.getElementById(`formDescriptionSlide${i + 1}`)?.value?.trim() || "";
 
                 if (file) {
                     formData.append(`Slide${i + 1}`, file);
-                } else {
-                    formData.append(`ClearSlide${i + 1}`, "true");
                 }
-
                 formData.append(`TitleSlide${i + 1}`, title);
                 formData.append(`DescriptionSlide${i + 1}`, desc);
             }
@@ -1056,40 +1057,27 @@
             if (window.selectedVideoFile) formData.append("Video", window.selectedVideoFile);
 
             try {
-                const isUpdate = !!window.decorate?.id;
-                const url = isUpdate
-                    ? `/Admin/Decorates/Update/${window.decorate.id}`
-                    : `/Admin/Decorates/Create`;
+                const isUpdate = !!window.decorate?.id && window.decorate.id > 0;
+                const url = isUpdate ? `/Admin/Decorates/Update/${window.decorate.id}` : `/Admin/Decorates/Create`;
 
-                const res = await fetch(url, {
-                    method: "POST",
-                    body: formData
-                });
-
+                const res = await fetch(url, { method: "POST", body: formData });
                 const text = await res.text();
                 let result;
-                try {
-                    result = JSON.parse(text);
-                } catch {
-                    result = { success: false, message: text };
+                try { result = JSON.parse(text); } catch { result = { success: false, message: text }; }
+
+                // 👉 Nếu server trả về redirectUrl (đã set TempData), redirect để Toast hiển thị
+                if (result.redirectUrl) {
+                    window.location.href = result.redirectUrl;
+                    return;
                 }
 
-                if (!result.success) {
-                    (result.errors || [result.message || "Gửi thất bại"]).forEach(msg => toastr.error(msg));
-                } else {
-                    toastr.success(result.message || "✅ Cập nhật thành công!");
-                    setTimeout(() => location.reload(), 1000);
-                }
+                // Fallback (hiếm khi dùng)
+                alert(result.success ? (result.message || "Thành công") : (result.message || "Thất bại"));
             } catch (err) {
                 console.error("🔥 Gửi thất bại:", err);
-                toastr.error("❌ Có lỗi xảy ra khi gửi!");
+                alert("❌ Có lỗi xảy ra khi gửi!");
             }
         });
-
-
-
-
-
 
 
         // Xóa Trang Trí

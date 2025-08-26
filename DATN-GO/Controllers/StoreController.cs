@@ -3,6 +3,7 @@ using DATN_GO.Service;
 using DATN_GO.ViewModels.Store;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Linq;
 
 namespace DATN_GO.Controllers
@@ -178,6 +179,68 @@ namespace DATN_GO.Controllers
                     // p.ReviewCount = 0;
                 }
             }
+            // 7) 🔥 TÍNH HAS-VARIANT (NHƯNG KHÔNG DÙNG MODEL)
+            var minMaxPriceDict = new Dictionary<int, object>();
+
+            foreach (var p in store.Products)
+            {
+                try
+                {
+                    var variantsResp = await _http.GetAsync($"/api/ProductVariants/by-product/{p.Id}");
+                    if (variantsResp.IsSuccessStatusCode)
+                    {
+                        var json = await variantsResp.Content.ReadAsStringAsync();
+
+                        // Parse trực tiếp JSON
+                        var arr = JArray.Parse(json);
+                        if (arr.Count > 0)
+                        {
+                            var prices = arr.Select(v => (decimal?)v["price"]).Where(x => x.HasValue).ToList();
+                            if (prices.Count > 0)
+                            {
+                                var min = prices.Min();
+                                var max = prices.Max();
+
+                                minMaxPriceDict[p.Id] = new
+                                {
+                                    IsVariant = true,
+                                    MinPrice = min,
+                                    MaxPrice = max,
+                                    Price = min,
+                                    OriginalPrice = max
+                                };
+                                continue;
+                            }
+                        }
+                    }
+
+                    // ❌ Không có variant → single price fallback
+                    var single = p.CostPrice ?? 0m;
+                    minMaxPriceDict[p.Id] = new
+                    {
+                        IsVariant = false,
+                        MinPrice = (decimal?)null,
+                        MaxPrice = (decimal?)null,
+                        Price = (decimal?)single,
+                        OriginalPrice = (decimal?)null
+                    };
+                }
+                catch
+                {
+                    // Nếu lỗi thì fallback luôn về single price
+                    var single = p.CostPrice ?? 0m;
+                    minMaxPriceDict[p.Id] = new
+                    {
+                        IsVariant = false,
+                        MinPrice = (decimal?)null,
+                        MaxPrice = (decimal?)null,
+                        Price = (decimal?)single,
+                        OriginalPrice = (decimal?)null
+                    };
+                }
+            }
+
+            ViewBag.MinMaxPriceDict = minMaxPriceDict;
 
             return View(store);
         }

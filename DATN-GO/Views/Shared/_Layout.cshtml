@@ -169,12 +169,12 @@
                                             Sản phẩm
                                         </a>
                                     </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link text-crimson d-flex align-items-center gap-1"
-                                           asp-controller="Blog" asp-action="Blog">
-                                            Bài viết
-                                        </a>
-                                    </li>
+                                    @*                                     <li class="nav-item">
+                                    <a class="nav-link text-crimson d-flex align-items-center gap-1"
+                                    asp-controller="Blog" asp-action="Blog">
+                                    Bài viết
+                                    </a>
+                                    </li> *@
                                 </ul>
                             </div>
                         </div>
@@ -740,17 +740,17 @@
         const title = isSuccess ? "Thành công" : "Lỗi";
 
         const toastHtml = `
-                        <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" id="dynamicToast"
-                             style="position: fixed; top: 1rem; right: 1rem; z-index: 1060; min-width: 320px;">
-                            <div class="toast-header d-flex align-items-center ${isSuccess ? "bg-success" : "bg-danger"} text-white">
-                                <img src="${iconUrl}" alt="icon" width="20" height="20" class="me-2" />
-                                <strong class="me-auto">${title}</strong>
-                                <small class="text-white">Vừa xong</small>
-                                <button type="button" class="btn-close btn-close-white ms-2" onclick="this.closest('.toast').remove()" aria-label="Close"></button>
+                            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" id="dynamicToast"
+                                 style="position: fixed; top: 1rem; right: 1rem; z-index: 1060; min-width: 320px;">
+                                <div class="toast-header d-flex align-items-center ${isSuccess ? "bg-success" : "bg-danger"} text-white">
+                                    <img src="${iconUrl}" alt="icon" width="20" height="20" class="me-2" />
+                                    <strong class="me-auto">${title}</strong>
+                                    <small class="text-white">Vừa xong</small>
+                                    <button type="button" class="btn-close btn-close-white ms-2" onclick="this.closest('.toast').remove()" aria-label="Close"></button>
+                                </div>
+                                <div class="toast-body">${message}</div>
                             </div>
-                            <div class="toast-body">${message}</div>
-                        </div>
-                    `;
+                        `;
         document.body.insertAdjacentHTML('beforeend', toastHtml);
         setTimeout(() => document.getElementById('dynamicToast')?.remove(), 3000);
     }
@@ -778,9 +778,9 @@
         const getBadges = () => Array.from(document.querySelectorAll('.cart-count-badge'));
         const style = document.createElement('style');
         style.textContent = `
-            @@keyframes cart-bump { 0%{transform:translate(-50%,-50%) scale(1)} 30%{scale:1.15} 100%{scale:1} }
-            .cart-count-badge.bump { animation: cart-bump 250ms ease; }
-          `;
+                @@keyframes cart-bump { 0%{transform:translate(-50%,-50%) scale(1)} 30%{scale:1.15} 100%{scale:1} }
+                .cart-count-badge.bump { animation: cart-bump 250ms ease; }
+              `;
         document.head.appendChild(style);
 
         function show(el, n) { el.style.display = n > 0 ? '' : 'none'; }

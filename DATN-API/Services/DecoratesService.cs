@@ -50,37 +50,44 @@ namespace DATN_API.Services
             var decorate = await _context.Decorates.FindAsync(id);
             if (decorate == null) return false;
 
-            // 🎯 Cập nhật lại toàn bộ các thuộc tính
-            decorate.UserId = model.UserId;
-            decorate.AdminSettingId = model.AdminSettingId;
-            decorate.Video = model.Video;
+            // Video
+            if (!string.IsNullOrEmpty(model.Video)) decorate.Video = model.Video;
 
-            // 🎯 Cập nhật các slide
-            decorate.Slide1 = model.Slide1;
-            decorate.TitleSlide1 = model.TitleSlide1;
-            decorate.DescriptionSlide1 = model.DescriptionSlide1;
+            // Slides 1..5 + captions
+            if (!string.IsNullOrEmpty(model.Slide1)) decorate.Slide1 = model.Slide1;
+            if (!string.IsNullOrEmpty(model.TitleSlide1)) decorate.TitleSlide1 = model.TitleSlide1;
+            if (!string.IsNullOrEmpty(model.DescriptionSlide1)) decorate.DescriptionSlide1 = model.DescriptionSlide1;
 
-            decorate.Slide2 = model.Slide2;
-            decorate.TitleSlide2 = model.TitleSlide2;
-            decorate.DescriptionSlide2 = model.DescriptionSlide2;
+            if (!string.IsNullOrEmpty(model.Slide2)) decorate.Slide2 = model.Slide2;
+            if (!string.IsNullOrEmpty(model.TitleSlide2)) decorate.TitleSlide2 = model.TitleSlide2;
+            if (!string.IsNullOrEmpty(model.DescriptionSlide2)) decorate.DescriptionSlide2 = model.DescriptionSlide2;
 
-            decorate.Slide3 = model.Slide3;
-            decorate.TitleSlide3 = model.TitleSlide3;
-            decorate.DescriptionSlide3 = model.DescriptionSlide3;
+            if (!string.IsNullOrEmpty(model.Slide3)) decorate.Slide3 = model.Slide3;
+            if (!string.IsNullOrEmpty(model.TitleSlide3)) decorate.TitleSlide3 = model.TitleSlide3;
+            if (!string.IsNullOrEmpty(model.DescriptionSlide3)) decorate.DescriptionSlide3 = model.DescriptionSlide3;
 
-            // 🎯 Cập nhật Decorate ảnh 1
-            decorate.Image1 = model.Image1;
-            decorate.Title1 = model.Title1;
-            decorate.Description1 = model.Description1;
+            if (!string.IsNullOrEmpty(model.Slide4)) decorate.Slide4 = model.Slide4;
+            if (!string.IsNullOrEmpty(model.TitleSlide4)) decorate.TitleSlide4 = model.TitleSlide4;
+            if (!string.IsNullOrEmpty(model.DescriptionSlide4)) decorate.DescriptionSlide4 = model.DescriptionSlide4;
 
-            // 🎯 Cập nhật Decorate ảnh 2
-            decorate.Image2 = model.Image2;
-            decorate.Title2 = model.Title2;
-            decorate.Description2 = model.Description2;
+            if (!string.IsNullOrEmpty(model.Slide5)) decorate.Slide5 = model.Slide5;
+            if (!string.IsNullOrEmpty(model.TitleSlide5)) decorate.TitleSlide5 = model.TitleSlide5;
+            if (!string.IsNullOrEmpty(model.DescriptionSlide5)) decorate.DescriptionSlide5 = model.DescriptionSlide5;
+
+            // Decorate images + captions
+            if (!string.IsNullOrEmpty(model.Image1)) decorate.Image1 = model.Image1;
+            if (!string.IsNullOrEmpty(model.Title1)) decorate.Title1 = model.Title1;
+            if (!string.IsNullOrEmpty(model.Description1)) decorate.Description1 = model.Description1;
+
+            if (!string.IsNullOrEmpty(model.Image2)) decorate.Image2 = model.Image2;
+            if (!string.IsNullOrEmpty(model.Title2)) decorate.Title2 = model.Title2;
+            if (!string.IsNullOrEmpty(model.Description2)) decorate.Description2 = model.Description2;
 
             await _context.SaveChangesAsync();
             return true;
         }
+
+
 
         // Xóa một đối tượng Decorates theo Id
         public async Task<bool> DeleteAsync(int id)

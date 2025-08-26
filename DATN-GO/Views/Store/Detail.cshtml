@@ -44,10 +44,10 @@
                                 </div>
                             </div>
                             @*                             <div class="col">
-                                <div class="border rounded p-3 bg-light">
-                                    <div class="text-danger h4 mb-0">0</div>
-                                    <small class="text-muted">Người theo dõi</small>
-                                </div>
+                            <div class="border rounded p-3 bg-light">
+                            <div class="text-danger h4 mb-0">0</div>
+                            <small class="text-muted">Người theo dõi</small>
+                            </div>
                             </div> *@
                         </div>
 
@@ -87,14 +87,14 @@
 
                         <!-- Action Buttons -->
                         @*                         <div class="d-flex gap-2">
-                            <button class="btn btn-outline-danger w-100">
-                                <i class="bi bi-heart me-1"></i>
-                                Theo dõi
-                            </button>
-                            <a class="btn btn-danger w-100 text-decoration-none text-white" asp-controller="Chat" asp-action="Chat">
-                                <i class="bi bi-chat-dots me-1"></i>
-                                Chat ngay
-                            </a>
+                        <button class="btn btn-outline-danger w-100">
+                        <i class="bi bi-heart me-1"></i>
+                        Theo dõi
+                        </button>
+                        <a class="btn btn-danger w-100 text-decoration-none text-white" asp-controller="Chat" asp-action="Chat">
+                        <i class="bi bi-chat-dots me-1"></i>
+                        Chat ngay
+                        </a>
                         </div> *@
                     </div>
                 </div>
@@ -174,6 +174,19 @@
     <div class="row g-4">
         @foreach (var product in Model.Products)
         {
+            // Lấy info giá/variant từ ViewBag
+            var minMaxDict = ViewBag.MinMaxPriceDict as Dictionary<int, object>;
+            bool hasVariant = false;
+            decimal? displayPrice = product.CostPrice ?? 0;
+
+            if (minMaxDict != null && minMaxDict.ContainsKey(product.Id))
+            {
+                dynamic priceInfo = minMaxDict[product.Id];
+                hasVariant = priceInfo.IsVariant;
+                displayPrice = priceInfo.Price ?? product.CostPrice ?? 0;
+            }
+
+
             var prodCost = product.CostPrice ?? 0m;
             var prodOriginal = product.OriginalPrice > 0 ? product.OriginalPrice : prodCost * 1.3m;
             var prodDiscount = prodOriginal > prodCost ? Math.Round((prodOriginal - prodCost) / prodOriginal * 100) : 0;
@@ -205,20 +218,17 @@
                             <span class="badge bg-light text-danger">@product.CategoryName</span>
 
                             <div class="rating d-flex align-items-center text-warning">
-                                @for (int i = 0; i < fullStars; i++)
+                                @if (ratingAvg <= 0)
+                                {
+                                    <span class="text-muted small fst-italic">Chưa có đánh giá</span>
+                                }
+                                else
                                 {
                                     <i class="bi bi-star-fill icon-sm"></i>
+                                    <span class="ms-1 text-dark">@ratingAvg.ToString("0.0")</span>
                                 }
-                                @if (hasHalfStar)
-                                {
-                                    <i class="bi bi-star-half icon-sm"></i>
-                                }
-                                @for (int i = 0; i < emptyStars; i++)
-                                {
-                                    <i class="bi bi-star icon-sm"></i>
-                                }
-                                <span class="ms-1 text-dark">@ratingAvg.ToString("0.0")</span>
                             </div>
+
                         </div>
 
                         <h5 class="card-title fw-bold mb-1 text-truncate-1">@product.Name</h5>
@@ -230,11 +240,13 @@
                                     @string.Format("{0:N0} ₫", prodCost)
                                 </span>
                             </div>
-                            <button class="btn btn-crimson btn-sm rounded-pill" type="button"
-                                    onclick="event.stopPropagation(); window.location.href='/Products/DetailProducts/@product.Id'">
+                            <button class="btn btn-crimson btn-sm rounded-pill add-to-cart-btn"
+                                    type="button"
+                                    data-product-id="@product.Id"
+                                    data-has-variant="@(hasVariant.ToString().ToLower())"
+                                    onclick="event.stopPropagation();">
                                 <i class="bi bi-cart-plus icon-sm"></i> Thêm
                             </button>
-
                         </div>
                     </div>
                 </div>
@@ -243,7 +255,10 @@
     </div>
 </section>
 
-
+<!-- Anti-forgery token -->
+<form id="__quickAddToken" method="post">
+    @Html.AntiForgeryToken()
+</form>
 
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -336,21 +351,21 @@
                 const buttonDisabled = isSaved ? "disabled" : "";
 
                 const html = `
-                        <div class="voucher-item">
-                            <div class="border rounded p-3 d-flex align-items-center justify-content-between bg-light" style="min-width: 320px;">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="text-danger" style="font-size: 2rem;">
-                                        <i class="bi bi-ticket-perforated-fill"></i>
+                            <div class="voucher-item">
+                                <div class="border rounded p-3 d-flex align-items-center justify-content-between bg-light" style="min-width: 320px;">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="text-danger" style="font-size: 2rem;">
+                                            <i class="bi bi-ticket-perforated-fill"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1">${reduceText}</h6>
+                                            <p class="text-muted small mb-0">Đơn tối thiểu: ${minOrder}₫</p>
+                                            <small class="text-danger">HSD: ${endDate}</small>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h6 class="mb-1">${reduceText}</h6>
-                                        <p class="text-muted small mb-0">Đơn tối thiểu: ${minOrder}₫</p>
-                                        <small class="text-danger">HSD: ${endDate}</small>
-                                    </div>
+                                    <button class="${buttonClass}" ${buttonDisabled} onclick="saveVoucher(${voucher.id}, this)">${buttonText}</button>
                                 </div>
-                                <button class="${buttonClass}" ${buttonDisabled} onclick="saveVoucher(${voucher.id}, this)">${buttonText}</button>
-                            </div>
-                        </div>`;
+                            </div>`;
 
                 container.insertAdjacentHTML("beforeend", html);
             }
@@ -362,7 +377,7 @@
 
     document.addEventListener("DOMContentLoaded", function () {
         const storeId = @Model.Id
-        loadVouchers(storeId);
+            loadVouchers(storeId);
     });
 
     async function saveVoucher(voucherId, buttonElement) {
@@ -402,11 +417,11 @@
         toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
         toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
         toast.innerHTML = `
-                <div class="d-flex justify-content-between align-items-center">
-                    <span>${message}</span>
-                    <button type="button" class="btn-close" onclick="this.parentElement.parentElement.remove()"></button>
-                </div>
-            `;
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>${message}</span>
+                        <button type="button" class="btn-close" onclick="this.parentElement.parentElement.remove()"></button>
+                    </div>
+                `;
 
         document.body.appendChild(toast);
 
@@ -417,4 +432,70 @@
             }
         }, 3000);
     }
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const tokenEl = document.querySelector('#__quickAddToken input[name="__RequestVerificationToken"]');
+        const ANTIFORGERY = tokenEl ? tokenEl.value : null;
+
+        const toastOk = (m) => window.showToast ? showToast(m, true) : alert(m);
+
+        document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const pid = btn.dataset.productId;
+                const hasVariant = (btn.dataset.hasVariant === 'true');
+
+                if (hasVariant) {
+                    window.location.href = `/Products/DetailProducts/${pid}`;
+                    return;
+                }
+
+                try {
+                    const fd = new FormData();
+                    fd.append('productId', pid);
+                    fd.append('quantity', '1');
+
+                    const headers = { 'X-Requested-With': 'XMLHttpRequest' };
+                    if (ANTIFORGERY) headers['RequestVerificationToken'] = ANTIFORGERY;
+
+                    const res = await fetch('/Cart/QuickAdd', {
+                        method: 'POST',
+                        body: fd,
+                        headers,
+                        credentials: 'same-origin'
+                    });
+
+                    const data = await res.json().catch(() => ({}));
+                    const msg = String(data?.message || '').toLowerCase();
+
+                    if (res.ok && data?.success) {
+                        if (typeof window.__CartBadge?.set === 'function' && typeof data.cartCount === 'number') {
+                            window.__CartBadge.set(data.cartCount);
+                        } else if (typeof window.__CartBadge?.add === 'function') {
+                            window.__CartBadge.add(1);
+                        }
+                        toastOk(data.message || 'Đã thêm vào giỏ hàng!');
+                        return;
+                    }
+
+                    // 401 => Login
+                    if (res.status === 401 || msg.includes('đăng nhập')) {
+                        window.location.href = '/Login';
+                        return;
+                    }
+
+                    // ❗Bất kỳ lỗi nào khác (kể cả "Thêm sản phẩm vào giỏ thất bại!") => nhảy vào trang chi tiết
+                    window.location.href = `/Products/DetailProducts/${pid}`;
+                } catch (err) {
+                    console.error(err);
+                    // ❗Lỗi mạng / JS => nhảy vào trang chi tiết
+                    window.location.href = `/Products/DetailProducts/${pid}`;
+                }
+            });
+        });
+    });
 </script>

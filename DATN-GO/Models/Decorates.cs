@@ -10,7 +10,7 @@ namespace DATN_GO.Models
         public int Id { get; set; }
 
         [ForeignKey("User")]
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
 
         [JsonIgnore]
         public virtual Users? User { get; set; }

@@ -97,21 +97,21 @@
                             </a>
                         </li>
 
-                      @*   <li class="nav-item">
-                            <a asp-area="Admin" asp-controller="Post" asp-action="Index"
-                               class="sidenav-item-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Post" ? "active" : "")">
-                                <i class="bi bi-check-circle"></i>
-                                <span class="nav-text">Duyệt bài viết</span>
-                            </a>
+                        @*   <li class="nav-item">
+                        <a asp-area="Admin" asp-controller="Post" asp-action="Index"
+                        class="sidenav-item-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Post" ? "active" : "")">
+                        <i class="bi bi-check-circle"></i>
+                        <span class="nav-text">Duyệt bài viết</span>
+                        </a>
                         </li> *@
 
-                        <li class="nav-item">
-                            <a asp-area="Admin" asp-controller="Notification" asp-action="Index"
-                               class="sidenav-item-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Notification" ? "active" : "")">
-                                <i class="bi bi-bell"></i>
-                                <span class="nav-text">Thông báo</span>
-                            </a>
-                        </li>
+                        @*                         <li class="nav-item">
+                        <a asp-area="Admin" asp-controller="Notification" asp-action="Index"
+                        class="sidenav-item-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Notification" ? "active" : "")">
+                        <i class="bi bi-bell"></i>
+                        <span class="nav-text">Thông báo</span>
+                        </a>
+                        </li> *@
 
                         <li class="nav-item">
                             <a asp-area="Admin" asp-controller="Product" asp-action="Index"
@@ -129,7 +129,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a asp-area="Admin" asp-controller="Voucher" asp-action="Voucher"
+                            <a asp-area="Admin" asp-controller="Voucher" asp-action="Index"
                                class="sidenav-item-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Voucher" ? "active" : "")">
                                 <i class="bi bi-tag"></i>
                                 <span class="nav-text">Ưu đãi</span>
@@ -138,24 +138,6 @@
                     </ul>
                 </div>
 
-                <div class="sidebar-footer">
-                    <div class="sidebar-footer-content">
-                        <ul class="d-flex">
-                            <li>
-                                <a asp-area="Admin" asp-controller="UserProfileSettings" asp-action="Index"
-                                   data-bs-toggle="tooltip"
-                                   title="Profile settings">
-                                    <i class="mdi mdi-settings"></i>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#" data-bs-toggle="tooltip" title="No chat messages">
-                                    <i class="mdi mdi-chat-processing"></i>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
             </div>
         </aside>
 
@@ -177,7 +159,7 @@
     <script src="~/js/mono.js"></script>
     <script src="~/js/custom.js"></script>
     <script src="~/js/chart.js"></script>
-    <script src="~/js/Toast.js"></script>  
+    <script src="~/js/Toast.js"></script>
     <script src="~/js/variants.js"></script>
     <script src="~/js/map.js"></script>
 

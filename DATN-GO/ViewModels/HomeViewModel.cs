@@ -1,4 +1,5 @@
 ﻿using DATN_GO.Models;
+using DATN_GO.ViewModels.Decorates;
 using System.Collections.Generic;
 
 namespace DATN_GO.ViewModels
@@ -11,14 +12,8 @@ namespace DATN_GO.ViewModels
         public List<CategoryHomeViewModel> TrendCategories { get; set; }
         public List<CategoryHomeViewModel> Categories { get; set; } = new();
         public List<Categories> Categoriess { get; set; } = new();
+        public DecoratesViewModel Decorate { get; set; } = new();
 
-
-    }
-    public class SlideViewModel
-    {
-        public string? Image { get; set; }
-        public string? Title { get; set; }
-        public string? Description { get; set; }
     }
     public class CategoryHomeViewModel
     {
@@ -48,7 +43,6 @@ namespace DATN_GO.ViewModels
         public decimal Price { get; set; }
         public decimal? OldPrice { get; set; }
         public double Rating { get; set; }
-
     }
     public class SearchViewModel
     {

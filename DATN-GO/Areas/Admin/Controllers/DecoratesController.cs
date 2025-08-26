@@ -30,8 +30,8 @@ namespace DATN_GO.Areas.Admin.Controllers
         // Index
         public async Task<IActionResult> Decorates()
         {
+            // vẫn yêu cầu đăng nhập
             var userIdStr = HttpContext.Session.GetString("Id");
-
             if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
             {
                 TempData["ToastMessage"] = "Vui lòng đăng nhập để tiếp tục!";
@@ -39,7 +39,7 @@ namespace DATN_GO.Areas.Admin.Controllers
                 return RedirectToAction("Index", "Home", new { area = "" });
             }
 
-            // 🛡️ Kiểm tra quyền Admin (RoleId == 3)
+            // vẫn khóa admin
             var user = await _decorationService.GetUserByIdAsync(userId);
             if (user == null || user.RoleId != 3)
             {
@@ -48,14 +48,14 @@ namespace DATN_GO.Areas.Admin.Controllers
                 return RedirectToAction("Index", "Home", new { area = "" });
             }
 
-            // ✅ Lấy thông tin decorate nếu có
-            var decorate = await _decorationService.GetDecorateByUserIdAsync(userId);
+            // ⬇️ Lấy decorate GLOBAL (thay cho GetDecorateByUserIdAsync)
+            var decorate = await _decorationService.GetGlobalDecorateAsync();
 
             var decorateViewModel = new DecoratesViewModel
             {
                 Id = decorate?.Id ?? 0,
-                UserId = userId,
-                AdminSettingId = decorate?.AdminSettingId,
+
+                // KHÔNG còn UserId / AdminSettingId
                 TitleSlide1 = decorate?.TitleSlide1 ?? "",
                 DescriptionSlide1 = decorate?.DescriptionSlide1 ?? "",
                 TitleSlide2 = decorate?.TitleSlide2 ?? "",
@@ -66,27 +66,26 @@ namespace DATN_GO.Areas.Admin.Controllers
                 DescriptionSlide4 = decorate?.DescriptionSlide4 ?? "",
                 TitleSlide5 = decorate?.TitleSlide5 ?? "",
                 DescriptionSlide5 = decorate?.DescriptionSlide5 ?? "",
+
                 Slide1Path = decorate?.Slide1 ?? "",
                 Slide2Path = decorate?.Slide2 ?? "",
                 Slide3Path = decorate?.Slide3 ?? "",
                 Slide4Path = decorate?.Slide4 ?? "",
                 Slide5Path = decorate?.Slide5 ?? "",
+
                 Image1Path = decorate?.Image1 ?? "",
                 Image2Path = decorate?.Image2 ?? "",
                 VideoPath = decorate?.Video ?? "",
+
                 Title1 = decorate?.Title1 ?? "",
                 Title2 = decorate?.Title2 ?? "",
                 Description1 = decorate?.Description1 ?? "",
                 Description2 = decorate?.Description2 ?? ""
             };
 
-            ViewBag.UserInfo = user;
-
+            ViewBag.UserInfo = user; // vẫn hiển thị info user ở header
             return View(decorateViewModel);
         }
-
-
-
 
 
         // Tạo decorate 
@@ -96,49 +95,38 @@ namespace DATN_GO.Areas.Admin.Controllers
         {
             try
             {
+                // Check login
                 var userIdStr = HttpContext.Session.GetString("Id");
                 if (string.IsNullOrEmpty(userIdStr))
                 {
-                    return Json(new { success = false, message = "Bạn chưa đăng nhập!" });
-                }
-
-                int userId = int.Parse(userIdStr);
-                var existing = await _decorationService.GetDecorateByUserIdAsync(userId);
-                var errors = new List<string>();
-
-                // ✅ Kiểm tra slide hợp lệ
-                var slideList = new List<IFormFile?> { model.Slide1, model.Slide2, model.Slide3, model.Slide4, model.Slide5 };
-                bool hasAtLeastOneSlide = slideList.Any(s => s != null);
-
-                // ✅ Kiểm tra ảnh trang trí hợp lệ
-                bool hasDecorateImg = model.Image1 != null || model.Image2 != null;
-                bool hadDecorateImgBefore = !string.IsNullOrEmpty(existing?.Image1) || !string.IsNullOrEmpty(existing?.Image2);
-
-                // ✅ Check rỗng
-                bool hasTextContent = !string.IsNullOrWhiteSpace(model.Title1) ||
-                                      !string.IsNullOrWhiteSpace(model.Title2) ||
-                                      !string.IsNullOrWhiteSpace(model.Description1) ||
-                                      !string.IsNullOrWhiteSpace(model.Description2);
-
-                bool hasVideo = model.Video != null;
-
-                bool isAllEmpty = !hasAtLeastOneSlide && !hasDecorateImg && !hasVideo && !hasTextContent;
-
-                if (isAllEmpty)
-                {
+                    TempData["CustomToastType"] = "error";
+                    TempData["CustomToastMessage"] = "Bạn chưa đăng nhập!";
                     return Json(new
                     {
                         success = false,
-                        message = "Vui lòng nhập đầy đủ thông tin trước khi tạo trang trí!"
+                        redirectUrl = Url.Action("Decorates", "Decorates", new { area = "Admin" })
                     });
                 }
 
-                if (errors.Any())
+                // Validate
+                var anySlide = new[] { model.Slide1, model.Slide2, model.Slide3, model.Slide4, model.Slide5 }.Any(x => x != null);
+                var anyDecorImg = model.Image1 != null || model.Image2 != null;
+                var anyText = !(string.IsNullOrWhiteSpace(model.Title1) && string.IsNullOrWhiteSpace(model.Title2)
+                    && string.IsNullOrWhiteSpace(model.Description1) && string.IsNullOrWhiteSpace(model.Description2));
+                var hasVideo = model.Video != null;
+
+                if (!anySlide && !anyDecorImg && !anyText && !hasVideo)
                 {
-                    return Json(new { success = false, message = string.Join("\n", errors), errors });
+                    TempData["CustomToastType"] = "error";
+                    TempData["CustomToastMessage"] = "Vui lòng nhập đầy đủ thông tin trước khi tạo trang trí!";
+                    return Json(new
+                    {
+                        success = false,
+                        redirectUrl = Url.Action("Decorates", "Decorates", new { area = "Admin" })
+                    });
                 }
 
-                // ✅ Lưu file nếu có
+                // Save files
                 string? slide1Path = model.Slide1 != null ? await SaveFileAsync(model.Slide1, "decorates/slideshow") : null;
                 string? slide2Path = model.Slide2 != null ? await SaveFileAsync(model.Slide2, "decorates/slideshow") : null;
                 string? slide3Path = model.Slide3 != null ? await SaveFileAsync(model.Slide3, "decorates/slideshow") : null;
@@ -148,16 +136,10 @@ namespace DATN_GO.Areas.Admin.Controllers
                 string? image1Path = model.Image1 != null ? await SaveFileAsync(model.Image1, "decorates/images") : null;
                 string? image2Path = model.Image2 != null ? await SaveFileAsync(model.Image2, "decorates/images") : null;
 
-                string? videoPath = model.Video != null
-                    ? await SaveFileAsync(model.Video, "decorates/videos")
-                    : null;
+                string? videoPath = model.Video != null ? await SaveFileAsync(model.Video, "decorates/videos") : null;
 
-                // ✅ Tạo entity mới từ ViewModel
                 var decorate = new Decorates
                 {
-                    UserId = userId,
-                    AdminSettingId = model.AdminSettingId,
-
                     TitleSlide1 = model.Slide1 != null ? model.TitleSlide1 ?? "" : "",
                     DescriptionSlide1 = model.Slide1 != null ? model.DescriptionSlide1 ?? "" : "",
 
@@ -189,29 +171,37 @@ namespace DATN_GO.Areas.Admin.Controllers
                     Description2 = model.Description2 ?? ""
                 };
 
-                // ✅ Gọi service tạo hoặc cập nhật
-                var (success, _, serviceMessage) = await _decorationService.CreateAsync(decorate);
+                var (success, _ignored, message) = await _decorationService.CreateAsync(decorate);
+
+                TempData["CustomToastType"] = success ? "success" : "error";
+                TempData["CustomToastMessage"] = success
+                    ? "Cập nhật decorate thành công!"
+                    : (string.IsNullOrWhiteSpace(message) ? "Tạo decorate thất bại!" : message);
 
                 return Json(new
                 {
                     success,
-                    message = success
-                        ? (existing != null ? "Cập nhật decorate thành công!" : "Tạo trang trí thành công!")
-                        : "❌ " + serviceMessage
+                    redirectUrl = Url.Action("Decorates", "Decorates", new { area = "Admin" })
                 });
             }
             catch (Exception ex)
             {
                 Console.WriteLine("🔥 Exception tại MVC Decorates/Create:");
-                Console.WriteLine(ex.ToString());
-                return Json(new { success = false, message = "🔥 Server Error: " + ex.Message });
+                Console.WriteLine(ex);
+
+                TempData["CustomToastType"] = "error";
+                TempData["CustomToastMessage"] = "🔥 Server Error: " + ex.Message;
+
+                return Json(new
+                {
+                    success = false,
+                    redirectUrl = Url.Action("Decorates", "Decorates", new { area = "Admin" })
+                });
             }
         }
 
 
-
-
-        // Cập nhật decorate
+        // Cập nhật decorate 
         [HttpPost]
         [RequestSizeLimit(200_000_000)]
         public async Task<IActionResult> Update(int id, [FromForm] DecoratesViewModel model)
@@ -221,82 +211,93 @@ namespace DATN_GO.Areas.Admin.Controllers
                 var userIdStr = HttpContext.Session.GetString("Id");
                 if (string.IsNullOrEmpty(userIdStr))
                 {
-                    return Json(new { success = false, message = "Bạn chưa đăng nhập!" });
+                    TempData["CustomToastType"] = "error";
+                    TempData["CustomToastMessage"] = "Bạn chưa đăng nhập!";
+                    return Json(new
+                    {
+                        success = false,
+                        redirectUrl = Url.Action("Decorates", "Decorates", new { area = "Admin" })
+                    });
                 }
 
-                int userId = int.Parse(userIdStr);
-                var decorate = await _decorationService.GetDecorateByUserIdAsync(userId);
+                var decorate = id > 0
+                    ? await _decorationService.GetDecorateByIdAsync(id)
+                    : await _decorationService.GetGlobalDecorateAsync();
 
-                if (decorate == null || decorate.Id != id)
+                if (decorate == null)
                 {
-                    return Json(new { success = false, message = "Decorate không tồn tại hoặc không khớp!" });
+                    TempData["CustomToastType"] = "error";
+                    TempData["CustomToastMessage"] = "Decorate không tồn tại!";
+                    return Json(new
+                    {
+                        success = false,
+                        redirectUrl = Url.Action("Decorates", "Decorates", new { area = "Admin" })
+                    });
                 }
 
-                // Cập nhật các file mới
-                if (model.Image1 != null)
-                    decorate.Image1 = await SaveFileAsync(model.Image1, "decorates/images");
+                // Chuẩn hóa id
+                id = decorate.Id;
 
-                if (model.Image2 != null)
-                    decorate.Image2 = await SaveFileAsync(model.Image2, "decorates/images");
+                // Upload file nếu có
+                if (model.Image1 != null) decorate.Image1 = await SaveFileAsync(model.Image1, "decorates/images");
+                if (model.Image2 != null) decorate.Image2 = await SaveFileAsync(model.Image2, "decorates/images");
+                if (model.Video != null) decorate.Video = await SaveFileAsync(model.Video, "decorates/videos");
 
-                if (model.Video != null)
-                    decorate.Video = await SaveFileAsync(model.Video, "decorates/videos");
+                if (model.Slide1 != null) decorate.Slide1 = await SaveFileAsync(model.Slide1, "decorates/slideshow");
+                if (!string.IsNullOrWhiteSpace(model.TitleSlide1)) decorate.TitleSlide1 = model.TitleSlide1;
+                if (!string.IsNullOrWhiteSpace(model.DescriptionSlide1)) decorate.DescriptionSlide1 = model.DescriptionSlide1;
 
-                // Cập nhật thông tin văn bản (Text content)
+                if (model.Slide2 != null) decorate.Slide2 = await SaveFileAsync(model.Slide2, "decorates/slideshow");
+                if (!string.IsNullOrWhiteSpace(model.TitleSlide2)) decorate.TitleSlide2 = model.TitleSlide2;
+                if (!string.IsNullOrWhiteSpace(model.DescriptionSlide2)) decorate.DescriptionSlide2 = model.DescriptionSlide2;
+
+                if (model.Slide3 != null) decorate.Slide3 = await SaveFileAsync(model.Slide3, "decorates/slideshow");
+                if (!string.IsNullOrWhiteSpace(model.TitleSlide3)) decorate.TitleSlide3 = model.TitleSlide3;
+                if (!string.IsNullOrWhiteSpace(model.DescriptionSlide3)) decorate.DescriptionSlide3 = model.DescriptionSlide3;
+
+                if (model.Slide4 != null) decorate.Slide4 = await SaveFileAsync(model.Slide4, "decorates/slideshow");
+                if (!string.IsNullOrWhiteSpace(model.TitleSlide4)) decorate.TitleSlide4 = model.TitleSlide4;
+                if (!string.IsNullOrWhiteSpace(model.DescriptionSlide4)) decorate.DescriptionSlide4 = model.DescriptionSlide4;
+
+                if (model.Slide5 != null) decorate.Slide5 = await SaveFileAsync(model.Slide5, "decorates/slideshow");
+                if (!string.IsNullOrWhiteSpace(model.TitleSlide5)) decorate.TitleSlide5 = model.TitleSlide5;
+                if (!string.IsNullOrWhiteSpace(model.DescriptionSlide5)) decorate.DescriptionSlide5 = model.DescriptionSlide5;
+
+                // Text phần decorate images
                 if (!string.IsNullOrWhiteSpace(model.Title1)) decorate.Title1 = model.Title1;
                 if (!string.IsNullOrWhiteSpace(model.Title2)) decorate.Title2 = model.Title2;
                 if (!string.IsNullOrWhiteSpace(model.Description1)) decorate.Description1 = model.Description1;
                 if (!string.IsNullOrWhiteSpace(model.Description2)) decorate.Description2 = model.Description2;
 
-                if (model.AdminSettingId.HasValue)
-                    decorate.AdminSettingId = model.AdminSettingId;
+                var (success, _data, message) = await _decorationService.UpdateAsync(id, decorate);
 
-                // Cập nhật Slide (Slide1 - Slide5)
-                if (model.Slide1 != null)
-                    decorate.Slide1 = await SaveFileAsync(model.Slide1, "decorates/slideshow");
-                if (!string.IsNullOrWhiteSpace(model.TitleSlide1)) decorate.TitleSlide1 = model.TitleSlide1;
-                if (!string.IsNullOrWhiteSpace(model.DescriptionSlide1)) decorate.DescriptionSlide1 = model.DescriptionSlide1;
+                TempData["CustomToastType"] = success ? "success" : "error";
+                TempData["CustomToastMessage"] = success
+                    ? "Cập nhật trang trí thành công!"
+                    : (string.IsNullOrWhiteSpace(message) ? "Cập nhật thất bại!" : message);
 
-                if (model.Slide2 != null)
-                    decorate.Slide2 = await SaveFileAsync(model.Slide2, "decorates/slideshow");
-                if (!string.IsNullOrWhiteSpace(model.TitleSlide2)) decorate.TitleSlide2 = model.TitleSlide2;
-                if (!string.IsNullOrWhiteSpace(model.DescriptionSlide2)) decorate.DescriptionSlide2 = model.DescriptionSlide2;
-
-                if (model.Slide3 != null)
-                    decorate.Slide3 = await SaveFileAsync(model.Slide3, "decorates/slideshow");
-                if (!string.IsNullOrWhiteSpace(model.TitleSlide3)) decorate.TitleSlide3 = model.TitleSlide3;
-                if (!string.IsNullOrWhiteSpace(model.DescriptionSlide3)) decorate.DescriptionSlide3 = model.DescriptionSlide3;
-
-                if (model.Slide4 != null)
-                    decorate.Slide4 = await SaveFileAsync(model.Slide4, "decorates/slideshow");
-                if (!string.IsNullOrWhiteSpace(model.TitleSlide4)) decorate.TitleSlide4 = model.TitleSlide4;
-                if (!string.IsNullOrWhiteSpace(model.DescriptionSlide4)) decorate.DescriptionSlide4 = model.DescriptionSlide4;
-
-                if (model.Slide5 != null)
-                    decorate.Slide5 = await SaveFileAsync(model.Slide5, "decorates/slideshow");
-                if (!string.IsNullOrWhiteSpace(model.TitleSlide5)) decorate.TitleSlide5 = model.TitleSlide5;
-                if (!string.IsNullOrWhiteSpace(model.DescriptionSlide5)) decorate.DescriptionSlide5 = model.DescriptionSlide5;
-
-                // Gửi PUT tới Web API để cập nhật Decorate
-                decorate.Id = id; // Cập nhật ID vào đối tượng trước khi gửi
-                var client = new HttpClient();
-                var jsonBody = JsonConvert.SerializeObject(decorate, Formatting.Indented);
-                var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
-                var response = await client.PutAsync($"https://localhost:7096/api/decorates/{decorate.Id}", content);
-
-                if (response.IsSuccessStatusCode)
-                    return Json(new { success = true, message = "✅ Cập nhật trang trí thành công!" });
-
-                var msg = await response.Content.ReadAsStringAsync();
-                return Json(new { success = false, message = $"❌ API PUT lỗi: {response.StatusCode} - {msg}" });
+                return Json(new
+                {
+                    success,
+                    redirectUrl = Url.Action("Decorates", "Decorates", new { area = "Admin" })
+                });
             }
             catch (Exception ex)
             {
                 Console.WriteLine("🔥 Exception tại MVC Decorates/Update:");
-                Console.WriteLine(ex.ToString());
-                return Json(new { success = false, message = "Server Error: " + ex.Message });
+                Console.WriteLine(ex);
+
+                TempData["CustomToastType"] = "error";
+                TempData["CustomToastMessage"] = "Server Error: " + ex.Message;
+
+                return Json(new
+                {
+                    success = false,
+                    redirectUrl = Url.Action("Decorates", "Decorates", new { area = "Admin" })
+                });
             }
         }
+
 
 
         private async Task<string> SaveFileAsync(IFormFile file, string folder)

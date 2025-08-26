@@ -46,18 +46,13 @@ namespace DATN_API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // 🔐 Kiểm tra nếu user đã có decorate
-            var exists = await _context.Decorates
-                .AnyAsync(d => d.UserId == model.UserId);
-
-            if (exists)
-                return Conflict("❌ Người dùng này đã có decorate!");
-
+            // ❌ Bỏ check UserId, chỉ tạo decorate mới
             _context.Decorates.Add(model);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetById), new { id = model.Id }, model);
         }
+
 
         // PUT: api/decorates/5
         [HttpPut("{id}")]
@@ -70,8 +65,7 @@ namespace DATN_API.Controllers
             if (decorate == null)
                 return NotFound();
 
-            // ✅ Chỉ cập nhật nếu có dữ liệu
-            if (model.UserId != 0) decorate.UserId = model.UserId;
+            // ✅ Chỉ cập nhật nếu có dữ liệu (bỏ UserId)
             if (!string.IsNullOrEmpty(model.Video)) decorate.Video = model.Video;
 
             // 🎯 Cập nhật slide
@@ -86,6 +80,14 @@ namespace DATN_API.Controllers
             if (!string.IsNullOrEmpty(model.Slide3)) decorate.Slide3 = model.Slide3;
             if (!string.IsNullOrEmpty(model.TitleSlide3)) decorate.TitleSlide3 = model.TitleSlide3;
             if (!string.IsNullOrEmpty(model.DescriptionSlide3)) decorate.DescriptionSlide3 = model.DescriptionSlide3;
+
+            if (!string.IsNullOrEmpty(model.Slide4)) decorate.Slide4 = model.Slide4;
+            if (!string.IsNullOrEmpty(model.TitleSlide4)) decorate.TitleSlide4 = model.TitleSlide4;
+            if (!string.IsNullOrEmpty(model.DescriptionSlide4)) decorate.DescriptionSlide4 = model.DescriptionSlide4;
+
+            if (!string.IsNullOrEmpty(model.Slide5)) decorate.Slide5 = model.Slide5;
+            if (!string.IsNullOrEmpty(model.TitleSlide5)) decorate.TitleSlide5 = model.TitleSlide5;
+            if (!string.IsNullOrEmpty(model.DescriptionSlide5)) decorate.DescriptionSlide5 = model.DescriptionSlide5;
 
             // 🎯 Cập nhật ảnh decorate 1
             if (!string.IsNullOrEmpty(model.Image1)) decorate.Image1 = model.Image1;
@@ -102,6 +104,7 @@ namespace DATN_API.Controllers
             return NoContent();
         }
 
+
         // DELETE: api/decorates/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
@@ -115,16 +118,14 @@ namespace DATN_API.Controllers
             return NoContent();
         }
 
-        // GET: api/decorates/user/5
+        // GET: api/decorates/user/{userId} (legacy, nhưng trả global)
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetByUserId(int userId)
         {
-            var decorate = await _context.Decorates
-                .Include(d => d.User)
-                .FirstOrDefaultAsync(d => d.UserId == userId);
+            var decorate = await _context.Decorates.FirstOrDefaultAsync();
 
             if (decorate == null)
-                return NotFound($"Không tìm thấy decorate cho userId = {userId}");
+                return NotFound("Không tìm thấy decorate global!");
 
             return Ok(decorate);
         }

@@ -143,16 +143,20 @@
         <!-- Rating -->
         <div class="mb-4">
             <div class="d-flex align-items-center">
-                <div class="text-warning me-2">
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star-half-alt"></i>
-                </div>
-                <span>4.5 (245 đánh giá)</span>
+                @if (totalReviews <= 0)
+                {
+                    <span class="text-muted fst-italic">Chưa có đánh giá</span>
+                }
+                else
+                {
+                    <div class="text-warning me-2">
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                    <span>@averageRating.ToString("0.0") (@totalReviews đánh giá)</span>
+                }
             </div>
         </div>
+
 
         <!-- Product Variants -->
         <!-- Product Variants -->
@@ -901,13 +905,13 @@
 
 <!-- Cart Validation Script - FIXED -->
 <script>
-document.getElementById("addToCartForm").addEventListener("submit", async function (e) {
-  e.preventDefault();
+    document.getElementById("addToCartForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
 
         // Đảm bảo các input ẩn variant đã được cập nhật
         updateFormHiddenInputs();
 
-  let errors = [];
+        let errors = [];
 
         // -------------------------
         // FIX: Kiểm tra biến thể bắt buộc TRƯỚC khi kiểm tra tồn kho
@@ -1000,9 +1004,9 @@ document.getElementById("addToCartForm").addEventListener("submit", async functi
             }
         }
 
-  // Lấy số lượng người dùng nhập
-  const quantityInputEl = document.getElementById("productQuantityInput");
-  const requestedQuantity = parseInt(quantityInputEl?.value) || 1;
+        // Lấy số lượng người dùng nhập
+        const quantityInputEl = document.getElementById("productQuantityInput");
+        const requestedQuantity = parseInt(quantityInputEl?.value) || 1;
 
         console.log("=== QUANTITY VALIDATION ===");
         console.log("Requested quantity:", requestedQuantity);
@@ -1041,12 +1045,12 @@ document.getElementById("addToCartForm").addEventListener("submit", async functi
                 credentials: 'same-origin'
             });
 
-    const contentType = response.headers.get('content-type') || '';
-    // Lấy qty người dùng chọn để cộng badge khi thành công
-    const qty = parseInt(document.getElementById("productQuantityInput")?.value || '1') || 1;
+            const contentType = response.headers.get('content-type') || '';
+            // Lấy qty người dùng chọn để cộng badge khi thành công
+            const qty = parseInt(document.getElementById("productQuantityInput")?.value || '1') || 1;
 
-    if (contentType.includes('application/json')) {
-      const data = await response.json();
+            if (contentType.includes('application/json')) {
+                const data = await response.json();
 
                 if (response.ok && (data.success === undefined || data.success === true)) {
                     showToast(data.message || 'Đã thêm vào giỏ hàng thành công!', true);
@@ -1094,19 +1098,19 @@ document.getElementById("addToCartForm").addEventListener("submit", async functi
             toast = document.createElement('div');
             toast.id = 'toast-notification';
             toast.style.cssText = `
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    padding: 15px 20px;
-                    border-radius: 5px;
-                    color: white;
-                    font-weight: 500;
-                    z-index: 10000;
-                    max-width: 300px;
-                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-                    transition: all 0.3s ease;
-                    transform: translateX(100%);
-                `;
+                        position: fixed;
+                        top: 20px;
+                        right: 20px;
+                        padding: 15px 20px;
+                        border-radius: 5px;
+                        color: white;
+                        font-weight: 500;
+                        z-index: 10000;
+                        max-width: 300px;
+                        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                        transition: all 0.3s ease;
+                        transform: translateX(100%);
+                    `;
             document.body.appendChild(toast);
         }
 
@@ -1126,4 +1130,3 @@ document.getElementById("addToCartForm").addEventListener("submit", async functi
         }, 3000);
     }
 </script>
-

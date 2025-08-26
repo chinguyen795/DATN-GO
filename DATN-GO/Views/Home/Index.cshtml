@@ -3,95 +3,143 @@
 
 @{
     ViewData["Title"] = "Home Page";
-
+    var priceDict = ViewBag.MinMaxPriceDict as System.Collections.IDictionary;
 }
 <section class="slideshow mb-3">
     <div class="row">
         <div class="col-md-9">
             <div class="row">
+                <!-- Carousel -->
                 <div class="col-md-8 mb-2">
-                    <div id="mainCarousel" class="carousel slide" data-bs-ride="carousel">
-                        <div class="carousel-indicators">
-                            <button type="button" data-bs-target="#mainCarousel" data-bs-slide-to="0"
-                                    class="active" aria-current="true" aria-label="Slide 1"></button>
-                            <button type="button" data-bs-target="#mainCarousel" data-bs-slide-to="1"
-                                    aria-label="Slide 2"></button>
-                            <button type="button" data-bs-target="#mainCarousel" data-bs-slide-to="2"
-                                    aria-label="Slide 3"></button>
+                    @{
+                        var slides = new[]
+                        {
+                    new { Path = Model.Decorate?.Slide1Path, Title = Model.Decorate?.TitleSlide1, Desc = Model.Decorate?.DescriptionSlide1 },
+                    new { Path = Model.Decorate?.Slide2Path, Title = Model.Decorate?.TitleSlide2, Desc = Model.Decorate?.DescriptionSlide2 },
+                    new { Path = Model.Decorate?.Slide3Path, Title = Model.Decorate?.TitleSlide3, Desc = Model.Decorate?.DescriptionSlide3 },
+                    new { Path = Model.Decorate?.Slide4Path, Title = Model.Decorate?.TitleSlide4, Desc = Model.Decorate?.DescriptionSlide4 },
+                    new { Path = Model.Decorate?.Slide5Path, Title = Model.Decorate?.TitleSlide5, Desc = Model.Decorate?.DescriptionSlide5 }
+                    }.Where(x => !string.IsNullOrEmpty(x.Path)).ToList();
+                    }
+
+                    @if (slides.Any())
+                    {
+                        <div id="mainCarousel" class="carousel slide" data-bs-ride="carousel">
+                            <!-- Indicators -->
+                            <div class="carousel-indicators">
+                                @for (int i = 0; i < slides.Count; i++)
+                                {
+                                    <button type="button"
+                                            data-bs-target="#mainCarousel"
+                                            data-bs-slide-to="@i"
+                                            class="@(i == 0 ? "active" : "")"
+                                            aria-label="Slide @(i + 1)"></button>
+                                }
+                            </div>
+
+                            <!-- Slides -->
+                            <div class="carousel-inner rounded-3 carousel-img">
+                                @for (int i = 0; i < slides.Count; i++)
+                                {
+                                    <div class="carousel-item @(i == 0 ? "active" : "")">
+                                        <img src="@slides[i].Path" class="d-block w-100 rounded-3" alt="Slide @(i + 1)">
+                                        @if (!string.IsNullOrEmpty(slides[i].Title) || !string.IsNullOrEmpty(slides[i].Desc))
+                                        {
+                                            <div class="carousel-caption carousel-caption-custom">
+                                                <h3>@slides[i].Title</h3>
+                                                <p>@slides[i].Desc</p>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Controls -->
+                            <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#mainCarousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
                         </div>
-                        <div class="carousel-inner rounded-2 carousel-img">
-                            <div class="carousel-item active">
-                                <img src="https://intphcm.com/data/upload/banner-thoi-trang-bi-an.jpg"
-                                     alt="Food 1">
-                                <div class="carousel-caption carousel-caption-custom">
-                                    <h3>Sale Sốc</h3>
-                                    <p>Săn ngay outfit hot trend với ưu đãi lên đến 70%</p>
-                                </div>
-                            </div>
-                            <div class="carousel-item">
-                                <img src="https://theme.hstatic.net/1000356017/1001347190/14/slide_1_img.jpg?v=132"
-                                     alt="Food 2">
-                                <div class="carousel-caption carousel-caption-custom">
-                                    <h3>Phong cách nổi bật</h3>
-                                    <p>Diện ngay những outfit chất lừ được chọn lọc bởi stylist chuyên nghiệp</p>
-                                </div>
-                            </div>
-                            <div class="carousel-item">
-                                <img src="https://theme.hstatic.net/1000356017/1001347190/14/slide_3_img.jpg?v=132"
-                                     alt="Food 3">
-                                <div class="carousel-caption carousel-caption-custom">
-                                    <h3>Shop Thời Trang Trẻ Trung</h3>
-                                    <p>Tự tin thể hiện cá tính với những mẫu quần áo hợp xu hướng</p>
-                                </div>
-                            </div>
+                    }
+                    else
+                    {
+                        <div class="d-flex justify-content-center align-items-center bg-light rounded-3 text-muted" style="height:400px;">
+                            <span>Chưa có slide nào</span>
                         </div>
-                        <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel"
-                                data-bs-slide="prev">
-                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                            <span class="visually-hidden">Previous</span>
-                        </button>
-                        <button class="carousel-control-next" type="button" data-bs-target="#mainCarousel"
-                                data-bs-slide="next">
-                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                            <span class="visually-hidden">Next</span>
-                        </button>
-                    </div>
+                    }
                 </div>
 
+                <!-- Video -->
                 <div class="col-md-4 mb-2">
                     <div class="ratio ratio-16x9 h-100">
-                        <iframe class="rounded-2"
-                                src="https://www.youtube.com/embed/sGO52SbSUbI?autoplay=1&mute=1&loop=1&playlist=sGO52SbSUbI"
-                                title="Fashion Video"
-                                allow="autoplay; encrypted-media"
-                                allowfullscreen></iframe>
+                        @if (!string.IsNullOrEmpty(Model.Decorate?.VideoPath))
+                        {
+                            <video src="@Model.Decorate.VideoPath"
+                                   class="rounded-2"
+                                   controls autoplay muted loop></video>
+                        }
+                        else
+                        {
+                            <div class="d-flex justify-content-center align-items-center bg-light rounded-3 text-muted" style="height:400px;">
+                                <span>Chưa có video nào</span>
+                            </div>
+                        }
                     </div>
                 </div>
-
-
             </div>
         </div>
 
+        <!-- Ảnh quảng cáo -->
         <div class="col-md-3 mb-2">
             <div class="row advertisement">
                 <div class="col-12">
                     <div class="position-relative">
-                        <img src="https://theme.hstatic.net/1000356017/1001347190/14/img_banner_bottom_desktop_1.jpg?v=132"
-                             class="rounded-4" alt="Top promotion">
-                        <div class="advertisement-caption">Quần áo trẻ trung, năng động</div>
+                        @if (!string.IsNullOrEmpty(Model.Decorate?.Image1Path))
+                        {
+                            <img src="@Model.Decorate.Image1Path" class="rounded-3 w-100" alt="Ảnh 1">
+                            <div class="advertisement-caption text-center">
+                                <h5 class="mb-1">@Model.Decorate.Title1</h5>
+                                <p class="mb-0">@Model.Decorate.Description1</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="d-flex justify-content-center align-items-center bg-light rounded-3 text-muted">
+                                <span>Chưa có ảnh 1</span>
+                            </div>
+                        }
                     </div>
                 </div>
-                <div class="col-12">
+
+                <div class="col-12 mt-2">
                     <div class="position-relative">
-                        <img src="https://theme.hstatic.net/1000356017/1001347190/14/img_banner_bottom_desktop_2.jpg?v=132"
-                             class="rounded-4" alt="Bottom promotion">
-                        <div class="advertisement-caption">Hot trend vừa cập bến</div>
+                        @if (!string.IsNullOrEmpty(Model.Decorate?.Image2Path))
+                        {
+                            <img src="@Model.Decorate.Image2Path" class="rounded-3 w-100" alt="Ảnh 2">
+                            <div class="advertisement-caption text-center">
+                                <h5 class="mb-1">@Model.Decorate.Title2</h5>
+                                <p class="mb-0">@Model.Decorate.Description2</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="d-flex justify-content-center align-items-center bg-light rounded-3 text-muted">
+                                <span>Chưa có ảnh 2</span>
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
         </div>
+
     </div>
 </section>
+
+
 
 <!-- Categories Section with Circular Scrolling -->
 <section class="categories-section mb-3">
@@ -101,20 +149,23 @@
             @foreach (var category in Model.Categories)
             {
                 <div class="category-wrapper">
-                    <div class="category-item text-center">
+                    <a href="/Products/Products?categoryId=@category.Id"
+                       class="category-item text-center d-block">
                         <div class="category-circle">
                             <img src="@category.Image" alt="@category.Name" />
                         </div>
                         <h6 class="mb-0">@category.Name</h6>
-                    </div>
+                    </a>
                 </div>
             }
         </div>
     </div>
 </section>
+
+<!-- Nổi bật -->
 <section class="popular-restaurants mb-3">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold mb-0">Nhà Hàng Nổi Bật</h2>
+        <h2 class="fw-bold mb-0">Cửa Hàng Nổi Bật</h2>
         <button id="toggleStoresBtn" class="btn btn-outline-danger rounded-pill">Xem tất cả</button>
     </div>
     <div class="row g-4" id="storeList">
@@ -134,23 +185,32 @@
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-start mb-2">
                                         <h5 class="card-title fw-bold mb-1">@store.Name</h5>
-                                        <span class="badge bg-success">
-                                            Mở cửa
-                                        </span>
-
+                                        <span class="badge bg-success">Mở cửa</span>
                                     </div>
+
                                     <p class="card-text text-muted small mb-2 text-truncate-1">
                                         <i class="bi bi-geo-alt-fill icon-sm"></i> @store.Address
                                     </p>
+
                                     <div class="d-flex align-items-center mb-2">
-                                        <div class="rating text-warning me-2">
-                                            @for (int i = 1; i <= 5; i++)
-                                            {
-                                                <i class="bi @(i <= Math.Round(store.Rating) ? "bi-star-fill" : "bi-star") icon-sm"></i>
-                                            }
-                                        </div>
-                                        <span class="text-muted small">(@store.Rating.ToString("0.0") điểm)</span>
+                                        @if (store.Rating < 0)
+                                        {
+                                            <span class="text-muted small fst-italic">Chưa có đánh giá</span>
+                                        }
+                                        else
+                                        {
+                                            <div class="rating text-warning me-2">
+                                                @for (int i = 1; i <= 5; i++)
+                                                {
+                                                    <i class="bi @(i <= Math.Round(store.Rating) ? "bi-star-fill" : "bi-star") icon-sm"></i>
+                                                }
+                                            </div>
+                                            <span class="text-muted small">
+                                                (@store.Rating.ToString("0.0") sao)
+                                            </span>
+                                        }
                                     </div>
+
                                     <a asp-controller="Store" asp-action="Detail" asp-route-id="@store.Id"
                                        class="btn btn-outline-danger rounded-pill">Xem chi tiết</a>
                                 </div>
@@ -160,7 +220,6 @@
                 </div>
                 storeIndex++;
             }
-
         }
         else
         {
@@ -169,6 +228,7 @@
     </div>
 </section>
 
+<!-- Gợi ý -->
 <section class="all-products mb-3">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="fw-bold mb-0">Gợi ý cho bạn</h2>
@@ -179,30 +239,67 @@
         <div class="row g-4">
             @foreach (var product in Model.SuggestedProducts.Take(4))
             {
+                // Lấy priceInfo dạng dynamic từ ViewBag.MinMaxPriceDict
+                dynamic priceInfo = (priceDict != null && priceDict.Contains(product.Id))
+                ? priceDict[product.Id]
+                : null;
+
+                bool hasVariant = false;
+                if (priceInfo != null)
+                {
+                    bool isVar = false;
+                    try { isVar = (bool)priceInfo.IsVariant; } catch { }
+
+                    decimal? min = null, max = null;
+                    try { min = (decimal?)priceInfo.MinPrice; } catch { }
+                    try { max = (decimal?)priceInfo.MaxPrice; } catch { }
+
+                    hasVariant = isVar || (min.HasValue && max.HasValue && min != max);
+                }
+                else
+                {
+                    // Không có thông tin giá → để an toàn cho sang chi tiết
+                    hasVariant = true;
+                }
+
                 <div class="col-xl-3 col-lg-4 col-md-6">
                     <div class="product-card card h-100 border-0 shadow-sm hover-scale">
                         <div class="position-relative">
-                            <img src="@product.MainImage" class="card-img-top"
-                                 style="height: 200px; object-fit: cover;" alt="@product.Name" />
+                            <img src="@product.MainImage" class="card-img-top" style="height: 200px; object-fit: cover;" alt="@product.Name" />
                         </div>
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <span class="badge bg-light text-danger">@product.CategoryName</span>
-                                <div class="rating text-warning">
-                                    <i class="bi bi-star-fill icon-sm"></i>
-                                    <span class="ms-1 text-dark">@product.Rating.ToString("0.0")</span>
+
+                                <div class="rating text-warning d-flex align-items-center">
+                                    @if (product.Rating <= 0)
+                                    {
+                                        <span class="text-muted small fst-italic">Chưa có đánh giá</span>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-star-fill icon-sm"></i>
+                                        <span class="ms-1 text-dark">@product.Rating.ToString("0.0")</span>
+                                    }
                                 </div>
+
                             </div>
+
                             <h5 class="card-title fw-bold mb-1 text-truncate-1">@product.Name</h5>
                             <p class="card-text text-muted small mb-2 text-truncate-1">@product.StoreName</p>
+
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <span class="text-danger fw-bold">@product.Price.ToString("N0")đ</span>
                                 </div>
-                                <a href="/Products/DetailProducts/@product.Id"
-                                   class="btn btn-crimson btn-sm rounded-pill">
+
+                                <!-- 🔥 Nút QuickAdd/Redirect -->
+                                <button class="btn btn-crimson btn-sm rounded-pill add-to-cart-btn"
+                                        type="button"
+                                        data-product-id="@product.Id"
+                                        data-has-variant="@(hasVariant.ToString().ToLower())">
                                     <i class="bi bi-cart-plus icon-sm"></i> Thêm
-                                </a>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -216,108 +313,180 @@
     }
 </section>
 
+<!-- Thịnh hành -->
 <section class="hot-trend mb-3">
-	<div class="d-flex justify-content-between align-items-center mb-4">
-		<div class="d-flex align-items-center">
-			<h2 class="fw-bold mb-0 me-3">Thịnh hành</h2>
-			<div class="trending-badge d-flex align-items-center bg-danger text-white px-3 py-2 rounded-pill">
-				<i class="bi bi-fire me-2 icon-lg"></i>
-				<span>Xu hướng</span>
-			</div>
-		</div>
-	</div>
-	<div class="row g-4">
-		@if (Model.TrendCategories != null && Model.TrendCategories.Any())
-		{
-			foreach (var category in Model.TrendCategories)
-			{
-				<div class="col-lg-3 col-md-6" data-aos="fade-up">
-					<div class="trend-category-card position-relative overflow-hidden rounded-4">
-						<div class="trend-category-image">
-							<img src="@category.Image" class="w-100" alt="@category.Name">
-							<div class="trend-category-overlay"></div>
-						</div>
-						<div class="trend-category-content text-center text-white">
-							<div class="trend-category-icon mb-3">
-								<i class="bi bi-star-fill icon-lg"></i>
-							</div>
-							<h3 class="trend-category-title mb-2">@category.Name</h3>
-							<p class="trend-category-stat mb-3">
-								<span class="badge bg-danger me-2">Top @category.Rank</span>
-								<span>@category.TotalProducts món ăn</span>
-							</p>
-							<a href="#" class="btn btn-light rounded-pill px-4">Khám phá ngay</a>
-						</div>
-					</div>
-				</div>
-			}
-		}
-		else
-		{
-			<p class="text-muted">Chưa có danh mục xu hướng.</p>
-		}
-	</div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center">
+            <h2 class="fw-bold mb-0 me-3">Thịnh hành</h2>
+            <div class="trending-badge d-flex align-items-center bg-danger text-white px-3 py-2 rounded-pill">
+                <i class="bi bi-fire me-2 icon-lg"></i>
+                <span>Xu hướng</span>
+            </div>
+        </div>
+    </div>
+    <div class="row g-4">
+        @if (Model.TrendCategories != null && Model.TrendCategories.Any())
+        {
+            foreach (var category in Model.TrendCategories)
+            {
+                <div class="col-lg-3 col-md-6" data-aos="fade-up">
+                    <div class="trend-category-card position-relative overflow-hidden rounded-4">
+                        <div class="trend-category-image">
+                            <img src="@category.Image" class="w-100" alt="@category.Name">
+                            <div class="trend-category-overlay"></div>
+                        </div>
+                        <div class="trend-category-content text-center text-white">
+                            <div class="trend-category-icon mb-3">
+                                <i class="bi bi-star-fill icon-lg"></i>
+                            </div>
+                            <h3 class="trend-category-title mb-2">@category.Name</h3>
+                            <p class="trend-category-stat mb-3">
+                                <span class="badge bg-danger me-2">Top @category.Rank</span>
+                                <span>@category.TotalProducts sản phẩm</span>
+                            </p>
+                            <a href="@Url.Action("Products", "Products", new { categoryId = category.Id })"
+                               class="btn btn-light rounded-pill px-4">
+                                Khám phá ngay
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <p class="text-muted">Chưa có danh mục xu hướng.</p>
+        }
+    </div>
 </section>
 
-
+<!-- Gợi ý -->
 <section class="all-products mb-3">
-	<div class="d-flex justify-content-between align-items-center mb-4">
-		<h2 class="fw-bold mb-0">Gợi ý cho bạn</h2>
-	</div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">Gợi ý cho bạn</h2>
+    </div>
 
-	@if (Model.SuggestedProducts != null && Model.SuggestedProducts.Any())
-	{
-		<div class="row g-4">
-			@foreach (var product in Model.SuggestedProducts.Take(4))
-			{
-				<div class="col-xl-3 col-lg-4 col-md-6">
-					<div class="product-card card h-100 border-0 shadow-sm hover-scale">
-						<div class="position-relative">
-							<img src="@product.MainImage" class="card-img-top"
-								 style="height: 200px; object-fit: cover;" alt="@product.Name" />
-						</div>
-						<div class="card-body">
-							<div class="d-flex justify-content-between align-items-center mb-2">
-								<span class="badge bg-light text-danger">@product.CategoryName</span>
-								<div class="rating text-warning">
-									<i class="bi bi-star-fill icon-sm"></i>
-									<span class="ms-1 text-dark">@product.Rating.ToString("0.0")</span>
-								</div>
-							</div>
-							<h5 class="card-title fw-bold mb-1 text-truncate-1">@product.Name</h5>
-							<p class="card-text text-muted small mb-2 text-truncate-1">@product.StoreName</p>
-							<div class="d-flex justify-content-between align-items-center">
-								<div>
-									<span class="text-danger fw-bold">@product.Price.ToString("N0")đ</span>
-								</div>
-                                <a href="/Products/DetailProducts/@product.Id"
-                                   class="btn btn-crimson btn-sm rounded-pill">
+    @if (Model.SuggestedProducts != null && Model.SuggestedProducts.Any())
+    {
+        <div class="row g-4">
+            @foreach (var product in Model.SuggestedProducts.Take(4))
+            {
+                // Lấy priceInfo dạng dynamic từ ViewBag.MinMaxPriceDict
+                dynamic priceInfo = (priceDict != null && priceDict.Contains(product.Id))
+                ? priceDict[product.Id]
+                : null;
+
+                bool hasVariant = false;
+                if (priceInfo != null)
+                {
+                    bool isVar = false;
+                    try { isVar = (bool)priceInfo.IsVariant; } catch { }
+
+                    decimal? min = null, max = null;
+                    try { min = (decimal?)priceInfo.MinPrice; } catch { }
+                    try { max = (decimal?)priceInfo.MaxPrice; } catch { }
+
+                    hasVariant = isVar || (min.HasValue && max.HasValue && min != max);
+                }
+                else
+                {
+                    // Không có thông tin giá → để an toàn cho sang chi tiết
+                    hasVariant = true;
+                }
+
+                <div class="col-xl-3 col-lg-4 col-md-6">
+                    <div class="product-card card h-100 border-0 shadow-sm hover-scale">
+                        <div class="position-relative">
+                            <img src="@product.MainImage" class="card-img-top" style="height: 200px; object-fit: cover;" alt="@product.Name" />
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-light text-danger">@product.CategoryName</span>
+
+                                <div class="rating text-warning d-flex align-items-center">
+                                    @if (product.Rating <= 0)
+                                    {
+                                        <span class="text-muted small fst-italic">Chưa có đánh giá</span>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-star-fill icon-sm"></i>
+                                        <span class="ms-1 text-dark">@product.Rating.ToString("0.0")</span>
+                                    }
+                                </div>
+
+                            </div>
+
+                            <h5 class="card-title fw-bold mb-1 text-truncate-1">@product.Name</h5>
+                            <p class="card-text text-muted small mb-2 text-truncate-1">@product.StoreName</p>
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="text-danger fw-bold">@product.Price.ToString("N0")đ</span>
+                                </div>
+
+                                <!-- 🔥 Nút QuickAdd/Redirect -->
+                                <button class="btn btn-crimson btn-sm rounded-pill add-to-cart-btn"
+                                        type="button"
+                                        data-product-id="@product.Id"
+                                        data-has-variant="@(hasVariant.ToString().ToLower())">
                                     <i class="bi bi-cart-plus icon-sm"></i> Thêm
-                                </a>
-							</div>
-						</div>
-					</div>
-				</div>
-			}
-		</div>
-	}
-	else
-	{
-		<p class="text-muted">Chưa có sản phẩm gợi ý.</p>
-	}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-muted">Chưa có sản phẩm gợi ý.</p>
+    }
 </section>
 
+<!-- Nổi bật -->
 <section class="featured-products mb-3">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="fw-bold mb-0">Sản Phẩm Nổi Bật</h2>
         <button id="toggleProductsBtn" class="btn btn-outline-danger rounded-pill">Xem tất cả</button>
     </div>
+
     <div class="row g-4" id="productList">
         @if (Model.FeaturedProducts != null && Model.FeaturedProducts.Any())
         {
             var productIndex = 0;
             foreach (var product in Model.FeaturedProducts)
             {
+                // ==== Tính hasVariant / salePrice an toàn không cần DTO riêng ====
+                dynamic priceInfo = (priceDict != null && priceDict.Contains(product.Id))
+                ? priceDict[product.Id]
+                : null;
+
+                bool hasVariant = false;
+                decimal? salePrice = null;
+
+                if (priceInfo != null)
+                {
+                    bool isVar = false;
+                    try { isVar = (bool)priceInfo.IsVariant; } catch { /* noop */ }
+
+                    decimal? min = null, max = null, single = null;
+                    try { min = (decimal?)priceInfo.MinPrice; } catch { }
+                    try { max = (decimal?)priceInfo.MaxPrice; } catch { }
+                    try { single = (decimal?)priceInfo.Price; } catch { }
+
+                    hasVariant = isVar || (min.HasValue && max.HasValue && min != max);
+                    salePrice = isVar ? (min ?? max) : (single ?? 0m);
+                }
+                else
+                {
+                    // Thiếu info → xem như có biến thể để chuyển qua chi tiết cho chắc ăn
+                    hasVariant = true;
+                    salePrice = product.Price > 0 ? product.Price : null;
+                }
+                // ===============================================================
+
                 <div class="col-lg-3 col-md-4 col-sm-6 product-card @(productIndex >= 4 ? "d-none" : "")" data-aos="fade-up">
                     <div class="product-card card h-100 border-0 shadow-sm hover-scale">
                         <div class="position-relative">
@@ -329,21 +498,39 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <span class="badge bg-light text-danger">@product.CategoryName</span>
-                                <div class="rating text-warning">
-                                    <i class="bi bi-star-fill icon-sm"></i>
-                                    <span class="ms-1 text-dark">@product.Rating.ToString("0.0")</span>
+                                <div class="rating text-warning d-flex align-items-center">
+                                    @if (product.Rating <= 0)
+                                    {
+                                        <span class="text-muted small fst-italic">Chưa có đánh giá</span>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-star-fill icon-sm"></i>
+                                        <span class="ms-1 text-dark">@product.Rating.ToString("0.0")</span>
+                                    }
                                 </div>
                             </div>
                             <h5 class="card-title fw-bold mb-1 text-truncate-1">@product.Name</h5>
                             <p class="card-text text-muted small mb-2 text-truncate-1">@product.StoreName</p>
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <span class="text-danger fw-bold">@product.Price.ToString("N0")đ</span>
+                                    @if (salePrice.HasValue && salePrice > 0)
+                                    {
+                                        <span class="text-danger fw-bold">@salePrice?.ToString("N0")đ</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Chưa có giá</span>
+                                    }
                                 </div>
-                                <a href="/Products/DetailProducts/@product.Id"
-                                   class="btn btn-crimson btn-sm rounded-pill">
+
+                                <!-- ✅ Nút QuickAdd/Redirect -->
+                                <button class="btn btn-crimson btn-sm rounded-pill add-to-cart-btn"
+                                        type="button"
+                                        data-product-id="@product.Id"
+                                        data-has-variant="@(hasVariant.ToString().ToLower())">
                                     <i class="bi bi-cart-plus icon-sm"></i> Thêm
-                                </a>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -359,47 +546,106 @@
 </section>
 
 
-<!-- Trend Categories -->
+
+<form id="__quickAddToken" style="display:none;">
+    @Html.AntiForgeryToken()
+</form>
 
 
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // --- Cửa hàng nổi bật ---
+            const storeBtn = document.getElementById("toggleStoresBtn");
+            const storeCards = document.querySelectorAll(".store-card");
+            let storeExpanded = false;
+            const defaultStoreVisible = 2;
 
-
-    @section Scripts {
-        <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                // --- Cửa hàng nổi bật ---
-                const storeBtn = document.getElementById("toggleStoresBtn");
-                const storeCards = document.querySelectorAll(".store-card");
-                let storeExpanded = false;
-                const defaultStoreVisible = 2;
-
-                storeBtn.addEventListener("click", function () {
-                    storeExpanded = !storeExpanded;
-                    storeCards.forEach((card, index) => {
-                        if (index >= defaultStoreVisible) {
-                            card.classList.toggle("d-none", !storeExpanded);
-                        }
-                    });
-                    storeBtn.textContent = storeExpanded ? "Thu gọn" : "Xem tất cả";
+            storeBtn.addEventListener("click", function () {
+                storeExpanded = !storeExpanded;
+                storeCards.forEach((card, index) => {
+                    if (index >= defaultStoreVisible) {
+                        card.classList.toggle("d-none", !storeExpanded);
+                    }
                 });
-
-                // --- Sản phẩm nổi bật ---
-                const btn = document.getElementById("toggleProductsBtn");
-                // CHỈ bắt các thẻ con trực tiếp trong #productList
-                const cards = document.querySelectorAll("#productList > .product-card"); // <--- đã sửa
-                let expanded = false;
-
-                btn.addEventListener("click", function () {
-                    expanded = !expanded;
-                    cards.forEach((card, index) => {
-                        if (!expanded && index >= 4) {
-                            card.classList.add("d-none");
-                        } else {
-                            card.classList.remove("d-none");
-                        }
-                    });
-                    btn.textContent = expanded ? "Thu gọn" : "Xem tất cả";
-                });
+                storeBtn.textContent = storeExpanded ? "Thu gọn" : "Xem tất cả";
             });
-        </script>
-    }
+
+            // --- Sản phẩm nổi bật ---
+            const btn = document.getElementById("toggleProductsBtn");
+            // CHỈ bắt các thẻ trong #productList, không đụng "Gợi ý cho bạn"
+            const cards = document.querySelectorAll("#productList .product-card");
+            let expanded = false;
+
+            btn.addEventListener("click", function () {
+                expanded = !expanded;
+                cards.forEach((card, index) => {
+                    if (!expanded && index >= 4) {
+                        card.classList.add("d-none");
+                    } else {
+                        card.classList.remove("d-none");
+                    }
+                });
+                btn.textContent = expanded ? "Thu gọn" : "Xem tất cả";
+            });
+        });
+    </script>
+
+    <script>
+        (() => {
+            if (window.__QuickAddBound) return;
+            window.__QuickAddBound = true;
+
+            const getToken = () => document.querySelector('#__quickAddToken input[name="__RequestVerificationToken"]')?.value || null;
+            const ANTIFORGERY = getToken();
+
+            const toastOk = (m) => window.showToast ? showToast(m, true) : alert(m);
+            const toastErr = (m) => window.showToast ? showToast(m, false) : alert(m);
+
+            document.addEventListener('click', async (e) => {
+                const btn = e.target.closest('.add-to-cart-btn');
+                if (!btn) return;
+
+                e.preventDefault();
+
+                const pid = btn.dataset.productId;
+
+                try {
+                    const fd = new FormData();
+                    fd.append('productId', pid);
+                    fd.append('quantity', '1');
+
+                    const headers = { 'X-Requested-With': 'XMLHttpRequest' };
+                    const token = ANTIFORGERY || document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                    if (token) headers['RequestVerificationToken'] = token;
+
+                    const res = await fetch('/Cart/QuickAdd', { method: 'POST', body: fd, headers, credentials: 'same-origin' });
+                    const data = await res.json().catch(() => ({}));
+
+                    if (res.ok && data?.success) {
+                        if (typeof window.__CartBadge?.set === 'function' && typeof data.cartCount === 'number') {
+                            window.__CartBadge.set(data.cartCount);
+                        } else if (typeof window.__CartBadge?.add === 'function') {
+                            window.__CartBadge.add(1);
+                        }
+                        toastOk(data.message || 'Đã thêm vào giỏ hàng!');
+                        return;
+                    }
+
+                    if (res.status === 401 || String(data?.message || '').toLowerCase().includes('đăng nhập')) {
+                        window.location.href = '/Login';
+                        return;
+                    }
+
+                    window.location.href = `/Products/DetailProducts/${pid}`;
+                } catch (err) {
+                    console.error(err);
+
+                    window.location.href = `/Products/DetailProducts/${pid}`;
+                }
+            }, false);
+        })();
+    </script>
+
+
+}
