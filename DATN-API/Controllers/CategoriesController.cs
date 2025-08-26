@@ -25,6 +25,13 @@ namespace DATN_API.Controllers
             return Ok(categories);
         }
 
+        [HttpGet("with-usage")]
+        public async Task<IActionResult> GetAllWithUsage()
+        {
+            var categories = await _service.GetAllWithUsageAsync();
+            return Ok(categories);
+        }
+
         // GET: api/categories/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)

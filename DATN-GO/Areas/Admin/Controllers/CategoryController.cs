@@ -19,12 +19,14 @@ namespace DATN_GO.Areas.Admin.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var (success, data, message) = await _categoryService.GetAllCategoriesAsync();
+            var (success, data, message) = await _categoryService.GetAllWithUsageAsync();
+
             if (!success)
             {
                 TempData["ToastMessage"] = message;
                 TempData["ToastType"] = "error";
             }
+
             return View(data);
         }
         [HttpPost]

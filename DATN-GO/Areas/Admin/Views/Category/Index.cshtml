@@ -1,6 +1,6 @@
 ﻿﻿
 @using DATN_GO.Models
-@model List<DATN_GO.Models.Categories>
+@model List<DATN_GO.ViewModels.CategoryWithUsageViewModel>
 @{
     ViewData["Title"] = "Quản lý danh mục";
 }
@@ -122,15 +122,13 @@
 
 
                     <table id="categoriesTable" class="table table-hover table-product">
-
                         <thead>
                             <tr>
-
                                 <th>Tên</th>
-
                                 <th>Hashtag</th>
-
                                 <th>Ảnh</th>
+                                <th>Số sản phẩm</th> <!-- UsageCount -->
+                                <th>Trạng thái</th> <!-- Status -->
                                 <th>Thao tác</th>
                             </tr>
                         </thead>
@@ -139,14 +137,20 @@
                             {
                                 var item = Model[i];
                                 <tr>
-
                                     <td>@item.Name</td>
                                     <td>@item.Hashtag</td>
-
-                                    <td><img src="@item.Image" width="50" height="50" style="object-fit:cover" /></td>
                                     <td>
-                                        <button type="button"
-                                                class="btn btn-warning btn-sm"
+                                        @if (!string.IsNullOrEmpty(item.Image))
+                                        {
+                                            <img src="@item.Image" width="50" height="50" style="object-fit:cover" />
+                                        }
+                                    </td>
+                                    <td>@item.UsageCount</td>
+                                    <td>
+                                        @(item.Status == 1 ? "Hoạt động" : "Không hoạt động")
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-warning btn-sm"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#editModal"
                                                 data-id="@item.Id"
@@ -157,8 +161,7 @@
                                             Sửa
                                         </button>
 
-                                        <button type="button"
-                                                class="btn btn-danger btn-sm"
+                                        <button type="button" class="btn btn-danger btn-sm"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#deleteModal"
                                                 data-id="@item.Id"

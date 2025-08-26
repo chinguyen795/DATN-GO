@@ -488,6 +488,7 @@
 </div>
 
 
+<!-- Modal chi tiết sản phẩm -->
 <div class="modal fade" id="detailModal" tabindex="-1" role="dialog" aria-hidden="true" aria-labelledby="detailModalTitle" aria-describedby="detailModalDesc">
     <div class="modal-dialog modal-dialog-scrollable modal-xl" role="document">
         <div class="modal-content modal-product">
@@ -505,7 +506,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
             </div>
         </div>
     </div>
@@ -765,8 +766,104 @@
                 };
             });
         }
-  
 
+        // ========== Xem chi tiết sản phẩm ==========
+        // Sửa lại phần JavaScript xem chi tiết sản phẩm
+        qsa('.btn-detail').forEach(btn => {
+            btn.addEventListener('click', async function () {
+                const id = this.dataset.id;
+                const body = document.getElementById('detailModalBody');
 
-    </script>
+                // Tạo loading element mới mỗi lần
+                const loadingHTML = `
+                    <div class="text-center py-4" id="detailLoading">
+                        <div class="spinner-border" role="status" aria-label="Đang tải"></div>
+                        <div class="mt-2">Đang tải...</div>
+                    </div>
+                `;
+
+                // Reset UI với loading mới
+                body.innerHTML = loadingHTML;
+
+                // Mở modal
+                window.jQuery('#detailModal').modal('show');
+
+                try {
+                    const res = await fetch(`/Admin/Product/GetProductDetail/${id}`);
+
+                    if (!res.ok) {
+                        throw new Error(`HTTP ${res.status}`);
+                    }
+
+                    const data = await res.json();
+
+                    if (data.error) {
+                        body.innerHTML = `<div class="alert alert-danger">${data.message || 'Có lỗi xảy ra'}</div>`;
+                        return;
+                    }
+
+                    // Render nội dung chi tiết
+                    body.innerHTML = `
+                        <div class="row">
+                            <div class="col-md-5 text-center product-hero mb-3">
+                                <img src="${data.mainImage || '/images/no-image.png'}"
+                                     alt="${data.name || 'Sản phẩm'}"
+                                     class="img-fluid rounded shadow-sm"
+                                     style="max-height:280px;object-fit:contain"/>
+                            </div>
+                            <div class="col-md-7">
+                                <h4 class="mb-3">${data.name || 'Chưa có tên'}</h4>
+                                <div class="meta mb-3">
+                                    <dl>
+                                        <dt>Xuất xứ</dt><dd>${data.placeoforigin || 'Chưa có'}</dd>
+                                        <dt>Thương hiệu</dt><dd>${data.brand || 'Chưa có'}</dd>
+                                        <dt>Tổng số lượng</dt><dd>${data.totalQuantity || 0}</dd>
+                                        <dt>Giá</dt><dd>${data.price > 0 ? data.price.toLocaleString('vi-VN') + ' ₫' : 'Chưa có giá'}</dd>
+                                        <dt>Ngày tạo</dt><dd>${data.createat || 'Chưa có'}</dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                        <h6 class="mt-4">${data.variantName1 || 'Biến thể 1'} ${data.variantName2 ? ' / ' + data.variantName2 : ''}</h6>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-sm">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>${data.variantName1 || 'Biến thể 1'}</th>
+                                        <th>${data.variantName2 || 'Biến thể 2'}</th>
+                                        <th>Giá vốn</th>
+                                        <th>Giá bán</th>
+                                        <th>Số lượng</th>
+                                        <th>Khối lượng (g)</th>
+                                        <th>Kích thước (cm)</th>
+                                        <th>Ảnh</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.variants && data.variants.length > 0
+                            ? data.variants.map(v => `
+                                            <tr>
+                                                <td>${v.variantValue1 || ''}</td>
+                                                <td>${v.variantValue2 || ''}</td>
+                                                <td>${(v.costPrice || 0).toLocaleString('vi-VN')} ₫</td>
+                                                <td>${(v.price || 0).toLocaleString('vi-VN')} ₫</td>
+                                                <td>${v.quantity || 0}</td>
+                                                <td>${v.weight || 0}</td>
+                                                <td>${(v.length || 0)} x ${(v.width || 0)} x ${(v.height || 0)}</td>
+                                                <td>${v.image
+                                    ? `<img src="${v.image}" class="img-thumbnail" style="width:50px;height:50px;object-fit:cover"/>`
+                                    : 'Không có'}</td>
+                                            </tr>
+                                        `).join('')
+                            : `<tr><td colspan="8" class="text-center text-muted">Không có biến thể</td></tr>`}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                } catch (err) {
+                    console.error('Error loading product detail:', err);
+                    body.innerHTML = `<div class="alert alert-danger">Lỗi tải dữ liệu chi tiết. Vui lòng thử lại.</div>`;
+                }
+            });
+        });</script>
 }

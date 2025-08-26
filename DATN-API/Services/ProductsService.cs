@@ -388,5 +388,122 @@ namespace DATN_API.Services
                 .CountAsync();
         }
 
+        public async Task<ProductDetailResponse?> GetDetailAsync(int productId)
+        {
+            var product = await _context.Products
+                .AsNoTracking()
+                .Include(p => p.Category)   // ✅ để lấy CategoryName
+                .Include(p => p.Store)      // ✅ để lấy StoreName
+                .FirstOrDefaultAsync(p => p.Id == productId);
+
+            if (product == null) return null;
+
+            // Nhóm thuộc tính + values
+            var variantGroups = await _context.Variants
+                .AsNoTracking()
+                .Where(v => v.ProductId == productId)
+                .Select(v => new VariantGroupDto
+                {
+                    VariantId = v.Id,
+                    VariantName = v.VariantName,
+                    Type = v.Type,
+                    Values = _context.VariantValues
+                        .Where(val => val.VariantId == v.Id)
+                        .Select(val => new VariantValueDto
+                        {
+                            Id = val.Id,
+                            ValueName = val.ValueName,
+                            Type = val.Type,
+                            Image = val.Image,
+                            ColorHex = val.colorHex
+                        })
+                        .ToList()
+                })
+                .ToListAsync();
+
+            // Biến thể + map valueIds (lọc null -> int)
+            var variantRows = await _context.ProductVariants
+                .AsNoTracking()
+                .Where(pv => pv.ProductId == productId)
+                .Select(pv => new
+                {
+                    pv.Id,
+                    pv.Price,
+                    pv.CostPrice,
+                    pv.Quantity,
+                    pv.Weight,
+                    pv.Height,
+                    pv.Width,
+                    pv.Length,
+                    pv.Image,
+                    VariantValueIds = pv.VariantCompositions
+                        .Where(vc => vc.VariantValueId.HasValue)
+                        .Select(vc => vc.VariantValueId.Value)
+                        .ToList()
+                })
+                .ToListAsync();
+
+            // Map id -> tên value
+            var allValueIds = variantRows.SelectMany(r => r.VariantValueIds).Distinct().ToList();
+            var valueNameMap = await _context.VariantValues
+                .AsNoTracking()
+                .Where(v => allValueIds.Contains(v.Id))
+                .ToDictionaryAsync(v => v.Id, v => v.ValueName);
+
+            // Build DTO
+            var resp = new ProductDetailResponse
+            {
+                Id = product.Id,
+                CategoryId = product.CategoryId,
+                StoreId = product.StoreId,
+                Name = product.Name,
+                Brand = product.Brand,
+                Weight = product.Weight,
+                Slug = product.Slug,
+                Description = product.Description,
+                MainImage = product.MainImage,
+                Status = product.Status.ToString(),
+                Quantity = product.Quantity,
+                Views = product.Views,
+                Rating = product.Rating,
+                CreateAt = product.CreateAt,
+                UpdateAt = product.UpdateAt,
+                CostPrice = product.CostPrice,
+                Height = product.Height,
+                Width = product.Width,
+                Length = product.Length,
+                PlaceOfOrigin = product.PlaceOfOrigin,
+                Hashtag = product.Hashtag,
+
+                // ✅ tên thay vì id trơ trọi (frontend vẫn nhận cả 2)
+                CategoryName = product.Category?.Name,
+                StoreName = product.Store?.Name,
+
+                Images = string.IsNullOrWhiteSpace(product.MainImage)
+                    ? new List<string>()
+                    : new List<string> { product.MainImage },
+                VariantGroups = variantGroups
+            };
+
+            resp.Variants = variantRows.Select(r => new ProductVariantDto
+            {
+                Id = r.Id,
+                Price = r.Price,
+                CostPrice = r.CostPrice,
+                Quantity = r.Quantity,
+                Weight = r.Weight,
+                Height = r.Height,
+                Width = r.Width,
+                Length = r.Length,
+                Image = r.Image,
+                Images = new List<string>(),
+                VariantValueIds = r.VariantValueIds,
+                VariantValueNames = r.VariantValueIds
+                    .Select(id => valueNameMap.TryGetValue(id, out var name) ? name : $"#{id}")
+                    .ToList()
+            }).ToList();
+
+            return resp;
+        }
     }
 }

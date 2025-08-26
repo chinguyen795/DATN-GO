@@ -147,6 +147,14 @@ namespace DATN_API.Controllers
             var count = await _service.GetProductCountByStoreIdAsync(storeId);
             return Ok(count);
         }
+
+        [HttpGet("detail/{id}")]
+        public async Task<IActionResult> GetDetail(int id)
+        {
+            var data = await _service.GetDetailAsync(id);
+            if (data == null) return NotFound("Không tìm thấy sản phẩm.");
+            return Ok(data);
+        }
     }
 
 }

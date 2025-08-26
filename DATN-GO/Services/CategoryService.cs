@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Http;
 using DATN_GO.Models;
 using DATN_GO.Services;
+using DATN_GO.ViewModels;
 
 namespace DATN_GO.Services
 {
@@ -273,5 +274,19 @@ namespace DATN_GO.Services
             Console.WriteLine($"Lỗi khi lấy danh mục theo ProductId {productId}: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
             return null;
         }
+        public async Task<(bool success, List<CategoryWithUsageViewModel> data, string message)> GetAllWithUsageAsync()
+        {
+            try
+            {
+                var data = await _httpClient.GetFromJsonAsync<List<CategoryWithUsageViewModel>>($"{_baseUrl}Categories/with-usage");
+                return (true, data ?? new List<CategoryWithUsageViewModel>(), "Thành công");
+            }
+            catch (Exception ex)
+            {
+                return (false, new List<CategoryWithUsageViewModel>(), ex.Message);
+            }
+        }
+
+
     }
 }
