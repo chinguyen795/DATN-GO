@@ -111,31 +111,116 @@ namespace DATN_GO.Service
             };
         }
 
-        public async Task<List<Vouchers>?> GetVouchersByStoreOrAdminAsync(int? storeId)
+        public async Task<List<Vouchers>> GetVouchersByStoreOrAdminAsync(int? storeId)
         {
-            var url = $"{_baseUrl}Vouchers/bystoreoradmin";
+            // 1) Chuẩn hóa base url (đảm bảo có / ở cuối)
+            var baseUrl = _baseUrl?.Trim() ?? string.Empty;
+            if (!baseUrl.EndsWith("/")) baseUrl += "/";
 
-            if (storeId.HasValue)
+            // 2) Helper gọi và parse JSON
+            async Task<List<Vouchers>> FetchListAsync(string url)
             {
-                url += $"?storeId={storeId.Value}";
-            }
-
-            var response = await _httpClient.GetAsync(url);
-            if (response.IsSuccessStatusCode)
-            {
-                var json = await response.Content.ReadAsStringAsync();
+                var resp = await _httpClient.GetAsync(url);
+                if (!resp.IsSuccessStatusCode) return new List<Vouchers>();
+                var json = await resp.Content.ReadAsStringAsync();
                 return JsonSerializer.Deserialize<List<Vouchers>>(json, new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
-                });
+                }) ?? new List<Vouchers>();
             }
-            return null;
+
+            // 3) ADMIN: storeId == null
+            if (storeId == null)
+            {
+                // Thử endpoint chuyên biệt (VIẾT HOA Vouchers vì bạn dùng vậy ở chỗ khác)
+                var tryAdmin = await FetchListAsync($"{baseUrl}Vouchers/admin");
+                if (tryAdmin.Count > 0) return tryAdmin;
+
+                // Fallback: lấy tất cả rồi lọc StoreId == null
+                var all = await FetchListAsync($"{baseUrl}Vouchers");
+                return all.Where(v => v.StoreId == null).ToList();
+            }
+            else
+            {
+                // 4) SHOP: storeId != null
+                var tryShop = await FetchListAsync($"{baseUrl}Vouchers/shop/{storeId.Value}");
+                if (tryShop.Count > 0) return tryShop;
+
+                // Fallback: lấy tất cả rồi lọc theo StoreId
+                var all = await FetchListAsync($"{baseUrl}Vouchers");
+                return all.Where(v => v.StoreId == storeId.Value).ToList();
+            }
         }
 
 
+        public class SaveVoucherServiceResult
+        {
+            public bool Ok { get; set; }
+            public string Message { get; set; } = "";
+        }
 
+        public class SaveVoucherRequestDto
+        {
+            public int UserId { get; set; }
+            public int VoucherId { get; set; }
+            public SaveVoucherRequestDto() { }
+            public SaveVoucherRequestDto(int userId, int voucherId) { UserId = userId; VoucherId = voucherId; }
+        }
 
+        public async Task<SaveVoucherServiceResult> SaveAdminVoucherAsync(int userId, int voucherId)
+        {
+            var url = $"{_baseUrl}UserVouchers/save";
+            try
+            {
+                var resp = await _httpClient.PostAsJsonAsync(url, new SaveVoucherRequestDto(userId, voucherId));
+                var body = await resp.Content.ReadAsStringAsync();
+
+                Console.WriteLine($"[SaveAdminVoucherAsync] {url} => {(int)resp.StatusCode} {resp.ReasonPhrase}");
+                Console.WriteLine($"[SaveAdminVoucherAsync] Body: {body}");
+
+                if (resp.IsSuccessStatusCode)
+                    return new SaveVoucherServiceResult { Ok = true, Message = TryExtractMessage(body) ?? "Lưu voucher thành công" };
+                else
+                    return new SaveVoucherServiceResult { Ok = false, Message = TryExtractMessage(body) ?? "Không lưu được voucher" };
+            }
+            catch (Exception ex)
+            {
+                return new SaveVoucherServiceResult { Ok = false, Message = $"Lỗi kết nối API: {ex.Message}" };
+            }
+
+            static string? TryExtractMessage(string json)
+            {
+                try
+                {
+                    using var doc = JsonDocument.Parse(json);
+                    if (doc.RootElement.TryGetProperty("message", out var m)) return m.GetString();
+                }
+                catch { }
+                return null;
+            }
+        }
+
+        public async Task<List<(int id, int voucherId)>> GetUserVouchersAsync(int userId)
+        {
+            var baseUrl = _baseUrl?.TrimEnd('/') + "/";
+            var resp = await _httpClient.GetAsync($"{baseUrl}UserVouchers/user/{userId}");
+            if (!resp.IsSuccessStatusCode) return new();
+            var json = await resp.Content.ReadAsStringAsync();
+
+            // Dạng trả về từ API: [{ id, userId, voucherId, ... }]
+            using var doc = JsonDocument.Parse(json);
+            var list = new List<(int id, int voucherId)>();
+            foreach (var el in doc.RootElement.EnumerateArray())
+            {
+                var id = el.GetProperty("id").GetInt32();
+                var voucherId = el.GetProperty("voucherId").GetInt32();
+                list.Add((id, voucherId));
+            }
+            return list;
+        }
 
 
     }
+
+        
 }

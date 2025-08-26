@@ -128,7 +128,9 @@
                 </div>
 
                 <div class="vouchers-content" id="voucherContent">
-                    <div class="row g-3" id="voucherList">
+                    <!-- đổi từ: <div class="row g-3" id="voucherList"> -->
+                    <div class="row row-cols-1 row-cols-md-3 g-3" id="voucherList">
+
                         <div class="col-12 text-center text-muted">Đang tải voucher...</div>
                     </div>
                 </div>
@@ -246,9 +248,9 @@
             }
 
             const div = document.createElement("div");
-            div.className = "col-12 col-md-6";
+            div.className = "col";
             div.innerHTML = `
-                    <div class="border rounded p-3 d-flex align-items-center justify-content-between bg-light">
+                    <div class="border rounded p-3 d-flex align-items-center justify-content-between bg-light h-100">
                         <div class="d-flex align-items-center gap-3">
                             <div class="${iconColor}" style="font-size: 2rem;">
                                 <i class="bi bi-ticket-perforated-fill"></i>

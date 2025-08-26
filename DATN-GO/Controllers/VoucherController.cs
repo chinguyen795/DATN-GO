@@ -1,5 +1,6 @@
 ﻿using DATN_GO.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Newtonsoft.Json;
 
 namespace DATN_GO.Controllers
@@ -145,6 +146,16 @@ namespace DATN_GO.Controllers
                 return Json(new { isSaved = false, message = $"Error: {ex.Message}" });
             }
         }
+
+
+        // View chính
+        [HttpGet]
+        [ActionName("VoucherAdmin")]
+        public async Task<IActionResult> VoucherAdmin()
+        {
+            return View();
+        }
+
 
         // Logout
         [HttpGet]

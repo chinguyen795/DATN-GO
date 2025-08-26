@@ -1,0 +1,672 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Chủ - Voucher Hot</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .voucher-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin: 2rem 0;
+            padding: 2rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .voucher-card {
+            background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
+            border-radius: 15px;
+            color: white;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.4s ease;
+            height: 200px;
+            margin-bottom: 1.5rem;
+        }
+
+            .voucher-card:hover {
+                transform: translateY(-5px) scale(1.02);
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            }
+
+            .voucher-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                right: 0;
+                width: 100px;
+                height: 100%;
+                background: rgba(255, 255, 255, 0.1);
+                transform: skew(-15deg);
+                margin-right: -50px;
+            }
+
+            .voucher-card.platform-voucher {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            }
+
+            .voucher-card.shop-voucher {
+                background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
+            }
+
+            .voucher-card.free-shipping {
+                background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+            }
+
+        .voucher-content {
+            padding: 1.5rem;
+            position: relative;
+            z-index: 2;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .voucher-discount {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .voucher-code {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-weight: bold;
+            display: inline-block;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+        }
+
+        .voucher-details {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+
+        .save-btn {
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+        }
+
+            .save-btn:hover {
+                background: white;
+                transform: scale(1.05);
+            }
+
+            .save-btn.saved {
+                background: #28a745;
+                color: white;
+            }
+
+        .voucher-type-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            backdrop-filter: blur(5px);
+        }
+
+        .floating-voucher {
+            position: fixed;
+            top: 50%;
+            right: -300px;
+            transform: translateY(-50%);
+            transition: right 0.5s ease;
+            z-index: 1000;
+            width: 280px;
+        }
+
+            .floating-voucher.show {
+                right: 20px;
+            }
+
+            .floating-voucher .voucher-card {
+                cursor: pointer;
+            }
+
+        .hero-section {
+            text-align: center;
+            color: white;
+            padding: 3rem 0;
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+
+        .countdown-timer {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .timer-box {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.8rem;
+            border-radius: 8px;
+            margin: 0 0.2rem;
+            min-width: 60px;
+        }
+
+        .timer-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .timer-label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .voucher-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        @@media pulse {
+            0%
+
+        {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+
+        }
+
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+
+        @@media slideInRight {
+            from
+
+        {
+            opacity: 0;
+            transform: translateX(50px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        }
+
+        .slide-in {
+            animation: slideInRight 0.6s ease forwards;
+        }
+
+        .voucher-filter {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .filter-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 0.7rem 1.5rem;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+
+            .filter-btn:hover, .filter-btn.active {
+                background: white;
+                color: #667eea;
+                border-color: white;
+            }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        @@media (max-width: 768px) {
+            .hero-title
+
+        {
+            font-size: 2rem;
+        }
+
+        .voucher-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .floating-voucher {
+            display: none;
+        }
+
+        }
+    </style>
+</head>
+<body>
+   
+
+    <div class="container-fluid">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="container">
+                <h1 class="hero-title">🎉 Voucher Siêu Hot 🎉</h1>
+                <p class="hero-subtitle">Tiết kiệm đến 70% cho mọi đơn hàng!</p>
+
+                <!-- Countdown Timer -->
+                <div class="countdown-timer">
+                    <div class="row justify-content-center">
+                        <div class="col-auto">
+                            <span style="color: white; font-weight: bold;">⏰ Ưu đãi kết thúc sau:</span>
+                        </div>
+                    </div>
+                    <div class="row justify-content-center mt-2" id="countdown">
+                        <div class="col-auto timer-box">
+                            <div class="timer-number" id="days">07</div>
+                            <div class="timer-label">Ngày</div>
+                        </div>
+                        <div class="col-auto timer-box">
+                            <div class="timer-number" id="hours">15</div>
+                            <div class="timer-label">Giờ</div>
+                        </div>
+                        <div class="col-auto timer-box">
+                            <div class="timer-number" id="minutes">23</div>
+                            <div class="timer-label">Phút</div>
+                        </div>
+                        <div class="col-auto timer-box">
+                            <div class="timer-number" id="seconds">45</div>
+                            <div class="timer-label">Giây</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Voucher Section -->
+        <section class="voucher-section container">
+            <h2 class="section-title">💎 Voucher Độc Quyền 💎</h2>
+
+            <!-- Filter Buttons -->
+            <div class="voucher-filter">
+                <button class="btn filter-btn active" onclick="filterVouchers('all')">Tất cả</button>
+                <button class="btn filter-btn" onclick="filterVouchers('platform')">Voucher Sàn</button>
+                <button class="btn filter-btn" onclick="filterVouchers('shop')">Voucher Shop</button>
+                <button class="btn filter-btn" onclick="filterVouchers('shipping')">Miễn Ship</button>
+            </div>
+
+            <!-- Voucher Grid -->
+            <div class="voucher-grid" id="voucherGrid">
+                <!-- Platform Voucher 1 -->
+                <div class="voucher-card platform-voucher slide-in" data-type="platform">
+                    <div class="voucher-type-badge">Sàn TMDT</div>
+                    <div class="voucher-content">
+                        <div>
+                            <div class="voucher-discount">GIẢM 50%</div>
+                            <div class="voucher-code" onclick="copyCode('PLATFORM50')">PLATFORM50</div>
+                            <div class="voucher-details">
+                                💰 Tối đa: 200,000₫<br>
+                                🛒 Đơn tối thiểu: 500,000₫<br>
+                                ⏱️ HSD: 31/08/2025<br>
+                                📦 Còn lại: 85/100
+                            </div>
+                        </div>
+                        <button class="save-btn" onclick="saveVoucher(1, this)">
+                            <i class="fas fa-heart"></i> Lưu
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Free Shipping Voucher -->
+                <div class="voucher-card free-shipping slide-in" data-type="shipping" style="animation-delay: 0.1s">
+                    <div class="voucher-type-badge">Miễn Ship</div>
+                    <div class="voucher-content">
+                        <div>
+                            <div class="voucher-discount">MIỄN PHÍ SHIP</div>
+                            <div class="voucher-code" onclick="copyCode('FREESHIP99')">FREESHIP99</div>
+                            <div class="voucher-details">
+                                🚚 Miễn phí vận chuyển<br>
+                                🛒 Đơn tối thiểu: 199,000₫<br>
+                                ⏱️ HSD: 30/09/2025<br>
+                                📦 Còn lại: 234/300
+                            </div>
+                        </div>
+                        <button class="save-btn" onclick="saveVoucher(2, this)">
+                            <i class="fas fa-heart"></i> Lưu
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Shop Voucher 1 -->
+                <div class="voucher-card shop-voucher slide-in" data-type="shop" style="animation-delay: 0.2s">
+                    <div class="voucher-type-badge">Shop ABC</div>
+                    <div class="voucher-content">
+                        <div>
+                            <div class="voucher-discount">GIẢM 30%</div>
+                            <div class="voucher-code" onclick="copyCode('SHOP30OFF')">SHOP30OFF</div>
+                            <div class="voucher-details">
+                                💰 Tối đa: 150,000₫<br>
+                                🛒 Đơn tối thiểu: 300,000₫<br>
+                                ⏱️ HSD: 25/08/2025<br>
+                                📦 Còn lại: 45/50
+                            </div>
+                        </div>
+                        <button class="save-btn" onclick="saveVoucher(3, this)">
+                            <i class="fas fa-heart"></i> Lưu
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Platform Voucher 2 -->
+                <div class="voucher-card platform-voucher slide-in" data-type="platform" style="animation-delay: 0.3s">
+                    <div class="voucher-type-badge">Sàn TMDT</div>
+                    <div class="voucher-content">
+                        <div>
+                            <div class="voucher-discount">100,000₫</div>
+                            <div class="voucher-code" onclick="copyCode('MEGA100K')">MEGA100K</div>
+                            <div class="voucher-details">
+                                💰 Giảm cố định: 100,000₫<br>
+                                🛒 Đơn tối thiểu: 800,000₫<br>
+                                ⏱️ HSD: 15/09/2025<br>
+                                📦 Còn lại: 12/20
+                            </div>
+                        </div>
+                        <button class="save-btn pulse-animation" onclick="saveVoucher(4, this)">
+                            <i class="fas fa-heart"></i> Lưu
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Shop Voucher 2 -->
+                <div class="voucher-card shop-voucher slide-in" data-type="shop" style="animation-delay: 0.4s">
+                    <div class="voucher-type-badge">Shop XYZ</div>
+                    <div class="voucher-content">
+                        <div>
+                            <div class="voucher-discount">GIẢM 25%</div>
+                            <div class="voucher-code" onclick="copyCode('NEWUSER25')">NEWUSER25</div>
+                            <div class="voucher-details">
+                                💰 Tối đa: 100,000₫<br>
+                                🛒 Đơn tối thiểu: 250,000₫<br>
+                                ⏱️ HSD: 31/12/2025<br>
+                                📦 Còn lại: 99/100
+                            </div>
+                        </div>
+                        <button class="save-btn" onclick="saveVoucher(5, this)">
+                            <i class="fas fa-heart"></i> Lưu
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Combo Voucher -->
+                <div class="voucher-card platform-voucher slide-in" data-type="platform" style="animation-delay: 0.5s">
+                    <div class="voucher-type-badge">Combo Hot</div>
+                    <div class="voucher-content">
+                        <div>
+                            <div class="voucher-discount">GIẢM 40% + SHIP 0₫</div>
+                            <div class="voucher-code" onclick="copyCode('COMBO40')">COMBO40</div>
+                            <div class="voucher-details">
+                                💰 Giảm 40% + Free Ship<br>
+                                🛒 Đơn tối thiểu: 600,000₫<br>
+                                ⏱️ HSD: 28/08/2025<br>
+                                📦 Còn lại: 5/10 🔥
+                            </div>
+                        </div>
+                        <button class="save-btn pulse-animation" onclick="saveVoucher(6, this)">
+                            <i class="fas fa-heart"></i> Lưu
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Floating Voucher Notification -->
+    <div class="floating-voucher" id="floatingVoucher">
+        <div class="voucher-card platform-voucher" onclick="showFloatingVoucher()">
+            <div class="voucher-content">
+                <div style="text-align: center;">
+                    <div class="voucher-discount">🎁 VOUCHER MỊI</div>
+                    <div style="font-size: 0.9rem; margin-top: 0.5rem;">
+                        Nhấn để xem voucher độc quyền!
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Countdown Timer
+        function startCountdown() {
+            const endDate = new Date('2025-08-31 23:59:59').getTime();
+
+            const timer = setInterval(() => {
+                const now = new Date().getTime();
+                const distance = endDate - now;
+
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                document.getElementById('days').textContent = String(days).padStart(2, '0');
+                document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+                document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+                document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+
+                if (distance < 0) {
+                    clearInterval(timer);
+                    document.getElementById('countdown').innerHTML = '<div class="col-12"><h3>🎉 Ưu đãi đã kết thúc! 🎉</h3></div>';
+                }
+            }, 1000);
+        }
+
+        // Copy voucher code
+        function copyCode(code) {
+            navigator.clipboard.writeText(code).then(() => {
+                showToast(`Đã copy mã "${code}" vào clipboard!`, 'success');
+            }).catch(() => {
+                showToast('Không thể copy mã, vui lòng thử lại!', 'error');
+            });
+        }
+
+        // Save voucher to user account
+        function saveVoucher(voucherId, button) {
+            const isAlreadySaved = button.classList.contains('saved');
+
+            if (isAlreadySaved) {
+                // Remove voucher
+                button.innerHTML = '<i class="fas fa-heart"></i> Lưu';
+                button.classList.remove('saved');
+                showToast('Đã bỏ lưu voucher!', 'info');
+
+                // API call to remove voucher
+                console.log('Remove voucher from saved list:', voucherId);
+                // fetch('/api/user-vouchers/remove', { method: 'DELETE', body: JSON.stringify({voucherId}) });
+            } else {
+                // Save voucher
+                button.innerHTML = '<i class="fas fa-check"></i> Đã lưu';
+                button.classList.add('saved');
+                showToast('Đã lưu voucher vào tài khoản!', 'success');
+
+                // API call to save voucher
+                console.log('Save voucher to user account:', voucherId);
+
+                // Sample voucher data to save
+                const voucherData = {
+                    voucherId: voucherId,
+                    userId: getCurrentUserId(), // Get from auth context
+                    savedAt: new Date().toISOString(),
+                    status: 'Saved'
+                };
+
+                console.log('Voucher data to save:', voucherData);
+                // fetch('/api/user-vouchers/save', { method: 'POST', body: JSON.stringify(voucherData) });
+            }
+        }
+
+        // Filter vouchers by type
+        function filterVouchers(type) {
+            const vouchers = document.querySelectorAll('[data-type]');
+            const buttons = document.querySelectorAll('.filter-btn');
+
+            // Update active button
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Filter vouchers
+            vouchers.forEach(voucher => {
+                if (type === 'all' || voucher.dataset.type === type) {
+                    voucher.style.display = 'block';
+                    voucher.style.animation = 'slideInRight 0.6s ease forwards';
+                } else {
+                    voucher.style.display = 'none';
+                }
+            });
+        }
+
+        // Show floating voucher
+        function showFloatingVoucher() {
+            const floating = document.getElementById('floatingVoucher');
+            floating.classList.remove('show');
+            showToast('Voucher đặc biệt sẽ xuất hiện lại sau 10 giây!', 'info');
+
+            setTimeout(() => {
+                floating.classList.add('show');
+            }, 10000);
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'info') {
+            const toastContainer = document.querySelector('.toast-container');
+            const toastId = 'toast_' + Date.now();
+
+            const toastHtml = `
+                <div class="toast show align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} border-0" role="alert" id="${toastId}">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" onclick="document.getElementById('${toastId}').remove()"></button>
+                    </div>
+                </div>
+            `;
+
+            toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+
+            // Auto remove after 4 seconds
+            setTimeout(() => {
+                const toast = document.getElementById(toastId);
+                if (toast) toast.remove();
+            }, 4000);
+        }
+
+        // Get current user ID (mock function)
+        function getCurrentUserId() {
+            // In real implementation, get from authentication context
+            return 123; // Mock user ID
+        }
+
+        // Load user's saved vouchers on page load
+        function loadUserSavedVouchers() {
+            // Mock saved vouchers - in real app, fetch from API
+            const savedVoucherIds = [1, 4, 6]; // User has saved these vouchers
+
+            savedVoucherIds.forEach(id => {
+                const buttons = document.querySelectorAll(`button[onclick*="saveVoucher(${id}"]`);
+                buttons.forEach(button => {
+                    button.innerHTML = '<i class="fas fa-check"></i> Đã lưu';
+                    button.classList.add('saved');
+                });
+            });
+
+            console.log('Loaded saved vouchers:', savedVoucherIds);
+            // fetch('/api/user-vouchers/saved').then(response => response.json()).then(data => { ... });
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            startCountdown();
+            loadUserSavedVouchers();
+
+            // Show floating voucher after 5 seconds
+            setTimeout(() => {
+                document.getElementById('floatingVoucher').classList.add('show');
+            }, 5000);
+
+            // Welcome message
+            setTimeout(() => {
+                showToast('Chào mừng bạn đến với trang voucher! 🎉', 'success');
+            }, 1000);
+        });
+
+        // Handle responsive voucher interactions
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.voucher-card')) {
+                const card = e.target.closest('.voucher-card');
+                if (window.innerWidth <= 768 && !e.target.closest('.save-btn') && !e.target.closest('.voucher-code')) {
+                    card.style.transform = 'scale(0.98)';
+                    setTimeout(() => {
+                        card.style.transform = '';
+                    }, 150);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1318,8 +1318,20 @@ namespace DATN_API.Migrations
                     b.Property<int?>("CategoryId")
                         .HasColumnType("int");
 
+                    b.Property<int>("CreatedByRoleId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CreatedByUserId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsPercentage")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal?>("MaxDiscount")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("MinOrder")
                         .HasColumnType("decimal(18,2)");
@@ -1340,6 +1352,9 @@ namespace DATN_API.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UsedCount")
                         .HasColumnType("int");
 
                     b.HasKey("Id");

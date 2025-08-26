@@ -1,0 +1,418 @@
+﻿@model List<DATN_GO.Models.Vouchers>
+@using Microsoft.AspNetCore.Http
+@{
+    // ==== Stats & saved ====
+    var saved = (ViewBag.SavedIds as HashSet<int>) ?? new HashSet<int>();
+    var now = DateTime.UtcNow;
+    var total = Model.Count;
+    var valid = Model.Count(x => x.EndDate > now);
+    var maxPercent = Model.Where(x => x.IsPercentage).Select(x => x.Reduce).DefaultIfEmpty(0).Max();
+    var savedCount = saved.Count;
+
+    // ==== LẤY USER ID TỪ SESSION ====
+    var idStr = Context.Session.GetString("Id"); // "123" hoặc null
+    int userId = 0;
+    int.TryParse(idStr, out userId);
+    var isAuth = userId > 0;
+}
+
+<form id="__anti" method="post">@Html.AntiForgeryToken()</form>
+
+<style>
+    body {
+        background-color: #f8f9fa;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .header-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #fff;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+    }
+
+    .voucher-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 15px;
+    }
+
+    .voucher-card {
+        background: #fff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        margin-bottom: 1.5rem;
+        transition: all .3s ease;
+        border: 1px solid #e8ecf0;
+    }
+
+        .voucher-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+
+    .voucher-content {
+        display: flex;
+        align-items: center;
+        padding: 0;
+    }
+
+    .voucher-left {
+        background: #ff4757;
+        color: #fff;
+        padding: 1.5rem;
+        min-width: 140px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+        .voucher-left::after {
+            content: '';
+            position: absolute;
+            right: -10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-top: 15px solid transparent;
+            border-bottom: 15px solid transparent;
+            border-left: 10px solid #ff4757;
+        }
+
+    .voucher-gift {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .voucher-info {
+        flex: 1;
+        padding: 1.5rem;
+    }
+
+    .voucher-title {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+
+    .voucher-subtitle {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .voucher-dates {
+        display: flex;
+        gap: 1.5rem;
+        margin-top: 0.8rem;
+    }
+
+    .date-item {
+        font-size: 0.8rem;
+    }
+
+    .date-valid {
+        color: #27ae60;
+    }
+
+    .date-expired {
+        color: #e74c3c;
+    }
+
+    .voucher-actions {
+        padding: 1rem 1.5rem;
+        border-left: 1px solid #e8ecf0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.8rem;
+    }
+
+    .quantity-badge {
+        background: #27ae60;
+        color: #fff;
+        padding: 0.3rem 0.8rem;
+        border-radius: 15px;
+        font-size: 0.75rem;
+        font-weight: bold;
+        white-space: nowrap;
+    }
+
+    .discount-type {
+        background: #3498db;
+        color: #fff;
+        padding: 0.2rem 0.6rem;
+        border-radius: 10px;
+        font-size: 0.7rem;
+        font-weight: bold;
+    }
+
+    .btn-save {
+        background: linear-gradient(135deg,#ff6b6b 0%,#feca57 100%);
+        border: none;
+        color: #fff;
+        padding: 0.6rem 1.2rem;
+        border-radius: 25px;
+        font-weight: bold;
+        transition: all .3s ease;
+        white-space: nowrap;
+        font-size: 0.85rem;
+    }
+
+        .btn-save:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(255,107,107,0.4);
+            color: #fff;
+        }
+
+        .btn-save.saved {
+            background: #27ae60;
+            color: #fff;
+        }
+
+            .btn-save.saved:hover {
+                background: #229954;
+            }
+
+    .btn-use {
+        background: transparent;
+        border: 2px solid #3498db;
+        color: #3498db;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: bold;
+        transition: all .3s ease;
+        font-size: 0.8rem;
+    }
+
+        .btn-use:hover {
+            background: #3498db;
+            color: #fff;
+        }
+
+    .voucher-expired {
+        opacity: 0.6;
+        filter: grayscale(50%);
+    }
+
+        .voucher-expired .voucher-left {
+            background: #95a5a6;
+        }
+
+            .voucher-expired .voucher-left::after {
+                border-left-color: #95a5a6;
+            }
+
+    .stats-section {
+        background: #fff;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+        gap: 1rem;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 1rem;
+        border-radius: 8px;
+        background: linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+        color: #fff;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+
+    @@media (max-width: 768px) {
+        .voucher-content {
+            flex-direction: column;
+        }
+
+        .voucher-left {
+            width: 100%;
+            min-width: auto;
+        }
+
+            .voucher-left::after {
+                display: none;
+            }
+
+        .voucher-actions {
+            border-left: none;
+            border-top: 1px solid #e8ecf0;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+    }
+</style>
+
+<section class="header-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-3"><i class="fas fa-gift me-2"></i>Kho Voucher Siêu Tiết Kiệm</h1>
+                <p class="lead mb-0">Hàng trăm voucher độc quyền đang chờ bạn khám phá!</p>
+            </div>
+       
+        </div>
+    </div>
+</section>
+
+<div class="voucher-container">
+    <div class="stats-section">
+        <div class="stats-grid">
+            <div class="stat-item"><div class="stat-number">@total</div><div class="stat-label">Tổng voucher</div></div>
+            <div class="stat-item"><div class="stat-number">@valid</div><div class="stat-label">Còn hiệu lực</div></div>
+            <div class="stat-item"><div class="stat-number">@maxPercent%</div><div class="stat-label">Giảm tối đa</div></div>
+        </div>
+    </div>
+
+    <!-- data-user-id để JS biết bạn đã đăng nhập -->
+    <div id="voucherList" class="row" data-user-id="@userId">
+        @foreach (var v in Model)
+        {
+            var isExpired = DateTime.UtcNow > v.EndDate;
+            var isSavedItem = saved.Contains(v.Id);
+            var type = v.IsPercentage ? "percentage" : "fixed";
+            var status = isExpired ? "expired" : "valid";
+            var leftColor = type == "fixed" ? "#2ecc71" : "#ff4757";
+
+            <div class="col-md-6">
+                <div class="voucher-card @(isExpired ? "voucher-expired" : "")"
+                     data-voucher-id="@v.Id"
+                     data-type="@type"
+                     data-status="@status">
+                    <div class="voucher-content">
+                        <div class="voucher-left" style="background:@leftColor;">
+                            <div class="text-center">
+                                <div class="voucher-gift">@(type == "fixed" ? "💰" : "🎁")</div>
+                                <div class="discount-type">@(type == "fixed" ? "GIẢM TIỀN" : "GIẢM %")</div>
+                            </div>
+                        </div>
+                        <div class="voucher-info">
+                            <div class="voucher-title">
+                                @(v.IsPercentage ? $"Giảm {v.Reduce}%" : $"Giảm {string.Format("{0:#,0}₫", v.Reduce)}")
+                            </div>
+                            <div class="voucher-subtitle">Đơn tối thiểu @string.Format("{0:#,0}₫", v.MinOrder)</div>
+                            <div class="voucher-dates">
+                                <div class="date-item @(isExpired ? "" : "date-valid")">
+                                    <i class="fas fa-calendar-check"></i> Bắt đầu: @v.StartDate.ToLocalTime().ToString("dd/MM/yyyy")
+                                </div>
+                                <div class="date-item @(isExpired ? "date-expired" : "date-valid")">
+                                    <i class="fas fa-calendar-times"></i> Hết hạn: @v.EndDate.ToLocalTime().ToString("dd/MM/yyyy")
+                                </div>
+                            </div>
+                        </div>
+                        <div class="voucher-actions">
+                            <div class="quantity-badge" style="@(isExpired ? "background:#95a5a6" : "")">
+                                @(isExpired ? "ĐÃ HẾT HẠN" : $"CÒN LẠI: {v.Quantity - v.UsedCount}")
+                            </div>
+
+                            <button type="button"
+                                    class="btn btn-save @(isSavedItem ? "saved" : "")"
+                                    onclick="return toggleSaveVoucher(@v.Id, this, event)"
+                            @(isExpired ? "disabled" : "")>
+                                @(isSavedItem ? Html.Raw("<i class='fas fa-check'></i> Đã lưu")
+                                    : Html.Raw("<i class='fas fa-heart'></i> Lưu"))
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<script>
+    function getCsrf() {
+      return document.querySelector('#__anti input[name="__RequestVerificationToken"]')?.value || '';
+    }
+
+    function showToast(message, isSuccess = true) {
+      const iconUrl = isSuccess ? "/icons/happy.gif" : "/icons/sad.gif";
+      const title = isSuccess ? "Thành công" : "Lỗi";
+      const html = `<div class="toast show" role="alert" style="position:fixed;top:1rem;right:1rem;z-index:9999;min-width:320px;">
+        <div class="toast-header d-flex align-items-center ${isSuccess ? "bg-success" : "bg-danger"} text-white">
+          <img src="${iconUrl}" width="20" height="20" class="me-2"/><strong class="me-auto">${title}</strong>
+          <small class="text-white">Vừa xong</small>
+          <button type="button" class="btn-close btn-close-white ms-2" onclick="this.closest('.toast').remove()"></button>
+        </div><div class="toast-body">${message}</div></div>`;
+      document.body.insertAdjacentHTML('beforeend', html);
+      setTimeout(()=>document.querySelector('.toast')?.remove(),3000);
+    }
+
+    function incSaved(n){
+      const a = document.getElementById('savedCount');
+      const b = document.getElementById('savedVouchers');
+      if (!a) return;
+      const cur = (parseInt(a.textContent||'0',10)||0) + n;
+      a.textContent = cur; if (b) b.textContent = cur;
+    }
+
+    async function toggleSaveVoucher(voucherId, btn, evt){
+      if (evt) { evt.preventDefault(); evt.stopPropagation(); }
+
+      // Check login bằng SESSION từ data-user-id
+      const list = document.getElementById('voucherList');
+      const userId = parseInt(list?.dataset?.userId || "0", 10);
+      if (!userId) {
+        showToast('Bạn chưa đăng nhập. Vui lòng đăng nhập để lưu voucher.', false);
+        return false;
+      }
+
+      const token = getCsrf();
+      const origHtml = btn ? btn.innerHTML : '';
+      if (btn) { btn.disabled = true; btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Đang lưu..."; }
+
+      try {
+        const res = await fetch('@Url.Action("Save", "VoucherAdmin")', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'RequestVerificationToken': token
+          },
+          body: JSON.stringify({ voucherId })
+        });
+
+        const data = await res.json().catch(()=>({}));
+
+        if (res.ok && data?.ok) {
+          if (btn) {
+            btn.classList.add('saved');
+            btn.innerHTML = "<i class='fas fa-check'></i> Đã lưu";
+            btn.disabled = true;
+          }
+          incSaved(1);
+          showToast(data.message || 'Đã lưu voucher!', true);
+        } else if (res.status === 401) {
+          if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
+          showToast('Bạn chưa đăng nhập. Vui lòng đăng nhập để lưu voucher.', false);
+        } else {
+          if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
+          showToast(data?.message || `Lỗi: ${res.status}`, false);
+        }
+      } catch (e) {
+        if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
+        console.error(e);
+        showToast('Lỗi kết nối. Thử lại nhé.', false);
+      }
+      return false;
+    }
+</script>

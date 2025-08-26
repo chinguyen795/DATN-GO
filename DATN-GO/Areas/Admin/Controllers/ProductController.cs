@@ -97,6 +97,7 @@ namespace DATN_GO.Areas.Admin.Controllers
             var res = await _http.PutAsync($"/api/Products/reject/{id}", null);
             return res.IsSuccessStatusCode ? Ok() : StatusCode(500);
         }
+
         [HttpGet]
         public async Task<IActionResult> GetProductDetail(int id)
         {

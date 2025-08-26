@@ -15,6 +15,13 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "RequestVerificationToken";
+});
+
+
+
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddControllersWithViews();
