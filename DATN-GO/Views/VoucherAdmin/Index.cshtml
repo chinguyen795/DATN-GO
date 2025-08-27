@@ -14,6 +14,13 @@
     int userId = 0;
     int.TryParse(idStr, out userId);
     var isAuth = userId > 0;
+
+    // ==== LỌC & SẮP XẾP (chỉ còn hạn, mới nhất lên đầu) ====
+    var list = Model
+        .Where(x => x.EndDate > now)                     // lọc hết hạn
+        .OrderByDescending(x => x.StartDate)             // mới nhất đầu tiên
+        .ThenByDescending(x => x.Id)                     // tie-break ổn định
+        .ToList();
 }
 
 <form id="__anti" method="post">@Html.AntiForgeryToken()</form>
@@ -270,7 +277,6 @@
                 <h1 class="mb-3"><i class="fas fa-gift me-2"></i>Kho Voucher Siêu Tiết Kiệm</h1>
                 <p class="lead mb-0">Hàng trăm voucher độc quyền đang chờ bạn khám phá!</p>
             </div>
-       
         </div>
     </div>
 </section>
@@ -286,56 +292,69 @@
 
     <!-- data-user-id để JS biết bạn đã đăng nhập -->
     <div id="voucherList" class="row" data-user-id="@userId">
-        @foreach (var v in Model)
+        @if (!list.Any())
         {
-            var isExpired = DateTime.UtcNow > v.EndDate;
-            var isSavedItem = saved.Contains(v.Id);
-            var type = v.IsPercentage ? "percentage" : "fixed";
-            var status = isExpired ? "expired" : "valid";
-            var leftColor = type == "fixed" ? "#2ecc71" : "#ff4757";
+            <div class="col-12">
+                <div class="alert alert-info">
+                    Hiện chưa có voucher nào còn hạn. Ghé lại sau nhé ✨
+                </div>
+            </div>
+        }
+        else
+        {
+            foreach (var v in list)
+            {
+                var isExpired = DateTime.UtcNow > v.EndDate; // luôn false do đã lọc
+                var isSavedItem = saved.Contains(v.Id);
+                var type = v.IsPercentage ? "percentage" : "fixed";
+                var status = isExpired ? "expired" : "valid";
+                var leftColor = type == "fixed" ? "#2ecc71" : "#ff4757";
+                var remaining = Math.Max(0, v.Quantity - v.UsedCount);
 
-            <div class="col-md-6">
-                <div class="voucher-card @(isExpired ? "voucher-expired" : "")"
-                     data-voucher-id="@v.Id"
-                     data-type="@type"
-                     data-status="@status">
-                    <div class="voucher-content">
-                        <div class="voucher-left" style="background:@leftColor;">
-                            <div class="text-center">
-                                <div class="voucher-gift">@(type == "fixed" ? "💰" : "🎁")</div>
-                                <div class="discount-type">@(type == "fixed" ? "GIẢM TIỀN" : "GIẢM %")</div>
-                            </div>
-                        </div>
-                        <div class="voucher-info">
-                            <div class="voucher-title">
-                                @(v.IsPercentage ? $"Giảm {v.Reduce}%" : $"Giảm {string.Format("{0:#,0}₫", v.Reduce)}")
-                            </div>
-                            <div class="voucher-subtitle">Đơn tối thiểu @string.Format("{0:#,0}₫", v.MinOrder)</div>
-                            <div class="voucher-dates">
-                                <div class="date-item @(isExpired ? "" : "date-valid")">
-                                    <i class="fas fa-calendar-check"></i> Bắt đầu: @v.StartDate.ToLocalTime().ToString("dd/MM/yyyy")
-                                </div>
-                                <div class="date-item @(isExpired ? "date-expired" : "date-valid")">
-                                    <i class="fas fa-calendar-times"></i> Hết hạn: @v.EndDate.ToLocalTime().ToString("dd/MM/yyyy")
+                <div class="col-md-6">
+                    <div class="voucher-card"
+                         data-voucher-id="@v.Id"
+                         data-type="@type"
+                         data-status="@status">
+                        <div class="voucher-content">
+                            <div class="voucher-left" style="background:@leftColor;">
+                                <div class="text-center">
+                                    <div class="voucher-gift">@(type == "fixed" ? "💰" : "🎁")</div>
+                                    <div class="discount-type">@(type == "fixed" ? "GIẢM TIỀN" : "GIẢM %")</div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="voucher-actions">
-                            <div class="quantity-badge" style="@(isExpired ? "background:#95a5a6" : "")">
-                                @(isExpired ? "ĐÃ HẾT HẠN" : $"CÒN LẠI: {v.Quantity - v.UsedCount}")
+                            <div class="voucher-info">
+                                <div class="voucher-title">
+                                    @(v.IsPercentage ? $"Giảm {v.Reduce}%" : $"Giảm {string.Format("{0:#,0}₫", v.Reduce)}")
+                                </div>
+                                <div class="voucher-subtitle">Đơn tối thiểu @string.Format("{0:#,0}₫", v.MinOrder)</div>
+                                <div class="voucher-dates">
+                                    <div class="date-item date-valid">
+                                        <i class="fas fa-calendar-check"></i> Bắt đầu: @v.StartDate.ToLocalTime().ToString("dd/MM/yyyy")
+                                    </div>
+                                    <div class="date-item date-valid">
+                                        <i class="fas fa-calendar-times"></i> Hết hạn: @v.EndDate.ToLocalTime().ToString("dd/MM/yyyy")
+                                    </div>
+                                </div>
                             </div>
+                            <div class="voucher-actions">
+                                <div class="quantity-badge">
+                                    CÒN LẠI: @remaining
+                                </div>
 
-                            <button type="button"
-                                    class="btn btn-save @(isSavedItem ? "saved" : "")"
-                                    onclick="return toggleSaveVoucher(@v.Id, this, event)"
-                            @(isExpired ? "disabled" : "")>
-                                @(isSavedItem ? Html.Raw("<i class='fas fa-check'></i> Đã lưu")
-                                    : Html.Raw("<i class='fas fa-heart'></i> Lưu"))
-                            </button>
+                                <button type="button"
+                                        class="btn btn-save @(isSavedItem ? "saved" : "")"
+                                        onclick="return toggleSaveVoucher(@v.Id, this, event)"
+                                @(isSavedItem ? "disabled" : "")>
+                                    @(isSavedItem ? Html.Raw("<i class='fas fa-check'></i> Đã lưu")
+                                        : Html.Raw("<i class='fas fa-heart'></i> Lưu"))
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            }
+
         }
     </div>
 </div>

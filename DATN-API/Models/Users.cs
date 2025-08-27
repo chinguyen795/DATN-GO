@@ -42,12 +42,16 @@ namespace DATN_API.Models
         [MaxLength(50)]
         public string FullName { get; set; }
 
+
+        // using System.ComponentModel.DataAnnotations;
+
         [MaxLength(13)]
         [RegularExpression(
             @"^(?:0|\+84)(?:3[2-9]|5[689]|7[06789]|8[1-5]|9\d)\d{7}$",
             ErrorMessage = "Số điện thoại không đúng định dạng Việt Nam."
         )]
         public required string Phone { get; set; }
+
         [MaxLength]
         public string? Avatar { get; set; }
         public UserStatus Status { get; set; }

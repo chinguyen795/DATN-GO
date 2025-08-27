@@ -42,7 +42,12 @@ namespace DATN_GO.Models
         [MaxLength(50)]
         public string FullName { get; set; }
 
+
         [MaxLength(13)]
+        [RegularExpression(
+            @"^(?:0|\+84)(?:3[2-9]|5[689]|7[06789]|8[1-5]|9\d)\d{7}$",
+            ErrorMessage = "Số điện thoại không đúng định dạng Việt Nam."
+        )]
         [RegularExpression(
              @"^(?:0|\+84)(?:3[2-9]|5[689]|7[06789]|8[1-5]|9\d)\d{7}$",
              ErrorMessage = "Số điện thoại không đúng định dạng Việt Nam."

@@ -30,10 +30,13 @@ namespace DATN_GO.Models
         [MinLength(2, ErrorMessage = "Tên phải từ 2 đến 50 kí tự.")]
         public required string Name { get; set; }
 
-        [MaxLength(13)]
-        [RegularExpression(@"^(0|\+84)([2-9]|5[6|8|9]|7[0|6-9]|8[1-5]|9[0-9])[0-9]{7}$", ErrorMessage = "Số điện thoại không đúng định dạng Việt Nam.")]
-        public required string Phone { get; set; }
 
+        [MaxLength(13)]
+        [RegularExpression(
+            @"^(?:0|\+84)(?:3[2-9]|5[689]|7[06789]|8[1-5]|9\d)\d{7}$",
+            ErrorMessage = "Số điện thoại không đúng định dạng Việt Nam."
+        )]
+        public required string Phone { get; set; }
 
         public DateTime CreateAt { get; set; }
 
