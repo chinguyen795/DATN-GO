@@ -266,6 +266,7 @@
 
 
 
+
     </div>
 </div>
 
@@ -474,6 +475,93 @@
 
     </div>
 </div>
+
+
+@{
+    var suggested = ViewBag.SuggestedByStore as IEnumerable<dynamic>;
+}
+
+@if (suggested != null && suggested.Any())
+{
+    <hr class="mt-5" />
+    <section class="mt-4 mb-5">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <h4 class="mb-0">Sản phẩm gợi ý từ shop này</h4>
+        </div>
+
+        <div class="row g-3">
+            @foreach (var p in suggested)
+            {
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="card h-100 shadow-sm border-0">
+                        <!-- Hình ảnh -->
+                        <a href="/Products/DetailProducts/@p.Id" class="text-decoration-none">
+                            <img src="@(string.IsNullOrWhiteSpace(p.Image) ? "/images/no-image.png" : p.Image)"
+                                 class="card-img-top rounded-top"
+                                 alt="@p.Name"
+                                 style="object-fit:cover; aspect-ratio: 1/1; border-bottom:1px solid #eee;" />
+                        </a>
+
+                        <div class="card-body d-flex flex-column">
+                            <!-- Tên sản phẩm -->
+                            <a href="/Products/DetailProducts/@p.Id" 
+                               class="stretched-link text-decoration-none text-dark">
+                                <div class="fw-semibold text-truncate mb-2" title="@p.Name">@p.Name</div>
+                            </a>
+
+                            <!-- Giá -->
+                            <div class="fw-bold text-danger mb-3">
+                                @String.Format("{0:N0} đ", (decimal)p.Price)
+                            </div>
+
+                            <!-- Form hành động -->
+                            <form asp-controller="Cart"
+                                  asp-action="AddToCart"
+                                  method="post"
+                                  novalidate
+                                  class="mt-auto">
+                                @Html.AntiForgeryToken()
+
+                                <!-- Hidden product ID -->
+                                <input type="hidden" name="ProductId" value="@p.Id" />
+
+                                <!-- Hidden variant inputs -->
+                                <div class="variantInputsContainer"></div>
+
+                                <!-- Hidden Quantity -->
+                                <input type="hidden" name="Quantity" value="1" />
+
+                                <!-- Flag phân biệt hành động -->
+                                <input type="hidden" name="BuyNow" value="false" />
+
+
+                                <div class="d-grid gap-2">
+                                    <!-- Thêm vào giỏ -->
+                                    <button class="btn btn-crimson btn-sm rounded-pill add-to-cart-btn"
+                                            type="button"
+                                            data-product-id="@p.Id"
+                                            data-has-variant="">
+                                        <i class="bi bi-cart-plus icon-sm"></i> Thêm
+                                    </button>
+
+                                    <!-- Mua ngay -->
+                                    <button class="btn btn-outline-danger btn-sm rounded-pill buy-now-btn"
+                                            type="button"
+                                            data-product-id="@p.Id"
+                                            data-has-variant="">
+                                        Mua ngay
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+}
+
+
 
 <!-- Token ẩn cho QuickAdd -->
 <form id="__quickAddToken" style="display:none">

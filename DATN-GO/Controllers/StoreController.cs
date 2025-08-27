@@ -12,12 +12,14 @@ namespace DATN_GO.Controllers
     {
         private readonly HttpClient _http;
         private readonly StoreService _storeService;
+        private readonly PriceService _priceService;
 
-        public StoreController(IHttpClientFactory factory, StoreService storeService)
+        public StoreController(IHttpClientFactory factory, StoreService storeService, PriceService priceService)
         {
             _http = factory.CreateClient();
             _http.BaseAddress = new Uri("https://localhost:7096");
             _storeService = storeService;
+            _priceService = priceService;
         }
 
         public async Task<IActionResult> Store(string search)
@@ -213,7 +215,8 @@ namespace DATN_GO.Controllers
                             }
                         }
                     }
-
+                    var prices2 = await _priceService.GetPriceByProductIdAsync(p.Id);
+                    ViewBag.DebugPrice = prices2;
                     // ❌ Không có variant → single price fallback
                     var single = p.CostPrice ?? 0m;
                     minMaxPriceDict[p.Id] = new

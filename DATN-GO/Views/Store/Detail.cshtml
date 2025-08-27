@@ -196,7 +196,7 @@
             }
 
 
-            var prodCost = product.CostPrice ?? 0m;
+            var prodCost = ViewBag.DebugPrice ?? 0m;
             var prodOriginal = product.OriginalPrice > 0 ? product.OriginalPrice : prodCost * 1.3m;
             var prodDiscount = prodOriginal > prodCost ? Math.Round((prodOriginal - prodCost) / prodOriginal * 100) : 0;
 
@@ -376,7 +376,7 @@
                     const checkResponse = await fetch(checkUrl);
 
                     if (checkResponse.ok) {
-                        const checkResult = await checkResponse.json();
+                        const checkResult = await checkResponse.json(); 
                         isSaved = checkResult.isSaved === true;
 
                     } else {
