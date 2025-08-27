@@ -23,7 +23,7 @@
                                 <p class="text-danger fw-bold mb-1">@p.Price.ToString("N0")đ</p>
                                 <p class="small text-muted mb-3 text-truncate">@p.StoreName</p>
                                 <div class="mt-auto d-flex justify-content-between">
-                                    <a asp-controller="Product" asp-action="Details" asp-route-id="@p.Id"
+                                    <a asp-controller="Product" asp-action="Detail" asp-route-id="@p.Id"
                                        class="btn btn-outline-primary btn-sm w-50 me-1">Chi tiết</a>
                                     <button class="btn btn-primary btn-sm w-50">Giỏ hàng</button>
                                 </div>
@@ -48,7 +48,7 @@
                                 <h5 class="card-title text-truncate">@s.Name</h5>
                                 <p class="small text-muted mb-2">@s.Address</p>
                                 <p class="mb-3">Đánh giá: @s.Rating.ToString("0.0")</p>
-                                <a asp-controller="Store" asp-action="Details" asp-route-id="@s.Id"
+                                <a asp-controller="Store" asp-action="DetailProducts" asp-route-id="@s.Id"
                                    class="btn btn-outline-primary w-100">Xem chi tiết</a>
                             </div>
                         </div>

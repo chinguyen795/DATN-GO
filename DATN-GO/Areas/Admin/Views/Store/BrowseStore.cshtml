@@ -411,6 +411,9 @@
                                             <td>@store.CreateAt.ToString("dd/MM/yyyy")</td>
                                             <td>@store.OwnerName </td>
                                             <td>
+                                                <button class="btn btn-sm btn-primary" onclick="showStoreDetail('@store.Id', '@store.Name', '@store.OwnerName', '@store.CreateAt.ToString("dd/MM/yyyy")', '@store.Status.ToString()', '@store.Avatar')">
+                                                    <i class="mdi mdi-eye"></i> Xem chi tiết
+                                                </button>
                                                 <button class="btn btn-sm btn-success btn-approve" data-id="@store.Id">
                                                     <i class="bi bi-check-circle-fill"></i> Duyệt
                                                 </button>
@@ -423,6 +426,226 @@
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+                </div>
+                
+            </div>
+
+
+            <div id="storeDetailView" style="display: none;">
+                <!-- Store Info Card -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card card-default shadow-sm border-0">
+                            <div class="card-body p-4">
+                                <div class="row align-items-center">
+                                    <div class="col-md-2 text-center mb-3 mb-md-0">
+                                        <div class="store-avatar-wrapper position-relative">
+                                            <img id="storeDetailImage" src="" alt="Ảnh cửa hàng"
+                                                 class="rounded-circle border border-3 border-light shadow-sm clickable-image"
+                                                 style="width: 120px; height: 120px; object-fit: cover; cursor: pointer;"
+                                                 data-src="">
+                                            <div class="position-absolute bottom-0 end-0">
+                                                <span id="storeDetailStatus" class="badge fs-6 shadow-sm"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="store-info">
+                                            <h3 id="storeDetailName" class="text-primary mb-3 fw-bold"></h3>
+                                            <div class="info-item d-flex align-items-center mb-2">
+                                                <i class="mdi mdi-account-circle text-muted me-2" style="font-size: 1.2rem;"></i>
+                                                <div>
+                                                    <span id="storeDetailOwner" class="fw-medium"></span>
+                                                </div>
+                                            </div>
+                                            <div class="info-item d-flex align-items-center mb-2">
+                                                <i class="mdi mdi-calendar text-muted me-2" style="font-size: 1.2rem;"></i>
+                                                <div>
+                                                    <span id="storeDetailDate" class="fw-medium"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 text-md-end">
+                                        <div class="store-stats">
+                                            <div class="row text-center">
+                                                <div class="col-4">
+                                                    <div class="stat-item p-3 bg-light rounded">
+                                                        <h5 class="mb-0 text-primary fw-bold" id="productCount">0</h5>
+                                                        <small class="text-muted">Sản phẩm</small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="stat-item p-3 bg-light rounded">
+                                                        <h5 class="mb-0 text-success fw-bold" id="orderCount">0</h5>
+                                                        <small class="text-muted">Đơn hàng</small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="stat-item p-3 bg-light rounded">
+                                                        <h5 class="mb-0 text-info fw-bold" id="revenueCount">0</h5>
+                                                        <small class="text-muted">Doanh thu</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            @* <div class="mt-3">
+                                            <button class="btn btn-outline-primary btn-sm me-2">
+                                            <i class="mdi mdi-pencil"></i> Chỉnh sửa
+                                            </button>
+                                            <button class="btn btn-outline-secondary btn-sm">
+                                            <i class="mdi mdi-cog"></i> Cài đặt
+                                            </button>
+                                            </div> *@
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Tabs -->
+                <div class="row">
+                    <div class="col-12">
+                        <ul class="nav nav-tabs" id="storeDetailTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button" role="tab">
+                                    <i class="mdi mdi-package-variant"></i> Sản phẩm
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="orders-tab" data-bs-toggle="tab" data-bs-target="#orders" type="button" role="tab">
+                                    <i class="mdi mdi-cart"></i> Đơn hàng
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="payment-tab" data-bs-toggle="tab" data-bs-target="#payment" type="button" role="tab">
+                                    <i class="mdi mdi-credit-card"></i> Thông tin chuyển khoản
+                                </button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content" id="storeDetailTabContent">
+                            <!-- Products Tab -->
+                            <div class="tab-pane fade show active" id="products" role="tabpanel">
+                                <div class="card card-default">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">Danh sách sản phẩm</h5>
+                                        <button class="btn btn-sm btn-primary">
+                                            <i class="mdi mdi-plus"></i> Thêm sản phẩm
+                                        </button>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>Ảnh</th>
+                                                        <th>Tên sản phẩm</th>
+                                                        <th>Giá</th>
+                                                        <th>Tồn kho</th>
+                                                        <th>Danh mục</th>
+                                                        <th>Trạng thái</th>
+                                                        <th>Thao tác</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="productsTableBody">
+                                                    <tr>
+                                                        <td colspan="8" class="text-center text-muted py-4">
+                                                            <i class="mdi mdi-package-variant-closed" style="font-size: 2rem;"></i>
+                                                            <p class="mt-2">Chưa có sản phẩm nào</p>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Orders Tab -->
+                            <div class="tab-pane fade" id="orders" role="tabpanel">
+                                <div class="card card-default">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Danh sách đơn hàng</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Mã đơn hàng</th>
+                                                        <th>Khách hàng</th>
+                                                        <th>Ngày đặt</th>
+                                                        <th>Tổng tiền</th>
+                                                        <th>Trạng thái</th>
+                                                        <th>Thao tác</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="ordersTableBody">
+                                                    <tr>
+                                                        <td colspan="6" class="text-center text-muted py-4">
+                                                            <i class="mdi mdi-cart-outline" style="font-size: 2rem;"></i>
+                                                            <p class="mt-2">Chưa có đơn hàng nào</p>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Payment Info Tab -->
+                            <div class="tab-pane fade" id="payment" role="tabpanel">
+                                <div class="card card-default">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Thông tin chuyển khoản</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label text-dark font-weight-medium"><strong>Tên ngân hàng:</strong></label>
+                                                    <p id="bankName" class="form-control-plaintext text-muted">Chưa cập nhật</p>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label text-dark font-weight-medium"><strong>Số tài khoản:</strong></label>
+                                                    <p id="accountNumber" class="form-control-plaintext text-muted">Chưa cập nhật</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label text-dark font-weight-medium"><strong>Tên chủ tài khoản:</strong></label>
+                                                    <p id="accountHolder" class="form-control-plaintext text-muted">Chưa cập nhật</p>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label text-dark font-weight-medium"><strong>Chi nhánh:</strong></label>
+                                                    <p id="bankBranch" class="form-control-plaintext text-muted">Chưa cập nhật</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal ảnh phóng to -->
+            <div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content text-center p-4 rounded shadow" style="background-color: #fff;">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Đóng"
+                                style="position: absolute; top: 10px; right: 15px;">
+                            <span aria-hidden="true" style="font-size: 2rem;">&times;</span>
+                        </button>
+                        <img id="modalImage" src="" class="img-fluid rounded"
+                             style="max-height: 75vh; max-width: 100%; object-fit: contain;" alt="Zoom ảnh">
                     </div>
                 </div>
             </div>
@@ -568,10 +791,78 @@
     </div>
 </div>
 
-
 <script>
+    // Enhanced image error handling
+    document.addEventListener('DOMContentLoaded', function () {
+        // Handle all product images
+        document.querySelectorAll('.product-image').forEach(img => {
+            img.addEventListener('error', function () {
+                this.style.display = 'none';
+
+                // Create placeholder
+                const placeholder = document.createElement('div');
+                placeholder.className = 'no-image-placeholder';
+                placeholder.style.cssText = 'width: 50px; height: 50px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; display: flex; align-items: center; justify-content: center;';
+                placeholder.innerHTML = '<i class="mdi mdi-image-off text-muted"></i>';
+
+                this.parentNode.insertBefore(placeholder, this);
+            });
+        });
+
+        // Enhanced clickable image functionality
+        document.addEventListener('click', function (e) {
+            if (e.target.classList.contains('clickable-image') && e.target.src && e.target.src !== '') {
+                const modal = document.getElementById('imageModal');
+                const modalImage = document.getElementById('modalImage');
+
+                if (modal && modalImage) {
+                    modalImage.src = e.target.dataset.src || e.target.src;
+                    $('#imageModal').modal('show');
+                }
+            }
+        });
+
+        // Lazy loading for better performance
+        const imageObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    if (img.dataset.src && !img.src) {
+                        img.src = img.dataset.src;
+                    }
+                    observer.unobserve(img);
+                }
+            });
+        });
+
+        document.querySelectorAll('img[data-src]').forEach(img => {
+            imageObserver.observe(img);
+        });
+    });
+
+    // Function to handle dynamic image updates
+    function updateProductImage(productId, newImageUrl) {
+        const img = document.querySelector(`img[data-product-id="${productId}"]`);
+        if (img) {
+            img.src = newImageUrl;
+            img.dataset.src = newImageUrl;
+        }
+    }
+
+    // Function to validate image URLs
+    function isValidImageUrl(url) {
+        return url && url.trim() !== '' && url !== 'null' && url !== 'undefined';
+    }
+</script>
+<script>
+    // Move these variables to global scope
     let storeIdToHandle = null;
     let currentRow = null;
+    let currentStoreId = null;
+    const storeListView = document.querySelector('.col-12');
+    const storeDetailView = document.getElementById('storeDetailView');
+    const backBtn = document.createElement('button'); // You may need to add this button to your HTML
+    const pageTitle = document.querySelector('.page-title');
 
     // ========== CUSTOM TOAST ==========
     function showToast(message, isSuccess = true) {
@@ -593,131 +884,343 @@
         setTimeout(() => document.getElementById('dynamicToast')?.remove(), 3000);
     }
 
-    // ========== DUYỆT ==========
-    document.querySelectorAll('.btn-approve').forEach(btn => {
-        btn.addEventListener('click', function () {
-            storeIdToHandle = this.dataset.id;
-            currentRow = this.closest('tr');
-            $('#approveModal').modal('show');
-        });
-    });
+    // Move showStoreDetail to global scope
+    function showStoreDetail(storeId, storeName, storeOwner, storeDate, storeStatus, storeImage) {
+        currentStoreId = storeId;
 
-    document.getElementById('confirmApproveBtn').addEventListener('click', async function () {
-        if (storeIdToHandle) {
-            const res = await fetch(`/Admin/Store/Approve?id=${storeIdToHandle}`, { method: 'POST' });
-            const data = await res.json();
-            $('#approveModal').modal('hide');
-            showToast(data.message, data.success);
-            if (data.success) {
-                currentRow.remove();
-            }
+        storeListView.style.display = 'none';
+        storeDetailView.style.display = 'block';
+        if (backBtn) backBtn.style.display = 'inline-block';
+        if (pageTitle) pageTitle.textContent = `Chi tiết cửa hàng: ${storeName}`;
+
+        document.getElementById('storeDetailName').textContent = storeName;
+        document.getElementById('storeDetailOwner').textContent = storeOwner;
+        document.getElementById('storeDetailDate').textContent = storeDate;
+
+        // Badge status
+        const statusBadge = document.getElementById('storeDetailStatus');
+        if (storeStatus === 'Active') {
+            statusBadge.className = 'badge badge-success fs-6';
+            statusBadge.textContent = 'Đang hoạt động';
+        } else {
+            statusBadge.className = 'badge badge-warning fs-6';
+            statusBadge.textContent = 'Chờ duyệt';
         }
-    });
 
-    // ========== TỪ CHỐI ==========
-    document.querySelectorAll('.btn-reject').forEach(btn => {
-        btn.addEventListener('click', function () {
-            storeIdToHandle = this.dataset.id;
-            currentRow = this.closest('tr');
-            $('#rejectModal').modal('show');
-        });
-    });
-
-    document.getElementById('confirmRejectBtn').addEventListener('click', async function () {
-        if (storeIdToHandle) {
-            const res = await fetch(`/Admin/Store/Reject?id=${storeIdToHandle}`, { method: 'POST' });
-            const data = await res.json();
-            $('#rejectModal').modal('hide');
-            showToast(data.message, data.success);
-            if (data.success) {
-                currentRow.remove();
-            }
+        // Store image
+        const storeDetailImage = document.getElementById('storeDetailImage');
+        if (storeImage && storeImage.trim() !== '') {
+            storeDetailImage.src = storeImage;
+            storeDetailImage.style.display = 'block';
+        } else {
+            storeDetailImage.style.display = 'none';
         }
-    });
 
-    // ========== MODAL CLOSE ==========
-    document.querySelectorAll('[data-dismiss="modal"]').forEach(btn => {
-        btn.addEventListener('click', function () {
-            $('#approveModal, #rejectModal, #imageModal').modal('hide');
+        // Load store data
+        loadStoreData(storeId);
+    }
+
+    // Move goBack to global scope
+    function goBack() {
+        storeDetailView.style.display = 'none';
+        storeListView.style.display = 'block';
+        if (backBtn) backBtn.style.display = 'none';
+        if (pageTitle) pageTitle.textContent = 'Quản lý cửa hàng';
+        currentStoreId = null;
+    }
+
+    // Move loadStoreData to global scope
+    function loadStoreData(storeId) {
+        $.ajax({
+            url: `/Admin/Store/GetDetail/${storeId}`,
+            type: "GET",
+            success: function (store) {
+                // === PRODUCTS ===
+                let productsHtml = "";
+                if (store.products && store.products.length > 0) {
+                    store.products.forEach(p => {
+                        let priceDisplay = p.minPrice && p.maxPrice && p.minPrice !== p.maxPrice
+                            ? `${p.minPrice.toLocaleString()} - ${p.maxPrice.toLocaleString()} đ`
+                            : `${(p.price || 0).toLocaleString()} đ`;
+
+                        let statusHtml = "";
+                        switch (p.status) {
+                            case "Pending": statusHtml = '<span class="badge badge-warning">Chờ duyệt</span>'; break;
+                            case "Approved": statusHtml = '<span class="badge badge-success">Đã duyệt</span>'; break;
+                            default: statusHtml = '<span class="badge badge-secondary">Ẩn</span>'; break;
+                        }
+
+                        // Enhanced image handling
+                        let imageHtml = '';
+                        if (p.image && p.image.trim() !== '' && p.image !== 'null') {
+                            imageHtml = `<img src="${p.image}"
+                                            class="rounded clickable-image product-image"
+                                            data-src="${p.image}"
+                                            alt="${p.name}"
+                                            width="50"
+                                            height="50"
+                                            style="cursor: pointer; object-fit: cover; border: 1px solid #ddd;"
+                                            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                                        <div class="no-image-placeholder" style="display: none; width: 50px; height: 50px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; align-items: center; justify-content: center;">
+                                            <i class="mdi mdi-image-off text-muted"></i>
+                                        </div>`;
+                        } else {
+                            imageHtml = `<div class="no-image-placeholder" style="width: 50px; height: 50px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="mdi mdi-image-off text-muted"></i>
+                                        </div>`;
+                        }
+
+                        productsHtml += `
+                            <tr>
+                                <td>${p.id}</td>
+                                <td>${imageHtml}</td>
+                                <td>${p.name}</td>
+                                <td>${priceDisplay}</td>
+                                <td>${p.stock}</td>
+                                <td>${p.category}</td>
+                                <td>${statusHtml}</td>
+                                <td><button class="btn btn-sm btn-outline-info">Chi tiết</button></td>
+                            </tr>`;
+                    });
+                } else {
+                    productsHtml = `<tr><td colspan="8" class="text-center text-muted py-4">
+                                        <i class="mdi mdi-package-variant-closed" style="font-size: 2rem;"></i>
+                                        <p class="mt-2">Chưa có sản phẩm nào</p>
+                                    </td></tr>`;
+                }
+                $("#productsTableBody").html(productsHtml);
+
+                // Rest of your existing code for orders, payment info, stats...
+                // [Keep your existing code for orders, payment, and stats sections]
+            },
+            error: function () {
+                console.error("Không load được chi tiết cửa hàng");
+            }
         });
-    });
-
-    // ========== IMAGE PREVIEW ==========
-    document.querySelectorAll('.clickable-image').forEach(img => {
-        img.addEventListener('click', function () {
-            document.getElementById('modalImage').src = this.dataset.src;
-            $('#imageModal').modal('show');
-        });
-    });
-        // ===== CHECK/UNCHECK ALL STORE =====
-    document.getElementById('checkAllStores').addEventListener('change', function () {
-        const checked = this.checked;
-        document.querySelectorAll('.store-checkbox').forEach(cb => cb.checked = checked);
-        toggleStoreBulkButtons();
-    });
-
-    document.querySelectorAll('.store-checkbox').forEach(cb => {
-        cb.addEventListener('change', toggleStoreBulkButtons);
-    });
+    }
 
     function toggleStoreBulkButtons() {
         const count = document.querySelectorAll('.store-checkbox:checked').length;
-        document.getElementById('bulkStoreButtons').style.display = count > 0 ? 'flex' : 'none';
+        const bulkButtons = document.getElementById('bulkStoreButtons');
+        if (bulkButtons) {
+            bulkButtons.style.display = count > 0 ? 'flex' : 'none';
+        }
     }
 
-    // ===== SHOW MODALS =====
-    document.querySelector('.btn-approve-all-store').addEventListener('click', function () {
-        const count = document.querySelectorAll('.store-checkbox:checked').length;
-        if (count === 0) {
-            showToast("⚠️ Bạn chưa chọn cửa hàng nào để duyệt.", false);
-            return;
-        }
-        $('#bulkApproveStoreModal').modal('show');
-    });
+    // Document ready event handlers
+    document.addEventListener('DOMContentLoaded', function () {
+        // ========== DUYỆT ==========
+        document.querySelectorAll('.btn-approve').forEach(btn => {
+            btn.addEventListener('click', function () {
+                storeIdToHandle = this.dataset.id;
+                currentRow = this.closest('tr');
+                $('#approveModal').modal('show');
+            });
+        });
 
-    document.querySelector('.btn-reject-all-store').addEventListener('click', function () {
-        const count = document.querySelectorAll('.store-checkbox:checked').length;
-        if (count === 0) {
-            showToast("⚠️ Bạn chưa chọn cửa hàng nào để từ chối.", false);
-            return;
-        }
-        $('#bulkRejectStoreModal').modal('show');
-    });
-
-    // ===== BULK APPROVE STORE =====
-    document.getElementById('confirmBulkApproveStoreBtn').addEventListener('click', async function () {
-        const ids = Array.from(document.querySelectorAll('.store-checkbox:checked')).map(cb => cb.value);
-        let allSuccess = true;
-
-        for (const id of ids) {
-            const res = await fetch(`/Admin/Store/Approve?id=${id}`, { method: 'POST' });
-            const data = await res.json();
-            showToast(data.message, data.success);
-            if (!data.success) allSuccess = false;
+        const confirmApproveBtn = document.getElementById('confirmApproveBtn');
+        if (confirmApproveBtn) {
+            confirmApproveBtn.addEventListener('click', async function () {
+                if (storeIdToHandle) {
+                    const res = await fetch(`/Admin/Store/Approve?id=${storeIdToHandle}`, { method: 'POST' });
+                    const data = await res.json();
+                    $('#approveModal').modal('hide');
+                    showToast(data.message, data.success);
+                    if (data.success && currentRow) {
+                        currentRow.remove();
+                    }
+                }
+            });
         }
 
-        $('#bulkApproveStoreModal').modal('hide');
-        if (allSuccess) setTimeout(() => location.reload(), 1500);
-    });
+        // ========== TỪ CHỐI ==========
+        document.querySelectorAll('.btn-reject').forEach(btn => {
+            btn.addEventListener('click', function () {
+                storeIdToHandle = this.dataset.id;
+                currentRow = this.closest('tr');
+                $('#rejectModal').modal('show');
+            });
+        });
 
-    // ===== BULK REJECT STORE =====
-    document.getElementById('confirmBulkRejectStoreBtn').addEventListener('click', async function () {
-        const ids = Array.from(document.querySelectorAll('.store-checkbox:checked')).map(cb => cb.value);
-        let allSuccess = true;
-
-        for (const id of ids) {
-            const res = await fetch(`/Admin/Store/Reject?id=${id}`, { method: 'POST' });
-            const data = await res.json();
-            showToast(data.message, data.success);
-            if (!data.success) allSuccess = false;
+        const confirmRejectBtn = document.getElementById('confirmRejectBtn');
+        if (confirmRejectBtn) {
+            confirmRejectBtn.addEventListener('click', async function () {
+                if (storeIdToHandle) {
+                    const res = await fetch(`/Admin/Store/Reject?id=${storeIdToHandle}`, { method: 'POST' });
+                    const data = await res.json();
+                    $('#rejectModal').modal('hide');
+                    showToast(data.message, data.success);
+                    if (data.success && currentRow) {
+                        currentRow.remove();
+                    }
+                }
+            });
         }
 
-        $('#bulkRejectStoreModal').modal('hide');
-        if (allSuccess) setTimeout(() => location.reload(), 1500);
-    });
+        // ========== MODAL CLOSE ==========
+        document.querySelectorAll('[data-dismiss="modal"]').forEach(btn => {
+            btn.addEventListener('click', function () {
+                $('#approveModal, #rejectModal, #imageModal').modal('hide');
+            });
+        });
 
+        // ========== IMAGE PREVIEW ==========
+        document.querySelectorAll('.clickable-image').forEach(img => {
+            img.addEventListener('click', function () {
+                const modalImage = document.getElementById('modalImage');
+                if (modalImage) {
+                    modalImage.src = this.dataset.src;
+                    $('#imageModal').modal('show');
+                }
+            });
+        });
 
-    $('.close').on('click', function () {
-        $('#imageModal').modal('hide');
+        // ===== CHECK/UNCHECK ALL STORE =====
+        const checkAllStores = document.getElementById('checkAllStores');
+        if (checkAllStores) {
+            checkAllStores.addEventListener('change', function () {
+                const checked = this.checked;
+                document.querySelectorAll('.store-checkbox').forEach(cb => cb.checked = checked);
+                toggleStoreBulkButtons();
+            });
+        }
+
+        document.querySelectorAll('.store-checkbox').forEach(cb => {
+            cb.addEventListener('change', toggleStoreBulkButtons);
+        });
+
+        // ===== SHOW MODALS =====
+        const btnApproveAllStore = document.querySelector('.btn-approve-all-store');
+        if (btnApproveAllStore) {
+            btnApproveAllStore.addEventListener('click', function () {
+                const count = document.querySelectorAll('.store-checkbox:checked').length;
+                if (count === 0) {
+                    showToast("⚠️ Bạn chưa chọn cửa hàng nào để duyệt.", false);
+                    return;
+                }
+                $('#bulkApproveStoreModal').modal('show');
+            });
+        }
+
+        const btnRejectAllStore = document.querySelector('.btn-reject-all-store');
+        if (btnRejectAllStore) {
+            btnRejectAllStore.addEventListener('click', function () {
+                const count = document.querySelectorAll('.store-checkbox:checked').length;
+                if (count === 0) {
+                    showToast("⚠️ Bạn chưa chọn cửa hàng nào để từ chối.", false);
+                    return;
+                }
+                $('#bulkRejectStoreModal').modal('show');
+            });
+        }
+
+        // ===== BULK APPROVE STORE =====
+        const confirmBulkApproveStoreBtn = document.getElementById('confirmBulkApproveStoreBtn');
+        if (confirmBulkApproveStoreBtn) {
+            confirmBulkApproveStoreBtn.addEventListener('click', async function () {
+                const ids = Array.from(document.querySelectorAll('.store-checkbox:checked')).map(cb => cb.value);
+                let allSuccess = true;
+
+                for (const id of ids) {
+                    const res = await fetch(`/Admin/Store/Approve?id=${id}`, { method: 'POST' });
+                    const data = await res.json();
+                    showToast(data.message, data.success);
+                    if (!data.success) allSuccess = false;
+                }
+
+                $('#bulkApproveStoreModal').modal('hide');
+                if (allSuccess) setTimeout(() => location.reload(), 1500);
+            });
+        }
+
+        // ===== BULK REJECT STORE =====
+        const confirmBulkRejectStoreBtn = document.getElementById('confirmBulkRejectStoreBtn');
+        if (confirmBulkRejectStoreBtn) {
+            confirmBulkRejectStoreBtn.addEventListener('click', async function () {
+                const ids = Array.from(document.querySelectorAll('.store-checkbox:checked')).map(cb => cb.value);
+                let allSuccess = true;
+
+                for (const id of ids) {
+                    const res = await fetch(`/Admin/Store/Reject?id=${id}`, { method: 'POST' });
+                    const data = await res.json();
+                    showToast(data.message, data.success);
+                    if (!data.success) allSuccess = false;
+                }
+
+                $('#bulkRejectStoreModal').modal('hide');
+                if (allSuccess) setTimeout(() => location.reload(), 1500);
+            });
+        }
+
+        // ESC key handler
+        document.addEventListener('keydown', function (e) {
+            if (e.key === "Escape" && storeDetailView && storeDetailView.style.display === 'block') {
+                goBack();
+            }
+        });
+
+        // jQuery handlers (if using jQuery)
+        if (typeof $ !== 'undefined') {
+            $('.close').on('click', function () {
+                $('#imageModal').modal('hide');
+            });
+
+            // Click vào 1 row cửa hàng
+            $('.store-row').on('click', function (e) {
+                if (!$(e.target).hasClass('clickable-image')) {
+                    const storeId = $(this).data('store-id');
+                    const storeName = $(this).data('name');
+                    const storeOwner = $(this).data('owner');
+                    const storeDate = $(this).data('date');
+                    const storeStatus = $(this).data('status');
+                    const storeImage = $(this).data('image');
+
+                    showStoreDetail(storeId, storeName, storeOwner, storeDate, storeStatus, storeImage);
+                }
+            });
+
+            // Nút quay lại
+            $('#backBtn').on('click', function () {
+                goBack();
+            });
+
+            // Tab switching
+            $('[data-bs-toggle="tab"]').on('click', function (e) {
+                e.preventDefault();
+                const target = $(this).data('bs-target');
+
+                $('.nav-link').removeClass('active');
+                $('.tab-pane').removeClass('show active');
+
+                $(this).addClass('active');
+                $(target).addClass('show active');
+            });
+        }
     });
 </script>
+<style>
+    .product-image {
+        transition: transform 0.2s ease;
+        border-radius: 4px !important;
+    }
+
+        .product-image:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+    .no-image-placeholder {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+
+    /* Fix for store avatar in detail view */
+    .store-avatar-wrapper img {
+        border: 3px solid #fff !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+    }
+
+    /* Ensure proper image loading */
+    img[src=""], img[src="null"], img[src="undefined"] {
+        display: none;
+    }
+</style>

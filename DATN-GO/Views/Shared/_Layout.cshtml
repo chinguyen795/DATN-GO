@@ -140,9 +140,9 @@
                     </div>
                     <!-- Search (desktop only) -->
                     <div class="col flex-grow-1 d-none d-lg-block">
-                        <form class="d-flex" style="max-width: 400px; margin: 0 auto;">
-                            <input class="form-control form-control-sm rounded-pill w-100" type="search"
-                                   placeholder="Tìm kiếm" aria-label="Search">
+                        <form class="d-flex" asp-action="Search" asp-controller="Home" method="get" style="max-width: 400px; margin: 0 auto;">
+                            <input class="form-control form-control-sm rounded-pill w-100"
+                                   type="search" name="query" placeholder="Tìm kiếm sản phẩm hoặc cửa hàng" aria-label="Search">
                         </form>
                     </div>
                     <!-- Menu, Cart, Account (desktop only) -->
