@@ -141,5 +141,6 @@ namespace DATN_GO.Controllers
 
             return RedirectToAction("Index", "Home", new { area = "" });
         }
+
     }
 }

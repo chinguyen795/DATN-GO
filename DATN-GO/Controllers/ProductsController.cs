@@ -155,8 +155,17 @@ namespace DATN_GO.Controllers
         {
             var product = await _productService.GetProductByIdAsync(id);
             if (product == null) return NotFound();
-
+            ViewBag.ProductName = product.Name;
+            ViewBag.ProductBrand = product.Brand;
+            ViewBag.ProductPlaceOfOrigin = product.PlaceOfOrigin;
+            ViewBag.ProductQuantity = product.Quantity;
             // Ảnh sản phẩm
+            var categoryResult = await _categoryService.GetCategoryByIdAsync(product.CategoryId);
+            ViewBag.CategoryName = categoryResult.Success
+                ? categoryResult.Data.Name
+                : "Không có danh mục";
+            ViewBag.Category = categoryResult.Data;
+
             var productVariants = await _productVariantService.GetByProductIdAsync(id);
             var variantCombinations = await _productVariantService.GetVariantCombinationsByProductIdAsync(id);
             var allImages = new List<string>();
@@ -180,12 +189,19 @@ namespace DATN_GO.Controllers
             {
                 ViewBag.StoreName = store.Name;
                 ViewBag.StoreLogo = store.Avatar ?? "/image/default-logo.png";
+                ViewBag.StoreAddress = store.Province ?? "Chưa cập nhật địa chỉ";
+
             }
 
             ViewBag.MinMaxPrice = await _priceService.GetMinMaxPriceByProductIdAsync(id);
 
             // Reviews
             ViewBag.Reviews = await _reviewService.GetReviewsByProductIdAsync(id) ?? new List<ReviewViewModel>();
+            // Lấy danh sách review từ API
+            var reviews = await _reviewService.GetReviewsByProductIdAsync(id) ?? new List<ReviewViewModel>();
+
+            // Lấy số lượt mua từ review đầu tiên
+            ViewBag.PurchaseCount = reviews.FirstOrDefault()?.PurchaseCount ?? 0;
 
             // ===== Lấy UserId từ Session =====
             if (!HttpContext.Session.TryGetValue("Id", out byte[] idBytes) ||

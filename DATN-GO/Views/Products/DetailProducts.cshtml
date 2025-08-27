@@ -1,4 +1,4 @@
-﻿﻿﻿@using DATN_GO.ViewModels
+﻿﻿﻿﻿@using DATN_GO.ViewModels
 @{
     var images = ViewBag.Images as List<string> ?? new List<string>();
     var variants = ViewBag.VariantOptions as List<VariantWithValuesViewModel>;
@@ -14,6 +14,14 @@
 
     var totalReviews = reviews.Count;
     var averageRating = totalReviews > 0 ? reviews.Average(r => r.Rating) : 0;
+    var purchaseCount = ViewBag.PurchaseCount;
+
+    var productName = ViewBag.ProductName as string ?? "";
+    var productBrand = ViewBag.ProductBrand as string ?? "";
+    var productPlaceOfOrigin = ViewBag.ProductPlaceOfOrigin as string ?? "";
+    var productQuantity = ViewBag.ProductQuantity ?? 0;
+    var categoryName = ViewBag.CategoryName as string ?? "";
+    var storeadddress = ViewBag.StoreAddress as string ?? "";
 }
 
 <style>
@@ -25,7 +33,16 @@
         .rating i.text-warning {
             color: gold !important;
         }
+
+	.text-truncate-2 {
+		display: -webkit-box;
+		-webkit-line-clamp: 2; /* số dòng hiển thị */
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
 </style>
+
 
 <div class="row mb-5">
     <!-- Product Image Section -->
@@ -109,7 +126,9 @@
             </div>
         </div>
         <!-- Product Information -->
-        <h2 class="mb-3">@ViewBag.ProductName</h2>
+        <h2 class="mb-3 text-truncate-2" data-bs-toggle="tooltip" data-bs-placement="top" title="@ViewBag.ProductName">
+            @ViewBag.ProductName
+        </h2>
         <div class="mb-3 d-flex align-items-center">
             <span class="text-danger fw-bold fs-3"
                   style="white-space: nowrap; font-family: Arial, sans-serif; font-size: 16px; font-weight: 600;">
@@ -152,13 +171,15 @@
                     <div class="text-warning me-2">
                         <i class="bi bi-star-fill"></i>
                     </div>
-                    <span>@averageRating.ToString("0.0") (@totalReviews đánh giá)</span>
+                    <span>
+                        @averageRating.ToString("0.0") (@totalReviews đánh giá) | @purchaseCount lượt mua
+                    </span>
                 }
             </div>
         </div>
 
 
-        <!-- Product Variants -->
+
         <!-- Product Variants -->
         <div class="mb-4">
             @if (variants != null)
@@ -215,6 +236,10 @@
             <div class="d-grid gap-2 mt-3">
                 <button type="submit" class="btn btn-outline-primary btn-lg">Thêm vào giỏ hàng</button>
             </div>
+
+            <div class="d-grid gap-2 mt-3">
+                <button type="submit" class="btn btn-crimson btn-lg">Mua ngay</button>
+            </div>
         </form>
 
 
@@ -222,19 +247,30 @@
     </div>
 </div>
 
-<div class="d-flex align-items-center container mb-3">
+<div class="d-flex align-items-center container mb-3 p-0">
     <hr class="flex-grow-1 border-danger border-1 opacity-100">
 </div>
 
-<div class="mb-4">
+<div class="mb-3">
     <h3>Thông tin chi tiết:</h3>
-
-    <ul class="list-unstyled text-muted mb-3">
-        <li><strong>Nơi xuất xứ:</strong> @Model.PlaceOfOrigin</li>
-        <li><strong>Thương hiệu:</strong> @Model.Brand</li>
-        <li><strong>Mô tả:</strong> @Model.Description</li>
-    </ul>
-</div>
+    <div class="text mb-3">
+        <div class="py-2 border-bottom">
+            <strong>Nơi xuất xứ:</strong> @Model.PlaceOfOrigin
+        </div>
+        <div class="py-2 border-bottom">
+            <strong>Thương hiệu:</strong> @Model.Brand
+        </div>
+        <div class="py-2 border-bottom">
+            <strong>Danh mục:</strong> @ViewBag.CategoryName
+        </div>
+        <div class="py-2 border-bottom">
+            <strong>Giao từ:</strong> @ViewBag.StoreAddress
+        </div>
+        <div class="py-2">
+            <strong>Mô tả:</strong> @Model.Description
+        </div>
+    </div>
+    </div>
 
 <!-- Comments Section -->
 

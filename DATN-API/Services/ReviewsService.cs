@@ -84,6 +84,11 @@ namespace DATN_API.Services
 
         public async Task<IEnumerable<ReviewViewModel>> GetByProductIdAsync(int productId)
         {
+            var purchaseCount = await _context.OrderDetails
+       .Where(od => od.ProductId == productId
+                 && od.Order.Status == OrderStatus.DaHoanThanh)
+       .CountAsync();
+
             var reviews = await _context.Reviews
                 .Where(r => r.ProductId == productId)
                 .Include(r => r.ReviewMedias)
@@ -101,7 +106,8 @@ namespace DATN_API.Services
                 CommentText = r.CommentText,
                 CreatedDate = r.CreateAt,
                 MediaUrls = r.ReviewMedias?.Select(m => m.Media).ToList(),
-                OrderId = r.OrderId
+                OrderId = r.OrderId,
+                PurchaseCount = purchaseCount
             });
         }
 

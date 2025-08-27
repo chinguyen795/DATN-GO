@@ -21,6 +21,7 @@
         public DateTime CreatedDate { get; set; }
         public List<string>? MediaUrls { get; set; }
         public int OrderId { get; set; }
+        public int? PurchaseCount { get; set; }
 
     }
 }
