@@ -18,13 +18,15 @@ namespace DATN_GO.Controllers
         private readonly ProductService _productService;
         private readonly CategoryService _categoryService;
         private readonly DecoratesService _decorationService;
+        private readonly PriceService _priceService;
 
-        public HomeController(StoreService storeService, ProductService productService, CategoryService categoryService, DecoratesService decorationService)
+        public HomeController(StoreService storeService, ProductService productService, CategoryService categoryService, DecoratesService decorationService, PriceService priceService)
         {
             _storeService = storeService;
             _productService = productService;
             _categoryService = categoryService;
             _decorationService = decorationService;
+            _priceService = priceService;
         }
 
         public async Task<IActionResult> Index()
@@ -69,7 +71,19 @@ namespace DATN_GO.Controllers
                 })
                 .ToList();
 
-            // 6) Lấy decorate GLOBAL từ API
+            // 6) Pre-fetch prices for featured and suggested products
+            var featuredProductIds = products.OrderByDescending(p => p.Views).Take(8).Select(p => p.Id).ToList();
+            var suggestedProductIds = products.OrderBy(_ => Guid.NewGuid()).Take(8).Select(p => p.Id).ToList();
+            var allNeededProductIds = featuredProductIds.Concat(suggestedProductIds).Distinct().ToList();
+
+            var priceDict = new Dictionary<int, decimal>();
+            foreach (var productId in allNeededProductIds)
+            {
+                var price = await _priceService.GetPriceByProductIdAsync(productId);
+                priceDict[productId] = price ?? 0m;
+            }
+
+            // 7) Lấy decorate GLOBAL từ API
             var decorate = await _decorationService.GetGlobalDecorateAsync();
             var decorateVm = decorate == null
                 ? new DecoratesViewModel()
@@ -100,7 +114,7 @@ namespace DATN_GO.Controllers
                     Description2 = decorate.Description2
                 };
 
-            // 7) Build ViewModel
+            // 8) Build ViewModel
             var vm = new HomeViewModel
             {
                 // ⭐ Rating của store lấy từ Reviews theo UserId; nếu không có review → -1
@@ -140,11 +154,10 @@ namespace DATN_GO.Controllers
                             MainImage = string.IsNullOrEmpty(p.MainImage) ? "/images/no-image.png" : p.MainImage,
                             CategoryName = categoryDict.TryGetValue(p.CategoryId, out var cname) ? cname : "Chưa phân loại",
                             StoreName = storeDict.TryGetValue(p.StoreId, out var sname) ? sname : "Đang cập nhật",
-                            Price = p.CostPrice ?? 0,
+                            Price = priceDict.TryGetValue(p.Id, out var price) ? price : p.CostPrice ?? 0m,
                             Rating = prodAvg // ⭐ đổ sao từ Reviews
                         };
                     }).ToList(),
-
                 SuggestedProducts = products
                     .OrderBy(_ => Guid.NewGuid()).Take(8)
                     .Select(p =>
@@ -160,7 +173,7 @@ namespace DATN_GO.Controllers
                             MainImage = string.IsNullOrEmpty(p.MainImage) ? "/images/no-image.png" : p.MainImage,
                             CategoryName = categoryDict.TryGetValue(p.CategoryId, out var cname) ? cname : "Chưa phân loại",
                             StoreName = storeDict.TryGetValue(p.StoreId, out var sname) ? sname : "Đang cập nhật",
-                            Price = p.CostPrice ?? 0,
+                            Price = priceDict.TryGetValue(p.Id, out var price) ? price : p.CostPrice ?? 0m,
                             Rating = prodAvg // ⭐ đổ sao từ Reviews
                         };
                     }).ToList(),
@@ -176,7 +189,7 @@ namespace DATN_GO.Controllers
                 Decorate = decorateVm
             };
 
-            // 8) Dict giá (non-variant) cho các block cần quick add
+            // 9) Dict giá (non-variant) cho các block cần quick add
             var minMaxPriceDict = new System.Collections.Hashtable();
             foreach (var p in products)
             {

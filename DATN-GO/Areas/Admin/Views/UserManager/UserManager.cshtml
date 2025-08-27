@@ -95,13 +95,42 @@
                             {
                                 <tr>
                                     <td>@user.Id</td>
-                                    <td class="py-0">
-                                        <img src="@user.Avatar ?? " /images/default-avatar.png""
-                                             class="clickable-image"
-                                             data-src="@user.Avatar ?? " /images/default-avatar.png""
-                                             style="width: 50px; height: 50px; object-fit: cover; cursor: pointer;" />
+                                    @{
+                                        // Base của API nơi lưu file ảnh (đúng với chỗ bạn đang dùng HttpClient)
+                                        var apiBase = "https://localhost:7096";
 
+                                        string ResolveAvatarUrl(string? avatar)
+                                        {
+                                            if (string.IsNullOrWhiteSpace(avatar))
+                                            {
+                                                return Url.Content("~/images/default-avatar.png");
+                                            }
+
+                                            // Nếu đã là absolute URL thì dùng luôn
+                                            if (avatar.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                                            avatar.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                return avatar;
+                                            }
+
+                                            // Nếu API trả về đường dẫn tương đối, ghép vào apiBase
+                                            var path = avatar.StartsWith("/") ? avatar : ("/" + avatar);
+                                            return apiBase + path;
+                                        }
+                                    }
+                                    <td class="py-0">
+                                        @{
+                                            var avatarUrl = ResolveAvatarUrl(user.Avatar);
+                                            var defaultUrl = Url.Content("~/images/default-avatar.png");
+                                        }
+                                        <img src="@avatarUrl"
+                                             data-src="@avatarUrl"
+                                             alt="Avatar"
+                                             class="clickable-image"
+                                             style="width:50px; height:50px; object-fit:cover; cursor:pointer;"
+                                             onerror="this.onerror=null; this.src='@defaultUrl';" />
                                     </td>
+
                                     <td>@user.FullName</td>
                                     <td>@user.Email</td>
                                     <td>@user.Phone</td>

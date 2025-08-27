@@ -547,7 +547,6 @@
                     try { max = (decimal?)priceInfo.MaxPrice; } catch { }
                     try { single = (decimal?)priceInfo.Price; } catch { }
 
-                    hasVariant = isVar || (min.HasValue && max.HasValue && min != max);
                     salePrice = isVar ? (min ?? max) : (single ?? 0m);
                 }
                 else
@@ -593,14 +592,9 @@
                             <p class="card-text text-muted small mb-2 text-truncate-1">@product.StoreName</p>
                             <div>
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    @if (salePrice.HasValue && salePrice > 0)
-                                    {
-                                        <span class="text-danger fw-bold">@salePrice?.ToString("N0")đ</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">Chưa có giá</span>
-                                    }
+                                    
+                                        <span class="text-danger fw-bold">@product.Price.ToString("N0")đ</span>
+                                    
                                 </div>
 
                                 <!-- Nút theo cột -->

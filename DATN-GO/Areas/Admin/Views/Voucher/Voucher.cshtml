@@ -156,7 +156,6 @@
             <span class="page-title">MÃ ƯU ĐÃI</span>
 
             <div class="navbar-right">
-            <div class="navbar-right ">
                 <ul class="nav navbar-nav">
                     <li class="custom-dropdown">
                         <a class="notify-toggler custom-dropdown-toggler" asp-controller="Notification" asp-action="Index">
@@ -168,17 +167,12 @@
                             <img src="@(!string.IsNullOrEmpty(ViewBag.UserInfo?.Avatar) ? ViewBag.UserInfo.Avatar : "/images/avt-user.jpg")"
                                  width="32" height="32" style="object-fit: cover;" loading="lazy" />
                             <span class="d-none d-lg-inline-block">@ViewBag.UserInfo?.FullName</span>
-                            <img src="~/images/avt-user.jpg" alt="User Profile" width="32" height="32" style="object-fit: cover;" loading="lazy">
-                            <span class="d-none d-lg-inline-block">@ViewBag.StoreName</span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-right">
                             <li>
                                 <a class="dropdown-link-item" asp-controller="Profile" asp-action="Index" asp-area="">
                                     <i class="mdi mdi-account-outline"></i>
                                     <span class="nav-text">Hồ Sơ</span>
-                                </a>
-                                <a class="dropdown-link-item" href="user-profile.html">
-                                    <i class="mdi mdi-account-outline"></i><span class="nav-text">Hồ Sơ</span>
                                 </a>
                             </li>
                             <li class="dropdown-footer">
