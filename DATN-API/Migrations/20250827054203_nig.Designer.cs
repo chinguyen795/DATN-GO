@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DATN_API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250826155717_nigga")]
-    partial class nigga
+    [Migration("20250827054203_nig")]
+    partial class nig
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -286,7 +286,7 @@ namespace DATN_API.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.Property<string>("Video")
@@ -1115,7 +1115,7 @@ namespace DATN_API.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserTradingPayment");
+                    b.ToTable("UserTradingPayments");
                 });
 
             modelBuilder.Entity("DATN_API.Models.UserVouchers", b =>
@@ -1157,6 +1157,9 @@ namespace DATN_API.Migrations
 
                     b.Property<string>("Avatar")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal?>("Balance")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime?>("BirthDay")
                         .HasColumnType("datetime2");
@@ -1454,8 +1457,7 @@ namespace DATN_API.Migrations
                     b.HasOne("DATN_API.Models.Users", "User")
                         .WithMany("Decorates")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("AdminSetting");
 

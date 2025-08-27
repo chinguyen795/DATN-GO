@@ -14,10 +14,10 @@ namespace DATN_GO.Areas.Admin.Controllers
         private readonly OrderService _orderService;
         private readonly TradingPaymentService _tradingPaymentService;
         private readonly UserTradingPaymentService _userTradingPaymentService;
-        public HomeController(StoreService storeService, ProductService productService, OrderService orderService, TradingPaymentService tradingPaymentService, UserTradingPaymentService userTradingPaymentService)
+        
         private readonly DecoratesService _decorationService;
 
-        public HomeController(StoreService storeService, ProductService productService, OrderService orderService, DecoratesService decorationService)
+        public HomeController(StoreService storeService, ProductService productService, OrderService orderService, TradingPaymentService tradingPaymentService, UserTradingPaymentService userTradingPaymentService, DecoratesService decorationService)
         {
             _storeService = storeService;
             _productService = productService;

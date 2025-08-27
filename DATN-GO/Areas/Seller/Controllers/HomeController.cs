@@ -20,9 +20,7 @@ namespace DATN_GO.Areas.Seller.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly TradingPaymentService _tradingPaymentService;
         private readonly VoucherService _voucherService;
-
-        public HomeController(StoreService storeService,OrderService orderSerivce, UserService userService, GoogleCloudStorageService gcsService, ILogger<HomeController> logger, ProductService productService, VoucherService voucherService)
-        public HomeController(StoreService storeService, OrderService orderSerivce, UserService userService, GoogleCloudStorageService gcsService, ILogger<HomeController> logger, ProductService productService, TradingPaymentService tradingPaymentService)
+        public HomeController(StoreService storeService, OrderService orderSerivce, UserService userService, GoogleCloudStorageService gcsService, ILogger<HomeController> logger, ProductService productService, TradingPaymentService tradingPaymentService, VoucherService voucherService)
         {
             _storeService = storeService;
             _userService = userService;
