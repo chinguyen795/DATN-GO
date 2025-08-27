@@ -95,6 +95,7 @@ namespace DATN_GO.Controllers
                 Province = model.Province,
                 AvatarUrl = model.Avatar,
                 CoverUrl = model.CoverPhoto,
+                MoneyAmout = 0,
                 Name = model.Name,
                 BankAccount = model.BankAccount,
                 Bank = model.Bank,

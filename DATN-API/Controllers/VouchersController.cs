@@ -76,7 +76,7 @@ namespace DATN_API.Controllers
 
             var entity = new Vouchers
             {
-           
+
                 IsPercentage = dto.IsPercentage,
                 Reduce = dto.Reduce,
                 MaxDiscount = dto.MaxDiscount,
@@ -115,7 +115,7 @@ namespace DATN_API.Controllers
 
             if (voucher == null) return NotFound();
 
-         
+
             voucher.IsPercentage = dto.IsPercentage;
             voucher.Reduce = dto.Reduce;
             voucher.MaxDiscount = dto.MaxDiscount;
@@ -183,6 +183,6 @@ namespace DATN_API.Controllers
             return Ok(res);
         }
 
-        
+
     }
 }

@@ -20,7 +20,7 @@ namespace DATN_GO.Areas.Seller.Controllers
         private async Task<bool> IsUserSeller(int userId)
         {
             var user = await _userService.GetUserByIdAsync(userId);
-            return user != null && user.RoleId == 2;
+            return user != null && user.RoleId == 1;
         }
 
         public async Task<IActionResult> Voucher(string search, string sort, int page = 1, int pageSize = 4)
@@ -35,14 +35,6 @@ namespace DATN_GO.Areas.Seller.Controllers
             }
 
             int userIdInt = Convert.ToInt32(userId);
-
-            // Kiểm tra nếu người dùng không phải Seller
-            if (!await IsUserSeller(userIdInt))
-            {
-                TempData["ToastMessage"] = "Bạn không có quyền truy cập vào trang này!";
-                TempData["ToastType"] = "error";
-                return RedirectToAction("Index", "Home", new { area = "" });
-            }
 
             // Lấy StoreId và StoreName của người dùng đang đăng nhập
             var storeInfo = await _voucherService.GetStoreInfoByUserIdAsync(userIdInt);

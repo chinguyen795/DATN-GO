@@ -52,12 +52,12 @@ namespace DATN_GO.Models
         public decimal? MaxDiscount { get; set; }
 
         /// <summary>Đã dùng bao nhiêu lần.</summary>
-        public int UsedCount { get; set; } = 0;
+        public int? UsedCount { get; set; } = 0;
 
        
 
         /// <summary>Thông tin người tạo để phân quyền (admin=3, shop=2).</summary>
-        public int CreatedByUserId { get; set; }
-        public int CreatedByRoleId { get; set; } // 3 = admin, 2 = shop
+        public int? CreatedByUserId { get; set; }
+        public int? CreatedByRoleId { get; set; } // 3 = admin, 2 = shop
     }
 }

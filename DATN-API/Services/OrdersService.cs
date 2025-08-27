@@ -727,7 +727,12 @@ namespace DATN_API.Services
 
         public async Task<(bool Success, string Message)> CancelOrderAsync(int orderId, int userId)
         {
-            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
+            await using var tx = await _context.Database.BeginTransactionAsync();
+
+            var order = await _context.Orders
+                .Include(o => o.User)
+                .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
+
             if (order == null)
                 return (false, "Không tìm thấy đơn hàng");
 
@@ -739,33 +744,67 @@ namespace DATN_API.Services
 
             string ghtkMessage = string.Empty;
 
-            // Nếu đơn đã đẩy sang GHTK
+            // Nếu đơn đã đẩy sang GHTK thì hủy trên GHTK trước
             if (!string.IsNullOrWhiteSpace(order.LabelId))
             {
                 var ghtkResult = await _ghtk.CancelOrderAsync(order.LabelId);
                 if (!ghtkResult)
                 {
+                    await tx.RollbackAsync();
                     return (false, "Hủy đơn trên GHTK thất bại");
                 }
-
-                // Ghi log khi hủy trên GHTK thành công
                 ghtkMessage = $" (Đã hủy thành công trên GHTK - LabelId: {order.LabelId})";
             }
 
-            // Cập nhật trạng thái trong DB
+            // Cập nhật trạng thái
             order.Status = OrderStatus.DaHuy;
-            await _context.SaveChangesAsync();
 
-            return (true, "Hủy đơn hàng thành công" + ghtkMessage);
+            // ✅ Chỉ hoàn tiền nếu ShippingMethodId == 1
+            decimal total = order.TotalPrice;
+            bool didRefund = false;
+
+            if (order.ShippingMethodId == 1 && total > 0)
+            {
+                if (order.User == null)
+                {
+                    order.User = await _context.Users.FirstOrDefaultAsync(u => u.Id == order.UserId);
+                    if (order.User == null)
+                    {
+                        await tx.RollbackAsync();
+                        return (false, "Không tìm thấy người dùng để hoàn tiền");
+                    }
+                }
+
+                order.User.Balance += total; // cộng vào ví hiện có
+                didRefund = true;
+            }
+
+            await _context.SaveChangesAsync();
+            await tx.CommitAsync();
+
+            // Ghép message trả về
+            string msg = "Hủy đơn hàng thành công" + ghtkMessage;
+            if (didRefund) msg += $" (+{total:N0} vào ví do phương thức vận chuyển #1)";
+            else msg += " (đơn không đủ điều kiện hoàn ví)";
+
+            return (true, msg);
         }
 
-        // Service
+
+
         public async Task<(bool Success, string Message, OrderStatus? Status)> UpdateToNextStatusAsync(int orderId)
         {
-            var order = await _context.Orders.FindAsync(orderId);
-            if (order == null) return (false, "Không tìm thấy đơn hàng", null);
+            await using var tx = await _context.Database.BeginTransactionAsync();
 
-            OrderStatus nextStatus = order.Status switch
+            var order = await _context.Orders
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                .FirstOrDefaultAsync(o => o.Id == orderId);
+
+            if (order == null)
+                return (false, "Không tìm thấy đơn hàng", null);
+
+            var nextStatus = order.Status switch
             {
                 OrderStatus.ChoLayHang => OrderStatus.DangGiao,
                 OrderStatus.DangGiao => OrderStatus.DaHoanThanh,
@@ -773,13 +812,76 @@ namespace DATN_API.Services
             };
 
             if (nextStatus == order.Status)
-                return (false, "Không thể cập nhật trạng thái tiếp theo cho đơn hàng này", order.Status);
+                return (false, "Không thể cập nhật trạng thái tiếp theo", order.Status);
 
+            bool completing = order.Status == OrderStatus.DangGiao && nextStatus == OrderStatus.DaHoanThanh;
             order.Status = nextStatus;
+
+            if (completing)
+            {
+                // Gom tiền hàng theo từng shop (Price * Quantity)
+                var perStore = order.OrderDetails
+                    .Where(od => od.Product != null)
+                    .GroupBy(od => od.Product!.StoreId)
+                    .Select(g => new
+                    {
+                        StoreId = g.Key,
+                        ItemsAmount = g.Sum(x => x.Price * x.Quantity)
+                    })
+                    .ToList();
+
+                // Tổng tiền hàng của cả đơn
+                decimal itemsTotal = perStore.Sum(x => x.ItemsAmount);
+
+                // Tiền ship của đơn
+                decimal deliveryFee = order.DeliveryFee;
+
+                foreach (var s in perStore)
+                {
+                    // Mặc định cộng tiền hàng
+                    decimal credit = s.ItemsAmount;
+
+                    // + Tiền ship:
+                    // - Nếu chỉ 1 shop: shop đó hưởng toàn bộ ship
+                    // - Nếu nhiều shop: chia theo tỷ lệ ItemsAmount / itemsTotal
+                    if (deliveryFee > 0)
+                    {
+                        if (perStore.Count == 1 || itemsTotal <= 0)
+                        {
+                            credit += deliveryFee;
+                        }
+                        else
+                        {
+                            decimal ratio = s.ItemsAmount / itemsTotal; // itemsTotal > 0
+                            credit += deliveryFee * ratio;
+                        }
+                    }
+
+                    if (credit <= 0) continue;
+
+                    var store = await _context.Stores.FirstOrDefaultAsync(st => st.Id == s.StoreId);
+                    if (store == null)
+                    {
+                        await tx.RollbackAsync();
+                        return (false, $"Không tìm thấy cửa hàng #{s.StoreId}", order.Status);
+                    }
+
+                    // ✅ Cộng dồn vào ví (giữ số dư cũ)
+                    store.MoneyAmout = (store.MoneyAmout ?? 0m) + credit;
+                }
+            }
+
             await _context.SaveChangesAsync();
+            await tx.CommitAsync();
 
             return (true, "Cập nhật thành công", order.Status);
         }
+
+
+
+
+
+
 
 
 

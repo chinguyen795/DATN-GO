@@ -34,5 +34,6 @@ namespace DATN_GO.ViewModels
 
         [Required(ErrorMessage = "Vui l?ng nh?p ð?a ch? l?y hàng.")]
         public string? PickupAddress { get; set; }
+        public decimal? MoneyAmout { get; set; }
     }
 }

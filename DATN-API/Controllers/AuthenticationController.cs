@@ -153,6 +153,7 @@ namespace DATN_API.Controllers
                 Status = UserStatus.Active,
                 Gender = GenderType.Other,
                 CreateAt = DateTime.Now,
+                Balance = 0
             };
 
             _context.Users.Add(user);

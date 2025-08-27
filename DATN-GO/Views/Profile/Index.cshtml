@@ -71,11 +71,12 @@
                 </a>
             </li>
             <li class="nav-item mb-2">
-                <a asp-action="Index" asp-controller="Wallet" class="nav-link active text-crimson">
+                <a asp-action="Index" asp-controller="Wallet" class="nav-link  text-crimson">
                     <i class="bi bi-wallet2 me-2"></i>
                     Ví của tôi
                 </a>
             </li>
+
             <li class="nav-item mb-2">
                 <a asp-controller="UserAuthentication" asp-action="ChangePassword" class="nav-link text-dark">
                     <i class="bi bi-shield-lock me-2"></i> Đổi mật khẩu
@@ -137,8 +138,14 @@
                         </a>
                     </li>
                     <li class="nav-item mb-2">
-                        <a asp-controller="Notification" asp-action="Index" class="nav-link text-dark">
-                            <i class="bi bi-bell me-2"></i> Thông báo
+                        <a asp-action="Index" asp-controller="Wallet" class="nav-link text-crimson">
+                            <i class="bi bi-wallet2 me-2"></i>
+                            Ví của tôi
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a asp-controller="UserAuthentication" asp-action="ChangePassword" class="nav-link text-dark">
+                            <i class="bi bi-shield-lock me-2"></i> Đổi mật khẩu
                         </a>
                     </li>
                     <li class="nav-item">

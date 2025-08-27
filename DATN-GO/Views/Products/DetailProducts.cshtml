@@ -224,23 +224,45 @@
         </div>
 
 
-        <form id="addToCartForm" asp-controller="Cart" asp-action="AddToCart" method="post">
-            @Html.AntiForgeryToken()
+            <form id="addToCartForm"
+                  asp-controller="Cart"
+                  asp-action="AddToCart"
+                  method="post"
+                  novalidate>
+                @Html.AntiForgeryToken()
 
-            <!-- Hidden product ID -->
-            <input type="hidden" name="ProductId" value="@Model.Id" />
-            <div id="variantInputsContainer"></div>
-            <!-- Hidden Quantity -->
-            <input type="hidden" name="Quantity" id="QuantityHidden" value="1" />
+                <!-- Hidden product ID -->
+                <input type="hidden" name="ProductId" value="@Model.Id" />
 
-            <div class="d-grid gap-2 mt-3">
-                <button type="submit" class="btn btn-outline-primary btn-lg">Thêm vào giỏ hàng</button>
-            </div>
+                <!-- Hidden variant inputs will be injected here -->
+                <div id="variantInputsContainer"></div>
 
-            <div class="d-grid gap-2 mt-3">
-                <button type="submit" class="btn btn-crimson btn-lg">Mua ngay</button>
-            </div>
-        </form>
+                <!-- Hidden Quantity -->
+                <input type="hidden" name="Quantity" id="QuantityHidden" value="1" />
+
+                <!-- Flag to distinguish actions (false = add, true = buy now) -->
+                <input type="hidden" name="BuyNow" id="BuyNowFlag" value="false" />
+
+                <!-- giữ nguyên thiết kế: 2 block d-grid, mỗi block 1 nút lớn -->
+                <div class="d-grid gap-2 mt-3">
+                    <button type="button"
+                            class="btn btn-outline-primary btn-lg add-to-cart-btn"
+                            data-product-id="@Model.Id"
+                            aria-label="Thêm sản phẩm @Model.Name vào giỏ hàng">
+                        Thêm vào giỏ hàng
+                    </button>
+                </div>
+
+                <div class="d-grid gap-2 mt-3">
+                    <button type="button"
+                            class="btn btn-crimson btn-lg buy-now-btn"
+                            data-product-id="@Model.Id"
+                            aria-label="Mua ngay sản phẩm @Model.Name">
+                        Mua ngay
+                    </button>
+                </div>
+            </form>
+
 
 
 
@@ -453,7 +475,10 @@
     </div>
 </div>
 
-
+<!-- Token ẩn cho QuickAdd -->
+<form id="__quickAddToken" style="display:none">
+    @Html.AntiForgeryToken()
+</form>
 
 <script>
     let currentRating = 5; // Mặc định 5 sao
@@ -941,228 +966,231 @@
 
 <!-- Cart Validation Script - FIXED -->
 <script>
-    document.getElementById("addToCartForm").addEventListener("submit", async function (e) {
-        e.preventDefault();
+document.addEventListener('DOMContentLoaded', () => {
+  // ====== Config & helpers ======
+  const tokenEl = document.querySelector('#__quickAddToken input[name="__RequestVerificationToken"]');
+  const ANTIFORGERY = tokenEl ? tokenEl.value : null;
+  const BUY_NOW_KEY = '__BUY_NOW_PIDS'; // dùng cho "Mua ngay" để auto-tick khi vào Cart
 
-        // Đảm bảo các input ẩn variant đã được cập nhật
-        updateFormHiddenInputs();
+  function toastOk(msg)  { if (window.showToast) showToast(msg, true);  else alert(msg); }
+  function toastErr(msg) { if (window.showToast) showToast(msg, false); else alert(msg); }
 
-        let errors = [];
+  function getRequestedQty() {
+    const qtyEl = document.querySelector('#productQuantityInput');
+    const q = parseInt(qtyEl?.value);
+    return Number.isFinite(q) && q > 0 ? q : 1;
+  }
 
-        // -------------------------
-        // FIX: Kiểm tra biến thể bắt buộc TRƯỚC khi kiểm tra tồn kho
-        // -------------------------
-        const isVariantProduct = @(priceInfo != null && priceInfo.IsVariant ? "true" : "false");
-        console.log("Is variant product:", isVariantProduct);
+  function getAvailableFromUI(btn, fallback = null) {
+    const dataAvail = btn?.dataset?.available;
+    if (dataAvail !== undefined && dataAvail !== null && dataAvail !== '') {
+      const n = parseInt(dataAvail);
+      if (Number.isFinite(n)) return n;
+    }
+    const quantityDisplayEl = document.getElementById('productQuantityDisplay');
+    if (quantityDisplayEl) {
+      const displayText = quantityDisplayEl.textContent || '';
+      const match = displayText.match(/Còn lại:\s*(\d+)/i);
+      if (match) {
+        const n = parseInt(match[1]);
+        if (Number.isFinite(n)) return n;
+      }
+    }
+    if (fallback !== null && Number.isFinite(parseInt(fallback))) {
+      return parseInt(fallback);
+    }
+    return null;
+  }
 
-        let selectedVariantCombination = null;
+  async function quickAdd(pid, qty = 1) {
+    const fd = new FormData();
+    fd.append('productId', pid);
+    fd.append('quantity', String(qty));
+    const headers = { 'X-Requested-With': 'XMLHttpRequest' };
+    if (ANTIFORGERY) headers['RequestVerificationToken'] = ANTIFORGERY;
 
-        if (isVariantProduct) {
-            // Kiểm tra tất cả các input variant
-            const allVariantInputs = document.querySelectorAll('[name^="variant_"]');
-            const uniqueGroups = [...new Set(Array.from(allVariantInputs).map(v => v.name))];
-
-            // Kiểm tra xem đã chọn đủ biến thể chưa
-            for (const groupName of uniqueGroups) {
-                const checked = document.querySelector(`input[name="${groupName}"]:checked`);
-                if (!checked) {
-                    errors.push(`Vui lòng chọn ${groupName.replace("variant_", "")}.`);
-                }
-            }
-
-            // Nếu đã chọn đủ biến thể, tìm combination tương ứng
-            if (errors.length === 0) {
-                const selectedValues = Array.from(document.querySelectorAll('.btn-check:checked')).map(i => parseInt(i.value));
-
-                if (uniqueGroups.length === 1) {
-                    // 1 variant group
-                    selectedVariantCombination = variantCombinations.find(v => {
-                        return v.variantValueIds.length === 1 && v.variantValueIds[0] === selectedValues[0];
-                    });
-                } else {
-                    // Nhiều variant groups
-                    selectedVariantCombination = variantCombinations.find(v => {
-                        return v.variantValueIds.every(id => selectedValues.includes(id)) &&
-                            selectedValues.every(id => v.variantValueIds.includes(id));
-                    });
-                }
-
-                if (!selectedVariantCombination) {
-                    errors.push("Combination không tồn tại cho các biến thể đã chọn.");
-                }
-            }
-        }
-
-        // Nếu có lỗi về variant, dừng ngay
-        if (errors.length > 0) {
-            showToast(errors.join("\n"), false);
-            return;
-        }
-
-        // -------------------------
-        // FIX: Lấy availableQuantity CHÍNH XÁC theo logic hiển thị
-        // -------------------------
-        let availableQuantity = 0;
-
-        if (isVariantProduct) {
-            if (selectedVariantCombination) {
-                // Đã chọn variant cụ thể -> lấy quantity từ combination đó
-                availableQuantity = selectedVariantCombination.quantity || selectedVariantCombination.Quantity || 0;
-                console.log("Available quantity from selected combination:", availableQuantity);
-            } else {
-                // Chưa chọn đủ variant -> lấy tổng quantity (như hiển thị ban đầu)
-                availableQuantity = totalQuantity; // Sử dụng biến totalQuantity đã tính ở trên
-                console.log("Available quantity from total (no specific variant selected):", availableQuantity);
-            }
-        } else {
-            // Không có biến thể -> lấy từ Model
-            availableQuantity = parseInt("@Model.Quantity") || 0;
-            console.log("Available quantity from model (no variants):", availableQuantity);
-        }
-
-        // -------------------------
-        // ALTERNATIVE: Lấy trực tiếp từ text hiển thị (đảm bảo 100% khớp)
-        // -------------------------
-        const quantityDisplayEl = document.getElementById("productQuantityDisplay");
-        if (quantityDisplayEl) {
-            const displayText = quantityDisplayEl.textContent || "";
-            console.log("Current display text:", displayText);
-
-            // Extract số từ text hiển thị: "Còn lại: 100 sản phẩm" -> 100
-            const quantityMatch = displayText.match(/Còn lại:\s*(\d+)/);
-            if (quantityMatch) {
-                const displayedQuantity = parseInt(quantityMatch[1]);
-                console.log("Quantity from display:", displayedQuantity);
-
-                // SỬ DỤNG SỐ LƯỢNG TỪ HIỂN THỊ (chính xác 100%)
-                availableQuantity = displayedQuantity;
-                console.log("Using displayed quantity as final available:", availableQuantity);
-            }
-        }
-
-        // Lấy số lượng người dùng nhập
-        const quantityInputEl = document.getElementById("productQuantityInput");
-        const requestedQuantity = parseInt(quantityInputEl?.value) || 1;
-
-        console.log("=== QUANTITY VALIDATION ===");
-        console.log("Requested quantity:", requestedQuantity);
-        console.log("Available quantity:", availableQuantity);
-
-        // Kiểm tra hết hàng
-        if (availableQuantity === 0) {
-            errors.push("Sản phẩm này hiện đã hết hàng.");
-        }
-        // Kiểm tra vượt tồn kho
-        else if (requestedQuantity > availableQuantity) {
-            errors.push(`Số lượng bạn chọn (${requestedQuantity}) vượt quá số lượng tồn (${availableQuantity}).`);
-        }
-
-        if (errors.length > 0) {
-            showToast(errors.join("\n"), false);
-            return;
-        }
-
-        // -------------------------
-        // Submit form
-        // -------------------------
-        const form = this;
-        const formData = new FormData(form);
-
-        console.log("=== SUBMITTING FORM ===");
-        for (let [key, value] of formData.entries()) {
-            console.log(key + ': ' + value);
-        }
-
-        try {
-            const response = await fetch(form.action, {
-                method: (form.method || "POST").toUpperCase(),
-                body: formData,
-                headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                credentials: 'same-origin'
-            });
-
-            const contentType = response.headers.get('content-type') || '';
-            // Lấy qty người dùng chọn để cộng badge khi thành công
-            const qty = parseInt(document.getElementById("productQuantityInput")?.value || '1') || 1;
-
-            if (contentType.includes('application/json')) {
-                const data = await response.json();
-
-                if (response.ok && (data.success === undefined || data.success === true)) {
-                    showToast(data.message || 'Đã thêm vào giỏ hàng thành công!', true);
-                    return;
-                }
-
-                const errMsg = data.message || '';
-                const errCode = data.errorCode || '';
-
-                if (errCode === 'EXCEEDED_STOCK' || /vượt|tồn|exceed/i.test(errMsg)) {
-                    showToast('Số lượng bạn chọn vượt quá số lượng hiện có.', false);
-                } else {
-                    showToast(errMsg || 'Có lỗi xảy ra khi thêm vào giỏ hàng.', false);
-                }
-                return;
-            } else {
-                if (response.redirected) {
-                    window.location.href = response.url;
-                    return;
-                }
-
-                const text = await response.text();
-                if (/vượt|tồn|exceed/i.test(text)) {
-                    showToast('Số lượng bạn chọn vượt quá số lượng hiện có.', false);
-                } else if (response.ok) {
-                    showToast('Đã thêm vào giỏ hàng thành công!', true);
-                    // Optional: refresh page or update cart count
-                    // window.location.reload();
-                } else {
-                    showToast('Có lỗi xảy ra. Vui lòng thử lại.', false);
-                }
-                return;
-            }
-        } catch (err) {
-            console.error("Submit error:", err);
-            showToast('Lỗi kết nối. Vui lòng thử lại sau.', false);
-        }
+    const res = await fetch('/Cart/QuickAdd', {
+      method: 'POST',
+      body: fd,
+      headers,
+      credentials: 'same-origin'
     });
 
-    // Toast notification function (nếu chưa có)
-    function showToast(message, isSuccess = true) {
-        // Tạo toast element nếu chưa có
-        let toast = document.getElementById('toast-notification');
-        if (!toast) {
-            toast = document.createElement('div');
-            toast.id = 'toast-notification';
-            toast.style.cssText = `
-                        position: fixed;
-                        top: 20px;
-                        right: 20px;
-                        padding: 15px 20px;
-                        border-radius: 5px;
-                        color: white;
-                        font-weight: 500;
-                        z-index: 10000;
-                        max-width: 300px;
-                        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-                        transition: all 0.3s ease;
-                        transform: translateX(100%);
-                    `;
-            document.body.appendChild(toast);
+    const data = await res.json().catch(() => ({}));
+    const ok = res.ok && (data?.success === undefined || data?.success === true);
+    return { ok, data, status: res.status };
+  }
+
+  async function selectServer(pid, selected = true) {
+    try {
+      const fd = new FormData();
+      fd.append('productId', pid);
+      fd.append('selected', String(selected));
+      const headers = { 'X-Requested-With': 'XMLHttpRequest' };
+      if (ANTIFORGERY) headers['RequestVerificationToken'] = ANTIFORGERY;
+
+      const res = await fetch('/Cart/Select', {
+        method: 'POST',
+        body: fd,
+        headers,
+        credentials: 'same-origin'
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  function selectLocalBuyNow(pid) {
+    try {
+      const arr = JSON.parse(localStorage.getItem(BUY_NOW_KEY) || '[]');
+      if (!arr.includes(pid)) arr.push(pid);
+      localStorage.setItem(BUY_NOW_KEY, JSON.stringify(arr));
+    } catch {}
+  }
+
+  function bumpCartBadge(data) {
+    if (typeof window.__CartBadge?.set === 'function' && typeof data?.cartCount === 'number') {
+      window.__CartBadge.set(data.cartCount);
+    } else if (typeof window.__CartBadge?.add === 'function') {
+      window.__CartBadge.add(1);
+    }
+    try {
+      const cartIcon = document.querySelector('.bi-cart-fill, .header-icon');
+      if (cartIcon) {
+        cartIcon.classList.add('shake');
+        setTimeout(() => cartIcon.classList.remove('shake'), 600);
+      }
+    } catch {}
+  }
+
+  function guardStockOrToast(btn, requestedQty, explicitAvailable = null) {
+    const available = getAvailableFromUI(btn, explicitAvailable);
+    if (available === null) return { pass: true, available: null };
+    if (available <= 0) {
+      toastErr('Sản phẩm này hiện đã hết hàng.');
+      return { pass: false, available };
+    }
+    if (requestedQty > available) {
+      toastErr(`Số lượng bạn chọn (${requestedQty}) vượt quá số lượng tồn (${available}).`);
+      return { pass: false, available };
+    }
+    return { pass: true, available };
+  }
+
+  // ====== Thêm vào giỏ (KHÔNG tick, KHÔNG redirect) ======
+  document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const pid = btn.dataset.productId;
+      const hasVariant = (btn.dataset.hasVariant === 'true');
+      const requestedQty = getRequestedQty();
+
+      if (hasVariant) {
+        window.location.href = `/Products/DetailProducts/${pid}`;
+        return;
+      }
+
+      const check = guardStockOrToast(btn, requestedQty);
+      if (!check.pass) return;
+
+      try {
+        const { ok, data, status } = await quickAdd(pid, requestedQty);
+        if (ok) {
+          bumpCartBadge(data);
+          toastOk(data?.message || 'Đã thêm vào giỏ hàng!');
+          return;
+        }
+        const msg = (data?.message || '').toLowerCase();
+        if (status === 409 || msg.includes('hết hàng') || msg.includes('out of stock')) {
+          toastErr(data?.message || 'Sản phẩm này hiện đã hết hàng.');
+          return;
+        }
+        if (status === 400 || msg.includes('vượt quá') || msg.includes('insufficient')) {
+          toastErr(data?.message || 'Số lượng vượt quá tồn kho.');
+          return;
+        }
+        if (status === 401 || msg.includes('đăng nhập') || msg.includes('unauth')) {
+          window.location.href = '/Login';
+          return;
+        }
+        toastErr(data?.message || 'Thêm sản phẩm vào giỏ hàng thất bại.');
+      } catch (err) {
+        console.error(err);
+        toastErr('Lỗi kết nối. Vui lòng thử lại.');
+      }
+    });
+  });
+
+  // ====== Mua ngay (CÓ tick + redirect /Cart, KHÔNG hiển thị toast) ======
+  document.querySelectorAll('.buy-now-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const pid = btn.dataset.productId;
+      const hasVariant = (btn.dataset.hasVariant === 'true');
+      const requestedQty = getRequestedQty();
+
+      if (hasVariant) {
+        window.location.href = `/Products/DetailProducts/${pid}`;
+        return;
+      }
+
+      const check = guardStockOrToast(btn, requestedQty);
+      if (!check.pass) return;
+
+      const prevHTML = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = 'Đang xử lý...';
+
+      try {
+        const { ok, data, status } = await quickAdd(pid, requestedQty);
+        if (ok) {
+          // Tick server; nếu fail → LS để trang Cart tự tick
+          const ticked = await selectServer(pid, true);
+          if (!ticked) selectLocalBuyNow(pid);
+
+          // Cập nhật badge âm thầm (không toast)
+          if (typeof window.__CartBadge?.set === 'function' && typeof data?.cartCount === 'number') {
+            window.__CartBadge.set(data.cartCount);
+          } else if (typeof window.__CartBadge?.add === 'function') {
+            window.__CartBadge.add(1);
+          }
+
+          // 👉 Không gọi toastOk. Nhảy thẳng qua /Cart.
+          window.location.href = '/Cart';
+          return;
         }
 
-        // Set style và message
-        toast.style.backgroundColor = isSuccess ? '#28a745' : '#dc3545';
-        toast.textContent = message;
-        toast.style.transform = 'translateX(0)';
+        const msg = (data?.message || '').toLowerCase();
+        if (status === 409 || msg.includes('hết hàng') || msg.includes('out of stock')) {
+          // Có lỗi tồn kho → hiển thị lỗi (chỉ lỗi, không toast success)
+          toastErr(data?.message || 'Sản phẩm này hiện đã hết hàng.');
+          return;
+        }
+        if (status === 400 || msg.includes('vượt quá') || msg.includes('insufficient')) {
+          toastErr(data?.message || 'Số lượng vượt quá tồn kho.');
+          return;
+        }
+        if (status === 401 || msg.includes('đăng nhập') || msg.includes('unauth')) {
+          window.location.href = '/Login';
+          return;
+        }
 
-        // Auto hide sau 3 giây
-        setTimeout(() => {
-            toast.style.transform = 'translateX(100%)';
-            setTimeout(() => {
-                if (toast.parentNode) {
-                    toast.parentNode.removeChild(toast);
-                }
-            }, 300);
-        }, 3000);
-    }
+        // Lỗi khác → qua trang chi tiết (không toast success)
+        window.location.href = `/Products/DetailProducts/${pid}`;
+      } catch (err) {
+        console.error(err);
+        window.location.href = `/Products/DetailProducts/${pid}`;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = prevHTML;
+      }
+    });
+  });
+});
 </script>
+
