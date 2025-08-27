@@ -309,7 +309,10 @@
                 var type = v.IsPercentage ? "percentage" : "fixed";
                 var status = isExpired ? "expired" : "valid";
                 var leftColor = type == "fixed" ? "#2ecc71" : "#ff4757";
-                var remaining = Math.Max(0, v.Quantity - v.UsedCount);
+                int remaining = Math.Max(
+                0,
+                v.Quantity  - Convert.ToInt32(v.UsedCount ?? 0)
+                );
 
                 <div class="col-md-6">
                     <div class="voucher-card"
