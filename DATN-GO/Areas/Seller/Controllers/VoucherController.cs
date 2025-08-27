@@ -20,7 +20,7 @@ namespace DATN_GO.Areas.Seller.Controllers
         private async Task<bool> IsUserSeller(int userId)
         {
             var user = await _userService.GetUserByIdAsync(userId);
-            return user != null && user.RoleId == 1;
+            return user != null && user.RoleId == 2;
         }
 
         public async Task<IActionResult> Voucher(string search, string sort, int page = 1, int pageSize = 4)
@@ -37,8 +37,6 @@ namespace DATN_GO.Areas.Seller.Controllers
             var storeInfo = await _voucherService.GetStoreInfoByUserIdAsync(userId);
             int storeId = storeInfo.StoreId;
 
-            // Lấy StoreId và StoreName của người dùng đang đăng nhập
-            var storeInfo = await _voucherService.GetStoreInfoByUserIdAsync(userIdInt);
             ViewBag.StoreId = storeId;
             ViewBag.StoreName = storeInfo.StoreName;
 
