@@ -579,35 +579,35 @@
             }
 
             // Function chuyển đổi text thành HTML clickable
-            function formatBotMessage(text) {
-                if (!text) return '';
+                    // Function chuyển đổi text thành HTML clickable
+        function formatBotMessage(text) {
+            if (!text) return '';
 
-                // Bước 1: Escape HTML nguy hiểm
-                let html = text
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;');
+            // Bước 1: Escape HTML nguy hiểm
+            let html = text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
 
-                // Bước 2: Chuyển URLs thành links
-                html = html.replace(
-                    /(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/g,
-                    '<a href="$1" class="text-crimson fw-semibold text-decoration-underline" target="_blank" rel="noopener">🔗 XEM NGAY</a>'
-                );
+            // Bước 2: Chuyển URLs thành links (chỉ hiển thị 1 lần)
+            html = html.replace(
+                /🔗\s*(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/g,
+                '<a href="$1" class="text-crimson fw-semibold text-decoration-underline" target="_blank" rel="noopener">🔗 XEM NGAY</a>'
+            );
 
-                // Bước 3: Chuyển **text** thành <strong>
-                html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            // Bước 3: Chuyển **text** thành <strong>
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 
-                // Bước 4: Chuyển \n thành <br>
-                html = html.replace(/\n/g, '<br>');
+            // Bước 4: Chuyển \n thành <br>
+            html = html.replace(/\n/g, '<br>');
 
-                // Bước 5: Thêm style cho icons
-                html = html.replace(/🛍️/g, '<span style="color: #dc143c;">🛍️</span>');
-                html = html.replace(/💰/g, '<span style="color: #ffa500;">💰</span>');
-                html = html.replace(/📦/g, '<span style="color: #4169e1;">📦</span>');
-                html = html.replace(/🔗/g, '<span style="color: #dc143c;">🔗</span>');
+            // Bước 5: Thêm style cho icons
+            html = html.replace(/🛍️/g, '<span style="color: #dc143c;">🛍️</span>');
+            html = html.replace(/💰/g, '<span style="color: #ffa500;">💰</span>');
+            html = html.replace(/📦/g, '<span style="color: #4169e1;">📦</span>');
 
-                return html;
-            }
+            return html;
+        }
 
             async function ask() {
                 const text = input.value.trim();

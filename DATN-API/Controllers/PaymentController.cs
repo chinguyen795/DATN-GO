@@ -242,83 +242,139 @@ namespace DATN_API.Controllers
         [HttpPost("cod-create")]
         public async Task<IActionResult> CreateCod([FromBody] CreateVnpOrderRequest req)
         {
-            // 1) Lấy giỏ đã tick + phí ship
-            var cart = await _cartService.GetCartByUserIdAsync(req.UserId);
-            if (cart == null) return BadRequest("Cart not found");
+            // 0) Validate input cơ bản
+            if (req == null || req.UserId <= 0 || req.AddressId <= 0)
+                return BadRequest(new { message = "Thiếu UserId/AddressId" });
 
-            var shippingGroups = await _cartService.GetShippingGroupsByUserIdAsync(req.UserId, req.AddressId);
-            var shippingFee = shippingGroups.Sum(g => g.ShippingFee);
-
-            var selected = cart.CartItems.Where(x => x.IsSelected).ToList();
-            if (!selected.Any()) return BadRequest("Không có sản phẩm nào được chọn.");
-
-            var subTotal = selected.Sum(x => x.TotalValue);
-            decimal voucherReduce = 0;
-            if (req.UserVoucherId.HasValue)
+            // Dùng transaction để không để lại order mồ côi nếu GHTK fail
+            await using var tx = await _db.Database.BeginTransactionAsync();
+            try
             {
-                var voucher = cart.Vouchers.FirstOrDefault(v => v.Id == req.UserVoucherId.Value);
-                if (voucher != null) voucherReduce = voucher.Reduce;
-            }
-            var grandTotal = (long)Math.Max(0, subTotal + shippingFee - voucherReduce);
+                // 1) Lấy giỏ đã tick + phí ship
+                var cart = await _cartService.GetCartByUserIdAsync(req.UserId);
+                if (cart == null) return BadRequest(new { message = "Cart not found" });
 
-            // 2) ShippingMethod đại diện (store của item đầu tiên)
-            var representativeStoreId = selected.First().StoreId;
-            var shipMethod = await _db.ShippingMethods
-                .FirstOrDefaultAsync(sm => sm.StoreId == representativeStoreId && sm.MethodName == "GHTK_AUTO");
-            if (shipMethod == null)
-            {
-                shipMethod = new ShippingMethods
+                var shippingGroups = await _cartService.GetShippingGroupsByUserIdAsync(req.UserId, req.AddressId);
+                if (shippingGroups == null || !shippingGroups.Any())
+                    return BadRequest(new { message = "Không tính được phí vận chuyển." });
+
+                var shippingFee = shippingGroups.Sum(g => g.ShippingFee);
+
+                var selected = cart.CartItems.Where(x => x.IsSelected).ToList();
+                if (!selected.Any()) return BadRequest(new { message = "Không có sản phẩm nào được chọn." });
+
+                var subTotal = selected.Sum(x => x.TotalValue);
+                decimal voucherReduce = 0;
+                if (req.UserVoucherId.HasValue)
                 {
-                    StoreId = representativeStoreId,
-                    MethodName = "GHTK_AUTO",
-                    Price = 0 // phí thực tế nằm trong Orders.DeliveryFee
+                    var voucher = cart.Vouchers.FirstOrDefault(v => v.Id == req.UserVoucherId.Value);
+                    if (voucher != null) voucherReduce = voucher.Reduce;
+                }
+                var grandTotal = (long)Math.Max(0, subTotal + shippingFee - voucherReduce);
+
+                // 2) ShippingMethod đại diện (store của item đầu tiên)
+                var representativeStoreId = selected.First().StoreId;
+                var shipMethod = await _db.ShippingMethods
+                    .FirstOrDefaultAsync(sm => sm.StoreId == representativeStoreId && sm.MethodName == "GHTK_AUTO");
+
+                if (shipMethod == null)
+                {
+                    shipMethod = new ShippingMethods
+                    {
+                        StoreId = representativeStoreId,
+                        MethodName = "GHTK_AUTO",
+                        Price = 0 // phí thực tế nằm trong Orders.DeliveryFee
+                    };
+                    _db.ShippingMethods.Add(shipMethod);
+                    await _db.SaveChangesAsync();
+                }
+
+                // 3) Tạo đơn COD (pending)
+                var order = new Orders
+                {
+                    UserId = req.UserId,
+                    OrderDate = DateTime.UtcNow,
+                    PaymentMethod = "COD",
+                    PaymentStatus = "Unpaid",
+                    Status = OrderStatus.ChoXuLy,
+                    TotalPrice = grandTotal,
+                    DeliveryFee = shippingFee,
+                    VoucherId = null,
+                    ShippingMethodId = shipMethod.Id
+                    // (nếu bảng Orders có AddressId hay các field nhận hàng thì nên set vào đây)
                 };
-                _db.ShippingMethods.Add(shipMethod);
+                _db.Orders.Add(order);
                 await _db.SaveChangesAsync();
-            }
 
-            // 3) Tạo đơn COD
-            var order = new Orders
-            {
-                UserId = req.UserId,
-                OrderDate = DateTime.UtcNow,
-                PaymentMethod = "COD",
-                PaymentStatus = "Unpaid",          // COD: chưa thanh toán
-                Status = OrderStatus.ChoXuLy,      // vừa đặt, chuẩn bị đẩy hãng vận chuyển
-                TotalPrice = grandTotal,
-                DeliveryFee = shippingFee,
-                VoucherId = null,
-                ShippingMethodId = shipMethod.Id
-            };
-            _db.Orders.Add(order);
-            await _db.SaveChangesAsync();
-
-            foreach (var item in selected)
-            {
-                _db.OrderDetails.Add(new OrderDetails
+                foreach (var item in selected)
                 {
-                    OrderId = order.Id,
-                    ProductId = item.ProductId,
-                    Quantity = item.Quantity,
-                    Price = item.Price
-                });
+                    _db.OrderDetails.Add(new OrderDetails
+                    {
+                        OrderId = order.Id,
+                        ProductId = item.ProductId,
+                        Quantity = item.Quantity,
+                        Price = item.Price
+                    });
+                }
+                await _db.SaveChangesAsync();
+
+                // 4) Đẩy đơn sang GHTK với COD
+                string? label;
+                try
+                {
+                    label = await _orders.PushOrderToGhtkAndSaveLabelCodAsync(order.Id);
+                }
+                catch (Exception ex)
+                {
+                    // rollback & trả nguyên nhân thật từ service/GHTK
+                    await tx.RollbackAsync();
+
+                    // gỡ order vừa tạo để tránh rác (nếu cần thiết)
+                    try
+                    {
+                        _db.OrderDetails.RemoveRange(_db.OrderDetails.Where(d => d.OrderId == order.Id));
+                        _db.Orders.Remove(order);
+                        await _db.SaveChangesAsync();
+                    }
+                    catch { /* ignore cleanup error */ }
+
+                    return BadRequest(new { message = $"GHTK lỗi: {ex.Message}" });
+                }
+
+                if (string.IsNullOrWhiteSpace(label))
+                {
+                    // Không có label từ service => fail có thể do GHTK trả về lỗi nghiệp vụ
+                    await tx.RollbackAsync();
+
+                    try
+                    {
+                        _db.OrderDetails.RemoveRange(_db.OrderDetails.Where(d => d.OrderId == order.Id));
+                        _db.Orders.Remove(order);
+                        await _db.SaveChangesAsync();
+                    }
+                    catch { /* ignore cleanup error */ }
+
+                    return BadRequest(new { message = "Không tạo được đơn COD bên GHTK (không có labelId). Vui lòng kiểm tra token/pick_address, địa chỉ người nhận, khối lượng, COD tối đa…" });
+                }
+
+                // 5) Cập nhật trạng thái hợp lý & dọn giỏ
+                order.Status = OrderStatus.ChoLayHang; // đã có vận đơn
+                order.LabelId = label;                 // phòng trường hợp service chưa set
+                await _db.SaveChangesAsync();
+
+                try { await _cartService.ClearSelectedAsync(order.UserId); } catch { /* optional log */ }
+
+                // 6) Commit & trả về
+                await tx.CommitAsync();
+                return Ok(new { orderId = order.Id, labelId = label });
             }
-            await _db.SaveChangesAsync();
-
-            // 4) Đẩy đơn sang GHTK với COD (thu hộ)
-            string? label = await _orders.PushOrderToGhtkAndSaveLabelCodAsync(order.Id);
-            if (string.IsNullOrWhiteSpace(label))
-                return BadRequest(new { message = "Không tạo được đơn COD bên GHTK." });
-
-            // 5) Cập nhật trạng thái hợp lý & dọn giỏ
-            order.Status = OrderStatus.ChoLayHang;   // đã có vận đơn, chờ GHTK đến lấy hàng
-            await _db.SaveChangesAsync();
-
-            try { await _cartService.ClearSelectedAsync(order.UserId); } catch { /* optional log */ }
-
-            // 6) Trả về cho MVC
-            return Ok(new { orderId = order.Id, labelId = label });
+            catch (Exception e)
+            {
+                await tx.RollbackAsync();
+                return StatusCode(500, new { message = "Lỗi hệ thống khi tạo đơn COD.", detail = e.Message });
+            }
         }
+
 
 
     }
