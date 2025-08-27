@@ -13,10 +13,12 @@ namespace DATN_GO.Areas.Seller.Controllers
     public class OrderController : Controller
     {
         private readonly OrderService _orderService;
+        private readonly VoucherService _voucherService;
 
-        public OrderController(OrderService orderService)
+        public OrderController(OrderService orderService, VoucherService voucherService)
         {
             _orderService = orderService;
+            _voucherService = voucherService;
         }
 
         // Action hiện danh sách đơn hàng, Model truyền lên View là List<OrderViewModel>
@@ -26,8 +28,15 @@ namespace DATN_GO.Areas.Seller.Controllers
             if (string.IsNullOrEmpty(userIdStr))
                 return Redirect("https://localhost:7180/Login");
 
-
             int userId = int.Parse(userIdStr);
+
+            // ── NEW: Lấy StoreId/StoreName để hiển thị
+            var storeInfo = await _voucherService.GetStoreInfoByUserIdAsync(userId);
+            if (storeInfo != null)
+            {
+                ViewBag.StoreId = storeInfo.StoreId;     // NEW
+                ViewBag.StoreName = storeInfo.StoreName; // NEW
+            }
 
             var result = await _orderService.GetOrdersByStoreUserAsync(userId);
 
@@ -40,6 +49,7 @@ namespace DATN_GO.Areas.Seller.Controllers
             ViewBag.UserId = userId;
             return View(result.Data);
         }
+
 
         // Cập nhật trạng thái đơn (giữ nguyên)
         [HttpPost]
@@ -118,6 +128,18 @@ namespace DATN_GO.Areas.Seller.Controllers
                 shippingOrdersPercentChange = data.ShippingOrdersPercentChange,
                 completedOrdersPercentChange = data.CompletedOrdersPercentChange
             });
+        }
+
+        // Logout
+        [HttpGet]
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+
+            TempData["ToastMessage"] = "Bạn đã đăng xuất thành công!";
+            TempData["ToastType"] = "success";
+
+            return RedirectToAction("Index", "Home", new { area = "" });
         }
 
 

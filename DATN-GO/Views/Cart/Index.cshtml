@@ -42,17 +42,16 @@
                         <tbody id="cart-items-body">
                         @foreach (var item in Model.CartItems)
                         {
-                            <tr class="cart-item-row" data-cart-id="@item.CartId" data-store-id="@item.StoreId">
+                            <tr class="cart-item-row" data-cart-id="@item.CartId" data-store-id="@item.StoreId" 
+                            data-product-id="@item.ProductId"> <!-- 👈 thêm -->
                                 <td class="text-center align-middle">
                                     <div class="form-check">
                                         <input class="form-check-input item-checkbox" type="checkbox"
                                                data-cart-id="@item.CartId"
+                                               data-product-id="@item.ProductId"
                                                data-price="@item.Price"
                                                data-quantity="@item.Quantity"
-                                               data-total="@item.Total"
-                                        @(item.IsSelected ? "checked" : "")>
-
-
+                                               data-total="@item.Total">
                                     </div>
                                 </td>
                                 <td>
@@ -301,4 +300,65 @@
         toast('Có lỗi xảy ra. Vui lòng thử lại.');
       }
     });
+</script>
+
+
+<script>
+    (() => {
+      // Key dành riêng cho "Mua ngay" (khác với key add-to-cart)
+      const BUY_NOW_KEY = '__BUY_NOW_PIDS';
+
+      document.addEventListener('DOMContentLoaded', () => {
+        // Luôn reset "Select All"
+        const selectAll = document.getElementById('selectAllItems');
+        if (selectAll) selectAll.checked = false;
+
+        // Ép tất cả checkbox về unchecked (chống trình duyệt nhớ state)
+        const boxes = document.querySelectorAll('.item-checkbox');
+        boxes.forEach(cb => cb.checked = false);
+
+        // Lấy danh sách productId được "Mua ngay"
+        let buyNowPids = [];
+        try {
+          buyNowPids = JSON.parse(localStorage.getItem(BUY_NOW_KEY) || '[]') || [];
+        } catch { buyNowPids = []; }
+
+        if (Array.isArray(buyNowPids) && buyNowPids.length) {
+          // Tick đúng các item có data-product-id trùng
+          buyNowPids.forEach(pid => {
+            const targets =
+              document.querySelectorAll(`.item-checkbox[data-product-id="${pid}"]`);
+            targets.forEach(cb => {
+              if (!cb.checked) {
+                cb.checked = true;
+                // Nếu có logic tính tiền theo 'change', dispatch event
+                cb.dispatchEvent(new Event('change', { bubbles: true }));
+              }
+            });
+          });
+
+          // Nếu tất cả đều tick → sync selectAll
+          const allChecked = [...boxes].length > 0 && [...boxes].every(x => x.checked);
+          if (selectAll) selectAll.checked = allChecked;
+
+          // Dùng xong thì clear để không tick lại lần sau
+          localStorage.removeItem(BUY_NOW_KEY);
+        }
+
+        // Đồng bộ Select All <-> từng dòng
+        selectAll?.addEventListener('change', (e) => {
+          const checked = e.target.checked;
+          document.querySelectorAll('.item-checkbox').forEach(cb => {
+            cb.checked = checked;
+            cb.dispatchEvent(new Event('change', { bubbles: true }));
+          });
+        });
+        document.querySelectorAll('.item-checkbox').forEach(cb => {
+          cb.addEventListener('change', () => {
+            const list = Array.from(document.querySelectorAll('.item-checkbox'));
+            if (selectAll) selectAll.checked = (list.length && list.every(x => x.checked));
+          });
+        });
+      });
+    })();
 </script>

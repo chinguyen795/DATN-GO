@@ -5,6 +5,16 @@
     ViewData["Title"] = "Home Page";
     var priceDict = ViewBag.MinMaxPriceDict as System.Collections.IDictionary;
 }
+<style>
+    .text-truncate-1 {
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+</style>
 <section class="slideshow mb-3">
     <div class="row">
         <div class="col-md-9">
@@ -14,12 +24,12 @@
                     @{
                         var slides = new[]
                         {
-                    new { Path = Model.Decorate?.Slide1Path, Title = Model.Decorate?.TitleSlide1, Desc = Model.Decorate?.DescriptionSlide1 },
-                    new { Path = Model.Decorate?.Slide2Path, Title = Model.Decorate?.TitleSlide2, Desc = Model.Decorate?.DescriptionSlide2 },
-                    new { Path = Model.Decorate?.Slide3Path, Title = Model.Decorate?.TitleSlide3, Desc = Model.Decorate?.DescriptionSlide3 },
-                    new { Path = Model.Decorate?.Slide4Path, Title = Model.Decorate?.TitleSlide4, Desc = Model.Decorate?.DescriptionSlide4 },
-                    new { Path = Model.Decorate?.Slide5Path, Title = Model.Decorate?.TitleSlide5, Desc = Model.Decorate?.DescriptionSlide5 }
-                    }.Where(x => !string.IsNullOrEmpty(x.Path)).ToList();
+                                        new { Path = Model.Decorate?.Slide1Path, Title = Model.Decorate?.TitleSlide1, Desc = Model.Decorate?.DescriptionSlide1 },
+                                        new { Path = Model.Decorate?.Slide2Path, Title = Model.Decorate?.TitleSlide2, Desc = Model.Decorate?.DescriptionSlide2 },
+                                        new { Path = Model.Decorate?.Slide3Path, Title = Model.Decorate?.TitleSlide3, Desc = Model.Decorate?.DescriptionSlide3 },
+                                        new { Path = Model.Decorate?.Slide4Path, Title = Model.Decorate?.TitleSlide4, Desc = Model.Decorate?.DescriptionSlide4 },
+                                        new { Path = Model.Decorate?.Slide5Path, Title = Model.Decorate?.TitleSlide5, Desc = Model.Decorate?.DescriptionSlide5 }
+                                        }.Where(x => !string.IsNullOrEmpty(x.Path)).ToList();
                     }
 
                     @if (slides.Any())
@@ -178,13 +188,26 @@
                     <div class="restaurant-card card border-0 shadow-sm hover-scale">
                         <div class="row g-0">
                             <div class="col-md-4">
-                                <img src="@(!string.IsNullOrEmpty(store.Avatar) ? store.Avatar : "/images/no-image.png")"
-                                     class="img-fluid rounded-start h-100" style="object-fit: cover;" alt="@store.Name">
+                                <a asp-controller="Store" asp-action="Detail" asp-route-id="@store.Id">
+                                    <img src="@(!string.IsNullOrEmpty(store.Avatar) ? store.Avatar : "/images/no-image.png")"
+                                         class="img-fluid rounded-start h-100" style="object-fit: cover;" alt="@store.Name">
+                                </a>
                             </div>
                             <div class="col-md-8">
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <h5 class="card-title fw-bold mb-1">@store.Name</h5>
+                                        <h5 class="card-title fw-bold mb-1 text-truncate-1">
+                                            <a asp-controller="Store"
+                                               asp-action="Detail"
+                                               asp-route-id="@store.Id"
+                                               class="text-dark text-decoration-none"
+                                               data-bs-toggle="tooltip"
+                                               data-bs-placement="top"
+                                               data-bs-container="body"
+                                               data-bs-title="@store.Name">
+                                                @store.Name
+                                            </a>
+                                        </h5>
                                         <span class="badge bg-success">Mở cửa</span>
                                     </div>
 
@@ -265,7 +288,9 @@
                 <div class="col-xl-3 col-lg-4 col-md-6">
                     <div class="product-card card h-100 border-0 shadow-sm hover-scale">
                         <div class="position-relative">
-                            <img src="@product.MainImage" class="card-img-top" style="height: 200px; object-fit: cover;" alt="@product.Name" />
+                            <a asp-controller="Products" asp-action="DetailProducts" asp-route-id="@product.Id">
+                                <img src="@product.MainImage" class="card-img-top" style="height: 200px; object-fit: cover;" alt="@product.Name" />
+                            </a>
                         </div>
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -285,22 +310,44 @@
 
                             </div>
 
-                            <h5 class="card-title fw-bold mb-1 text-truncate-1">@product.Name</h5>
+                            <h5 class="card-title fw-bold mb-1 text-truncate-1">
+                                <a asp-controller="Products" asp-action="DetailProducts" asp-route-id="@product.Id"
+                                   class="text-dark text-decoration-none"
+                                   data-bs-toggle="tooltip"
+                                   data-bs-placement="top"
+                                   data-bs-container="body"
+                                   data-bs-title="@product.Name">
+                                    @product.Name
+                                </a>
+                            </h5>
+
                             <p class="card-text text-muted small mb-2 text-truncate-1">@product.StoreName</p>
 
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
                                     <span class="text-danger fw-bold">@product.Price.ToString("N0")đ</span>
                                 </div>
 
-                                <!-- 🔥 Nút QuickAdd/Redirect -->
-                                <button class="btn btn-crimson btn-sm rounded-pill add-to-cart-btn"
-                                        type="button"
-                                        data-product-id="@product.Id"
-                                        data-has-variant="@(hasVariant.ToString().ToLower())">
-                                    <i class="bi bi-cart-plus icon-sm"></i> Thêm
-                                </button>
+                                <!-- Nút theo cột -->
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-crimson btn-sm rounded-pill add-to-cart-btn"
+                                            type="button"
+                                            data-product-id="@product.Id"
+                                            data-has-variant="@(hasVariant.ToString().ToLower())">
+                                        <i class="bi bi-cart-plus icon-sm"></i> Thêm
+                                    </button>
+
+                                    <button class="btn btn-outline-danger btn-sm rounded-pill buy-now-btn"
+                                            type="button"
+                                            data-product-id="@product.Id"
+                                            data-has-variant="@(hasVariant.ToString().ToLower())">
+                                        Mua ngay
+                                    </button>
+                                </div>
                             </div>
+
+
+
                         </div>
                     </div>
                 </div>
@@ -330,26 +377,26 @@
             foreach (var category in Model.TrendCategories)
             {
                 <div class="col-lg-3 col-md-6" data-aos="fade-up">
-                    <div class="trend-category-card position-relative overflow-hidden rounded-4">
-                        <div class="trend-category-image">
-                            <img src="@category.Image" class="w-100" alt="@category.Name">
-                            <div class="trend-category-overlay"></div>
-                        </div>
-                        <div class="trend-category-content text-center text-white">
-                            <div class="trend-category-icon mb-3">
-                                <i class="bi bi-star-fill icon-lg"></i>
+                    <a href="@Url.Action("Products", "Products", new { categoryId = category.Id })"
+                       class="text-decoration-none">
+                        <div class="trend-category-card position-relative overflow-hidden rounded-4">
+                            <div class="trend-category-image">
+                                <img src="@category.Image" class="w-100" alt="@category.Name">
+                                <div class="trend-category-overlay"></div>
                             </div>
-                            <h3 class="trend-category-title mb-2">@category.Name</h3>
-                            <p class="trend-category-stat mb-3">
-                                <span class="badge bg-danger me-2">Top @category.Rank</span>
-                                <span>@category.TotalProducts sản phẩm</span>
-                            </p>
-                            <a href="@Url.Action("Products", "Products", new { categoryId = category.Id })"
-                               class="btn btn-light rounded-pill px-4">
-                                Khám phá ngay
-                            </a>
+                            <div class="trend-category-content text-center text-white">
+                                <div class="trend-category-icon mb-3">
+                                    <i class="bi bi-star-fill icon-lg"></i>
+                                </div>
+                                <h3 class="trend-category-title mb-2">@category.Name</h3>
+                                <p class="trend-category-stat mb-3">
+                                    <span class="badge bg-danger me-2">Top @category.Rank</span>
+                                    <span>@category.TotalProducts sản phẩm</span>
+                                </p>
+                                <span class="btn btn-light rounded-pill px-4">Khám phá ngay</span>
+                            </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
             }
         }
@@ -397,7 +444,9 @@
                 <div class="col-xl-3 col-lg-4 col-md-6">
                     <div class="product-card card h-100 border-0 shadow-sm hover-scale">
                         <div class="position-relative">
-                            <img src="@product.MainImage" class="card-img-top" style="height: 200px; object-fit: cover;" alt="@product.Name" />
+                            <a asp-controller="Products" asp-action="DetailProducts" asp-route-id="@product.Id">
+                                <img src="@product.MainImage" class="card-img-top" style="height: 200px; object-fit: cover;" alt="@product.Name" />
+                            </a>
                         </div>
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -417,22 +466,44 @@
 
                             </div>
 
-                            <h5 class="card-title fw-bold mb-1 text-truncate-1">@product.Name</h5>
+                            <h5 class="card-title fw-bold mb-1 text-truncate-1">
+                                <a asp-controller="Products" asp-action="DetailProducts" asp-route-id="@product.Id"
+                                   class="text-dark text-decoration-none"
+                                   data-bs-toggle="tooltip"
+                                   data-bs-placement="top"
+                                   data-bs-container="body"
+                                   data-bs-title="@product.Name">
+                                    @product.Name
+                                </a>
+                            </h5>
+
                             <p class="card-text text-muted small mb-2 text-truncate-1">@product.StoreName</p>
 
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
                                     <span class="text-danger fw-bold">@product.Price.ToString("N0")đ</span>
                                 </div>
 
-                                <!-- 🔥 Nút QuickAdd/Redirect -->
-                                <button class="btn btn-crimson btn-sm rounded-pill add-to-cart-btn"
-                                        type="button"
-                                        data-product-id="@product.Id"
-                                        data-has-variant="@(hasVariant.ToString().ToLower())">
-                                    <i class="bi bi-cart-plus icon-sm"></i> Thêm
-                                </button>
+                                <!-- Nút theo cột -->
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-crimson btn-sm rounded-pill add-to-cart-btn"
+                                            type="button"
+                                            data-product-id="@product.Id"
+                                            data-has-variant="@(hasVariant.ToString().ToLower())">
+                                        <i class="bi bi-cart-plus icon-sm"></i> Thêm
+                                    </button>
+
+                                    <button class="btn btn-outline-danger btn-sm rounded-pill buy-now-btn"
+                                            type="button"
+                                            data-product-id="@product.Id"
+                                            data-has-variant="@(hasVariant.ToString().ToLower())">
+                                        Mua ngay
+                                    </button>
+                                </div>
                             </div>
+
+
+
                         </div>
                     </div>
                 </div>
@@ -490,10 +561,9 @@
                 <div class="col-lg-3 col-md-4 col-sm-6 product-card @(productIndex >= 4 ? "d-none" : "")" data-aos="fade-up">
                     <div class="product-card card h-100 border-0 shadow-sm hover-scale">
                         <div class="position-relative">
-                            <img src="@product.MainImage" class="card-img-top" style="height: 200px; object-fit: cover;" alt="@product.Name" />
-                            <div class="product-badge bg-danger text-white position-absolute top-0 end-0 m-2 px-2 py-1 rounded-pill">
-                                -20%
-                            </div>
+                            <a asp-controller="Products" asp-action="DetailProducts" asp-route-id="@product.Id">
+                                <img src="@product.MainImage" class="card-img-top" style="height: 200px; object-fit: cover;" alt="@product.Name" />
+                            </a>                            
                         </div>
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -510,10 +580,19 @@
                                     }
                                 </div>
                             </div>
-                            <h5 class="card-title fw-bold mb-1 text-truncate-1">@product.Name</h5>
+                            <h5 class="card-title fw-bold mb-1 text-truncate-1">
+                                <a asp-controller="Products" asp-action="DetailProducts" asp-route-id="@product.Id"
+                                   class="text-dark text-decoration-none"
+                                   data-bs-toggle="tooltip"
+                                   data-bs-placement="top"
+                                   data-bs-container="body"
+                                   data-bs-title="@product.Name">
+                                    @product.Name
+                                </a>
+                            </h5>
                             <p class="card-text text-muted small mb-2 text-truncate-1">@product.StoreName</p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
                                     @if (salePrice.HasValue && salePrice > 0)
                                     {
                                         <span class="text-danger fw-bold">@salePrice?.ToString("N0")đ</span>
@@ -524,14 +603,26 @@
                                     }
                                 </div>
 
-                                <!-- ✅ Nút QuickAdd/Redirect -->
-                                <button class="btn btn-crimson btn-sm rounded-pill add-to-cart-btn"
-                                        type="button"
-                                        data-product-id="@product.Id"
-                                        data-has-variant="@(hasVariant.ToString().ToLower())">
-                                    <i class="bi bi-cart-plus icon-sm"></i> Thêm
-                                </button>
+                                <!-- Nút theo cột -->
+                                <div class="d-grid gap-2">
+                                    <!-- Thêm vào giỏ -->
+                                    <button class="btn btn-crimson btn-sm rounded-pill add-to-cart-btn"
+                                            type="button"
+                                            data-product-id="@product.Id"
+                                            data-has-variant="@(hasVariant.ToString().ToLower())">
+                                        <i class="bi bi-cart-plus icon-sm"></i> Thêm
+                                    </button>
+
+                                    <!-- Mua ngay -->
+                                    <button class="btn btn-outline-danger btn-sm rounded-pill buy-now-btn"
+                                            type="button"
+                                            data-product-id="@product.Id"
+                                            data-has-variant="@(hasVariant.ToString().ToLower())">
+                                        Mua ngay
+                                    </button>
+                                </div>
                             </div>
+
                         </div>
                     </div>
                 </div>
@@ -593,59 +684,149 @@
 
     <script>
         (() => {
-            if (window.__QuickAddBound) return;
-            window.__QuickAddBound = true;
+          if (window.__QuickAddBound2) return;
+          window.__QuickAddBound2 = true;
 
-            const getToken = () => document.querySelector('#__quickAddToken input[name="__RequestVerificationToken"]')?.value || null;
-            const ANTIFORGERY = getToken();
+          const getToken = () => document.querySelector('#__quickAddToken input[name="__RequestVerificationToken"]')?.value || null;
+          const ANTIFORGERY = getToken();
+          const BUY_NOW_KEY = '__BUY_NOW_PIDS'; // 👈 key riêng cho "Mua ngay"
+          const toastOk = (m) => window.showToast ? showToast(m, true) : alert(m);
 
-            const toastOk = (m) => window.showToast ? showToast(m, true) : alert(m);
-            const toastErr = (m) => window.showToast ? showToast(m, false) : alert(m);
+          async function quickAdd(pid) {
+            const fd = new FormData();
+            fd.append('productId', pid);
+            fd.append('quantity', '1');
 
-            document.addEventListener('click', async (e) => {
-                const btn = e.target.closest('.add-to-cart-btn');
-                if (!btn) return;
+            const headers = { 'X-Requested-With': 'XMLHttpRequest' };
+            const token = ANTIFORGERY || document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+            if (token) headers['RequestVerificationToken'] = token;
 
-                e.preventDefault();
+            const res = await fetch('/Cart/QuickAdd', {
+              method: 'POST', body: fd, headers, credentials: 'same-origin'
+            });
+            const data = await res.json().catch(() => ({}));
+            return { ok: res.ok && data?.success, data, status: res.status };
+          }
 
-                const pid = btn.dataset.productId;
+          // Tick server (nếu có endpoint)
+          async function selectServer(pid, selected = true) {
+            try {
+              const fd = new FormData();
+              fd.append('productId', pid);
+              fd.append('selected', String(selected));
 
-                try {
-                    const fd = new FormData();
-                    fd.append('productId', pid);
-                    fd.append('quantity', '1');
+              const headers = { 'X-Requested-With': 'XMLHttpRequest' };
+              const token = ANTIFORGERY || document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+              if (token) headers['RequestVerificationToken'] = token;
 
-                    const headers = { 'X-Requested-With': 'XMLHttpRequest' };
-                    const token = ANTIFORGERY || document.querySelector('input[name="__RequestVerificationToken"]')?.value;
-                    if (token) headers['RequestVerificationToken'] = token;
+              const res = await fetch('/Cart/Select', {
+                method: 'POST', body: fd, headers, credentials: 'same-origin'
+              });
+              return res.ok;
+            } catch { return false; }
+          }
 
-                    const res = await fetch('/Cart/QuickAdd', { method: 'POST', body: fd, headers, credentials: 'same-origin' });
-                    const data = await res.json().catch(() => ({}));
+          // Fallback: nhớ pid để Cart tự tick
+          function selectLocalBuyNow(pid) {
+            try {
+              const arr = JSON.parse(localStorage.getItem(BUY_NOW_KEY) || '[]');
+              if (!arr.includes(pid)) arr.push(pid);
+              localStorage.setItem(BUY_NOW_KEY, JSON.stringify(arr));
+            } catch {}
+          }
 
-                    if (res.ok && data?.success) {
-                        if (typeof window.__CartBadge?.set === 'function' && typeof data.cartCount === 'number') {
-                            window.__CartBadge.set(data.cartCount);
-                        } else if (typeof window.__CartBadge?.add === 'function') {
-                            window.__CartBadge.add(1);
-                        }
-                        toastOk(data.message || 'Đã thêm vào giỏ hàng!');
-                        return;
-                    }
+          document.addEventListener('click', async (e) => {
+            const addBtn = e.target.closest('.add-to-cart-btn');
+            const buyBtn = e.target.closest('.buy-now-btn');
+            if (!addBtn && !buyBtn) return;
 
-                    if (res.status === 401 || String(data?.message || '').toLowerCase().includes('đăng nhập')) {
-                        window.location.href = '/Login';
-                        return;
-                    }
+            e.preventDefault();
+            const btn = addBtn || buyBtn;
+            const pid = btn.dataset.productId;
+            if (!pid) return;
 
-                    window.location.href = `/Products/DetailProducts/${pid}`;
-                } catch (err) {
-                    console.error(err);
+            const hasVariant = (btn.dataset.hasVariant || 'false') === 'true';
 
-                    window.location.href = `/Products/DetailProducts/${pid}`;
+            // Chống double-click
+            const prevText = btn.textContent;
+            btn.disabled = true;
+
+            // ==== MUA NGAY ====
+            if (buyBtn) {
+              try {
+                if (hasVariant) {
+                  window.location.href = `/Products/DetailProducts/${pid}`;
+                  return;
                 }
-            }, false);
+
+                const { ok, data, status } = await quickAdd(pid);
+                if (ok) {
+                  const ticked = await selectServer(pid, true);
+                  if (!ticked) selectLocalBuyNow(pid); // 👈 chỉ Mua ngay mới ghi LS
+                  toastOk(data.message || 'Đã thêm vào giỏ hàng!');
+                  window.location.href = '/Cart';
+                  return;
+                }
+
+                if (status === 401 || String(data?.message || '').toLowerCase().includes('đăng nhập')) {
+                  window.location.href = '/Login';
+                  return;
+                }
+
+                window.location.href = `/Products/DetailProducts/${pid}`;
+              } catch (err) {
+                console.error(err);
+                window.location.href = `/Products/DetailProducts/${pid}`;
+              } finally {
+                btn.disabled = false;
+                btn.textContent = prevText;
+              }
+              return;
+            }
+
+            // ==== THÊM (KHÔNG TICK) ====
+            if (addBtn) {
+              try {
+                const { ok, data, status } = await quickAdd(pid);
+                if (ok) {
+                  // ❌ KHÔNG ghi localStorage cho Thêm
+                  if (typeof window.__CartBadge?.set === 'function' && typeof data.cartCount === 'number') {
+                    window.__CartBadge.set(data.cartCount);
+                  } else if (typeof window.__CartBadge?.add === 'function') {
+                    window.__CartBadge.add(1);
+                  }
+                  toastOk(data.message || 'Đã thêm vào giỏ hàng!');
+                  return;
+                }
+
+                if (status === 401 || String(data?.message || '').toLowerCase().includes('đăng nhập')) {
+                  window.location.href = '/Login';
+                  return;
+                }
+
+                window.location.href = `/Products/DetailProducts/${pid}`;
+              } catch (err) {
+                console.error(err);
+                window.location.href = `/Products/DetailProducts/${pid}`;
+              } finally {
+                btn.disabled = false;
+                btn.textContent = prevText;
+              }
+            }
+          }, false);
         })();
     </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+          var els = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+          els.forEach(function (el) { new bootstrap.Tooltip(el); });
+        });
+    </script>
+
+
+
+
 
 
 }

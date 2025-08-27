@@ -11,14 +11,32 @@ namespace DATN_GO.Areas.Admin.Controllers
     public class CategoryController : Controller
     {
         private readonly CategoryService _categoryService;
-
-        public CategoryController(CategoryService categoryService)
+        private readonly DecoratesService _decorationService;
+        public CategoryController(CategoryService categoryService, DecoratesService decorationService)
         {
             _categoryService = categoryService;
+            _decorationService = decorationService;
         }
 
         public async Task<IActionResult> Index()
         {
+            // vẫn yêu cầu đăng nhập
+            var userIdStr = HttpContext.Session.GetString("Id");
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
+            {
+                TempData["ToastMessage"] = "Vui lòng đăng nhập để tiếp tục!";
+                TempData["ToastType"] = "error";
+                return RedirectToAction("Index", "Home", new { area = "" });
+            }
+
+            // vẫn khóa admin
+            var user = await _decorationService.GetUserByIdAsync(userId);
+            if (user == null || user.RoleId != 3)
+            {
+                TempData["ToastMessage"] = "Bạn không có quyền truy cập vào trang này!";
+                TempData["ToastType"] = "error";
+                return RedirectToAction("Index", "Home", new { area = "" });
+            }
             var (success, data, message) = await _categoryService.GetAllWithUsageAsync();
 
             if (!success)
@@ -26,7 +44,7 @@ namespace DATN_GO.Areas.Admin.Controllers
                 TempData["ToastMessage"] = message;
                 TempData["ToastType"] = "error";
             }
-
+            ViewBag.UserInfo = user; 
             return View(data);
         }
         [HttpPost]

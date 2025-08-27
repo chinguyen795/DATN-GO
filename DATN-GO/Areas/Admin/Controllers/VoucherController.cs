@@ -9,14 +9,33 @@ namespace DATN_GO.Areas.Admin.Controllers
     public class VoucherController : Controller
     {
         private readonly VoucherService _voucherService;
+        private readonly DecoratesService _decorationService;
 
-        public VoucherController(VoucherService voucherService)
+        public VoucherController(VoucherService voucherService, DecoratesService decorationService)
         {
             _voucherService = voucherService;
+            _decorationService = decorationService;
         }
 
         public async Task<IActionResult> Voucher(string search, string sort, int page = 1, int pageSize = 4)
         {
+            // vẫn yêu cầu đăng nhập
+            var userIdStr = HttpContext.Session.GetString("Id");
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
+            {
+                TempData["ToastMessage"] = "Vui lòng đăng nhập để tiếp tục!";
+                TempData["ToastType"] = "error";
+                return RedirectToAction("Index", "Home", new { area = "" });
+            }
+
+            // vẫn khóa admin
+            var user = await _decorationService.GetUserByIdAsync(userId);
+            if (user == null || user.RoleId != 3)
+            {
+                TempData["ToastMessage"] = "Bạn không có quyền truy cập vào trang này!";
+                TempData["ToastType"] = "error";
+                return RedirectToAction("Index", "Home", new { area = "" });
+            }
             List<Vouchers>? vouchers = null;
             int? storeId = null;
             if (storeId == null)
@@ -71,6 +90,7 @@ namespace DATN_GO.Areas.Admin.Controllers
             ViewBag.Search = search;
             ViewBag.Sort = sort;
 
+            ViewBag.UserInfo = user;
             return View(paginatedVouchers);
         }
         [HttpPost]

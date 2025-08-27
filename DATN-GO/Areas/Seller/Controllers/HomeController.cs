@@ -18,8 +18,9 @@ namespace DATN_GO.Areas.Seller.Controllers
         private readonly ProductService _productService;
         private readonly GoogleCloudStorageService _gcsService;
         private readonly ILogger<HomeController> _logger;
+        private readonly VoucherService _voucherService;
 
-        public HomeController(StoreService storeService,OrderService orderSerivce, UserService userService, GoogleCloudStorageService gcsService, ILogger<HomeController> logger, ProductService productService)
+        public HomeController(StoreService storeService,OrderService orderSerivce, UserService userService, GoogleCloudStorageService gcsService, ILogger<HomeController> logger, ProductService productService, VoucherService voucherService)
         {
             _storeService = storeService;
             _userService = userService;
@@ -27,12 +28,29 @@ namespace DATN_GO.Areas.Seller.Controllers
             _logger = logger;
             _orderService = orderSerivce;
             _productService = productService;
+            _voucherService = voucherService;
         }
 
         public async Task<IActionResult> Index()
         {
             var userId = HttpContext.Session.GetString("Id");
-            if (string.IsNullOrEmpty(userId)) return RedirectToAction("Index", "Home");
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                TempData["ToastMessage"] = "Vui lòng đăng nhập để tiếp tục!";
+                TempData["ToastType"] = "error";
+                return RedirectToAction("Index", "Home", new { area = "" });
+            }
+
+            int userIdInt = Convert.ToInt32(userId);
+
+
+            // Lấy StoreId và StoreName của người dùng đang đăng nhập
+            var storeInfo = await _voucherService.GetStoreInfoByUserIdAsync(userIdInt);
+
+            // Gán StoreId và StoreName vào ViewBag
+            ViewBag.StoreId = storeInfo.StoreId;
+            ViewBag.StoreName = storeInfo.StoreName;
 
             var uid = int.Parse(userId);
             var user = await _userService.GetUserByIdAsync(uid);

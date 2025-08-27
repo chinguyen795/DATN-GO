@@ -13,19 +13,38 @@ namespace DATN_GO.Areas.Admin.Controllers
     {
         private readonly HttpClient _http;
         private readonly StoreService _storeService;
+        private readonly DecoratesService _decorationService;
 
-     
-        public StoreController(IHttpClientFactory factory, StoreService storeService)
+
+        public StoreController(IHttpClientFactory factory, StoreService storeService, DecoratesService decorationService)
         {
             _http = factory.CreateClient();
             _http.BaseAddress = new Uri("https://localhost:7096"); // <-- sửa lại URL nếu cần
             _storeService = storeService;
-
+            _decorationService = decorationService;
         }
 
         public async Task<IActionResult> Index()
         {
+            // vẫn yêu cầu đăng nhập
+            var userIdStr = HttpContext.Session.GetString("Id");
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
+            {
+                TempData["ToastMessage"] = "Vui lòng đăng nhập để tiếp tục!";
+                TempData["ToastType"] = "error";
+                return RedirectToAction("Index", "Home", new { area = "" });
+            }
+
+            // vẫn khóa admin
+            var user = await _decorationService.GetUserByIdAsync(userId);
+            if (user == null || user.RoleId != 3)
+            {
+                TempData["ToastMessage"] = "Bạn không có quyền truy cập vào trang này!";
+                TempData["ToastType"] = "error";
+                return RedirectToAction("Index", "Home", new { area = "" });
+            }
             var stores = await _storeService.GetAllAdminStoresAsync();
+            ViewBag.UserInfo = user; 
             return View(stores ?? new List<AdminStorelViewModels>());
         }
         // Hiển thị danh sách cửa hàng chờ duyệt

@@ -11,7 +11,7 @@ namespace DATN_GO.Areas.Admin.Controllers
     [Area("Admin")]
     public class ProductController : Controller
         {
-            private readonly HttpClient _http;
+        private readonly HttpClient _http;
         private readonly ProductService _productService;
         private readonly CategoryService _categoryService;
         private readonly StoreService _storeService;
@@ -23,6 +23,7 @@ namespace DATN_GO.Areas.Admin.Controllers
         private readonly VariantCompositionService _variantCompositionService;
         private readonly GoogleCloudStorageService _gcsService;
         private readonly ILogger<ProductController> _logger;
+        private readonly DecoratesService _decorationService;
 
         public ProductController(IHttpClientFactory factory,
               ProductService productService,
@@ -35,7 +36,8 @@ namespace DATN_GO.Areas.Admin.Controllers
     VariantValueService variantValueService,
     VariantCompositionService variantCompositionService,
     GoogleCloudStorageService gcsService,
-    ILogger<ProductController> logger)
+    ILogger<ProductController> logger,
+    DecoratesService decorationService)
         {
             _http = factory.CreateClient();
             _http.BaseAddress = new Uri("https://localhost:7096");
@@ -50,16 +52,35 @@ namespace DATN_GO.Areas.Admin.Controllers
             _variantCompositionService = variantCompositionService;
             _gcsService = gcsService;
             _logger = logger;
+            _decorationService = decorationService;
         }
 
         public async Task<IActionResult> Index()
         {
+            // vẫn yêu cầu đăng nhập
+            var userIdStr = HttpContext.Session.GetString("Id");
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
+            {
+                TempData["ToastMessage"] = "Vui lòng đăng nhập để tiếp tục!";
+                TempData["ToastType"] = "error";
+                return RedirectToAction("Index", "Home", new { area = "" });
+            }
+
+            // vẫn khóa admin
+            var user = await _decorationService.GetUserByIdAsync(userId);
+            if (user == null || user.RoleId != 3)
+            {
+                TempData["ToastMessage"] = "Bạn không có quyền truy cập vào trang này!";
+                TempData["ToastType"] = "error";
+                return RedirectToAction("Index", "Home", new { area = "" });
+            }
             var response = await _http.GetAsync("/api/Products/PendingApproval");
             if (!response.IsSuccessStatusCode)
                 return View(new List<ProductAdminViewModel>());
 
             var json = await response.Content.ReadAsStringAsync();
             var products = JsonConvert.DeserializeObject<List<ProductAdminViewModel>>(json);
+            ViewBag.UserInfo = user; 
             return View(products);
         }
 

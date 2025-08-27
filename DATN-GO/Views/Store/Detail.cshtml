@@ -4,7 +4,16 @@
 @{
     ViewData["Title"] = "Detail Diner Page";
 }
+<style>
+    .text-truncate-1 {
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 
+</style>
 <!-- Store Banner Section -->
 <section class="store-banner position-relative">
     <div style="height: 400px; overflow: hidden;">
@@ -208,9 +217,13 @@
                      style="transition: all 0.3s ease; border-color: #f8d7da;">
 
                     <div class="position-relative">
-                        <img src="@product.MainImage"
-                             class="card-img-top rounded-top"
-                             style="height: 200px; object-fit: cover;" alt="Product" />
+                        <a asp-controller="Products" asp-action="DetailProducts" asp-route-id="@product.Id">
+                            <img src="@product.MainImage"
+                                 class="card-img-top rounded-top"
+                                 style="height: 200px; object-fit: cover;"
+                                 alt="@product.Name"
+                                 onerror="this.onerror=null;this.src='/images/no-image.png';" />
+                        </a>
                     </div>
 
                     <div class="card-body">
@@ -231,23 +244,50 @@
 
                         </div>
 
-                        <h5 class="card-title fw-bold mb-1 text-truncate-1">@product.Name</h5>
+                        <h5 class="card-title fw-bold mb-1 text-truncate-1">
+                            <a asp-controller="Products"
+                               asp-action="DetailProducts"
+                               asp-route-id="@product.Id"
+                               class="text-dark text-decoration-none"
+                               data-bs-toggle="tooltip"
+                               data-bs-placement="top"
+                               data-bs-container="body"
+                               data-bs-title="@product.Name">
+                                @product.Name
+                            </a>
+                        </h5>
+
                         <p class="card-text text-muted small mb-2 text-truncate-1">@product.StoreName</p>
 
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
+                        <div>
+                            <!-- Giá -->
+                            <div class="mb-2">
                                 <span class="text-danger fw-bold">
                                     @string.Format("{0:N0} ₫", prodCost)
                                 </span>
                             </div>
-                            <button class="btn btn-crimson btn-sm rounded-pill add-to-cart-btn"
-                                    type="button"
-                                    data-product-id="@product.Id"
-                                    data-has-variant="@(hasVariant.ToString().ToLower())"
-                                    onclick="event.stopPropagation();">
-                                <i class="bi bi-cart-plus icon-sm"></i> Thêm
-                            </button>
+
+                            <!-- Hai nút dưới giá -->
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-crimson btn-sm rounded-pill add-to-cart-btn"
+                                        type="button"
+                                        data-product-id="@product.Id"
+                                        data-has-variant="@(hasVariant.ToString().ToLower())"
+                                        onclick="event.stopPropagation();">
+                                    <i class="bi bi-cart-plus icon-sm"></i> Thêm
+                                </button>
+
+                                <button class="btn btn-outline-crimson btn-sm rounded-pill buy-now-btn"
+                                        type="button"
+                                        data-product-id="@product.Id"
+                                        data-has-variant="@(hasVariant.ToString().ToLower())"
+                                        onclick="event.stopPropagation();">
+                                    Mua ngay
+                                </button>
+                            </div>
                         </div>
+
+
                     </div>
                 </div>
             </div>
@@ -438,9 +478,30 @@
     document.addEventListener('DOMContentLoaded', () => {
         const tokenEl = document.querySelector('#__quickAddToken input[name="__RequestVerificationToken"]');
         const ANTIFORGERY = tokenEl ? tokenEl.value : null;
+        const BUY_NOW_KEY = '__BUY_NOW_PIDS'; // fallback tick cho Mua ngay
 
-        const toastOk = (m) => window.showToast ? showToast(m, true) : alert(m);
+        const toastOk  = (m) => window.showToast ? showToast(m, true)  : alert(m);
+        const toastErr = (m) => window.showToast ? showToast(m, false) : alert(m);
 
+        async function quickAdd(pid) {
+            const fd = new FormData();
+            fd.append('productId', pid);
+            fd.append('quantity', '1');
+
+            const headers = { 'X-Requested-With': 'XMLHttpRequest' };
+            if (ANTIFORGERY) headers['RequestVerificationToken'] = ANTIFORGERY;
+
+            const res = await fetch('/Cart/QuickAdd', {
+                method: 'POST',
+                body: fd,
+                headers,
+                credentials: 'same-origin'
+            });
+            const data = await res.json().catch(() => ({}));
+            return { ok: res.ok && data?.success, data, status: res.status };
+        }
+
+        // ====== (Giữ NGUYÊN) Thêm vào giỏ ======
         document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 e.preventDefault();
@@ -455,47 +516,121 @@
                 }
 
                 try {
-                    const fd = new FormData();
-                    fd.append('productId', pid);
-                    fd.append('quantity', '1');
-
-                    const headers = { 'X-Requested-With': 'XMLHttpRequest' };
-                    if (ANTIFORGERY) headers['RequestVerificationToken'] = ANTIFORGERY;
-
-                    const res = await fetch('/Cart/QuickAdd', {
-                        method: 'POST',
-                        body: fd,
-                        headers,
-                        credentials: 'same-origin'
-                    });
-
-                    const data = await res.json().catch(() => ({}));
+                    const { ok, data, status } = await quickAdd(pid);
                     const msg = String(data?.message || '').toLowerCase();
 
-                    if (res.ok && data?.success) {
+                    if (ok) {
                         if (typeof window.__CartBadge?.set === 'function' && typeof data.cartCount === 'number') {
                             window.__CartBadge.set(data.cartCount);
                         } else if (typeof window.__CartBadge?.add === 'function') {
                             window.__CartBadge.add(1);
                         }
                         toastOk(data.message || 'Đã thêm vào giỏ hàng!');
+                        try {
+                            const cartIcon = document.querySelector('.bi-cart-fill, .header-icon');
+                            if (cartIcon) {
+                                cartIcon.classList.add('shake');
+                                setTimeout(() => cartIcon.classList.remove('shake'), 600);
+                            }
+                        } catch {}
                         return;
                     }
 
-                    // 401 => Login
                     if (res.status === 401 || msg.includes('đăng nhập')) {
                         window.location.href = '/Login';
                         return;
                     }
 
-                    // ❗Bất kỳ lỗi nào khác (kể cả "Thêm sản phẩm vào giỏ thất bại!") => nhảy vào trang chi tiết
                     window.location.href = `/Products/DetailProducts/${pid}`;
                 } catch (err) {
                     console.error(err);
-                    // ❗Lỗi mạng / JS => nhảy vào trang chi tiết
                     window.location.href = `/Products/DetailProducts/${pid}`;
                 }
             });
         });
+
+        // ====== NEW: Tick server (endpoint /Cart/Select) ======
+        async function selectServer(pid, selected = true) {
+            try {
+                const fd = new FormData();
+                fd.append('productId', pid);
+                fd.append('selected', String(selected));
+
+                const headers = { 'X-Requested-With': 'XMLHttpRequest' };
+                if (ANTIFORGERY) headers['RequestVerificationToken'] = ANTIFORGERY;
+
+                const res = await fetch('/Cart/Select', {
+                    method: 'POST', body: fd, headers, credentials: 'same-origin'
+                });
+                return res.ok;
+            } catch { return false; }
+        }
+
+        // ====== NEW: Fallback tick localStorage để trang Cart tự tick ======
+        function selectLocalBuyNow(pid) {
+            try {
+                const arr = JSON.parse(localStorage.getItem(BUY_NOW_KEY) || '[]');
+                if (!arr.includes(pid)) arr.push(pid);
+                localStorage.setItem(BUY_NOW_KEY, JSON.stringify(arr));
+            } catch {}
+        }
+
+        // ====== NEW: Mua ngay (QuickAdd + tick + tới /Cart) ======
+        document.querySelectorAll('.buy-now-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const pid = btn.dataset.productId;
+                const hasVariant = (btn.dataset.hasVariant === 'true');
+
+                if (hasVariant) {
+                    window.location.href = `/Products/DetailProducts/${pid}`;
+                    return;
+                }
+
+                const prevHTML = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = 'Đang xử lý...';
+
+                try {
+                    const { ok, data, status } = await quickAdd(pid);
+                    if (ok) {
+                        // ✅ tick server; nếu fail → ghi LS để Cart tự tick
+                        const ticked = await selectServer(pid, true);
+                        if (!ticked) selectLocalBuyNow(pid);
+
+                        if (typeof window.__CartBadge?.set === 'function' && typeof data.cartCount === 'number') {
+                            window.__CartBadge.set(data.cartCount);
+                        }
+                        toastOk(data.message || 'Đã thêm vào giỏ hàng!');
+                        window.location.href = '/Cart';
+                        return;
+                    }
+
+                    if (status === 401 || String(data?.message || '').toLowerCase().includes('đăng nhập')) {
+                        window.location.href = '/Login';
+                        return;
+                    }
+
+                    // lỗi khác → cho user chọn biến thể/option
+                    window.location.href = `/Products/DetailProducts/${pid}`;
+                } catch (err) {
+                    console.error(err);
+                    window.location.href = `/Products/DetailProducts/${pid}`;
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = prevHTML;
+                }
+            });
+        });
+    });
+</script>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var els = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+      els.forEach(function (el) { new bootstrap.Tooltip(el); });
     });
 </script>

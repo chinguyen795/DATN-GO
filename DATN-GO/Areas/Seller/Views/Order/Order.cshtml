@@ -119,36 +119,38 @@
 
             <span class="page-title">ĐƠN HÀNG @userIdStr</span>
 
+
             <div class="navbar-right ">
 
                 <ul class="nav navbar-nav">
                     <li class="custom-dropdown">
-                        <a asp-area="Seller" asp-controller="Notification" asp-action="Notification" class="notify-toggler custom-dropdown-toggler">
+                        <a class="notify-toggler custom-dropdown-toggler" asp-controller="Notification" asp-action="Notification">
                             <i class="mdi mdi-bell-outline icon"></i>
                         </a>
                     </li>
                     <!-- User Account -->
                     <li class="dropdown user-menu">
                         <button class="dropdown-toggle nav-link" data-toggle="dropdown">
-                            <img src="~/images/avt-user.jpg" alt="User Profile" width="32" height="32"
-                                 style="object-fit: cover;" loading="lazy">
-                            <span class="d-none d-lg-inline-block">Meo Meo</span>
+                            <img src="~/images/avt-user.jpg" alt="User Profile" width="32" height="32" style="object-fit: cover;" loading="lazy">
+                            <span class="d-none d-lg-inline-block">@ViewBag.StoreName</span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-right">
                             <li>
-                                <a class="dropdown-link-item" href="user-profile.html">
+                                <a class="dropdown-link-item" asp-controller="Profile" asp-action="Index" asp-area="">
                                     <i class="mdi mdi-account-outline"></i>
-                                    <span class="nav-text">Hồ Sơ</span>
+                                    <span class="nav-text">Hồ Sơ</span>
                                 </a>
                             </li>
+
                             <li class="dropdown-footer">
-                                <a class="dropdown-link-item" href="sign-in.html">
+                                <a class="dropdown-link-item" href="/Seller/Order/Logout">
                                     <i class="mdi mdi-logout"></i> Đăng Xuất
                                 </a>
                             </li>
                         </ul>
                     </li>
                 </ul>
+
             </div>
         </nav>
 

@@ -91,7 +91,7 @@
 
                         <li class="nav-item">
                             <a asp-area="Admin" asp-controller="Decorates" asp-action="Decorates"
-                               class="sidenav-item-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Decoration" ? "active" : "")">
+                               class="sidenav-item-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Decorates" ? "active" : "")">
                                 <i class="bi bi-brush"></i>
                                 <span class="nav-text">Trang Trí</span>
                             </a>
@@ -129,7 +129,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a asp-area="Admin" asp-controller="Voucher" asp-action="Index"
+                            <a asp-area="Admin" asp-controller="Voucher" asp-action="Voucher"
                                class="sidenav-item-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Voucher" ? "active" : "")">
                                 <i class="bi bi-tag"></i>
                                 <span class="nav-text">Ưu đãi</span>

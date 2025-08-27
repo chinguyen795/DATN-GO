@@ -278,8 +278,8 @@
                                     @item.Name
                                 </h5>
                                 <p class="card-text text-muted small mb-2">@store?.Name</p>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
+                                <div>
+                                    <div class="mb-2">
                                         @if (salePrice.HasValue && salePrice > 0)
                                         {
                                             <span class="text-crimson fw-bold">@salePrice?.ToString("N0") đ</span>
@@ -289,13 +289,25 @@
                                             <span class="text-muted">Chưa có giá</span>
                                         }
                                     </div>
-                                    <button class="btn btn-crimson btn-sm rounded-pill add-to-cart-btn"
-                                            type="button"
-                                            data-product-id="@item.Id"
-                                            data-has-variant="@(hasVariant.ToString().ToLower())"
-                                            onclick="event.stopPropagation();">
-                                        <i class="bi bi-cart-plus"></i> Thêm
-                                    </button>
+
+                                    <!-- 👇 Nút theo cột -->
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-crimson btn-sm rounded-pill add-to-cart-btn"
+                                                type="button"
+                                                data-product-id="@item.Id"
+                                                data-has-variant="@(hasVariant.ToString().ToLower())"
+                                                onclick="event.stopPropagation();">
+                                            <i class="bi bi-cart-plus"></i> Thêm
+                                        </button>
+
+                                        <button class="btn btn-outline-crimson btn-sm rounded-pill buy-now-btn"
+                                                type="button"
+                                                data-product-id="@item.Id"
+                                                data-has-variant="@(hasVariant.ToString().ToLower())"
+                                                onclick="event.stopPropagation();">
+                                            Mua ngay
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -434,78 +446,161 @@
     <!-- ✅ Thêm mới QuickAdd Script -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const tokenEl = document.querySelector('#__quickAddToken input[name="__RequestVerificationToken"]');
-            const ANTIFORGERY = tokenEl ? tokenEl.value : null;
+          const tokenEl = document.querySelector('#__quickAddToken input[name="__RequestVerificationToken"]');
+          const ANTIFORGERY = tokenEl ? tokenEl.value : null;
+          const BUY_NOW_KEY = '__BUY_NOW_PIDS'; // chỉ dùng cho "Mua ngay"
 
-            function toastOk(msg) { if (window.showToast) showToast(msg, true); else alert(msg); }
-            function toastErr(msg) { if (window.showToast) showToast(msg, false); else alert(msg); }
+          function toastOk(msg)  { if (window.showToast) showToast(msg, true);  else alert(msg); }
+          function toastErr(msg) { if (window.showToast) showToast(msg, false); else alert(msg); }
 
-            document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
+          async function quickAdd(pid) {
+            const fd = new FormData();
+            fd.append('productId', pid);
+            fd.append('quantity', '1');
 
-                    const pid = btn.dataset.productId;
-                    const hasVariant = (btn.dataset.hasVariant === 'true');
+            const headers = { 'X-Requested-With': 'XMLHttpRequest' };
+            if (ANTIFORGERY) headers['RequestVerificationToken'] = ANTIFORGERY;
 
-                    // Có biến thể → sang trang chi tiết
-                    if (hasVariant) {
-                        window.location.href = `/Products/DetailProducts/${pid}`;
-                        return;
-                    }
-
-                    try {
-                        const fd = new FormData();
-                        fd.append('productId', pid);
-                        fd.append('quantity', '1');
-
-                        const headers = { 'X-Requested-With': 'XMLHttpRequest' };
-                        if (ANTIFORGERY) headers['RequestVerificationToken'] = ANTIFORGERY;
-
-                        const res = await fetch('/Cart/QuickAdd', {
-                            method: 'POST',
-                            body: fd,
-                            headers,
-                            credentials: 'same-origin'
-                        });
-
-                        const data = await res.json().catch(() => ({}));
-
-                        // ✅ Success → cập nhật badge + toast
-                        if (res.ok && data?.success) {
-                            if (typeof window.__CartBadge?.set === 'function' && typeof data.cartCount === 'number') {
-                                window.__CartBadge.set(data.cartCount);
-                            } else if (typeof window.__CartBadge?.add === 'function') {
-                                window.__CartBadge.add(1);
-                            }
-                            toastOk(data.message || 'Đã thêm vào giỏ hàng!');
-                            // (optional) rung icon giỏ nếu có
-                            try {
-                                const cartIcon = document.querySelector('.bi-cart-fill, .header-icon');
-                                if (cartIcon) {
-                                    cartIcon.classList.add('shake');
-                                    setTimeout(() => cartIcon.classList.remove('shake'), 600);
-                                }
-                            } catch { }
-                            return;
-                        }
-
-                        // 401 → login
-                        if (res.status === 401 || String(data?.message || '').toLowerCase().includes('đăng nhập')) {
-                            window.location.href = '/Login'; // đổi route nếu app bạn khác
-                            return;
-                        }
-
-                        // Fail khác → toast lỗi
-                        toastErr(data?.message || 'Thêm sản phẩm vào giỏ hàng thất bại.');
-                    } catch (err) {
-                        console.error(err);
-                        toastErr('Lỗi kết nối. Vui lòng thử lại.');
-                    }
-                });
+            const res = await fetch('/Cart/QuickAdd', {
+              method: 'POST',
+              body: fd,
+              headers,
+              credentials: 'same-origin'
             });
+
+            const data = await res.json().catch(() => ({}));
+            return { ok: res.ok && data?.success, data, status: res.status };
+          }
+
+          // ====== NEW: tick chọn item trong Cart (server-side) ======
+          async function selectServer(pid, selected = true) {
+            try {
+              const fd = new FormData();
+              fd.append('productId', pid);
+              fd.append('selected', String(selected));
+              const headers = { 'X-Requested-With': 'XMLHttpRequest' };
+              if (ANTIFORGERY) headers['RequestVerificationToken'] = ANTIFORGERY;
+
+              const res = await fetch('/Cart/Select', {
+                method: 'POST',
+                body: fd,
+                headers,
+                credentials: 'same-origin'
+              });
+              return res.ok;
+            } catch {
+              return false;
+            }
+          }
+
+          // ====== NEW: fallback tick qua localStorage (để trang Cart tự tick) ======
+          function selectLocalBuyNow(pid) {
+            try {
+              const arr = JSON.parse(localStorage.getItem(BUY_NOW_KEY) || '[]');
+              if (!arr.includes(pid)) arr.push(pid);
+              localStorage.setItem(BUY_NOW_KEY, JSON.stringify(arr));
+            } catch {}
+          }
+
+          // ====== Thêm vào giỏ (KHÔNG tick) ======
+          document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+
+              const pid = btn.dataset.productId;
+              const hasVariant = (btn.dataset.hasVariant === 'true');
+
+              if (hasVariant) {
+                window.location.href = `/Products/DetailProducts/${pid}`;
+                return;
+              }
+
+              try {
+                const { ok, data, status } = await quickAdd(pid);
+                if (ok) {
+                  if (typeof window.__CartBadge?.set === 'function' && typeof data.cartCount === 'number') {
+                    window.__CartBadge.set(data.cartCount);
+                  } else if (typeof window.__CartBadge?.add === 'function') {
+                    window.__CartBadge.add(1);
+                  }
+                  toastOk(data.message || 'Đã thêm vào giỏ hàng!');
+                  try {
+                    const cartIcon = document.querySelector('.bi-cart-fill, .header-icon');
+                    if (cartIcon) {
+                      cartIcon.classList.add('shake');
+                      setTimeout(() => cartIcon.classList.remove('shake'), 600);
+                    }
+                  } catch {}
+                  return;
+                }
+
+                if (status === 401 || String(data?.message || '').toLowerCase().includes('đăng nhập')) {
+                  window.location.href = '/Login';
+                  return;
+                }
+
+                toastErr(data?.message || 'Thêm sản phẩm vào giỏ hàng thất bại.');
+              } catch (err) {
+                console.error(err);
+                toastErr('Lỗi kết nối. Vui lòng thử lại.');
+              }
+            });
+          });
+
+          // ====== Mua ngay (CÓ tick) ======
+          document.querySelectorAll('.buy-now-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+
+              const pid = btn.dataset.productId;
+              const hasVariant = (btn.dataset.hasVariant === 'true');
+
+              if (hasVariant) {
+                window.location.href = `/Products/DetailProducts/${pid}`;
+                return;
+              }
+
+              const prevHTML = btn.innerHTML;
+              btn.disabled = true;
+              btn.innerHTML = 'Đang xử lý...';
+
+              try {
+                const { ok, data, status } = await quickAdd(pid);
+                if (ok) {
+                  // ✅ tick server; nếu lỗi → ghi LS để trang Cart tự tick
+                  const ticked = await selectServer(pid, true);
+                  if (!ticked) selectLocalBuyNow(pid);
+
+                  if (typeof window.__CartBadge?.set === 'function' && typeof data.cartCount === 'number') {
+                    window.__CartBadge.set(data.cartCount);
+                  }
+                  toastOk(data.message || 'Đã thêm vào giỏ hàng!');
+                  window.location.href = '/Cart';
+                  return;
+                }
+
+                if (status === 401 || String(data?.message || '').toLowerCase().includes('đăng nhập')) {
+                  window.location.href = '/Login';
+                  return;
+                }
+
+                // thất bại khác → qua chi tiết để chọn biến thể
+                window.location.href = `/Products/DetailProducts/${pid}`;
+              } catch (err) {
+                console.error(err);
+                window.location.href = `/Products/DetailProducts/${pid}`;
+              } finally {
+                btn.disabled = false;
+                btn.innerHTML = prevHTML;
+              }
+            });
+          });
         });
     </script>
+
+
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {

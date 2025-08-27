@@ -26,6 +26,7 @@ namespace DATN_GO.Areas.Seller.Controllers
         private readonly VariantCompositionService _variantCompositionService;
         private readonly GoogleCloudStorageService _gcsService;
         private readonly ILogger<ProductController> _logger;
+        private readonly VoucherService _voucherService;
 
         public ProductController(
             ProductService productService,
@@ -38,7 +39,8 @@ namespace DATN_GO.Areas.Seller.Controllers
             VariantValueService variantValueService,
             VariantCompositionService variantCompositionService,
             GoogleCloudStorageService gcsService,
-            ILogger<ProductController> logger)
+            ILogger<ProductController> logger,
+            VoucherService voucherService)
         {
             _productService = productService;
             _categoryService = categoryService;
@@ -51,13 +53,30 @@ namespace DATN_GO.Areas.Seller.Controllers
             _variantCompositionService = variantCompositionService;
             _gcsService = gcsService;
             _logger = logger;
+            _voucherService = voucherService;
         }
 
         [HttpGet]
         public async Task<IActionResult> Product()
         {
             var userId = HttpContext.Session.GetString("Id");
-            if (string.IsNullOrEmpty(userId)) return RedirectToAction("Index", "Home");
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                TempData["ToastMessage"] = "Vui lòng đăng nhập để tiếp tục!";
+                TempData["ToastType"] = "error";
+                return RedirectToAction("Index", "Home", new { area = "" });
+            }
+
+            int userIdInt = Convert.ToInt32(userId);
+
+
+            // Lấy StoreId và StoreName của người dùng đang đăng nhập
+            var storeInfo = await _voucherService.GetStoreInfoByUserIdAsync(userIdInt);
+
+            // Gán StoreId và StoreName vào ViewBag
+            ViewBag.StoreId = storeInfo.StoreId;
+            ViewBag.StoreName = storeInfo.StoreName;
 
             var user = await _userService.GetUserByIdAsync(int.Parse(userId));
             var store = await _storeService.GetStoreByUserIdAsync(user.Id);
@@ -283,6 +302,17 @@ namespace DATN_GO.Areas.Seller.Controllers
                 _logger.LogError(ex, "Lỗi khi upload ảnh biến thể");
                 return Json(new { success = false, message = ex.Message });
             }
+        }
+        // Logout
+        [HttpGet]
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+
+            TempData["ToastMessage"] = "Bạn đã đăng xuất thành công!";
+            TempData["ToastType"] = "success";
+
+            return RedirectToAction("Index", "Home", new { area = "" });
         }
     }
 }
