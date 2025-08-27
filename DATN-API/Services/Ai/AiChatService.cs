@@ -48,7 +48,9 @@ namespace DATN_API.Services.Ai
                 return directAnswer;
 
             // 3) Gọi AI với context được tối ưu
-            return await CallAiWithContextAsync(cleanMessage);
+            return (await CallAiWithContextAsync(cleanMessage)).Trim();
+
+
         }
 
         private string CleanInput(string input)
@@ -312,9 +314,9 @@ namespace DATN_API.Services.Ai
                         {
                             var url = BuildProductUrl(product.Id, product.Slug);
                             responseBuilder.AppendLine($"🛍️ **{product.Name}**");
-                            responseBuilder.AppendLine($"💰 Giá: {product.CostPrice:N0}đ | 📦 SL: {product.Quantity}");
                             responseBuilder.AppendLine($"🔗 {url}");
                             responseBuilder.AppendLine();
+
                         }
                     }
                 }
@@ -342,9 +344,9 @@ namespace DATN_API.Services.Ai
                     {
                         var url = BuildProductUrl(product.Id, product.Slug);
                         responseBuilder.AppendLine($"🛍️ **{product.Name}** ({product.CategoryName})");
-                        responseBuilder.AppendLine($"💰 {product.CostPrice:N0}đ | 📦 SL: {product.Quantity}");
                         responseBuilder.AppendLine($"🔗 {url}");
                         responseBuilder.AppendLine();
+
                     }
                 }
             }

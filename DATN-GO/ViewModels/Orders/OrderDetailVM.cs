@@ -34,6 +34,12 @@ namespace DATN_GO.ViewModels.Orders
         // Mã vận đơn GHTK
         [JsonPropertyName("labelId")]
         public string? LabelId { get; set; }
+        [JsonPropertyName("voucherReduce")]
+        public decimal VoucherReduce { get; set; }    // ✅ NEW
+
+        [JsonPropertyName("voucherName")]
+        public string? VoucherName { get; set; }
+
 
         // Danh sách item trả về từ API
         [JsonPropertyName("orderDetails")]
@@ -61,6 +67,7 @@ namespace DATN_GO.ViewModels.Orders
         // API field unitPrice -> map về Price
         [JsonPropertyName("unitPrice")]
         public decimal Price { get; set; }
+
 
         [JsonIgnore]
         public decimal SubTotal => Price * Quantity;

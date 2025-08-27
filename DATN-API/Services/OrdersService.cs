@@ -786,6 +786,15 @@ namespace DATN_API.Services
             string msg = "Hủy đơn hàng thành công" + ghtkMessage;
             if (didRefund) msg += $" (+{total:N0} vào ví do phương thức vận chuyển #1)";
             else msg += " (đơn không đủ điều kiện hoàn ví)";
+            // ✅ Hoàn 1 lượt voucher (nếu đơn có voucher)
+            if (order.VoucherId.HasValue)
+            {
+                var v = await _context.Vouchers.FirstOrDefaultAsync(x => x.Id == order.VoucherId.Value);
+                if (v != null && v.UsedCount > 0) v.UsedCount -= 1;   // hoặc gọi _vouchers.RevertRedeemAsync
+            }
+
+            await _context.SaveChangesAsync();
+            await tx.CommitAsync();
 
             return (true, msg);
         }

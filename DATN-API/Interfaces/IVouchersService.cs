@@ -22,7 +22,10 @@ namespace DATN_API.Interfaces
 
         Task<(bool ok, string reason)> RedeemVoucherAsync(int voucherId);
             string? ValidateForCreateOrUpdate(Vouchers v, bool isCreate);
-        }
+        // NEW: hoàn lại 1 lượt đã dùng (nếu > 0)
+        Task RevertRedeemAsync(int voucherId);
+    }
+
 
     
 }

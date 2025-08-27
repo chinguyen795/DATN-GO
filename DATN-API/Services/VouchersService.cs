@@ -130,5 +130,15 @@ namespace DATN_API.Services
 
             return null;
         }
+        public async Task RevertRedeemAsync(int voucherId)
+        {
+            var v = await _context.Vouchers.FirstOrDefaultAsync(x => x.Id == voucherId);
+            if (v != null && v.UsedCount > 0)
+            {
+                v.UsedCount -= 1;
+                await _context.SaveChangesAsync();
+            }
+        }
+
     }
 }

@@ -1,6 +1,12 @@
 ﻿@model DATN_GO.ViewModels.Orders.OrderDetailVM
 @{
     ViewData["Title"] = "Chi tiết đơn hàng";
+    var itemsTotal = Model.ItemsTotal;     // hoặc Model.Items.Sum(x => x.SubTotal)
+    var ship = Model.DeliveryFee;
+    var discount = Model.VoucherReduce;  // giá trị âm sẽ hiển thị có dấu "–" ở dòng voucher
+    var grandTotal = Model.TotalPrice > 0
+        ? Model.TotalPrice
+        : itemsTotal + ship - discount;
     var crimson = ViewBag.Crimson as string ?? "#dc143c";
     var items = Model?.Items ?? new List<DATN_GO.ViewModels.Orders.OrderDetailItemVM>();
 }
@@ -96,8 +102,19 @@
                                     <td class="text-end">@Model.DeliveryFee.ToString("N0") đ</td>
                                 </tr>
                                 <tr>
-                                    <td colspan="3" class="text-end fs-5 fw-bold">Tổng cộng</td>
-                                    <td class="text-end fs-5 fw-bold" style="color:@crimson">@Model.TotalPrice.ToString("N0") đ</td>
+                                    <td colspan="3" class="text-end">
+                                        Voucher giảm giá
+                                        @if (!string.IsNullOrWhiteSpace(Model.VoucherName))
+                                        {
+                                            <span class="text-muted ms-1">(@Model.VoucherName)</span>
+                                        }
+                                    </td>
+                                    <td class="text-end">-@Model.VoucherReduce.ToString("N0") đ</td>
+                                </tr>
+
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>Tổng cộng</strong></td>
+                                    <td class="text-end"><strong>@grandTotal.ToString("N0") đ</strong></td>
                                 </tr>
                             </tfoot>
                         </table>

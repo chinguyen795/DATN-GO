@@ -16,7 +16,8 @@ namespace DATN_API.ViewModels.Orders
         public string? ShippingMethodName { get; set; }
         public string CustomerName { get; set; } = "";
         public string CustomerPhone { get; set; } = "";
-
+        public decimal VoucherReduce { get; set; }   // NEW
+        public string? VoucherName { get; set; }     // NEW
         public List<OrderDetailItemDto> Items { get; set; } = new();
         public string? LabelId { get; set; }
     }

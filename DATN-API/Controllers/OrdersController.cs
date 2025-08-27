@@ -127,13 +127,30 @@ namespace DATN_API.Controllers
         private async Task<OrderDetailDto?> BuildOrderDetailDtoAsync(int id)
         {
             var order = await _db.Orders
-                .Include(o => o.OrderDetails)
-                    .ThenInclude(od => od.Product)
+                .Include(o => o.OrderDetails).ThenInclude(od => od.Product)
                 .Include(o => o.ShippingMethod)
                 .Include(o => o.User)
+                .Include(o => o.Voucher)
                 .FirstOrDefaultAsync(o => o.Id == id);
 
             if (order == null) return null;
+
+            var itemsTotal = order.OrderDetails?.Sum(d => d.Price * d.Quantity) ?? 0m;
+
+            // Tính giảm từ voucher (nếu đủ điều kiện)
+            decimal voucherReduce = 0m;
+            string? voucherName = null;
+            if (order.Voucher != null
+                && order.Voucher.Status == VoucherStatus.Valid
+                && itemsTotal >= order.Voucher.MinOrder)
+            {
+                voucherReduce = order.Voucher.Reduce;
+                voucherName = order.Voucher.Type.ToString();   // <-- KHÔNG dùng Code
+            }
+
+            // Fallback: suy ra phần giảm nếu DB chưa lưu VoucherId
+            var inferredReduce = (itemsTotal + order.DeliveryFee) - order.TotalPrice;
+            if (inferredReduce > voucherReduce) voucherReduce = inferredReduce;
 
             return new OrderDetailDto
             {
@@ -143,11 +160,16 @@ namespace DATN_API.Controllers
                 PaymentStatus = order.PaymentStatus ?? "",
                 Status = order.Status,
                 DeliveryFee = order.DeliveryFee,
-                ItemsTotal = order.OrderDetails?.Sum(d => d.Price * d.Quantity) ?? 0,
-                TotalPrice = order.TotalPrice,
+                ItemsTotal = itemsTotal,
+                TotalPrice = order.TotalPrice,           // tổng cuối đã trừ giảm
                 ShippingMethodName = order.ShippingMethod?.MethodName,
                 CustomerName = order.User?.FullName ?? "",
                 CustomerPhone = order.User?.Phone ?? "",
+
+                // DÙNG biến đã tính – tránh Null & sai điều kiện
+                VoucherReduce = Math.Max(0, voucherReduce),
+                VoucherName = voucherName,
+
                 Items = order.OrderDetails?.Select(d => new OrderDetailItemDto
                 {
                     ProductId = d.ProductId,
@@ -156,9 +178,11 @@ namespace DATN_API.Controllers
                     Quantity = d.Quantity,
                     Price = d.Price
                 }).ToList() ?? new List<OrderDetailItemDto>(),
+
                 LabelId = order.LabelId
             };
         }
+
         [HttpGet("{id}/user/{userId}")]
         public async Task<IActionResult> GetByIdForUser(int id, int userId)
         {
