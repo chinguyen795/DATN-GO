@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace DATN_API.Models
 {
@@ -9,15 +10,19 @@ namespace DATN_API.Models
         public int Id { get; set; }
 
         [ForeignKey("Stores")]
-        public int DinerId { get; set; }
-        public virtual Stores? store { get; set; }
+        public int StoreId { get; set; }
+        [JsonIgnore]
+        public virtual Stores? Store { get; set; }
 
         public decimal Cost { get; set; }
         public DateTime Date { get; set; }
+        public TradingPaymentStatus Status { get; set; }
 
-        public string? RemittanceAccount { get; set; }
-        public string? RemittanceBank { get; set; }
-        public string? BeneficiaryAccount { get; set; }
-        public string? BeneficiaryBank { get; set; }
+    }
+    public enum TradingPaymentStatus
+    {
+        ChoXuLy = 0,   
+        DaXacNhan = 1, 
+        TuChoi = 2     
     }
 }

@@ -12,7 +12,7 @@
 
 <!-- Bootstrap Select JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
-
+@using DATN_GO.ViewModels
 
 <div class="page-wrapper">
     <header class="main-header" id="header">
@@ -128,6 +128,9 @@
 
                             <hr class="my-2" />
                             <button id="btnSendReport" class="btn btn-primary">Gửi báo cáo tháng này</button>
+                            <button type="button" class="btn btn-primary mt-1" data-bs-toggle="modal" data-bs-target="#pendingPaymentsModal">
+                                Xem yêu cầu rút tiền chờ xử lý
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -166,6 +169,120 @@
          style="z-index: 1055;">
     </div>
 </div>
+<div class="modal fade" id="pendingPaymentsModal" tabindex="-1" role="dialog" aria-labelledby="pendingPaymentsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="pendingPaymentsModalLabel">Danh sách yêu cầu rút tiền (Chờ xử lý)</h5>
+                <button type="button" class="close text-white" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                @if (ViewBag.PendingPayments != null && ((List<TradingPaymentViewModel>)ViewBag.PendingPayments).Any())
+                {
+                    var list = (List<TradingPaymentViewModel>)ViewBag.PendingPayments;
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>StoreId</th>
+                                <th>Ngày</th>
+                                <th>Số tiền</th>
+                                <th>Ngân hàng</th>
+                                <th>Số TK</th>
+                                <th>Chủ TK</th>
+                                <th>Trạng thái</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var p in list)
+                            {
+                                <tr>
+                                    <td>@p.Id</td>
+                                    <td>@p.StoreId</td>
+                                    <td>@p.Date.ToString("dd/MM/yyyy")</td>
+                                    <td>@string.Format("{0:N0} đ", p.Cost)</td>
+                                    <td>@p.Bank</td>
+                                    <td>@p.BankAccount</td>
+                                    <td>@p.BankAccountOwner</td>
+                                    <td>@p.Status</td>
+                                    <td>
+                                        <form asp-controller="Home" asp-action="ConfirmPayment" method="post" class="d-inline">
+                                            <input type="hidden" name="id" value="@p.Id" />
+                                            <button type="submit" class="btn btn-success btn-sm">✔ Xác nhận</button>
+                                        </form>
+                                        <form asp-controller="Home" asp-action="RejectPayment" method="post" class="d-inline">
+                                            <input type="hidden" name="id" value="@p.Id" />
+                                            <button type="submit" class="btn btn-danger btn-sm">✖ Từ chối</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p>Không có yêu cầu rút tiền của nào đang chờ xử lý.</p>
+                }
+                @if (ViewBag.UserPendingPayments != null && ((List<UserTradingPayment>)ViewBag.UserPendingPayments).Any())
+                {
+                    var list = (List<UserTradingPayment>)ViewBag.UserPendingPayments;
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>UserId</th>
+                                <th>Ngày</th>
+                                <th>Số tiền</th>
+                                <th>Ngân hàng</th>
+                                <th>Số TK</th>
+                                <th>Chủ TK</th>
+                                <th>Trạng thái</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var up in list)
+                            {
+                                <tr>
+                                    <td>@up.Id</td>
+                                    <td>@up.UserId</td>
+                                    <td>@up.Date.ToString("dd/MM/yyyy")</td>
+                                    <td>@string.Format("{0:N0} đ", up.Cost)</td>
+                                    <td>@up.Bank</td>
+                                    <td>@up.BankAccount</td>
+                                    <td>@up.BankAccountOwner</td>
+                                    <td>@up.Status</td>
+                                    <td>
+                                        <form asp-controller="Home" asp-action="UserConfirmPayment" method="post" class="d-inline">
+                                            <input type="hidden" name="id" value="@up.Id" />
+                                            <button type="submit" class="btn btn-success btn-sm">✔ Xác nhận</button>
+                                        </form>
+                                        <form asp-controller="Home" asp-action="UserRejectPayment" method="post" class="d-inline">
+                                            <input type="hidden" name="id" value="@up.Id" />
+                                            <button type="submit" class="btn btn-danger btn-sm">✖ Từ chối</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p>Không có yêu cầu rút tiền nào đang chờ xử lý.</p>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     const mixedChart1 = document.querySelector("#mixed-chart-1");
     const yearSelect = document.getElementById("yearSelect");

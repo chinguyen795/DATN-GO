@@ -60,7 +60,7 @@ namespace DATN_API.Services
             store.BankAccount = model.BankAccount;
             // Nếu dùng luôn thì mở:
             // store.BankAccountOwner = model.BankAccountOwner;
-
+            store.MoneyAmout = model.MoneyAmout;
             // Location & misc
             store.Longitude = model.Longitude;
             store.Latitude = model.Latitude;
@@ -260,6 +260,12 @@ namespace DATN_API.Services
                     AccountHolder = s.BankAccountOwner,
                     BankName = s.Bank
                 }).ToListAsync();
+        }
+        public async Task<List<Stores>> GetStoresByIdsAsync(List<int> storeIds)
+        {
+            return await _context.Stores
+                            .Where(s => storeIds.Contains(s.Id))
+                            .ToListAsync();
         }
     }
 }

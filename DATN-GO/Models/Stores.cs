@@ -44,7 +44,7 @@ namespace DATN_GO.Models
 
         [MaxLength]
         public string? Avatar { get; set; }
-
+        public decimal? MoneyAmout { get; set; }
         public StoreStatus Status { get; set; }
 
         public string? Slug { get; set; }

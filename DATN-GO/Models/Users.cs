@@ -54,6 +54,7 @@ namespace DATN_GO.Models
         public GenderType Gender { get; set; }
         [MaxLength(12)]
         public string? CitizenIdentityCard { get; set; }
+        public decimal? Balance { get; set; }
         public DateTime CreateAt { get; set; }
         public DateTime UpdateAt { get; set; }
         public DateTime? BirthDay { get; set; }

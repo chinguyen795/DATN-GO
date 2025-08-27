@@ -1,4 +1,4 @@
-﻿﻿﻿﻿@{
+﻿﻿﻿﻿﻿@{
     var useContainer = ViewData["UseContainer"] as bool? ?? true;
     var cartCount = Context.Session.GetInt32("CartCount") ?? 0;
 
@@ -212,6 +212,11 @@
                                 else
                                 {
                                     <!-- Đã đăng nhập -->
+                                    <li>
+                                        <span class="dropdown-item text-muted d-flex align-items-center gap-2">
+                                            <i class="bi bi-person-check icon-sm"></i> Xin chào, @fullName
+                                        </span>
+                                    </li>
                                     <li>
                                         <span class="dropdown-item text-muted d-flex align-items-center gap-2">
                                             <i class="bi bi-person-check icon-sm"></i> Xin chào, @fullName

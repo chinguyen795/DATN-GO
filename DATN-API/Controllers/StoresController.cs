@@ -158,7 +158,14 @@ namespace DATN_API.Controllers
             var stores = await _service.GetAllAdminStoresAsync();
             return Ok(stores);
         }
+        [HttpPost("GetStoresByIds")]
+        public async Task<IActionResult> GetStoresByIds([FromBody] List<int> storeIds)
+        {
+            if (storeIds == null || storeIds.Count == 0) return BadRequest("storeIds rỗng");
 
+            var stores = await _service.GetStoresByIdsAsync(storeIds);
+            return Ok(stores);
+        }
 
     }
 }

@@ -1,0 +1,350 @@
+﻿@using DATN_GO.Models
+@model Users
+@{
+    ViewData["Title"] = "Ví của tôi";
+    ViewData["UseContainer"] = false;
+}
+
+<!-- Bootstrap 5 CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+<!-- Bootstrap Icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
+
+<!-- Offcanvas Sidebar for Mobile -->
+<div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
+    <div class="offcanvas-header bg-crimson text-white">
+        <h5 class="offcanvas-title" id="sidebarMenuLabel">Menu Tài Khoản</h5>
+        <button type="button" class="btn-close text-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div class="p-3 border-bottom">
+            <div class="d-flex align-items-center mb-3">
+                <img src="@(string.IsNullOrEmpty(Model.Avatar) ? "https://i.pinimg.com/736x/f0/cd/c4/f0cdc47ddb7f9dd5e86c3e7915c8b337.jpg" : Model.Avatar)"
+                     alt="Profile" class="rounded-circle me-2" style="width: 45px; height: 45px;">
+                <div>
+                    <h6 class="mb-0">@Model.FullName</h6>
+                    <small class="text-muted">@Model.Email</small>
+                </div>
+            </div>
+        </div>
+
+        <ul class="nav flex-column p-3">
+            <li class="nav-item mb-2"><a asp-controller="Profile" asp-action="Index" class="nav-link text-dark"><i class="bi bi-person-circle me-2"></i>Thông tin cá nhân</a></li>
+            <li class="nav-item mb-2"><a asp-controller="Order" asp-action="Index" class="nav-link text-dark"><i class="bi bi-box-seam me-2"></i>Đơn hàng của tôi</a></li>
+            <li class="nav-item mb-2"><a asp-controller="Address" asp-action="address" class="nav-link text-dark"><i class="bi bi-geo-alt me-2"></i>Địa chỉ</a></li>
+            <li class="nav-item mb-2"><a asp-controller="Voucher" asp-action="Voucher" class="nav-link text-dark"><i class="bi bi-ticket-perforated me-2"></i>Voucher của tôi</a></li>
+            <li class="nav-item mb-2"><a asp-controller="Wallet" asp-action="Index" class="nav-link text-crimson active"><i class="bi bi-wallet2 me-2"></i>Ví của tôi</a></li>
+            <li class="nav-item mb-2"><a asp-controller="UserAuthentication" asp-action="ChangePassword" class="nav-link text-dark"><i class="bi bi-shield-lock me-2"></i>Đổi mật khẩu</a></li>
+            <li class="nav-item"><a href="/Voucher/Logout" class="nav-link text-dark"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li>
+        </ul>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="d-lg-none p-3">
+            <button class="btn btn-outline-danger" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu">
+                <i class="bi bi-list"></i>
+            </button>
+        </div>
+
+        <div class="col-lg-3 col-xl-2 d-none d-lg-block sidebar bg-white border-end">
+            <div class="position-sticky" style="top: 1rem;">
+                <div class="p-3 border-bottom">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="@(string.IsNullOrEmpty(Model.Avatar) ? "https://i.pinimg.com/736x/f0/cd/c4/f0cdc47ddb7f9dd5e86c3e7915c8b337.jpg" : Model.Avatar)" alt="Profile" class="rounded-circle me-2" style="width: 45px; height: 45px;">
+                        <div>
+                            <h6 class="mb-0">@Model.FullName</h6>
+                            <small class="text-muted">@Model.Email</small>
+                        </div>
+                    </div>
+                </div>
+
+                <ul class="nav flex-column p-3">
+                    <li class="nav-item mb-2">
+                        <a asp-action="Index" asp-controller="Profile" class="nav-link text-dark">
+                            <i class="bi bi-person-circle me-2"></i>
+                            Thông tin cá nhân
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a asp-action="Index" asp-controller="Order" class="nav-link text-dark">
+                            <i class="bi bi-box-seam me-2"></i>
+                            Đơn hàng của tôi
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a asp-action="address" asp-controller="Address" class="nav-link text-dark">
+                            <i class="bi bi-geo-alt me-2"></i>
+                            Địa chỉ
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a asp-action="Voucher" asp-controller="Voucher" class="nav-link text-dark">
+                            <i class="bi bi-ticket-perforated me-2"></i>
+                            Voucher
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a asp-action="Index" asp-controller="Wallet" class="nav-link active text-crimson">
+                            <i class="bi bi-wallet2 me-2"></i>
+                            Ví của tôi
+                        </a>
+                    </li>
+                    <li class="nav-item mb-2">
+                        <a asp-action="ChangePassword" asp-controller="UserAuthentication" class="nav-link text-dark">
+                            <i class="bi bi-shield-lock me-2"></i>
+                            Đổi mật khẩu
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/Voucher/Logout" class="nav-link text-dark">
+                            <i class="bi bi-box-arrow-right me-2"></i>
+                            Đăng xuất
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-lg-9 col-xl-10 p-4">
+            <div class="bg-white p-4 rounded shadow-lg">
+                <!-- Header Card -->
+                <div class="card mb-4">
+                    <div class="card-header bg-crimson bg-opacity-10 border-crimson border-5 border-top-0 border-end-0 border-bottom-0">
+                        <h4 class="card-title text-white mb-0 py-2">
+                            <i class="bi bi-wallet2 me-2"></i>
+                            Ví của tôi
+                        </h4>
+                    </div>
+                </div>
+
+                <!-- Balance Display -->
+                <div class="card mb-4" style="background: linear-gradient(135deg, #ff5f6d 0%, #dc3545 100%); color: white; border-radius: 15px;">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-2">
+                            <i class="bi bi-wallet2 fs-1"></i>
+                        </div>
+                        <h5 class="mb-2">Số dư khả dụng</h5>
+                        <div class="fs-1 fw-bold mb-2" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+                            @String.Format("{0:N0}", Model.Balance) VNĐ
+                        </div>
+                        <small class="opacity-75">
+                            Cập nhật lần cuối: <span id="lastUpdate">@DateTime.Now.ToString("dd/MM/yyyy HH:mm")</span>
+                        </small>
+                    </div>
+                </div>
+
+                <form asp-action="CreatePayment" method="post">
+                    <h5 class="text-crimson mb-3">
+                        <i class="bi bi-cash-stack me-2"></i>
+                        Yêu cầu rút tiền
+                    </h5>
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Ngân hàng <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text text-crimson">
+                                    <i class="bi bi-bank"></i>
+                                </span>
+                                <select name="Bank" class="form-select" required>
+                                    <option value="">-- Chọn ngân hàng --</option>
+                                    @if (ViewBag.Banks != null)
+                                    {
+                                        foreach (var bank in ViewBag.Banks as List<BankModel>)
+                                        {
+                                            <option value="@bank.ShortName">@bank.Name (@bank.ShortName)</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Số tài khoản <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text text-crimson">
+                                    <i class="bi bi-credit-card"></i>
+                                </span>
+                                <input type="text" name="BankAccount" class="form-control" required />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Tên chủ tài khoản <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text text-crimson">
+                                    <i class="bi bi-person"></i>
+                                </span>
+                                <input type="text" name="BankAccountOwner" class="form-control" required />
+                            </div>
+                        </div>
+
+                        <div class="col-12 text-center">
+                            <button type="submit" class="btn btn-crimson btn-lg px-5">
+                                <i class="bi bi-send me-2"></i> Gửi yêu cầu rút tiền
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+
+                <!-- Transaction History -->
+                <div class="card mt-2">
+                    <div class="card-header bg-crimson text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-clock-history me-2"></i>
+                            Lịch sử yêu cầu rút tiền
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Ngày yêu cầu</th>
+                                        <th>Số tiền</th>
+                                        <th>Ngân hàng</th>
+                                        <th>Số tài khoản</th>
+                                        <th>Tên tài khoản</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (ViewBag.TradingPayments != null)
+                                    {
+                                        @foreach (var payment in ViewBag.TradingPayments)
+                                        {
+                                            <tr>
+                                                <td>@payment.Id</td>
+                                                <td>@payment.Date.ToString("dd/MM/yyyy HH:mm")</td>
+                                                <td class="fw-bold text-crimson">-@((payment.Cost ?? 0).ToString("N0")) VNĐ</td>
+                                                <td><i class="bi bi-bank me-1"></i>@payment.Bank</td>
+                                                <td>@payment.BankAccount</td>
+                                                <td>@payment.BankAccountOwner</td>
+                                                <td>
+                                                    @switch (payment.Status)
+                                                    {
+                                                        case TradingPaymentStatus.ChoXuLy:
+                                                            <span class="badge bg-warning text-dark">
+                                                                <i class="bi bi-clock me-1"></i> Đang xử lý
+                                                            </span>
+                                                            break;
+                                                        case TradingPaymentStatus.DaXacNhan:
+                                                            <span class="badge bg-crimson">
+                                                                <i class="bi bi-check-circle me-1"></i> Đã duyệt
+                                                            </span>
+                                                            break;
+                                                        case TradingPaymentStatus.TuChoi:
+                                                            <span class="badge bg-dark">
+                                                                <i class="bi bi-x-circle me-1"></i> Bị từ chối
+                                                            </span>
+                                                            break;
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="9" class="text-center py-4">
+                                                <i class="bi bi-inbox fs-1 text-muted"></i>
+                                                <div class="text-muted mt-2">Chưa có yêu cầu rút tiền nào</div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="custom-toast-container"
+     class="toast-container position-fixed bottom-0 end-0 p-3"
+     style="z-index: 1055;">
+</div>
+<style>
+    .wallet-header {
+        background-color: #dc3545; /* đỏ */
+        padding: 10px 15px;
+        border-radius: 5px;
+    }
+
+        .wallet-header h4 {
+            color: white; /* chữ trắng nổi bật */
+            margin: 0;
+        }
+    .text-crimson {
+        color: #dc3545 !important;
+    }
+
+    .bg-crimson {
+        background-color: #dc3545 !important;
+    }
+
+    .btn-crimson {
+        background-color: #dc3545;
+        color: #fff;
+        border: none;
+    }
+
+        .btn-crimson:hover {
+            background-color: #b52a37;
+            color: #fff;
+        }
+
+    .border-crimson {
+        border-color: #dc3545 !important;
+    }
+
+    .withdrawal-form {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+    }
+
+    .table-responsive {
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+</style>
+<script>
+    function showCustomToast(message, isSuccess = false) {
+        const container = document.getElementById('custom-toast-container');
+        if (!container) return;
+
+        const toastId = `toast-${Date.now()}`;
+
+        const toastHTML = `
+                        <div id="${toastId}" class="toast custom-toast shadow-lg"
+                             role="alert" aria-live="assertive" aria-atomic="true"
+                             data-bs-autohide="true" data-bs-delay="3000">
+                            <div class="toast-header ${isSuccess ? "bg-success" : "bg-danger"} text-white">
+                                <img src="${isSuccess ? "/icons/happy.gif" : "/icons/sad.gif"}" class="rounded me-2" width="24" height="24">
+                                <strong class="me-auto">${isSuccess ? "Thành công" : "Lỗi"}</strong>
+                                <small>Vừa xong</small>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                            </div>
+                            <div class="toast-body">${message}</div>
+                        </div>`;
+
+        container.insertAdjacentHTML('beforeend', toastHTML);
+
+        const toastEl = document.getElementById(toastId);
+        const bsToast = new bootstrap.Toast(toastEl);
+        bsToast.show();
+
+        toastEl.addEventListener('hidden.bs.toast', () => {
+            toastEl.remove();
+        });
+    }
+
+</script>
+<!-- Bootstrap 5 JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>

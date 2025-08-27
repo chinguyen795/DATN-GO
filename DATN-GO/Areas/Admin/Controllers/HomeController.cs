@@ -1,4 +1,7 @@
-﻿using DATN_GO.Service;
+﻿using DATN_GO.Models;
+using DATN_GO.Service;
+using DATN_GO.Services;
+using DATN_GO.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DATN_GO.Areas.Admin.Controllers
@@ -9,6 +12,9 @@ namespace DATN_GO.Areas.Admin.Controllers
         private readonly StoreService _storeService;
         private readonly ProductService _productService;
         private readonly OrderService _orderService;
+        private readonly TradingPaymentService _tradingPaymentService;
+        private readonly UserTradingPaymentService _userTradingPaymentService;
+        public HomeController(StoreService storeService, ProductService productService, OrderService orderService, TradingPaymentService tradingPaymentService, UserTradingPaymentService userTradingPaymentService)
         private readonly DecoratesService _decorationService;
 
         public HomeController(StoreService storeService, ProductService productService, OrderService orderService, DecoratesService decorationService)
@@ -17,6 +23,8 @@ namespace DATN_GO.Areas.Admin.Controllers
             _productService = productService;
             _orderService = orderService;
             _decorationService = decorationService;
+            _tradingPaymentService = tradingPaymentService;
+            _userTradingPaymentService = userTradingPaymentService;
         }
 
         public async Task<IActionResult> Index()
@@ -54,6 +62,52 @@ namespace DATN_GO.Areas.Admin.Controllers
             // 🎁 bơm user info lên view (giống Decorates)
             ViewBag.UserInfo = user;
 
+            var payments = await _tradingPaymentService.GetAllAsync();
+            foreach (var p in payments)
+            {
+                Console.WriteLine($"PaymentId={p.Id}, Store={p.Store?.Bank} - {p.Store?.BankAccount}");
+            }
+            var paymentsWithBank = new List<TradingPaymentViewModel>();
+
+            foreach (var p in payments.Where(p => p.Status == TradingPaymentStatus.ChoXuLy))
+            {
+                var store = await _storeService.GetStoreByIdAsync(p.StoreId);
+
+                paymentsWithBank.Add(new TradingPaymentViewModel
+                {
+                    Id = p.Id,
+                    StoreId = p.StoreId,
+                    Cost = p.Cost,
+                    Date = p.Date,
+                    Status = p.Status,
+                    Bank = store?.Bank,
+                    BankAccount = store?.BankAccount,
+                    BankAccountOwner = store?.BankAccountOwner
+                });
+            }
+
+            ViewBag.PendingPayments = paymentsWithBank;
+
+            var userpayments = await _userTradingPaymentService.GetAllAsync();
+            var userpaymentsWithBank = new List<UserTradingPayment>();
+
+            foreach (var up in userpayments.Where(p => p.Status == TradingPaymentStatus.ChoXuLy))
+            {
+
+                userpaymentsWithBank.Add(new UserTradingPayment
+                {
+                    Id = up.Id,
+                    UserId = up.UserId,
+                    Cost = up.Cost,
+                    Date = up.Date,
+                    Status = up.Status,
+                    Bank = up.Bank,
+                    BankAccount = up.BankAccount,
+                    BankAccountOwner = up.BankAccountOwner
+                });
+            }
+
+            ViewBag.UserPendingPayments = userpaymentsWithBank;
             return View();
         }
 
@@ -118,5 +172,70 @@ namespace DATN_GO.Areas.Admin.Controllers
         }
 
 
+
+
+
+        [HttpPost]
+        public async Task<IActionResult> ConfirmPayment(int id)
+        {
+            var result = await _tradingPaymentService.ConfirmAsync(id);
+            if (result)
+            {
+                TempData["success"] = "Xác nhận thành công!";
+            }
+            else
+            {
+                TempData["error"] = "Xác nhận thất bại!";
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RejectPayment(int id)
+        {
+            var result = await _tradingPaymentService.RejectAsync(id);
+            if (result)
+            {
+                TempData["success"] = "Từ chối thành công!";
+            }
+            else
+            {
+                TempData["error"] = "Từ chối thất bại!";
+            }
+
+            return RedirectToAction("Index");
+        }
+        [HttpPost]
+        public async Task<IActionResult> UserConfirmPayment(int id)
+        {
+            var result = await _userTradingPaymentService.ConfirmAsync(id);
+            if (result)
+            {
+                TempData["success"] = "Xác nhận thành công!";
+            }
+            else
+            {
+                TempData["error"] = "Xác nhận thất bại!";
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UserRejectPayment(int id)
+        {
+            var result = await _userTradingPaymentService.RejectAsync(id);
+            if (result)
+            {
+                TempData["success"] = "Từ chối thành công!";
+            }
+            else
+            {
+                TempData["error"] = "Từ chối thất bại!";
+            }
+
+            return RedirectToAction("Index");
+        }
     }
 }

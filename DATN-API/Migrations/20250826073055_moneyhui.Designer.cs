@@ -4,6 +4,7 @@ using DATN_API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DATN_API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250826073055_moneyhui")]
+    partial class moneyhui
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -283,7 +286,7 @@ namespace DATN_API.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int?>("UserId")
+                    b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.Property<string>("Video")
@@ -1079,42 +1082,6 @@ namespace DATN_API.Migrations
                     b.ToTable("TradingPayments");
                 });
 
-            modelBuilder.Entity("DATN_API.Models.UserTradingPayment", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Bank")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("BankAccount")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("BankAccountOwner")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal?>("Cost")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserTradingPayments");
-                });
-
             modelBuilder.Entity("DATN_API.Models.UserVouchers", b =>
                 {
                     b.Property<int>("Id")
@@ -1154,9 +1121,6 @@ namespace DATN_API.Migrations
 
                     b.Property<string>("Avatar")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal?>("Balance")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime?>("BirthDay")
                         .HasColumnType("datetime2");
@@ -1454,7 +1418,8 @@ namespace DATN_API.Migrations
                     b.HasOne("DATN_API.Models.Users", "User")
                         .WithMany("Decorates")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("AdminSetting");
 
@@ -1793,17 +1758,6 @@ namespace DATN_API.Migrations
                     b.Navigation("Store");
                 });
 
-            modelBuilder.Entity("DATN_API.Models.UserTradingPayment", b =>
-                {
-                    b.HasOne("DATN_API.Models.Users", "User")
-                        .WithMany("UserTradingPayments")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("DATN_API.Models.UserVouchers", b =>
                 {
                     b.HasOne("DATN_API.Models.Users", "User")
@@ -2034,8 +1988,6 @@ namespace DATN_API.Migrations
                     b.Navigation("SentMessages");
 
                     b.Navigation("Store");
-
-                    b.Navigation("UserTradingPayments");
                 });
 
             modelBuilder.Entity("DATN_API.Models.Variants", b =>

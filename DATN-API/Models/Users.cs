@@ -54,6 +54,7 @@ namespace DATN_API.Models
         public GenderType Gender { get; set; }
         [MaxLength(12)]
         public string? CitizenIdentityCard { get; set; }
+        public decimal? Balance { get; set; }
         public DateTime CreateAt { get; set; }
         public DateTime UpdateAt { get; set; }
         public DateTime? BirthDay { get; set; }
@@ -77,6 +78,8 @@ namespace DATN_API.Models
         public ICollection<Orders>? Orders { get; set; }
         [JsonIgnore]
         public ICollection<Reviews>? Reviews { get; set; }
+        [JsonIgnore]
+        public ICollection<UserTradingPayment>? UserTradingPayments { get; set; }
     }
 
     public class GoogleLoginDto

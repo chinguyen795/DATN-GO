@@ -16,7 +16,7 @@
         public string? District { get; set; }
         public string? Province { get; set; }
         public string? PickupAddress { get; set; }
-
+        public decimal? MoneyAmout { get; set; }
         public DateTime? CreateAt { get; set; }
         public string Avatar { get; set; }
         public string CoverImage { get; set; }

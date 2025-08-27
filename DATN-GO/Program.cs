@@ -65,6 +65,8 @@ builder.Services.AddScoped<VariantValueService>();
 builder.Services.AddScoped<VariantCompositionService>();
 builder.Services.AddScoped<BlogService>();
 // Đăng ký HttpClient cho các Service
+builder.Services.AddHttpClient<UserTradingPaymentService>();
+builder.Services.AddHttpClient<TradingPaymentService>();
 builder.Services.AddHttpClient<AuthenticationService>();
 builder.Services.AddHttpClient<UserService>();
 builder.Services.AddHttpClient<CartService>();

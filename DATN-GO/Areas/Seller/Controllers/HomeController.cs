@@ -18,9 +18,11 @@ namespace DATN_GO.Areas.Seller.Controllers
         private readonly ProductService _productService;
         private readonly GoogleCloudStorageService _gcsService;
         private readonly ILogger<HomeController> _logger;
+        private readonly TradingPaymentService _tradingPaymentService;
         private readonly VoucherService _voucherService;
 
         public HomeController(StoreService storeService,OrderService orderSerivce, UserService userService, GoogleCloudStorageService gcsService, ILogger<HomeController> logger, ProductService productService, VoucherService voucherService)
+        public HomeController(StoreService storeService, OrderService orderSerivce, UserService userService, GoogleCloudStorageService gcsService, ILogger<HomeController> logger, ProductService productService, TradingPaymentService tradingPaymentService)
         {
             _storeService = storeService;
             _userService = userService;
@@ -29,6 +31,7 @@ namespace DATN_GO.Areas.Seller.Controllers
             _orderService = orderSerivce;
             _productService = productService;
             _voucherService = voucherService;
+            _tradingPaymentService = tradingPaymentService;
         }
 
         public async Task<IActionResult> Index()
@@ -52,158 +55,148 @@ namespace DATN_GO.Areas.Seller.Controllers
             ViewBag.StoreId = storeInfo.StoreId;
             ViewBag.StoreName = storeInfo.StoreName;
 
-            var uid = int.Parse(userId);
-            var user = await _userService.GetUserByIdAsync(uid);
-            var store = await _storeService.GetStoreByUserIdAsync(uid);
+            var user = await _userService.GetUserByIdAsync(int.Parse(userId));
+            var store = await _storeService.GetStoreByUserIdAsync(int.Parse(userId));
 
             if (user == null || store == null) return NotFound();
 
             var vm = new StoreProfileViewModel
             {
-                // Users
                 FullName = user.FullName,
                 Email = user.Email,
                 Phone = user.Phone,
                 UserAvatar = user.Avatar,
 
-                // Stores
                 StoreName = store.Name,
-                // BỎ Address, thay bằng các trường mới
                 Ward = store.Ward,
                 District = store.District,
                 Province = store.Province,
                 PickupAddress = store.PickupAddress,
-
                 CreateAt = store.CreateAt,
                 Avatar = store.Avatar,
                 CoverImage = store.CoverPhoto,
                 Bank = store.Bank,
                 BankAccount = store.BankAccount
             };
-
             ViewBag.BankList = new List<SelectListItem>
-    {
-        new SelectListItem { Value = "ACB", Text = "Ngân hàng Á Châu (ACB)" },
-        new SelectListItem { Value = "Agribank", Text = "Ngân hàng Nông nghiệp (Agribank)" },
-        new SelectListItem { Value = "BIDV", Text = "Ngân hàng Đầu tư & Phát triển Việt Nam (BIDV)" },
-        new SelectListItem { Value = "DongA", Text = "Ngân hàng Đông Á (DongA Bank)" },
-        new SelectListItem { Value = "Eximbank", Text = "Ngân hàng Xuất Nhập Khẩu (Eximbank)" },
-        new SelectListItem { Value = "HDBank", Text = "Ngân hàng Phát triển TP.HCM (HDBank)" },
-        new SelectListItem { Value = "LienVietPostBank", Text = "Ngân hàng Bưu điện Liên Việt (LienVietPostBank)" },
-        new SelectListItem { Value = "MB", Text = "Ngân hàng Quân Đội (MB)" },
-        new SelectListItem { Value = "OCB", Text = "Ngân hàng Phương Đông (OCB)" },
-        new SelectListItem { Value = "Sacombank", Text = "Ngân hàng Sài Gòn Thương Tín (Sacombank)" },
-        new SelectListItem { Value = "SeABank", Text = "Ngân hàng Đông Nam Á (SeABank)" },
-        new SelectListItem { Value = "SHB", Text = "Ngân hàng Sài Gòn - Hà Nội (SHB)" },
-        new SelectListItem { Value = "Techcombank", Text = "Ngân hàng Kỹ Thương (Techcombank)" },
-        new SelectListItem { Value = "TPBank", Text = "Ngân hàng Tiên Phong (TPBank)" },
-        new SelectListItem { Value = "VIB", Text = "Ngân hàng Quốc tế (VIB)" },
-        new SelectListItem { Value = "VietABank", Text = "Ngân hàng Việt Á (VietABank)" },
-        new SelectListItem { Value = "VietBank", Text = "Ngân hàng Việt Nam Thương Tín (VietBank)" },
-        new SelectListItem { Value = "Vietcombank", Text = "Ngân hàng Ngoại thương Việt Nam (Vietcombank)" },
-        new SelectListItem { Value = "VietinBank", Text = "Ngân hàng Công Thương Việt Nam (VietinBank)" },
-        new SelectListItem { Value = "VPBank", Text = "Ngân hàng Việt Nam Thịnh Vượng (VPBank)" }
-    };
+{
+    new SelectListItem { Value = "ACB", Text = "Ngân hàng Á Châu (ACB)" },
+    new SelectListItem { Value = "Agribank", Text = "Ngân hàng Nông nghiệp (Agribank)" },
+    new SelectListItem { Value = "BIDV", Text = "Ngân hàng Đầu tư & Phát triển Việt Nam (BIDV)" },
+    new SelectListItem { Value = "DongA", Text = "Ngân hàng Đông Á (DongA Bank)" },
+    new SelectListItem { Value = "Eximbank", Text = "Ngân hàng Xuất Nhập Khẩu (Eximbank)" },
+    new SelectListItem { Value = "HDBank", Text = "Ngân hàng Phát triển TP.HCM (HDBank)" },
+    new SelectListItem { Value = "LienVietPostBank", Text = "Ngân hàng Bưu điện Liên Việt (LienVietPostBank)" },
+    new SelectListItem { Value = "MB", Text = "Ngân hàng Quân Đội (MB)" },
+    new SelectListItem { Value = "OCB", Text = "Ngân hàng Phương Đông (OCB)" },
+    new SelectListItem { Value = "Sacombank", Text = "Ngân hàng Sài Gòn Thương Tín (Sacombank)" },
+    new SelectListItem { Value = "SeABank", Text = "Ngân hàng Đông Nam Á (SeABank)" },
+    new SelectListItem { Value = "SHB", Text = "Ngân hàng Sài Gòn - Hà Nội (SHB)" },
+    new SelectListItem { Value = "Techcombank", Text = "Ngân hàng Kỹ Thương (Techcombank)" },
+    new SelectListItem { Value = "TPBank", Text = "Ngân hàng Tiên Phong (TPBank)" },
+    new SelectListItem { Value = "VIB", Text = "Ngân hàng Quốc tế (VIB)" },
+    new SelectListItem { Value = "VietABank", Text = "Ngân hàng Việt Á (VietABank)" },
+    new SelectListItem { Value = "VietBank", Text = "Ngân hàng Việt Nam Thương Tín (VietBank)" },
+    new SelectListItem { Value = "Vietcombank", Text = "Ngân hàng Ngoại thương Việt Nam (Vietcombank)" },
+    new SelectListItem { Value = "VietinBank", Text = "Ngân hàng Công Thương Việt Nam (VietinBank)" },
+    new SelectListItem { Value = "VPBank", Text = "Ngân hàng Việt Nam Thịnh Vượng (VPBank)" }
+};
+            ViewBag.StoreId = store.Id;
+            ViewBag.MoneyAmout = store.MoneyAmout;
+            var storeId = store.Id;
+            var totalProducts = await _productService.GetProductCountByStoreIdAsync(storeId);
+            ViewBag.TotalProductsInStore = totalProducts;
+            var totalOrders = await _orderService.GetTotalOrdersByStoreIdAsync(storeId);
+            ViewBag.TotalOrders = totalOrders;
+            var payments = await _tradingPaymentService.GetByStoreIdAsync(storeId);
+
+            ViewBag.TradingPayments = payments;
+            ViewBag.StoreId = storeId;
 
             return View(vm);
         }
-
         [HttpPost]
-        public async Task<IActionResult> UpdateBasicInfo(
-            string FullName,
-            string Email,
-            string Phone,
-            string StoreName,
-            string Ward,
-            string District,
-            string Province,
-            string PickupAddress)
+        public async Task<IActionResult> UpdateBasicInfo(string FullName, string Email, string Phone, string Address, string StoreName)
         {
-            // Validate Users
             if (string.IsNullOrWhiteSpace(FullName))
             {
-                TempData["Error"] = "Họ tên không được để trống.";
+                TempData["ToastMessage"] = "Họ tên không được để trống.";
+                TempData["ToastType"] = "danger";
                 return RedirectToAction("Index");
             }
 
             if (string.IsNullOrWhiteSpace(Email))
             {
-                TempData["Error"] = "Email không được để trống.";
+                TempData["ToastMessage"] = "Email không được để trống.";
+                TempData["ToastType"] = "danger";
                 return RedirectToAction("Index");
             }
 
             if (string.IsNullOrWhiteSpace(Phone))
             {
-                TempData["Error"] = "Số điện thoại không được để trống.";
+                TempData["ToastMessage"] = "Số điện thoại không được để trống.";
+                TempData["ToastType"] = "danger";
                 return RedirectToAction("Index");
             }
             else if (!Phone.All(char.IsDigit))
             {
-                TempData["Error"] = "Số điện thoại chỉ được chứa số.";
+                TempData["ToastMessage"] = "Số điện thoại chỉ được chứa số.";
+                TempData["ToastType"] = "danger";
                 return RedirectToAction("Index");
             }
 
-            // Validate Stores
-            if (string.IsNullOrWhiteSpace(PickupAddress))
+            if (string.IsNullOrWhiteSpace(Address))
             {
-                TempData["Error"] = "Địa chỉ lấy hàng không được để trống.";
-                return RedirectToAction("Index");
-            }
-            if (string.IsNullOrWhiteSpace(Ward) ||
-                string.IsNullOrWhiteSpace(District) ||
-                string.IsNullOrWhiteSpace(Province))
-            {
-                TempData["Error"] = "Phường/Xã, Quận/Huyện, Tỉnh/Thành phố không được để trống.";
+                TempData["ToastMessage"] = "Địa chỉ không được để trống.";
+                TempData["ToastType"] = "danger";
                 return RedirectToAction("Index");
             }
 
             var userId = HttpContext.Session.GetString("Id");
             if (string.IsNullOrEmpty(userId)) return RedirectToAction("Login", "Account");
 
-            var uid = int.Parse(userId);
-            var user = await _userService.GetUserByIdAsync(uid);
-            var store = await _storeService.GetStoreByUserIdAsync(uid);
+            var user = await _userService.GetUserByIdAsync(int.Parse(userId));
+            var store = await _storeService.GetStoreByUserIdAsync(int.Parse(userId));
 
             if (user == null || store == null)
             {
-                TempData["Error"] = "Không tìm thấy tài khoản hoặc cửa hàng.";
+                TempData["ToastMessage"] = "Không tìm thấy tài khoản hoặc cửa hàng.";
+                TempData["ToastType"] = "danger";
                 return RedirectToAction("Index");
             }
 
-            // Update Users
             user.FullName = FullName;
             user.Email = Email;
             user.Phone = Phone;
             await _userService.UpdateUserAsync(user.Id, user);
 
-            // Update Stores
             store.Name = StoreName;
-            store.Ward = Ward;
-            store.District = District;
-            store.Province = Province;
-            store.PickupAddress = PickupAddress;
+            store.Address = Address;
             await _storeService.UpdateStoreAsync(store.Id, store);
 
-            TempData["Success"] = "Cập nhật thông tin thành công!";
+            TempData["ToastMessage"] = "Cập nhật thông tin thành công!";
+            TempData["ToastType"] = "success";
             return RedirectToAction("Index");
         }
-
 
         [HttpPost]
         public async Task<IActionResult> UpdatePaymentInfo(string Bank, string BankAccount)
         {
             if (string.IsNullOrWhiteSpace(Bank))
             {
-                TempData["Error"] = "Ngân hàng không được để trống.";
+                TempData["ToastMessage"] = "Ngân hàng không được để trống.";
+                TempData["ToastType"] = "danger";
             }
 
             if (string.IsNullOrWhiteSpace(BankAccount))
             {
-                TempData["Error"] = "Số tài khoản không được để trống.";
+                TempData["ToastMessage"] = "Số tài khoản không được để trống.";
+                TempData["ToastType"] = "danger";
             }
             else if (!BankAccount.All(char.IsDigit))
             {
-                TempData["Error"] = "Số tài khoản chỉ được chứa số.";
+                TempData["ToastMessage"] = "Số tài khoản chỉ được chứa số.";
+                TempData["ToastType"] = "danger";
             }
 
             var userId = HttpContext.Session.GetString("Id");
@@ -212,7 +205,8 @@ namespace DATN_GO.Areas.Seller.Controllers
             var store = await _storeService.GetStoreByUserIdAsync(int.Parse(userId));
             if (store == null)
             {
-                TempData["Error"] = "Không tìm thấy cửa hàng.";
+                TempData["ToastMessage"] = "Không tìm thấy cửa hàng.";
+                TempData["ToastType"] = "danger";
                 return RedirectToAction("Index");
             }
 
@@ -220,7 +214,8 @@ namespace DATN_GO.Areas.Seller.Controllers
             store.BankAccount = BankAccount;
             await _storeService.UpdateStoreAsync(store.Id, store);
 
-            TempData["Success"] = "Cập nhật thông tin thanh toán thành công!";
+            TempData["ToastMessage"] = "Cập nhật thông tin thanh toán thành công!";
+            TempData["ToastType"] = "success";
             return RedirectToAction("Index");
         }
         [HttpPost]
@@ -247,7 +242,8 @@ namespace DATN_GO.Areas.Seller.Controllers
 
                 await _storeService.UpdateStoreAsync(store.Id, store);
 
-                TempData["Success"] = "Cập nhật ảnh thành công!";
+                TempData["ToastMessage"] = "Cập nhật ảnh thành công!";
+                TempData["ToastType"] = "success";
                 return Ok();
             }
             catch (Exception ex)
@@ -276,7 +272,6 @@ namespace DATN_GO.Areas.Seller.Controllers
 
             return Json(result);
         }
-        // Đăng xuất
         [HttpGet]
         public IActionResult Logout()
         {
@@ -287,5 +282,56 @@ namespace DATN_GO.Areas.Seller.Controllers
 
             return RedirectToAction("Index", "Home", new { area = "" });
         }
+        public async Task<IActionResult> CreatePayment(int storeId)
+        {
+            var userId = HttpContext.Session.GetString("Id");
+            if (string.IsNullOrEmpty(userId))
+                return RedirectToAction("Index", "Home");
+
+            var user = await _userService.GetUserByIdAsync(int.Parse(userId));
+            var store = await _storeService.GetStoreByUserIdAsync(int.Parse(userId));
+            if (store == null)
+            {
+                return NotFound("Store not found");
+            }
+
+            // ❌ Kiểm tra số dư
+            if (store.MoneyAmout == null || store.MoneyAmout < 200000)
+            {
+                TempData["error"] = "Số dư phải lớn hơn hoặc bằng 200,000 đồng mới có thể rút.";
+                return RedirectToAction("Index", new { storeId = store.Id });
+            }
+
+            // ❌ Kiểm tra còn payment Chờ Xử Lý không
+            var existingPayments = await _tradingPaymentService.GetByStoreIdAsync(store.Id);
+            if (existingPayments.Any(p => p.Status == TradingPaymentStatus.ChoXuLy))
+            {
+                TempData["error"] = "Bạn đang có yêu cầu rút tiền Chờ Xử Lý. Vui lòng chờ xử lý xong trước khi tạo yêu cầu mới.";
+                return RedirectToAction("Index", new { storeId = store.Id });
+            }
+
+            // ✅ tạo payment mới
+            var payment = new TradingPayment
+            {
+                StoreId = store.Id,
+                Date = DateTime.Now,
+                Cost = store.MoneyAmout.Value,
+                Status = TradingPaymentStatus.ChoXuLy
+            };
+
+            var result = await _tradingPaymentService.CreateAsync(payment);
+
+            if (result)
+            {
+                TempData["success"] = "Yêu cầu rút tiền đã được gửi.";
+            }
+            else
+            {
+                TempData["error"] = "Tạo yêu cầu thất bại.";
+            }
+
+            return RedirectToAction("Index", new { storeId = store.Id });
+        }
+
     }
 }

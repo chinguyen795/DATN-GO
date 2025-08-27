@@ -26,7 +26,8 @@ namespace DATN_API.Data
         public DbSet<Products> Products { get; set; }
         public DbSet<Stores> Stores { get; set; }
         public DbSet<Variants> Variants { get; set; }
-
+        public DbSet<TradingPayment> TradingPayments { get; set; }
+        public DbSet<UserTradingPayment> UserTradingPayments { get; set; }
         public DbSet<VariantValues> VariantValues { get; set; }
         public DbSet<ProductVariants> ProductVariants { get; set; }
         public DbSet<VariantComposition> VariantCompositions { get; set; }
@@ -238,6 +239,24 @@ namespace DATN_API.Data
                 .WithMany(p => p.OrderDetails)
                 .HasForeignKey(od => od.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<TradingPayment>(entity =>
+            {
+                entity.Property(tp => tp.Status)
+                      .HasConversion<int>();
+                entity.HasOne(tp => tp.Store)
+                      .WithMany(s => s.TradingPayments)
+                      .HasForeignKey(tp => tp.StoreId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+            modelBuilder.Entity<UserTradingPayment>(entity =>
+            {
+                entity.Property(tp => tp.Status)
+                      .HasConversion<int>();
+                entity.HasOne(tp => tp.User)
+                      .WithMany(s => s.UserTradingPayments)
+                      .HasForeignKey(tp => tp.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
         }
     }
 }

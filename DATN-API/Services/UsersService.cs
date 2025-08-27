@@ -45,6 +45,7 @@ namespace DATN_API.Services
             user.Phone = model.Phone?.Trim();
             user.Avatar = model.Avatar?.Trim();
             user.Status = model.Status;
+            user.Balance = model.Balance;
             user.Gender = model.Gender;
             user.CitizenIdentityCard = model.CitizenIdentityCard?.Trim();
             user.BirthDay = model.BirthDay;

@@ -101,7 +101,13 @@ namespace DATN_API.Controllers
                 });
             }
             await _db.SaveChangesAsync();
-
+            var store = await _db.Stores.FirstOrDefaultAsync(s => s.Id == representativeStoreId);
+            if (store != null)
+            {
+                store.MoneyAmout = (store.MoneyAmout ?? 0) + grandTotal;
+                _db.Stores.Update(store);
+                await _db.SaveChangesAsync();
+            }
             // 4) Gọi service tạo paymentUrl
             var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
             var paymentUrl = _vnp.CreatePaymentUrl(new VnpCreatePaymentRequest

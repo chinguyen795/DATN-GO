@@ -440,7 +440,15 @@ namespace DATN_GO.Service
                     g => (Avg: g.Average(x => x.Rating), Count: g.Count())
                 );
         }
+        public async Task<List<Stores>> GetStoresByIdsAsync(List<int> storeIds)
+        {
+            var response = await _httpClient.PostAsJsonAsync($"{_baseUrl}Stores/GetStoresByIds", storeIds);
 
+            if (!response.IsSuccessStatusCode)
+                return new List<Stores>();
+
+            return await response.Content.ReadFromJsonAsync<List<Stores>>();
+        }
 
     }
 }

@@ -24,5 +24,6 @@ namespace DATN_API.Interfaces
         Task<bool> UpdateStatusAsync(int id, string status);
         Task<AdminStorelViewModels?> GetAdminDetailAsync(int id);
         Task<IEnumerable<AdminStorelViewModels>> GetAllAdminStoresAsync();
+        Task<List<Stores>> GetStoresByIdsAsync(List<int> storeIds);
     }
 }

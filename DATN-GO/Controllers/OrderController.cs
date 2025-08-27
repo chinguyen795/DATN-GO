@@ -1,6 +1,6 @@
 ﻿using DATN_GO.Service;
 using DATN_GO.ViewModels;
-using DATN_GO.ViewModels.Orders;   // <-- THÊM: để dùng OrderDetailVM
+using DATN_GO.ViewModels.Orders;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -21,39 +21,34 @@ namespace DATN_GO.Controllers
         // GET: /Order/DetailOrder/{id}
         public async Task<IActionResult> DetailOrder(int id)
         {
-            // Lấy userId từ session
             var userIdStr = HttpContext.Session.GetString("Id");
             if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
                 return Redirect("https://localhost:7180/Login");
 
-            // Lấy OrderDetailVM đã map sẵn (Items, ItemsTotal, DeliveryFee, TotalPrice, LabelId...)
-            var order = await _orderService.GetOrderDetailByIdAsync(id, userId);
+            // Lấy OrderDetailVM trong DATN_GO.ViewModels
+            OrderDetailVM order = await _orderService.GetOrderDetailByIdAsync(id, userId);
             if (order == null)
             {
                 TempData["ErrorMessage"] = "Không tìm thấy đơn hàng hoặc bạn không có quyền truy cập.";
                 return RedirectToAction("Index");
             }
 
-            // Fallback: nếu TotalPrice từ API = 0, tự cộng cho chắc
             if (order.TotalPrice <= 0)
             {
                 var itemsTotal = order.ItemsTotal;
                 order.TotalPrice = itemsTotal + order.DeliveryFee;
             }
 
-            // Thông tin hiển thị phụ
             ViewBag.UserFullName = HttpContext.Session.GetString("FullName") ?? "N1";
             ViewBag.UserNickName = HttpContext.Session.GetString("Email") ?? "u2";
             ViewBag.Crimson = "#dc143c";
 
-            // (tuỳ chọn) Tracking link nếu có LabelId
-            // Ví dụ với GHTK web: https://khachhang-staging.ghtklab.com/web/ (bạn có thể map theo môi trường)
             if (!string.IsNullOrWhiteSpace(order.LabelId))
             {
-                ViewBag.TrackingUrl = $"https://khachhang-staging.ghtklab.com/web/"; // có thể thay bằng URL tracking cụ thể nếu bạn có
+                ViewBag.TrackingUrl = $"https://khachhang-staging.ghtklab.com/web/";
             }
 
-            return View(order); // View dùng @model DATN_GO.ViewModels.Orders.OrderDetailVM
+            return View(order); // trả về OrderDetailVM (DATN_GO.ViewModels)
         }
 
         // GET: /Order

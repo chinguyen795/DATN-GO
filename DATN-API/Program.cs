@@ -45,6 +45,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.Configure<EmailSettings>(
     builder.Configuration.GetSection("EmailSettings")
 );
+builder.Services.AddScoped<IUserTradingPaymentService, UserTradingPaymentService>();
+builder.Services.AddScoped<ITradingPaymentService, TradingPaymentService>();
 builder.Services.AddScoped<IRolesService, RolesService>();
 builder.Services.AddScoped<IVouchersService, VouchersService>();
 builder.Services.AddScoped<ICategoriesService, CategoriesService>();

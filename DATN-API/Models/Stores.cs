@@ -35,16 +35,16 @@ namespace DATN_API.Models
 
         [MaxLength]
         public string? Address { get; set; }
-        public string? PickupAddress { get; set; } 
-        public string? Ward { get; set; }          
-        public string? District { get; set; }    
-        public string? Province { get; set; }       
+        public string? PickupAddress { get; set; }
+        public string? Ward { get; set; }
+        public string? District { get; set; }
+        public string? Province { get; set; }
         public float Longitude { get; set; }
         public float Latitude { get; set; }
         public string? Phone { get; set; }
         [MaxLength]
         public string? Avatar { get; set; }
-
+        public decimal? MoneyAmout {  get; set; }
         public StoreStatus Status { get; set; }
 
         public string? Slug { get; set; }
@@ -73,5 +73,7 @@ namespace DATN_API.Models
         public ICollection<Products>? Products { get; set; }
         [JsonIgnore]
         public ICollection<ShippingMethods>? ShippingMethods { get; set; }
+        [JsonIgnore]
+        public ICollection<TradingPayment>? TradingPayments { get; set; }
     }
 }
