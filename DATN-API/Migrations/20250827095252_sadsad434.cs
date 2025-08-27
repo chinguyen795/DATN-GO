@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DATN_API.Migrations
 {
     /// <inheritdoc />
-    public partial class demo : Migration
+    public partial class sadsad434 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -504,9 +504,9 @@ namespace DATN_API.Migrations
                     Quantity = table.Column<int>(type: "int", nullable: false),
                     IsPercentage = table.Column<bool>(type: "bit", nullable: false),
                     MaxDiscount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    UsedCount = table.Column<int>(type: "int", nullable: false),
-                    CreatedByUserId = table.Column<int>(type: "int", nullable: false),
-                    CreatedByRoleId = table.Column<int>(type: "int", nullable: false)
+                    UsedCount = table.Column<int>(type: "int", nullable: true),
+                    CreatedByUserId = table.Column<int>(type: "int", nullable: true),
+                    CreatedByRoleId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {

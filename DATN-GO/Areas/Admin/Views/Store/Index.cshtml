@@ -239,9 +239,7 @@
                                 <div class="card card-default">
                                     <div class="card-header d-flex justify-content-between align-items-center">
                                         <h5 class="mb-0">Danh sách sản phẩm</h5>
-                                        <button class="btn btn-sm btn-primary">
-                                            <i class="mdi mdi-plus"></i> Thêm sản phẩm
-                                        </button>
+                                       
                                     </div>
                                     <div class="card-body">
                                         <div class="table-responsive">
@@ -550,6 +548,286 @@
                     $("#bankBranch").text(store.bankBranch || "Chưa cập nhật");
 
                     // === STATS ===
+                    $("#productCount").text(store.products?.length || 0);
+                    $("#orderCount").text(store.orders?.length || 0);
+                    $("#revenueCount").text(
+                        store.orders?.reduce((sum, o) => sum + o.totalAmount, 0).toLocaleString() || 0
+                    );
+
+                    // Reset về tab sản phẩm
+                    $('.nav-link').removeClass('active');
+                    $('.tab-pane').removeClass('show active');
+                    $('#products-tab').addClass('active');
+                    $('#products').addClass('show active');
+                },
+                error: function () {
+                    console.error("Không load được chi tiết cửa hàng");
+                }
+            });
+        }
+    </script>
+
+    <!-- Thêm modal này vào cuối trang Store management, trước tag </div> cuối -->
+    <!-- Modal chi tiết sản phẩm -->
+    <div class="modal fade" id="productDetailModal" tabindex="-1" role="dialog" aria-hidden="true" aria-labelledby="productDetailModalTitle" aria-describedby="productDetailModalDesc">
+        <div class="modal-dialog modal-dialog-scrollable modal-xl" role="document">
+            <div class="modal-content modal-product">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title" id="productDetailModalTitle">Chi tiết sản phẩm</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div id="productDetailModalBody" class="modal-body">
+                    <p id="productDetailModalDesc" class="sr-only">Thông tin đầy đủ sản phẩm, thuộc tính và các biến thể.</p>
+                    <div class="text-center py-4" id="productDetailLoading">
+                        <div class="spinner-border" role="status" aria-label="Đang tải"></div>
+                        <div class="mt-2">Đang tải...</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .modal-product .product-hero img {
+            max-height: 260px;
+            object-fit: contain;
+        }
+
+        .modal-product figure {
+            margin: 0;
+        }
+
+        .modal-product .thumbs img {
+            width: 84px;
+            height: 84px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .modal-product .meta dl {
+            display: grid;
+            grid-template-columns: 160px 1fr;
+            gap: 8px 16px;
+        }
+
+        .modal-product .meta dt {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .modal-product .meta dd {
+            margin: 0;
+        }
+
+        .modal-product .badge-soft {
+            background: #eef2ff;
+            color: #3b82f6;
+        }
+
+        .modal-product .kv {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: #f6f7f9;
+            font-size: 12px;
+        }
+
+        .modal-product .table caption {
+            caption-side: top;
+            text-align: left;
+            color: #6b7280;
+        }
+    </style>
+
+    <script>
+        // Thêm vào phần JavaScript của trang Store management
+
+        // Function để hiển thị chi tiết sản phẩm
+        function showProductDetail(productId) {
+            const modal = $('#productDetailModal');
+            const body = document.getElementById('productDetailModalBody');
+
+            // Tạo loading element mới mỗi lần
+            const loadingHTML = `
+                <div class="text-center py-4" id="productDetailLoading">
+                    <div class="spinner-border" role="status" aria-label="Đang tải"></div>
+                    <div class="mt-2">Đang tải...</div>
+                </div>
+            `;
+
+            // Reset UI với loading mới
+            body.innerHTML = loadingHTML;
+
+            // Mở modal
+            modal.modal('show');
+
+            // Gọi API để lấy chi tiết sản phẩm
+            $.ajax({
+                url: `/Admin/Product/GetProductDetail/${productId}`,
+                type: 'GET',
+                success: function (data) {
+                    if (data.error) {
+                        body.innerHTML = `<div class="alert alert-danger">${data.message || 'Có lỗi xảy ra'}</div>`;
+                        return;
+                    }
+
+                    // Render nội dung chi tiết
+                    body.innerHTML = `
+                        <div class="row">
+                            <div class="col-md-5 text-center product-hero mb-3">
+                                <img src="${data.mainImage || '/images/no-image.png'}"
+                                     alt="${data.name || 'Sản phẩm'}"
+                                     class="img-fluid rounded shadow-sm"
+                                     style="max-height:280px;object-fit:contain"/>
+                            </div>
+                            <div class="col-md-7">
+                                <h4 class="mb-3">${data.name || 'Chưa có tên'}</h4>
+                                <div class="meta mb-3">
+                                    <dl>
+                                        <dt>Xuất xứ</dt><dd>${data.placeoforigin || 'Chưa có'}</dd>
+                                        <dt>Thương hiệu</dt><dd>${data.brand || 'Chưa có'}</dd>
+                                        <dt>Tổng số lượng</dt><dd>${data.totalQuantity || 0}</dd>
+                                        <dt>Giá</dt><dd>${data.price > 0 ? data.price.toLocaleString('vi-VN') + ' ₫' : 'Chưa có giá'}</dd>
+                                        <dt>Ngày tạo</dt><dd>${data.createat || 'Chưa có'}</dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                        <h6 class="mt-4">${data.variantName1 || 'Biến thể 1'} ${data.variantName2 ? ' / ' + data.variantName2 : ''}</h6>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-sm">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>${data.variantName1 || 'Biến thể 1'}</th>
+                                        <th>${data.variantName2 || 'Biến thể 2'}</th>
+                                        <th>Giá vốn</th>
+                                        <th>Giá bán</th>
+                                        <th>Số lượng</th>
+                                        <th>Khối lượng (g)</th>
+                                        <th>Kích thước (cm)</th>
+                                        <th>Ảnh</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.variants && data.variants.length > 0
+                            ? data.variants.map(v => `
+                                            <tr>
+                                                <td>${v.variantValue1 || ''}</td>
+                                                <td>${v.variantValue2 || ''}</td>
+                                                <td>${(v.costPrice || 0).toLocaleString('vi-VN')} ₫</td>
+                                                <td>${(v.price || 0).toLocaleString('vi-VN')} ₫</td>
+                                                <td>${v.quantity || 0}</td>
+                                                <td>${v.weight || 0}</td>
+                                                <td>${(v.length || 0)} x ${(v.width || 0)} x ${(v.height || 0)}</td>
+                                                <td>${v.image
+                                    ? `<img src="${v.image}" class="img-thumbnail" style="width:50px;height:50px;object-fit:cover"/>`
+                                    : 'Không có'}</td>
+                                            </tr>
+                                        `).join('')
+                            : `<tr><td colspan="8" class="text-center text-muted">Không có biến thể</td></tr>`}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error loading product detail:', error);
+                    body.innerHTML = `<div class="alert alert-danger">Lỗi tải dữ liệu chi tiết. Vui lòng thử lại.</div>`;
+                }
+            });
+        }
+
+        // Cập nhật function loadStoreData để thêm sự kiện click vào nút "Chi tiết"
+        function loadStoreData(storeId) {
+            $.ajax({
+                url: `/Admin/Store/GetDetail/${storeId}`,
+                type: "GET",
+                success: function (store) {
+                    // === PRODUCTS ===
+                    let productsHtml = "";
+                    if (store.products && store.products.length > 0) {
+                        store.products.forEach(p => {
+                            let priceDisplay = p.minPrice && p.maxPrice && p.minPrice !== p.maxPrice
+                                ? `${p.minPrice.toLocaleString()} - ${p.maxPrice.toLocaleString()} đ`
+                                : `${(p.price || 0).toLocaleString()} đ`;
+
+                            let statusHtml = "";
+                            switch (p.status) {
+                                case "Pending": statusHtml = '<span class="badge badge-warning">Chờ duyệt</span>'; break;
+                                case "Approved": statusHtml = '<span class="badge badge-success">Đã duyệt</span>'; break;
+                                default: statusHtml = '<span class="badge badge-secondary">Ẩn</span>'; break;
+                            }
+
+                            productsHtml += `
+                                <tr>
+                                    <td>${p.id}</td>
+                                    <td><img src="${p.image}" width="50" class="rounded"/></td>
+                                    <td>${p.name}</td>
+                                    <td>${priceDisplay}</td>
+                                    <td>${p.stock}</td>
+                                    <td>${p.category}</td>
+                                    <td>${statusHtml}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-info btn-product-detail" data-product-id="${p.id}">
+                                            <i class="mdi mdi-eye-outline"></i> Chi tiết
+                                        </button>
+                                    </td>
+                                </tr>`;
+                        });
+                    } else {
+                        productsHtml = `<tr><td colspan="8" class="text-center text-muted">Chưa có sản phẩm nào</td></tr>`;
+                    }
+                    $("#productsTableBody").html(productsHtml);
+
+                    // Thêm sự kiện click cho các nút chi tiết sản phẩm
+                    $('.btn-product-detail').on('click', function () {
+                        const productId = $(this).data('product-id');
+                        showProductDetail(productId);
+                    });
+
+                    // === ORDERS === (giữ nguyên code cũ)
+                    let ordersHtml = "";
+                    if (store.orders && store.orders.length > 0) {
+                        store.orders.forEach(o => {
+                            let statusHtml = "";
+                            switch (o.status) {
+                                case "ChoXuLy": statusHtml = '<span class="badge badge-warning">Chờ xử lý</span>'; break;
+                                case "ChoLayHang": statusHtml = '<span class="badge badge-info">Chờ lấy hàng</span>'; break;
+                                case "DangGiao": statusHtml = '<span class="badge badge-primary">Đang giao</span>'; break;
+                                case "DaHoanThanh": statusHtml = '<span class="badge badge-success">Hoàn tất</span>'; break;
+                                case "DaHuy": statusHtml = '<span class="badge badge-danger">Đã hủy</span>'; break;
+                                default: statusHtml = '<span class="badge badge-secondary">Không rõ</span>'; break;
+                            }
+
+                            ordersHtml += `
+                                <tr>
+                                    <td>${o.id}</td>
+                                    <td>${o.customerName}</td>
+                                    <td>${new Date(o.createAt).toLocaleDateString("vi-VN")}</td>
+                                    <td>${o.totalAmount.toLocaleString()} đ</td>
+                                    <td>${statusHtml}</td>
+                                    <td><button class="btn btn-sm btn-outline-primary">Xem</button></td>
+                                </tr>`;
+                        });
+                    } else {
+                        ordersHtml = `<tr><td colspan="6" class="text-center text-muted">Chưa có đơn hàng nào</td></tr>`;
+                    }
+                    $("#ordersTableBody").html(ordersHtml);
+
+                    // === PAYMENT INFO === (giữ nguyên code cũ)
+                    $("#bankName").text(store.bankName || "Chưa cập nhật");
+                    $("#accountNumber").text(store.bankAccount || "Chưa cập nhật");
+                    $("#accountHolder").text(store.accountHolder || "Chưa cập nhật");
+                    $("#bankBranch").text(store.bankBranch || "Chưa cập nhật");
+
+                    // === STATS === (giữ nguyên code cũ)
                     $("#productCount").text(store.products?.length || 0);
                     $("#orderCount").text(store.orders?.length || 0);
                     $("#revenueCount").text(
