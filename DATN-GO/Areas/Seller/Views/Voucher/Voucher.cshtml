@@ -1,11 +1,10 @@
 ﻿@model List<DATN_GO.Models.Vouchers>
 @{
     Layout = "~/Areas/Seller/Views/Shared/_LayoutSeller.cshtml";
-}
-@{
     var currentPage = ViewBag.CurrentPage ?? 1;
     var totalPages = ViewBag.TotalPages ?? 1;
 }
+
 <style>
     .card.hover-shadow-lg {
         transition: all 0.3s ease;
@@ -13,15 +12,13 @@
 
         .card.hover-shadow-lg:hover {
             transform: translateY(-5px);
-            box-shadow: 0 1rem 3rem rgba(0, 0, 0, .175) !important;
+            box-shadow: 0 1rem 3rem rgba(0,0,0,.175) !important;
         }
 
-    /* Search and Sort styles */
-    .form-select,
-    .form-control {
+    .form-select, .form-control {
         border-radius: 4px;
         height: 38px;
-        font-size: 0.9rem;
+        font-size: .9rem;
         border: 1px solid #ced4da;
     }
 
@@ -35,38 +32,35 @@
             outline: none;
         }
 
-    /* Rest of the existing styles */
     .transition-all {
-        transition: all 0.3s ease;
+        transition: all .3s ease;
     }
 
-    .card .btn-outline-warning,
-    .card .btn-outline-danger {
+    .card .btn-outline-warning, .card .btn-outline-danger {
         width: 32px;
         height: 32px;
         padding: 0;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: all 0.2s ease;
+        transition: .2s;
     }
 
     .card .btn-outline-warning {
         margin-right: 6px;
     }
 
-        .card .btn-outline-warning:hover,
-        .card .btn-outline-danger:hover {
+        .card .btn-outline-warning:hover, .card .btn-outline-danger:hover {
             transform: scale(1.1);
         }
 
     .badge {
-        padding: 0.5rem 0.75rem;
+        padding: .5rem .75rem;
         font-weight: 500;
     }
 
         .badge i {
-            font-size: 0.875rem;
+            font-size: .875rem;
         }
 
     .card-title {
@@ -75,60 +69,19 @@
     }
 
     .text-muted {
-        font-size: 0.9rem;
+        font-size: .9rem;
     }
 
     small {
-        font-size: 0.85rem;
+        font-size: .85rem;
     }
 
         small i {
-            font-size: 0.875rem;
+            font-size: .875rem;
         }
 
-    /* Form Styles */
-    .form-label {
-        font-size: 16px;
-        font-weight: 600;
-        color: #2c3e50;
-        margin-bottom: 8px;
-        transition: color 0.3s ease;
-    }
-
-    .input-group {
-        margin-bottom: 5px;
-        transition: all 0.3s ease;
-    }
-
-    .input-group-text {
-        background-color: #f8f9fa;
-        border: 1px solid #e9ecef;
-        border-right: none;
-        border-radius: 10px 0 0 10px;
-        color: #dc3545;
-        transition: all 0.3s ease;
-    }
-
-    .form-control {
-        border-radius: 0 10px 10px 0;
-        border: 1px solid #e9ecef;
-        font-size: 15px;
-        padding: 12px 15px;
-        transition: all 0.3s ease;
-    }
-
-        .form-control:focus {
-            border-color: #dc3545;
-            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
-        }
-
-            .form-control:focus + .input-group-text {
-                border-color: #dc3545;
-                background-color: #fff5f5;
-            }
-
-    /* Đảm bảo input-group trong modal add voucher đều, icon và input thẳng hàng như AddVoucher.html */
-    #addVoucherModal .input-group {
+    /* Input group đẹp trong modal add/edit (theo admin) */
+    #addVoucherModal .input-group, #editVoucherModal .input-group {
         width: 100%;
         flex-wrap: nowrap;
         background: #f8f9fa;
@@ -140,7 +93,7 @@
         overflow: hidden;
     }
 
-    #addVoucherModal .input-group-text {
+    #addVoucherModal .input-group-text, #editVoucherModal .input-group-text {
         border: none;
         background: transparent;
         min-width: 56px;
@@ -152,9 +105,8 @@
         position: relative;
     }
 
-        #addVoucherModal .input-group-text:after {
+        #addVoucherModal .input-group-text:after, #editVoucherModal .input-group-text:after {
             content: '';
-            display: block;
             position: absolute;
             right: 0;
             top: 10px;
@@ -164,106 +116,24 @@
             border-radius: 2px;
         }
 
-        #addVoucherModal .input-group-text i {
+        #addVoucherModal .input-group-text i, #editVoucherModal .input-group-text i {
             font-size: 1.35rem;
             color: #ff4d5d;
             margin: 0;
         }
 
-    #addVoucherModal .form-control {
+    #addVoucherModal .form-control, #editVoucherModal .form-control {
         border: none;
         border-radius: 0 15px 15px 0 !important;
         background: transparent;
         box-shadow: none;
         height: 48px;
         padding-left: 14px;
-        font-size: 1.08rem;
+        font-size: 1.05rem;
     }
 
-    #addVoucherModal .input-group .form-control:focus {
-        box-shadow: none;
-        background: #fff;
-    }
-
-    #addVoucherModal .input-group > .form-control {
-        width: 1%;
-        flex: 1 1 auto;
-    }
-
-
-    /* Helper Text */
-    .form-text {
-        color: #6c757d;
-        font-size: 13px;
-        margin-top: 5px;
-        opacity: 0.8;
-    }
-
-    /* Style: Đảm bảo input-group trong modal edit voucher giống modal add voucher */
-    #editVoucherModal .input-group {
-        width: 100%;
-        flex-wrap: nowrap;
-        background: #f8f9fa;
-        border-radius: 15px;
-        border: 1px solid #e9ecef;
-        align-items: stretch;
-        margin-bottom: 0;
-        position: relative;
-        overflow: hidden;
-    }
-
-    #editVoucherModal .input-group-text {
-        border: none;
-        background: transparent;
-        min-width: 56px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0 12px 0 18px;
-        border-radius: 15px 0 0 15px !important;
-        position: relative;
-    }
-
-        #editVoucherModal .input-group-text:after {
-            content: '';
-            display: block;
-            position: absolute;
-            right: 0;
-            top: 10px;
-            height: 28px;
-            width: 1.5px;
-            background: #e0e3e7;
-            border-radius: 2px;
-        }
-
-        #editVoucherModal .input-group-text i {
-            font-size: 1.35rem;
-            color: #ff4d5d;
-            margin: 0;
-        }
-
-    #editVoucherModal .form-control {
-        border: none;
-        border-radius: 0 15px 15px 0 !important;
-        background: transparent;
-        box-shadow: none;
-        height: 48px;
-        padding-left: 14px;
-        font-size: 1.08rem;
-    }
-
-    #editVoucherModal .input-group .form-control:focus {
-        box-shadow: none;
-        background: #fff;
-    }
-
-    #editVoucherModal .input-group > .form-control {
-        width: 1%;
-        flex: 1 1 auto;
-    }
-
-    #statusIcon {
-        transition: all 0.3s ease;
+    #statusIcon, #editStatusIcon {
+        transition: .3s;
         font-size: 1.4rem;
         color: #ff4d5d;
     }
@@ -272,40 +142,34 @@
         justify-content: flex-end !important;
     }
 
+    .form-check.form-switch .form-check-input {
+        cursor: pointer;
+    }
 </style>
+
 <div class="page-wrapper">
-    <!-- Header -->
     <header class="main-header" id="header">
         <nav class="navbar navbar-expand-lg navbar-light" id="navbar">
-            <!-- Sidebar toggle button -->
-            <button id="sidebar-toggler" class="sidebar-toggle">
-                <span class="sr-only">Toggle navigation</span>
-            </button>
-
+            <button id="sidebar-toggler" class="sidebar-toggle"><span class="sr-only">Toggle navigation</span></button>
             <span class="page-title">MÃ ƯU ĐÃI</span>
-
             <div class="navbar-right ">
-
                 <ul class="nav navbar-nav">
                     <li class="custom-dropdown">
                         <a class="notify-toggler custom-dropdown-toggler" asp-controller="Notification" asp-action="Notification">
                             <i class="mdi mdi-bell-outline icon"></i>
                         </a>
                     </li>
-                    <!-- User Account -->
                     <li class="dropdown user-menu">
                         <button class="dropdown-toggle nav-link" data-toggle="dropdown">
                             <img src="~/images/avt-user.jpg" alt="User Profile" width="32" height="32" style="object-fit: cover;" loading="lazy">
-                            <span class="d-none d-lg-inline-block">@ViewBag.StoreName</span>  
+                            <span class="d-none d-lg-inline-block">@ViewBag.StoreName</span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-right">
                             <li>
                                 <a class="dropdown-link-item" asp-controller="Profile" asp-action="Index" asp-area="">
-                                    <i class="mdi mdi-account-outline"></i>
-                                    <span class="nav-text">Hồ Sơ</span>
+                                    <i class="mdi mdi-account-outline"></i><span class="nav-text">Hồ Sơ</span>
                                 </a>
                             </li>
-
                             <li class="dropdown-footer">
                                 <a class="dropdown-link-item" href="/Seller/Voucher/Logout">
                                     <i class="mdi mdi-logout"></i> Đăng Xuất
@@ -314,64 +178,51 @@
                         </ul>
                     </li>
                 </ul>
-
             </div>
         </nav>
-
-
     </header>
 
-
+    <!-- Toast: TempData -->
     <div style="position: fixed; top: 20px; right: 20px; z-index: 2000; width: 360px;">
         @if (TempData["Success"] != null)
         {
             <div class="alert alert-success alert-dismissible fade show shadow" role="alert">
-                <i class="bi bi-check-circle-fill me-2"></i>
-                @TempData["Success"]
+                <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
             </div>
         }
         @if (TempData["Error"] != null)
         {
             <div class="alert alert-danger alert-dismissible fade show shadow" role="alert">
-                <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                @TempData["Error"]
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
             </div>
         }
     </div>
 
-
     <div class="content-wrapper">
         <div class="content">
-            <!-- For Components documentaion -->
             <div class="card card-default">
-                <div class="card-header">
-                    <h2>Danh sách giảm giá</h2>
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h2 class="mb-0">Danh sách giảm giá</h2>
                     <div class="btn-group">
-                        <button class="btn btn-danger btn-add-voucher" data-bs-toggle="modal"
-                                data-bs-target="#addVoucherModal" style="text-transform: capitalize;">
+                        <button class="btn btn-danger btn-add-voucher" data-bs-toggle="modal" data-bs-target="#addVoucherModal" style="text-transform: capitalize;">
                             <i class="mdi mdi-plus"></i> Thêm voucher
                         </button>
                     </div>
                 </div>
-                <div class="card-body">
-                    <!-- Search + Filter -->
-                    <div class="d-flex flex-column flex-md-row gap-3 mb-4 align-items-md-center justify-content-between">
-                        <div style="width: 300px;">
-                            <form id="searchForm" method="get" class="d-flex" style="width: 300px;">
-                                <input type="search"
-                                       class="form-control"
-                                       name="search"
-                                       placeholder="Tìm kiếm voucher..."
-                                       aria-label="Tìm kiếm"
-                                       value="@(Context.Request.Query["search"])"
-                                       oninput="submitSearch()" />
-                            </form>
 
+                <div class="card-body">
+                    <!-- Search + Sort -->
+                    <div class="d-flex flex-column flex-md-row gap-3 mb-4 align-items-md-center justify-content-between">
+                        <div style="width:300px;">
+                            <form id="searchForm" method="get" class="d-flex" style="width:300px;">
+                                <input type="search" class="form-control" name="search" placeholder="Tìm kiếm voucher..." aria-label="Tìm kiếm"
+                                       value="@(Context.Request.Query["search"])" oninput="submitSearch()" />
+                            </form>
                         </div>
-                        <div style="width: 200px;">
-                            <select id="sortSelect" class="form-select" style="width: 200px;">
+                        <div style="width:200px;">
+                            <select id="sortSelect" class="form-select" style="width:200px;">
                                 <option value="">Sắp xếp theo</option>
                                 <option value="newest">Mới nhất</option>
                                 <option value="oldest">Cũ nhất</option>
@@ -382,182 +233,262 @@
                     </div>
 
                     <!-- Voucher Items -->
-                    <div class="row g-4">
-                        @foreach (var voucher in Model)
-                        {
-                            <div class="col-12 col-md-6 mb-4">
-                                <div class="card shadow-sm hover-shadow-lg transition-all">
-                                    <div class="card-body p-0">
-                                        <div class="d-flex">
-                                            <div class="bg-danger text-white p-4 d-flex align-items-center justify-content-center" style="width: 120px;">
-                                                <i class="bi-ticket-perforated-fill" style="font-size: 2.5rem;"></i>
-                                            </div>
-                                            <div class="p-3 flex-grow-1">
-                                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                                    <div>
-                                                        <h5 class="card-title mb-1">Giảm @voucher.Reduce.ToString("#,0", new System.Globalization.CultureInfo("vi-VN"))</h5>
-                                                        <p class="card-text text-muted mb-0">Đơn tối thiểu @voucher.MinOrder.ToString("#,0", new System.Globalization.CultureInfo("vi-VN"))</p>
-                                                    </div>
-                                                    <div class="voucher-action d-flex gap-2">
-                                                        <button type="button"
-                                                                class="btn btn-outline-warning btn-sm rounded-circle btn-edit-voucher"
-                                                                data-bs-toggle="modal"
-                                                                data-bs-target="#editVoucherModal"
-                                                                data-id="@voucher.Id"
-                                                                data-discount="@voucher.Reduce"
-                                                                data-minorder="@voucher.MinOrder"
-                                                                data-quantity="@voucher.Quantity"
-                                                                data-start="@voucher.StartDate.ToString("yyyy-MM-dd")"
-                                                                data-end="@voucher.EndDate.ToString("yyyy-MM-dd")"
-                                                                data-categoryid="@voucher.CategoryId"
-                                                                data-storeid="@voucher.StoreId"
-                                                                title="Chỉnh sửa">
-                                                            <i class="bi-pencil"></i>
-                                                        </button>
-                                                        <button class="btn btn-outline-danger btn-sm rounded-circle btn-delete-voucher"
-                                                                data-bs-toggle="modal"
-                                                                data-bs-target="#deleteConfirmModal"
-                                                                data-id="@voucher.Id"
-                                                                title="Xóa">
-                                                            <i class="bi bi-trash"></i>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                <div class="d-flex flex-column gap-1">
-                                                    <small class="text-success">
-                                                        <i class="bi bi-calendar2-check me-1"></i>
-                                                        Bắt đầu: @voucher.StartDate.ToString("dd/MM/yyyy")
-                                                    </small>
-                                                    <small class="text-danger">
-                                                        <i class="bi bi-calendar2-x me-1"></i>
-                                                        Hết hạn: @voucher.EndDate.ToString("dd/MM/yyyy")
-                                                    </small>
-                                                </div>
-                                                <div class="mt-2">
-                                                    <span class="badge bg-success text-white">
-                                                        <i class="bi bi-box-seam me-1"></i>
-                                                        Còn lại: @voucher.Quantity
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                   <div class="row g-4">
+    @{
+        var nowUtc = DateTime.UtcNow;
+        var anyShown = false;
+    }
+
+              @foreach (var voucher in Model)
+            {
+                // Ẩn nếu: chưa bắt đầu / đã hết hạn / status không còn hợp lệ / hết lượt dùng
+                var used = voucher.UsedCount;
+                var isValidToShow =
+                    voucher.StartDate <= nowUtc &&
+                    voucher.EndDate   >= nowUtc &&
+                    voucher.Status == DATN_GO.Models.VoucherStatus.Valid &&
+                    used < voucher.Quantity;
+
+                if (!isValidToShow)
+                {
+                    continue;
+                }
+
+        anyShown = true;
+
+        <div class="col-12 col-md-4 mb-4">
+            <div class="card shadow-sm hover-shadow-lg transition-all">
+                <div class="card-body p-0">
+                    <div class="d-flex">
+                        <div class="bg-danger text-white p-4 d-flex align-items-center justify-content-center" style="width: 120px;">
+                            <i class="bi-ticket-perforated-fill" style="font-size: 2.5rem;"></i>
+                        </div>
+                        <div class="p-3 flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h5 class="card-title mb-1">
+                                        @if (voucher.IsPercentage)
+                                        {
+                                            @:Giảm @voucher.Reduce.ToString("N0")%
+                                        }
+                                        else
+                                        {
+                                            @:Giảm @voucher.Reduce.ToString("N0") VND
+                                        }
+                                    </h5>
+                                    <p class="card-text text-muted mb-0">Đơn tối thiểu @voucher.MinOrder.ToString("N0")</p>
+                                </div>
+
+                                <div class="voucher-action d-flex gap-2">
+                                    <button type="button"
+                                            class="btn btn-outline-warning btn-sm rounded-circle btn-edit-voucher"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editVoucherModal"
+                                            data-id="@voucher.Id"
+                                            data-discount="@voucher.Reduce"
+                                            data-minorder="@voucher.MinOrder"
+                                            data-quantity="@voucher.Quantity"
+                                            data-start="@voucher.StartDate.ToString("yyyy-MM-dd")"
+                                            data-end="@voucher.EndDate.ToString("yyyy-MM-dd")"
+                                            data-categoryid="@voucher.CategoryId"
+                                            data-storeid="@voucher.StoreId"
+                                            data-status="@((int)voucher.Status)"
+                                            data-ispercentage="@voucher.IsPercentage.ToString().ToLower()"
+                                            data-maxdiscount="@(voucher.MaxDiscount?.ToString() ?? "")"
+                                            title="Chỉnh sửa">
+                                        <i class="bi-pencil"></i>
+                                    </button>
+
+                                    <button class="btn btn-outline-danger btn-sm rounded-circle btn-delete-voucher"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteConfirmModal"
+                                            data-id="@voucher.Id"
+                                            title="Xóa">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
                                 </div>
                             </div>
-                        }
-                        @if (ViewBag.TotalPages > 1)
-                        {
-                            <div class="w-100 d-flex justify-content-end mt-4">
-                                <nav aria-label="Page navigation">
-                                    <ul class="pagination mb-0">
-                                        <li class="page-item @(ViewBag.CurrentPage <= 1 ? "disabled" : "")">
-                                            <a class="page-link border-danger text-danger"
-                                               href="?page=@(ViewBag.CurrentPage - 1)&search=@ViewBag.Search&sort=@ViewBag.Sort">Previous</a>
-                                        </li>
 
-                                        @for (int i = 1; i <= ViewBag.TotalPages; i++)
-                                        {
-                                            <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
-                                                <a class="page-link @(i == ViewBag.CurrentPage ? "bg-danger text-white border-danger" : "text-danger border-danger")"
-                                                   href="?page=@i&search=@ViewBag.Search&sort=@ViewBag.Sort">@i</a>
-                                            </li>
-                                        }
-
-                                        <li class="page-item @(ViewBag.CurrentPage >= ViewBag.TotalPages ? "disabled" : "")">
-                                            <a class="page-link border-danger text-danger"
-                                               href="?page=@(ViewBag.CurrentPage + 1)&search=@ViewBag.Search&sort=@ViewBag.Sort">Next</a>
-                                        </li>
-                                    </ul>
-                                </nav>
+                            <div class="d-flex flex-column gap-1">
+                                <small class="text-success">
+                                    <i class="bi bi-calendar2-check me-1"></i>
+                                    Bắt đầu: @voucher.StartDate.ToString("dd/MM/yyyy")
+                                </small>
+                                <small class="text-danger">
+                                    <i class="bi bi-calendar2-x me-1"></i>
+                                    Hết hạn: @voucher.EndDate.ToString("dd/MM/yyyy")
+                                </small>
                             </div>
-                        }
 
-
-
+                            <div class="mt-2 d-flex gap-2 flex-wrap">
+                                <span class="badge bg-success text-white">
+                                    <i class="bi bi-box-seam me-1"></i>
+                                    Còn lại: @(voucher.Quantity - used)
+                                </span>
+                                <span class="badge bg-light text-dark border">
+                                    @(voucher.IsPercentage ? "Giảm %" : "Giảm VND")
+                                </span>
+                                @if (voucher.IsPercentage && voucher.MaxDiscount.HasValue && voucher.MaxDiscount.Value > 0)
+                                {
+                                    <span class="badge bg-light text-dark border">
+                                        Tối đa @voucher.MaxDiscount.Value.ToString("N0")
+                                    </span>
+                                }
+                            </div>
+                        </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (!anyShown)
+    {
+        <div class="col-12">
+            <div class="text-center text-muted py-5">
+                <i class="bi bi-card-text" style="font-size:2rem;"></i>
+                <div class="mt-2">Không có voucher khả dụng.</div>
+            </div>
+        </div>
+    }
+
+    @if (ViewBag.TotalPages > 1)
+    {
+        <div class="w-100 d-flex justify-content-end mt-4">
+            <nav aria-label="Page navigation">
+                <ul class="pagination mb-0">
+                    <li class="page-item @(ViewBag.CurrentPage <= 1 ? "disabled" : "")">
+                        <a class="page-link border-danger text-danger"
+                           href="?page=@(ViewBag.CurrentPage - 1)&search=@ViewBag.Search&sort=@ViewBag.Sort">Previous</a>
+                    </li>
+
+                    @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                            <a class="page-link @(i == ViewBag.CurrentPage ? "bg-danger text-white border-danger" : "text-danger border-danger")"
+                               href="?page=@i&search=@ViewBag.Search&sort=@ViewBag.Sort">@i</a>
+                        </li>
+                    }
+
+                    <li class="page-item @(ViewBag.CurrentPage >= ViewBag.TotalPages ? "disabled" : "")">
+                        <a class="page-link border-danger text-danger"
+                           href="?page=@(ViewBag.CurrentPage + 1)&search=@ViewBag.Search&sort=@ViewBag.Sort">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    }
+</div>
 
                 </div>
             </div>
-
         </div>
     </div>
 </div>
-<!-- Modal Thêm Voucher -->
+
+<!-- Modal Thêm Voucher (seller, nhưng UI như admin) -->
 <div class="modal fade" id="addVoucherModal" tabindex="-1" aria-labelledby="addVoucherModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form id="voucherForm" asp-action="AddVoucher" method="post">
+            <form id="voucherForm" asp-area="Seller" asp-controller="Voucher" asp-action="AddVoucher" method="post">
                 @Html.AntiForgeryToken()
                 <div class="modal-header bg-danger">
                     <h5 class="modal-title text-white">Thêm Voucher</h5>
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
 
                 <div class="modal-body">
-                    <!-- Mức Giảm Giá -->
-                    <div class="mb-4">
-                        <label class="form-label" for="discountAmount">Mức Giảm Giá (VNĐ)</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-cash-coin"></i></span>
-                            <input type="number" class="form-control" id="discountAmount" name="Reduce" min="1000" placeholder="Nhập số tiền giảm">
+                    <!-- Kiểu giảm giá -->
+                    <div class="mb-3">
+                        <label class="form-label d-block">Kiểu giảm giá</label>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="IsPercentage" id="reduceTypeMoney" value="false" checked>
+                            <label class="form-check-label" for="reduceTypeMoney">Giảm theo số tiền (VND)</label>
                         </div>
-                        <div class="text-danger small mt-1" id="discountAmountError"></div> 
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="IsPercentage" id="reduceTypePercent" value="true">
+                            <label class="form-check-label" for="reduceTypePercent">Giảm theo phần trăm (%)</label>
+                        </div>
+                        <div class="form-text">Nếu chọn %, có thể thiết lập “Giảm tối đa”.</div>
                     </div>
 
-                    <!-- Đơn Hàng Tối Thiểu -->
+                    <!-- Mức giảm -->
+                    <div class="mb-4" id="reduceWrapper">
+                        <label class="form-label" for="discountAmount"><span id="reduceLabel">Mức Giảm Giá (VNĐ)</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-cash-coin"></i></span>
+                            <input type="number" class="form-control" id="discountAmount" name="Reduce" min="1000" required placeholder="Nhập số tiền giảm">
+                            <span class="input-group-text" id="reduceSuffix">VND</span>
+                        </div>
+                        <div class="text-danger small mt-1" id="discountAmountError"></div>
+                    </div>
+
+                    <!-- Max Discount -->
+                    <div class="mb-4 d-none" id="maxDiscountGroup">
+                        <label class="form-label" for="maxDiscount">Giảm tối đa (VND) – tùy chọn</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-graph-down"></i></span>
+                            <input type="number" class="form-control" id="maxDiscount" name="MaxDiscount" min="0" placeholder="Ví dụ: 50000">
+                            <span class="input-group-text">VND</span>
+                        </div>
+                    </div>
+
+                    <!-- Min Order -->
                     <div class="mb-4">
                         <label class="form-label" for="minOrder">Đơn Hàng Tối Thiểu (VNĐ)</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-bag-check"></i></span>
-                            <input type="number" class="form-control" id="minOrder" name="MinOrder" min="0" placeholder="Nhập giá trị đơn tối thiểu">
+                            <input type="number" class="form-control" id="minOrder" name="MinOrder" min="0" required placeholder="Nhập giá trị đơn tối thiểu">
                         </div>
-                        <div class="text-danger small mt-1" id="minOrderError"></div> 
+                        <div class="text-danger small mt-1" id="minOrderError"></div>
                     </div>
 
-                    <!-- Số Lượng -->
+                    <!-- Quantity -->
                     <div class="mb-4">
                         <label class="form-label" for="quantity">Số Lượng</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-list-ol"></i></span>
-                            <input type="number" class="form-control" id="quantity" name="Quantity" min="1" placeholder="Nhập số lượng voucher">
+                            <input type="number" class="form-control" id="quantity" name="Quantity" min="1" required placeholder="Nhập số lượng voucher">
                         </div>
-                        <div class="text-danger small mt-1" id="quantityError"></div> 
+                        <div class="text-danger small mt-1" id="quantityError"></div>
                     </div>
 
-                    <!-- Thời Gian -->
+                    <!-- Time -->
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <label class="form-label" for="startDate">Ngày Bắt Đầu</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
-                                <input type="date" class="form-control" id="startDate" name="StartDate">
+                                <input type="date" class="form-control" id="startDate" name="StartDate" required>
                             </div>
-                            <div class="text-danger small mt-1" id="startDateError"></div> 
                         </div>
                         <div class="col-md-6 mb-4">
                             <label class="form-label" for="endDate">Ngày Hết Hạn</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-calendar-x"></i></span>
-                                <input type="date" class="form-control" id="endDate" name="EndDate">
+                                <input type="date" class="form-control" id="endDate" name="EndDate" required>
                             </div>
-                            <div class="text-danger small mt-1" id="endDateError"></div> 
                         </div>
                     </div>
 
-                    <!-- Trạng thái -->
-                    <div class="mb-4" style="display: none;">
+                    <!-- Status -->
+                    <div class="mb-4">
                         <label class="form-label" for="status">Trạng Thái</label>
-                        <input type="hidden" id="status" name="Status" value="0" />
+                        <div class="input-group status-toggle">
+                            <span class="input-group-text"><i id="statusIcon" class="bi bi-toggle-on"></i></span>
+                            <select class="form-control" id="status" name="Status" onchange="updateStatusIcon()" required>
+                                <option value="0">Còn hạn</option>
+                                <option value="1">Hết hạn</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <!-- Danh mục -->
+                    <!-- Category -->
                     <div class="mb-4">
                         <label class="form-label" for="categoryId">Danh mục</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-tags"></i></span>
-                            <select class="form-control" id="categoryId" name="CategoryId">
+                            <select class="form-control" id="categoryId" name="CategoryId" required>
                                 <option value="">-- Chọn danh mục --</option>
                                 @foreach (var cat in ViewBag.Categories)
                                 {
@@ -565,11 +496,10 @@
                                 }
                             </select>
                         </div>
-                        <div class="text-danger small mt-1" id="categoryIdError"></div> 
+                        <div class="text-danger small mt-1" id="categoryIdError"></div>
                     </div>
 
-                    <!-- Trường Ẩn VoucherType -->
-                    <input type="hidden" id="voucherType" name="Type" value="0" />
+                    <input type="hidden" name="Type" value="0" />
                     <input type="hidden" name="StoreId" value="@ViewBag.StoreId" />
                 </div>
 
@@ -578,70 +508,82 @@
                     <button type="submit" class="btn btn-danger btn-pill" style="text-transform: capitalize;">Thêm Voucher</button>
                 </div>
             </form>
-
         </div>
     </div>
 </div>
 
-
-
-
-<!-- Modal Sửa Voucher -->
+<!-- Modal Sửa Voucher (seller, UI như admin) -->
 <div class="modal fade" id="editVoucherModal" tabindex="-1" aria-labelledby="editVoucherModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form asp-action="UpdateVoucher" asp-controller="Voucher" method="post">
+            <form id="editVoucherForm" asp-area="Seller" asp-controller="Voucher" asp-action="UpdateVoucher" method="post">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="Id" id="editVoucherId" />
 
                 <div class="modal-header bg-danger">
                     <h5 class="modal-title text-white" id="editVoucherModalLabel">Sửa Voucher</h5>
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
 
                 <div class="modal-body">
-                    <!-- Mức Giảm Giá -->
+                    <!-- Kiểu giảm -->
+                    <div class="mb-3">
+                        <label class="form-label d-block">Kiểu giảm giá</label>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="IsPercentage" id="editReduceTypeMoney" value="false">
+                            <label class="form-check-label" for="editReduceTypeMoney">Giảm theo số tiền (VND)</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="IsPercentage" id="editReduceTypePercent" value="true">
+                            <label class="form-check-label" for="editReduceTypePercent">Giảm theo phần trăm (%)</label>
+                        </div>
+                    </div>
+
+                    <!-- Mức giảm -->
                     <div class="mb-4">
                         <label class="form-label" for="editDiscountAmount">
-                            Mức Giảm Giá (VNĐ)
+                            <span id="editReduceLabel">Mức Giảm Giá (VNĐ)</span>
+                            <i class="bi bi-question-circle text-muted" data-bs-toggle="tooltip" title="Nếu %, nhập 1–100. Nếu VND, nhập số tiền giảm."></i>
                         </label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-cash-coin"></i></span>
-                            <input type="number" name="Reduce" class="form-control" id="editDiscountAmount"
-                                   placeholder="Nhập số tiền giảm" required min="1000" step="0.01">
+                            <input type="number" name="Reduce" class="form-control" id="editDiscountAmount" placeholder="Nhập giá trị" required min="1">
+                            <span class="input-group-text" id="editReduceSuffix">VND</span>
                         </div>
                         <div class="text-danger small mt-1" id="editDiscountAmountError"></div>
                     </div>
 
-                    <!-- Đơn Hàng Tối Thiểu -->
+                    <!-- Max Discount -->
+                    <div class="mb-4 d-none" id="editMaxDiscountGroup">
+                        <label class="form-label" for="editMaxDiscount">Giảm tối đa (VND) – tùy chọn</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-graph-down"></i></span>
+                            <input type="number" class="form-control" id="editMaxDiscount" name="MaxDiscount" min="0" placeholder="Ví dụ: 50000">
+                            <span class="input-group-text">VND</span>
+                        </div>
+                    </div>
+
+                    <!-- Min Order -->
                     <div class="mb-4">
-                        <label class="form-label" for="editMinOrder">
-                            Đơn Hàng Tối Thiểu (VNĐ)
-                        </label>
+                        <label class="form-label" for="editMinOrder">Đơn Hàng Tối Thiểu (VNĐ)</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-bag-check"></i></span>
-                            <input type="number" name="MinOrder" class="form-control" id="editMinOrder"
-                                   placeholder="Nhập giá trị đơn tối thiểu" required min="0">
+                            <input type="number" name="MinOrder" class="form-control" id="editMinOrder" placeholder="Nhập giá trị đơn tối thiểu" required min="0">
                         </div>
                         <div class="text-danger small mt-1" id="editMinOrderError"></div>
                     </div>
 
-                    <!-- Số Lượng -->
+                    <!-- Quantity -->
                     <div class="mb-4">
-                        <label class="form-label" for="editQuantity">
-                            Số Lượng
-                        </label>
+                        <label class="form-label" for="editQuantity">Số Lượng</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-list-ol"></i></span>
-                            <input type="number" name="Quantity" class="form-control" id="editQuantity"
-                                   placeholder="Nhập số lượng voucher" required min="1">
+                            <input type="number" name="Quantity" class="form-control" id="editQuantity" placeholder="Nhập số lượng voucher" required min="1">
                         </div>
                         <div class="text-danger small mt-1" id="editQuantityError"></div>
                     </div>
 
-                    <!-- Thời Gian -->
+                    <!-- Time -->
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <label class="form-label" for="editStartDate">Ngày Bắt Đầu</label>
@@ -650,7 +592,6 @@
                                 <input type="date" name="StartDate" class="form-control" id="editStartDate" required>
                             </div>
                         </div>
-
                         <div class="col-md-6 mb-4">
                             <label class="form-label" for="editEndDate">Ngày Hết Hạn</label>
                             <div class="input-group">
@@ -660,13 +601,23 @@
                         </div>
                     </div>
 
-                    <!-- Trạng Thái -->
-                    <input type="hidden" id="editStatus" name="Status" value="0" /> 
-                    <!-- Danh Mục -->
+                    <!-- Status -->
+                    <div class="mb-4">
+                        <label class="form-label" for="editStatus">Trạng Thái</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i id="editStatusIcon" class="bi bi-toggle-on"></i></span>
+                            <select class="form-control" name="Status" id="editStatus" onchange="updateEditStatusIcon()" required>
+                                <option value="0">Còn hạn</option>
+                                <option value="1">Hết hạn</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Category -->
                     <div class="mb-4">
                         <label class="form-label" for="editCategoryId">Danh mục</label>
                         <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-tags"></i></span>
+                            <span class="input-group-text"><i class="bi bi-tags-fill"></i></span>
                             <select class="form-control" name="CategoryId" id="editCategoryId">
                                 <option value="">-- Chọn danh mục --</option>
                                 @foreach (var cat in ViewBag.Categories)
@@ -678,664 +629,231 @@
                         <div class="text-danger small mt-1" id="editCategoryIdError"></div>
                     </div>
 
+                    <input type="hidden" name="Type" value="0" />
+                    <input type="hidden" name="StoreId" id="editStoreId" value="@ViewBag.StoreId" />
                 </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal" style="text-transform: capitalize;">
-                        Đóng
-                    </button>
-                    <button type="submit" class="btn btn-danger btn-pill" style="text-transform: capitalize;">
-                        Lưu Thay Đổi
-                    </button>
+                    <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal" style="text-transform: capitalize;">Đóng</button>
+                    <button type="submit" class="btn btn-danger btn-pill" style="text-transform: capitalize;">Lưu Thay Đổi</button>
                 </div>
             </form>
-
         </div>
     </div>
 </div>
-
 
 <!-- Modal Xóa Voucher -->
 <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form id="deleteVoucherForm" method="post" asp-action="DeleteVoucherConfirmed">
+            <form id="deleteVoucherForm" method="post" asp-area="Seller" asp-controller="Voucher" asp-action="DeleteVoucherConfirmed">
                 @Html.AntiForgeryToken()
-
                 <div class="modal-header bg-danger">
                     <h5 class="modal-title text-white" id="deleteConfirmModalLabel">Thông Báo Xóa</h5>
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Đóng">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Đóng"><span aria-hidden="true">&times;</span></button>
                 </div>
-
                 <div class="modal-body">
                     Bạn có chắc chắn muốn xóa không? Hành động này sẽ không thể hoàn tác.
                     <input type="hidden" name="id" id="deleteVoucherFormId" />
                 </div>
-
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal" style="text-transform: capitalize;">
-                        Đóng
-                    </button>
-                    <button type="submit" class="btn btn-danger btn-pill" style="text-transform: capitalize;">
-                        Xóa
-                    </button>
+                    <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal" style="text-transform: capitalize;">Đóng</button>
+                    <button type="submit" class="btn btn-danger btn-pill" style="text-transform: capitalize;">Xóa</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-
-
-
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Modal edit voucher logic
-        const editVoucherForm = document.getElementById('editVoucherForm');
-        const editStartDate = document.getElementById('editStartDate');
-        const editEndDate = document.getElementById('editEndDate');
-        if (editStartDate && editEndDate) {
-            // Set min date for start date as today
-            const today = new Date().toISOString().split('T')[0];
-            editStartDate.setAttribute('min', today);
-            editStartDate.addEventListener('change', function () {
-                editEndDate.setAttribute('min', this.value);
-                if (editEndDate.value && editEndDate.value < this.value) {
-                    editEndDate.value = this.value;
-                }
-            });
-        }
-        if (editVoucherForm) {
-            editVoucherForm.addEventListener('submit', function (event) {
-                event.preventDefault();
-                // Add your form submission logic here
-                alert('Voucher đã được cập nhật thành công!');
-                const editModal = bootstrap.Modal.getInstance(document.getElementById('editVoucherModal'));
-                if (editModal) editModal.hide();
-            });
-        }
-        // Gán dữ liệu vào modal khi nhấn nút edit
-        const editButtons = document.querySelectorAll('.btn-edit-voucher');
-        editButtons.forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                document.getElementById('editDiscountAmount').value = btn.getAttribute('data-discount') || '';
-                document.getElementById('editMinOrder').value = btn.getAttribute('data-minorder') || '';
-                document.getElementById('editQuantity').value = btn.getAttribute('data-quantity') || '';
-                document.getElementById('editStartDate').value = btn.getAttribute('data-start') || '';
-                document.getElementById('editEndDate').value = btn.getAttribute('data-end') || '';
-            });
+    /* ==== Search debounce ==== */
+    let searchTimeout;
+    function submitSearch() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => { document.getElementById('searchForm').submit(); }, 300);
+    }
+
+    /* ==== Sort persist ==== */
+    document.addEventListener("DOMContentLoaded", function () {
+        const sortSelect = document.getElementById("sortSelect");
+        const currentSort = new URLSearchParams(window.location.search).get("sort");
+        if (currentSort) sortSelect.value = currentSort;
+        sortSelect.addEventListener("change", function () {
+            const url = new URL(window.location.href);
+            const selectedSort = sortSelect.value;
+            if (selectedSort) url.searchParams.set("sort", selectedSort); else url.searchParams.delete("sort");
+            const searchValue = document.querySelector('input[name="search"]')?.value;
+            if (searchValue) url.searchParams.set("search", searchValue);
+            window.location.href = url.toString();
         });
     });
-</script>
 
-<!-- JS: Delete Logic -->
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Initialize tooltips
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
-        });
-
-        // Delete confirmation logic
-        let voucherId = null;
-        const deleteModal = document.getElementById('deleteConfirmModal');
-        if (deleteModal) {
-            deleteModal.addEventListener('show.bs.modal', function (event) {
-                const button = event.relatedTarget;
-                voucherId = button.getAttribute('data-id');
+    /* ==== Auto-dismiss alerts ==== */
+    document.addEventListener("DOMContentLoaded", function () {
+        const autoCloseAlerts = () => {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function (alert) {
+                setTimeout(() => {
+                    alert.style.transition = 'opacity 0.5s ease';
+                    alert.style.opacity = '0';
+                    setTimeout(() => { if (alert && alert.parentNode) alert.parentNode.removeChild(alert); }, 500);
+                }, 2000);
             });
-        }
-
-        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-        if (confirmDeleteBtn) {
-            confirmDeleteBtn.addEventListener('click', function () {
-                console.log('Xoá voucher ID:', voucherId);
-                alert('Đã xoá voucher thành công!');
-                const modal = bootstrap.Modal.getInstance(deleteModal);
-                if (modal) modal.hide();
-            });
-        }
-    });
-</script>
-
-<!-- JavaScript fetch -->
-<script>
-        // Tìm kiếm
-                let searchTimeout;
-
-            function submitSearch() {
-                clearTimeout(searchTimeout);
-
-                // Đợi 300ms sau khi gõ xong mới gửi (đỡ spam request)
-                searchTimeout = setTimeout(() => {
-                    document.getElementById('searchForm').submit();
-                }, 300);
-            }
-            // Sắp xếp
-        document.addEventListener("DOMContentLoaded", function () {
-             const sortSelect = document.getElementById("sortSelect");
-
-             // Tự động gán lại giá trị đã chọn sau reload
-             const currentSort = new URLSearchParams(window.location.search).get("sort");
-             if (currentSort) {
-                 sortSelect.value = currentSort;
-             }
-
-             // Khi người dùng chọn sắp xếp -> cập nhật URL + reload
-             sortSelect.addEventListener("change", function () {
-                 const url = new URL(window.location.href);
-                 const selectedSort = sortSelect.value;
-
-                 if (selectedSort) {
-                     url.searchParams.set("sort", selectedSort);
-                 } else {
-                     url.searchParams.delete("sort");
-                 }
-
-                 // Nếu đang có tìm kiếm, giữ lại giá trị đó
-                 const searchValue = document.querySelector('input[name="search"]')?.value;
-                 if (searchValue) {
-                     url.searchParams.set("search", searchValue);
-                 }
-
-                 window.location.href = url.toString(); // 🔁 Load lại trang với sort mới
-             });
-         });
-
-    // 🟢 THÊM VOUCHER
-    async function submitProductEdit() {
-        const voucherType = 0; 
-
-        // Lấy giá trị từ các trường input
-        const discountAmount = parseFloat(document.getElementById("discountAmount").value);
-        const minOrder = parseFloat(document.getElementById("minOrder").value);
-        const quantity = parseInt(document.getElementById("quantity").value);
-        const startDate = document.getElementById("startDate").value;
-        const endDate = document.getElementById("endDate").value;
-        const categoryId = parseInt(document.getElementById("categoryId").value) || null;
-        const storeId = parseInt(document.getElementById("storeId").value) || null;
-        const status = 1; // Trạng thái luôn set là "Còn hạn"
-
-        // Kiểm tra tất cả các giá trị có hợp lệ không
-        if (isNaN(discountAmount) || isNaN(minOrder) || isNaN(quantity) || !startDate || !endDate || isNaN(status)) {
-            showToast("error", "Vui lòng kiểm tra lại thông tin trước khi gửi.");
-            return;
-        }
-
-        const voucher = {
-            Reduce: discountAmount,
-            MinOrder: minOrder,
-            Quantity: quantity,
-            StartDate: startDate,
-            EndDate: endDate,
-            Type: voucherType,  // Set VoucherType là Platform (mã 0)
-            CategoryId: categoryId,
-            StoreId: storeId,
-            Status: status  // Trạng thái luôn là "Còn hạn"
         };
+        autoCloseAlerts();
+        const alertContainer = document.querySelector('div[style*="position: fixed"]');
+        if (alertContainer) {
+            const observer = new MutationObserver(m => { if (m.some(x => x.addedNodes.length)) autoCloseAlerts(); });
+            observer.observe(alertContainer, { childList: true });
+        }
+    });
 
-        const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
-        const token = tokenInput ? tokenInput.value : "";
-
-        try {
-            const response = await fetch('/Seller/Voucher/AddVoucher', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': token
-                },
-                body: JSON.stringify(voucher)
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                if (result && result.success) {
-                    showToast("success", result.message || "Thêm voucher thành công!");
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('addVoucherModal'));
-                    if (modal) {
-                        modal.hide();
-                        setTimeout(() => location.reload(), 1000);
-                    }
-                } else {
-                    showToast("error", result.message || "Thêm voucher thất bại.");
-                }
-            } else {
-                const errorText = await response.text();
-                showToast("error", errorText || "Có lỗi xảy ra khi gửi dữ liệu.");
-            }
-        } catch (e) {
-            console.error("❌ Lỗi khi gửi dữ liệu:", e);
-            showToast("error", "Có lỗi xảy ra khi gửi dữ liệu.");
+    /* ==== Helpers: % / VND UI toggle ==== */
+    function toggleReduceUI(isPercent, labelId, suffixId, maxGroupId, amountInputId) {
+        const label = document.getElementById(labelId);
+        const suffix = document.getElementById(suffixId);
+        const maxGroup = document.getElementById(maxGroupId);
+        const amountInput = document.getElementById(amountInputId);
+        if (isPercent) {
+            label.textContent = "Mức Giảm Giá (%)";
+            suffix.textContent = "%";
+            maxGroup.classList.remove("d-none");
+            amountInput.setAttribute("min", "1");
+            amountInput.setAttribute("max", "100");
+            amountInput.placeholder = "Nhập phần trăm (1 - 100)";
+        } else {
+            label.textContent = "Mức Giảm Giá (VNĐ)";
+            suffix.textContent = "VND";
+            maxGroup.classList.add("d-none");
+            amountInput.removeAttribute("max");
+            amountInput.setAttribute("min", "1000");
+            amountInput.placeholder = "Nhập số tiền giảm (>= 1000)";
         }
     }
 
+    /* ==== ADD modal behavior ==== */
+    document.addEventListener('DOMContentLoaded', function () {
+        const rMoney = document.getElementById("reduceTypeMoney");
+        const rPercent = document.getElementById("reduceTypePercent");
+        const updateAddReduceUI = () => toggleReduceUI(rPercent.checked, "reduceLabel", "reduceSuffix", "maxDiscountGroup", "discountAmount");
+        if (rMoney && rPercent) {
+            rMoney.addEventListener("change", updateAddReduceUI);
+            rPercent.addEventListener("change", updateAddReduceUI);
+            updateAddReduceUI();
+        }
 
+        // min date logic
+        const today = new Date().toISOString().split("T")[0];
+        const startInput = document.getElementById("startDate");
+        const endInput = document.getElementById("endDate");
+        if (startInput) {
+            startInput.setAttribute("min", today);
+            startInput.addEventListener("change", function () {
+                if (endInput) {
+                    endInput.setAttribute("min", this.value);
+                    if (endInput.value && endInput.value < this.value) endInput.value = this.value;
+                }
+            });
+        }
+        if (endInput) endInput.setAttribute("min", today);
 
+        window.updateStatusIcon = function () {
+            const statusVal = document.getElementById("status").value;
+            const icon = document.getElementById("statusIcon");
+            if (statusVal === "0") { icon.classList.remove("bi-toggle-off"); icon.classList.add("bi-toggle-on"); }
+            else { icon.classList.remove("bi-toggle-on"); icon.classList.add("bi-toggle-off"); }
+        };
+        updateStatusIcon();
+    });
 
-        // 🔄 ĐỔ DỮ LIỆU VÀO MODAL SỬA & XOÁ
-    document.addEventListener('DOMContentLoaded', () => {
-        // Khi mở modal sửa
-        document.querySelectorAll('.btn-edit-voucher').forEach(button => {
-            button.addEventListener('click', () => {
-                // Đổ dữ liệu vào các trường
-                document.getElementById("editVoucherId").value = button.dataset.id;
-                document.getElementById("editDiscountAmount").value = button.dataset.discount;
-                document.getElementById("editMinOrder").value = button.dataset.minorder;
-                document.getElementById("editQuantity").value = button.dataset.quantity;
-                document.getElementById("editStartDate").value = button.dataset.start;
-                document.getElementById("editEndDate").value = button.dataset.end;
+    /* ==== EDIT modal behavior ==== */
+    document.addEventListener('DOMContentLoaded', function () {
+        window.updateEditStatusIcon = function () {
+            const statusVal = document.getElementById("editStatus").value;
+            const icon = document.getElementById("editStatusIcon");
+            if (statusVal === "0") { icon.classList.remove("bi-toggle-off"); icon.classList.add("bi-toggle-on"); }
+            else { icon.classList.remove("bi-toggle-on"); icon.classList.add("bi-toggle-off"); }
+        };
 
-                // Cập nhật dropdown Danh mục
-                updateCategoryDropdown(button.dataset.categoryid);  // Cập nhật đúng categoryId khi sửa
+        document.querySelectorAll('.btn-edit-voucher').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                // essentials
+                document.getElementById('editVoucherId').value = btn.dataset.id || '';
+                document.getElementById('editDiscountAmount').value = btn.dataset.discount || '';
+                document.getElementById('editMinOrder').value = btn.dataset.minorder || '';
+                document.getElementById('editQuantity').value = btn.dataset.quantity || '';
+                document.getElementById('editStartDate').value = btn.dataset.start || '';
+                document.getElementById('editEndDate').value = btn.dataset.end || '';
+                document.getElementById('editStoreId').value = btn.dataset.storeid || '';
 
-                document.getElementById("editVoucherType").value = button.dataset.type;
-                document.getElementById("editStoreId").value = button.dataset.storeid || "";
-                document.getElementById("editStatus").value = button.dataset.status || "1";
+                // status
+                document.getElementById('editStatus').value = (btn.dataset.status ?? "0");
                 updateEditStatusIcon();
+
+                // type & max
+                const isPercent = (btn.dataset.ispercentage === 'true');
+                document.getElementById('editReduceTypePercent').checked = isPercent;
+                document.getElementById('editReduceTypeMoney').checked = !isPercent;
+                toggleReduceUI(isPercent, "editReduceLabel", "editReduceSuffix", "editMaxDiscountGroup", "editDiscountAmount");
+                document.getElementById('editMaxDiscount').value = btn.dataset.maxdiscount || '';
+
+                // category
+                document.getElementById('editCategoryId').value = btn.dataset.categoryid || "";
             });
         });
 
-        // Xoá
+        // min date logic
+        const today = new Date().toISOString().split("T")[0];
+        const es = document.getElementById('editStartDate');
+        const ee = document.getElementById('editEndDate');
+        if (es) {
+            es.setAttribute('min', today);
+            es.addEventListener('change', function () {
+                if (ee) {
+                    ee.setAttribute('min', this.value);
+                    if (ee.value && ee.value < this.value) ee.value = this.value;
+                }
+            });
+        }
+        if (ee) ee.setAttribute('min', today);
+    });
+
+    /* ==== Delete modal binding ==== */
+    document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('.btn-delete-voucher').forEach(button => {
             button.addEventListener('click', () => {
                 const voucherId = button.getAttribute("data-id");
-                document.getElementById("deleteVoucherId").value = voucherId;
+                document.getElementById("deleteVoucherFormId").value = voucherId;
             });
         });
     });
 
-    // Cập nhật giá trị danh mục trong dropdown khi sửa
-    function updateCategoryDropdown(selectedCategoryId) {
-        const categoryDropdown = document.getElementById("editCategoryId");
-        // Lặp qua tất cả các option trong dropdown và chọn option trùng với selectedCategoryId
-        Array.from(categoryDropdown.options).forEach(option => {
-            if (option.value === selectedCategoryId) {
-                option.selected = true; // Chọn option đúng
-            }
-        });
-    }
+    /* ==== Gọn nhẹ validations ==== */
+    document.addEventListener('DOMContentLoaded', function () {
+        const addAmount = document.getElementById('discountAmount');
+        const addMin = document.getElementById('minOrder');
+        const addQty = document.getElementById('quantity');
 
-
-
-
-        // 📝 SỬA VOUCHER
-    async function submitVoucherUpdate() {
-        const voucher = {
-            Id: parseInt(document.getElementById("editVoucherId").value),
-            Reduce: parseFloat(document.getElementById("editDiscountAmount").value),
-            MinOrder: parseFloat(document.getElementById("editMinOrder").value),
-            Quantity: parseInt(document.getElementById("editQuantity").value),
-            StartDate: document.getElementById("editStartDate").value,
-            EndDate: document.getElementById("editEndDate").value,
-            Status: 0,  
-            Type: 0  
-        };
-
-        try {
-            const response = await fetch('/Seller/Voucher/UpdateVoucher', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(voucher)
-            });
-
-            if (response.ok) {
-                location.reload();
-            } else {
-                const err = await response.text();
-                alert("Sửa thất bại: " + err);
-            }
-        } catch (e) {
-            console.error("Lỗi cập nhật:", e);
-            alert("Có lỗi xảy ra khi cập nhật dữ liệu.");
-        }
-    }
-
-
-
-        // ❌ XOÁ VOUCHER
-        async function submitVoucherDelete() {
-            const id = document.getElementById("deleteVoucherId").value;
-
-            try {
-                const response = await fetch(`/Seller/Voucher/DeleteVoucher?id=${id}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (response.ok) {
-                    location.reload();
-                } else {
-                    const text = await response.text();
-                    alert("Xoá thất bại: " + text);
-                }
-            } catch (e) {
-                console.error("Lỗi xoá voucher:", e);
-                alert("Đã xảy ra lỗi khi xoá.");
-            }
-        }
-        // Thanh trượt mượt ( trạng thái )
-         function updateStatusIcon() {
-            const statusVal = document.getElementById("status").value;
-            const icon = document.getElementById("statusIcon");
-
-            if (statusVal === "1") {
-                icon.classList.remove("bi-toggle-off");
-                icon.classList.add("bi-toggle-on");
-            } else {
-                icon.classList.remove("bi-toggle-on");
-                icon.classList.add("bi-toggle-off");
-            }
-        }
-
-        // Gọi lúc load nếu có giá trị sẵn ( trạng thái )
-        document.addEventListener('DOMContentLoaded', updateStatusIcon);
-
-            function updateEditStatusIcon() {
-            const statusVal = document.getElementById("editStatus").value;
-            const icon = document.getElementById("editStatusIcon");
-
-            if (statusVal === "1") {
-                icon.classList.remove("bi-toggle-off");
-                icon.classList.add("bi-toggle-on");
-            } else {
-                icon.classList.remove("bi-toggle-on");
-                icon.classList.add("bi-toggle-off");
-            }
-        }
-
-        // Fix ngày/tháng tương lai
-
-            document.addEventListener("DOMContentLoaded", function () {
-            const today = new Date().toISOString().split("T")[0];
-
-            const startInput = document.getElementById("startDate");
-            const endInput = document.getElementById("endDate");
-
-            if (startInput) {
-                startInput.setAttribute("min", today);
-                startInput.addEventListener("change", function () {
-                    if (endInput) {
-                        endInput.setAttribute("min", this.value);
-                        if (endInput.value < this.value) {
-                            endInput.value = this.value;
-                        }
-                    }
-                });
-            }
-
-            if (endInput) {
-                endInput.setAttribute("min", today);
-            }
+        if (addAmount) addAmount.addEventListener('input', function(){
+            const isPercent = document.getElementById('reduceTypePercent').checked;
+            const v = Number(this.value);
+            const el = document.getElementById('discountAmountError');
+            if (!v) { el.textContent='Mức giảm giá không được để trống.'; return; }
+            if (isPercent && (v < 1 || v > 100)) el.textContent='Nếu %, giá trị phải trong 1–100.';
+            else if (!isPercent && v < 1000) el.textContent='Nếu VND, giá trị phải ≥ 1000.';
+            else el.textContent='';
         });
 
-        // Xóa
-          document.addEventListener('DOMContentLoaded', function () {
-            document.querySelectorAll('.btn-delete-voucher').forEach(button => {
-                button.addEventListener('click', () => {
-                    const voucherId = button.getAttribute("data-id");
-                    document.getElementById("deleteVoucherFormId").value = voucherId;
-                });
-            });
+        if (addMin) addMin.addEventListener('input', function(){
+            const v = Number(this.value);
+            const el = document.getElementById('minOrderError');
+            el.textContent = (isNaN(v) || v < 0) ? 'Đơn hàng tối thiểu không nhỏ hơn 0.' : '';
         });
 
-        // Tắt thông báo
-
-          // Ensure DOM is fully loaded
-            document.addEventListener("DOMContentLoaded", function () {
-                // Auto dismiss alerts
-                const autoCloseAlerts = () => {
-                    const alerts = document.querySelectorAll('.alert');
-                    alerts.forEach(function (alert) {
-                        // Fade out effect
-                        setTimeout(() => {
-                            alert.style.transition = 'opacity 0.5s ease';
-                            alert.style.opacity = '0';
-
-                            // Remove alert after fade
-                            setTimeout(() => {
-                                if (alert && alert.parentNode) {
-                                    alert.parentNode.removeChild(alert);
-                                }
-                            }, 500);
-                        }, 2000);
-                    });
-                };
-
-                // Run auto dismiss
-                autoCloseAlerts();
-
-                // Also handle new alerts that might be added dynamically
-                const alertContainer = document.querySelector('div[style*="position: fixed"]');
-                if (alertContainer) {
-                    const observer = new MutationObserver(function(mutations) {
-                        mutations.forEach(function(mutation) {
-                            if (mutation.addedNodes.length) {
-                                autoCloseAlerts();
-                            }
-                        });
-                    });
-
-                    observer.observe(alertContainer, { childList: true });
-                }
-            });
-
-
-
-    // Bắt lỗi
-
-    document.addEventListener('DOMContentLoaded', function() {
-        // Kích hoạt validation ngay khi trang được tải
-        validateDiscountAmount();
-        validateMinOrder();
-        validateQuantity();
-        validateCategoryId();
-        validateStartDate();
-        validateEndDate();
+        if (addQty) addQty.addEventListener('input', function(){
+            const v = Number(this.value);
+            const el = document.getElementById('quantityError');
+            el.textContent = (isNaN(v) || v < 1) ? 'Số lượng phải từ 1 trở lên.' : '';
+        });
     });
-
-    // Validation theo thời gian thực - add
-    document.getElementById('discountAmount').addEventListener('input', validateDiscountAmount);
-    document.getElementById('minOrder').addEventListener('input', validateMinOrder);
-    document.getElementById('quantity').addEventListener('input', validateQuantity);
-    document.getElementById('categoryId').addEventListener('change', validateCategoryId);
-    document.getElementById('startDate').addEventListener('input', validateStartDate);
-    document.getElementById('endDate').addEventListener('input', validateEndDate);
-
-    // Kiểm tra Mức Giảm Giá
-    function validateDiscountAmount() {
-        const discountAmount = document.getElementById('discountAmount').value;
-        const discountError = document.getElementById('discountAmountError');
-
-        if (discountAmount === '') {
-            discountError.innerText = 'Mức giảm giá không được để trống';
-            discountError.classList.add('text-danger');
-        } else if (discountAmount < 1000 || isNaN(discountAmount)) {
-            discountError.innerText = 'Mức giảm giá phải lớn hơn hoặc bằng 1000 VNĐ';
-            discountError.classList.add('text-danger');
-        } else {
-            discountError.innerText = '';
-            discountError.classList.remove('text-danger');
-        }
-    }
-
-    // Kiểm tra Đơn Hàng Tối Thiểu
-    function validateMinOrder() {
-        const minOrder = document.getElementById('minOrder').value;
-        const minOrderError = document.getElementById('minOrderError');
-
-        if (minOrder === '') {
-            minOrderError.innerText = 'Đơn hàng tối thiểu không được để trống';
-            minOrderError.classList.add('text-danger');
-        } else if (minOrder < 1 || isNaN(minOrder)) {
-            minOrderError.innerText = 'Đơn hàng tối thiểu phải là số và không nhỏ hơn 1';
-            minOrderError.classList.add('text-danger');
-        } else {
-            minOrderError.innerText = '';
-            minOrderError.classList.remove('text-danger');
-        }
-    }
-
-    // Kiểm tra Số Lượng
-    function validateQuantity() {
-        const quantity = document.getElementById('quantity').value;
-        const quantityError = document.getElementById('quantityError');
-
-        if (quantity === '') {
-            quantityError.innerText = 'Số lượng không được để trống';
-            quantityError.classList.add('text-danger');
-        } else if (quantity < 1 || isNaN(quantity)) {
-            quantityError.innerText = 'Số lượng phải là số và không nhỏ hơn 1';
-            quantityError.classList.add('text-danger');
-        } else {
-            quantityError.innerText = '';
-            quantityError.classList.remove('text-danger');
-        }
-    }
-
-    // Kiểm tra Danh Mục
-    function validateCategoryId() {
-        const categoryId = document.getElementById('categoryId').value;
-        const categoryError = document.getElementById('categoryIdError');
-
-        if (categoryId === '') {
-            categoryError.innerText = 'Vui lòng chọn danh mục.';
-            categoryError.classList.add('text-danger');
-        } else {
-            categoryError.innerText = '';
-            categoryError.classList.remove('text-danger');
-        }
-    }
-
-    // Kiểm tra Ngày Bắt Đầu
-    function validateStartDate() {
-        const startDate = document.getElementById('startDate').value;
-        const startDateError = document.getElementById('startDateError');
-
-        if (startDate === '') {
-            startDateError.innerText = 'Ngày bắt đầu không được để trống';
-            startDateError.classList.add('text-danger');
-        } else {
-            startDateError.innerText = '';
-            startDateError.classList.remove('text-danger');
-        }
-    }
-
-    // Kiểm tra Ngày Hết Hạn
-    function validateEndDate() {
-        const endDate = document.getElementById('endDate').value;
-        const endDateError = document.getElementById('endDateError');
-
-        if (endDate === '') {
-            endDateError.innerText = 'Ngày hết hạn không được để trống';
-            endDateError.classList.add('text-danger');
-        } else {
-            endDateError.innerText = '';
-            endDateError.classList.remove('text-danger');
-        }
-    }
-
-
-
-    // Real-time Validation for Edit Modal
-    document.getElementById('editDiscountAmount').addEventListener('input', validateEditDiscountAmount);
-    document.getElementById('editMinOrder').addEventListener('input', validateEditMinOrder);
-    document.getElementById('editQuantity').addEventListener('input', validateEditQuantity);
-    document.getElementById('editCategoryId').addEventListener('change', validateEditCategoryId);
-    document.getElementById('editStartDate').addEventListener('input', validateEditStartDate);  // Kiểm tra Ngày Bắt Đầu (edit)
-    document.getElementById('editEndDate').addEventListener('input', validateEditEndDate);  // Kiểm tra Ngày Hết Hạn (edit)
-
-    function validateEditDiscountAmount() {
-        const discountAmount = document.getElementById('editDiscountAmount').value;
-        const discountError = document.getElementById('editDiscountAmountError');
-
-        if (discountAmount === '') {
-            discountError.innerText = 'Mức giảm giá không được để trống';
-            discountError.classList.add('text-danger');
-        } else if (discountAmount < 1000 || isNaN(discountAmount)) {
-            discountError.innerText = 'Mức giảm giá phải lớn hơn hoặc bằng 1000 VNĐ';
-            discountError.classList.add('text-danger');
-        } else {
-            discountError.innerText = '';
-            discountError.classList.remove('text-danger');
-        }
-    }
-
-    function validateEditMinOrder() {
-        const minOrder = document.getElementById('editMinOrder').value;
-        const minOrderError = document.getElementById('editMinOrderError');
-
-        if (minOrder === '') {
-            minOrderError.innerText = 'Đơn hàng tối thiểu không được để trống';
-            minOrderError.classList.add('text-danger');
-        } else if (minOrder < 1 || isNaN(minOrder)) {
-            minOrderError.innerText = 'Đơn hàng tối thiểu phải là số và không nhỏ hơn 0';
-            minOrderError.classList.add('text-danger');
-        } else {
-            minOrderError.innerText = '';
-            minOrderError.classList.remove('text-danger');
-        }
-    }
-
-    function validateEditQuantity() {
-        const quantity = document.getElementById('editQuantity').value;
-        const quantityError = document.getElementById('editQuantityError');
-
-        if (quantity === '') {
-            quantityError.innerText = 'Số lượng không được để trống';
-            quantityError.classList.add('text-danger');
-        } else if (quantity < 1 || isNaN(quantity)) {
-            quantityError.innerText = 'Số lượng phải là số và không nhỏ hơn 1';
-            quantityError.classList.add('text-danger');
-        } else {
-            quantityError.innerText = '';
-            quantityError.classList.remove('text-danger');
-        }
-    }
-
-    function validateEditCategoryId() {
-        const categoryId = document.getElementById('editCategoryId').value;
-        const categoryError = document.getElementById('editCategoryIdError');
-
-        if (categoryId === '') {
-            categoryError.innerText = 'Vui lòng chọn danh mục';
-            categoryError.classList.add('text-danger');
-        } else {
-            categoryError.innerText = '';
-            categoryError.classList.remove('text-danger');
-        }
-    }
-
-    function validateEditStartDate() {
-        const startDate = document.getElementById('editStartDate').value;
-        const startDateError = document.getElementById('editStartDateError');
-
-        if (startDate === '') {
-            startDateError.innerText = 'Ngày bắt đầu không được để trống';
-            startDateError.classList.add('text-danger');
-        } else {
-            startDateError.innerText = '';  // Xóa lỗi khi hợp lệ
-            startDateError.classList.remove('text-danger');
-        }
-    }
-
-    function validateEditEndDate() {
-        const endDate = document.getElementById('editEndDate').value;
-        const endDateError = document.getElementById('editEndDateError');
-
-        if (endDate === '') {
-            endDateError.innerText = 'Ngày hết hạn không được để trống';
-            endDateError.classList.add('text-danger');
-        } else {
-            endDateError.innerText = '';  // Xóa lỗi khi hợp lệ
-            endDateError.classList.remove('text-danger');
-        }
-    }
-
 </script>

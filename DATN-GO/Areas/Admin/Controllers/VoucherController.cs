@@ -51,7 +51,7 @@ namespace DATN_GO.Areas.Admin.Controllers
             int totalItems = vouchers.Count;
             int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
             var paginatedVouchers = vouchers.Skip((page - 1) * pageSize).Take(pageSize).ToList();
-
+            
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = totalPages;
             ViewBag.Search = search;

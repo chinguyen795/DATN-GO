@@ -44,7 +44,6 @@ namespace DATN_API.Controllers
             return Ok(voucher);
         }
 
-        // GET: api/vouchers/shop/{storeId}
         [HttpGet("shop/{storeId}")]
         public async Task<IActionResult> GetVouchersByStore(int storeId)
         {
@@ -56,7 +55,6 @@ namespace DATN_API.Controllers
             return Ok(vouchers);
         }
 
-        // GET: api/vouchers/admin
         [HttpGet("admin")]
         public async Task<IActionResult> GetAdminVouchers()
         {
@@ -68,7 +66,6 @@ namespace DATN_API.Controllers
             return Ok(vouchers);
         }
 
-        // POST: api/vouchers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateVoucherDto dto)
         {
@@ -84,8 +81,8 @@ namespace DATN_API.Controllers
                 StartDate = dto.StartDate,
                 EndDate = dto.EndDate,
                 Quantity = dto.Quantity,
-                CategoryId = dto.CategoryId,     // không còn ApplyAllProducts
-                StoreId = dto.StoreId,           // null => admin voucher
+                CategoryId = dto.CategoryId,    
+                StoreId = dto.StoreId,           
                 CreatedByUserId = dto.CreatedByUserId,
                 CreatedByRoleId = dto.CreatedByRoleId,
 
@@ -102,7 +99,6 @@ namespace DATN_API.Controllers
             return CreatedAtAction(nameof(GetById), new { id = entity.Id }, entity);
         }
 
-        // PUT: api/vouchers/5
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateVoucherDto dto)
         {
@@ -123,8 +119,7 @@ namespace DATN_API.Controllers
             voucher.StartDate = dto.StartDate;
             voucher.EndDate = dto.EndDate;
             voucher.Quantity = dto.Quantity;
-            voucher.CategoryId = dto.CategoryId; // không còn ApplyAllProducts
-
+            voucher.CategoryId = dto.CategoryId; 
             voucher.CreatedByUserId = dto.CreatedByUserId;
             voucher.CreatedByRoleId = dto.CreatedByRoleId;
 
@@ -135,7 +130,6 @@ namespace DATN_API.Controllers
             return NoContent();
         }
 
-        // DELETE: api/vouchers/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -147,7 +141,6 @@ namespace DATN_API.Controllers
             return NoContent();
         }
 
-        // GET: api/vouchers/bystoreoradmin?storeId=...
         [HttpGet("bystoreoradmin")]
         public async Task<IActionResult> GetVouchers([FromQuery] int? storeId)
         {
@@ -155,7 +148,6 @@ namespace DATN_API.Controllers
             return Ok(vouchers);
         }
 
-        // POST: api/vouchers/apply  (tính giảm giá)
         [HttpPost("apply")]
         public async Task<IActionResult> Apply([FromBody] ApplyVoucherRequestDto req)
         {
