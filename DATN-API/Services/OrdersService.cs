@@ -724,5 +724,64 @@ namespace DATN_API.Services
                 .SumAsync(o => (decimal?)o.TotalPrice) ?? 0;
         }
 
+
+        public async Task<(bool Success, string Message)> CancelOrderAsync(int orderId, int userId)
+        {
+            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
+            if (order == null)
+                return (false, "Không tìm thấy đơn hàng");
+
+            if (order.Status == OrderStatus.DaHoanThanh)
+                return (false, "Đơn hàng đã hoàn thành, không thể hủy");
+
+            if (order.Status == OrderStatus.DaHuy)
+                return (false, "Đơn hàng đã được hủy trước đó");
+
+            string ghtkMessage = string.Empty;
+
+            // Nếu đơn đã đẩy sang GHTK
+            if (!string.IsNullOrWhiteSpace(order.LabelId))
+            {
+                var ghtkResult = await _ghtk.CancelOrderAsync(order.LabelId);
+                if (!ghtkResult)
+                {
+                    return (false, "Hủy đơn trên GHTK thất bại");
+                }
+
+                // Ghi log khi hủy trên GHTK thành công
+                ghtkMessage = $" (Đã hủy thành công trên GHTK - LabelId: {order.LabelId})";
+            }
+
+            // Cập nhật trạng thái trong DB
+            order.Status = OrderStatus.DaHuy;
+            await _context.SaveChangesAsync();
+
+            return (true, "Hủy đơn hàng thành công" + ghtkMessage);
+        }
+
+        // Service
+        public async Task<(bool Success, string Message, OrderStatus? Status)> UpdateToNextStatusAsync(int orderId)
+        {
+            var order = await _context.Orders.FindAsync(orderId);
+            if (order == null) return (false, "Không tìm thấy đơn hàng", null);
+
+            OrderStatus nextStatus = order.Status switch
+            {
+                OrderStatus.ChoLayHang => OrderStatus.DangGiao,
+                OrderStatus.DangGiao => OrderStatus.DaHoanThanh,
+                _ => order.Status
+            };
+
+            if (nextStatus == order.Status)
+                return (false, "Không thể cập nhật trạng thái tiếp theo cho đơn hàng này", order.Status);
+
+            order.Status = nextStatus;
+            await _context.SaveChangesAsync();
+
+            return (true, "Cập nhật thành công", order.Status);
+        }
+
+
+
     }
 }

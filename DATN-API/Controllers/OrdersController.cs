@@ -241,5 +241,28 @@ namespace DATN_API.Controllers
                 labelId = label
             });
         }
+
+
+        [HttpPost("{id:int}/cancel/user/{userId:int}")]
+        public async Task<IActionResult> CancelOrder(int id, int userId)
+        {
+            var result = await _service.CancelOrderAsync(id, userId);
+
+            if (!result.Success)
+                return BadRequest(new { message = result.Message });
+
+            return Ok(new { message = result.Message });
+        }
+
+        // Controller
+        [HttpPatch("{id:int}/nextstatus")]
+        public async Task<IActionResult> UpdateToNextStatus(int id)
+        {
+            var (success, message, status) = await _service.UpdateToNextStatusAsync(id);
+            if (!success) return BadRequest(new { message, status });
+            return Ok(new { message, status = status.ToString() });
+        }
+
+
     }
 }

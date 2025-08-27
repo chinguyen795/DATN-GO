@@ -747,18 +747,15 @@
         </div>
     </div>
 </div>
-
 <script>
     const API_BASE_URL = 'https://localhost:7096/api'; // Khai báo duy nhất 1 lần
     let productTotal = 0;
-
     document.addEventListener('DOMContentLoaded', function () {
         // --- Xử lý style tab ---
         const originalColors = {};
         document.querySelectorAll('#orderTabs .nav-link').forEach(tab => {
             originalColors[tab.id] = Array.from(tab.classList).find(cls => cls.startsWith('text-'));
         });
-
         document.querySelectorAll('#orderTabs .nav-link').forEach(tab => {
             tab.addEventListener('shown.bs.tab', function () {
                 document.querySelectorAll('#orderTabs .nav-link').forEach(t => {
@@ -769,21 +766,17 @@
                 this.classList.add('bg-danger', 'bg-opacity-25', 'text-white');
             });
         });
-
         const activeTab = document.querySelector('#orderTabs .nav-link.active');
         if (activeTab) {
             activeTab.classList.remove(originalColors[activeTab.id]);
             activeTab.classList.add('bg-danger', 'bg-opacity-25', 'text-white');
         }
-
         // --- Modal chi tiết đơn hàng ---
         const orderDetailsModal = new bootstrap.Modal(document.getElementById('orderDetailsModal'));
-
         function formatCurrency(value) {
             if (typeof value !== 'number') return value;
             return value.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
         }
-
         function mapStatus(status) {
             const map = {
                 'ChoXuLy': ['Chờ xử lý', 'bg-warning text-dark'],
@@ -794,71 +787,57 @@
             };
             return map[status] || ['Không xác định', 'bg-secondary text-white'];
         }
-
         document.querySelectorAll('tr[data-order-id]').forEach(row => {
             row.addEventListener('click', async (event) => {
                 if (event.target.closest('td:last-child')) return;
-
                 const orderId = row.getAttribute('data-order-id');
                 if (!orderId) return;
-
                 try {
-                    const resp = await fetch(`${API_BASE_URL}/orders/${orderId}`);
+                    const resp = await fetch(`${API_BASE_URL}/orders/${orderId}/detail`);
                     if (!resp.ok) throw new Error('Không lấy được thông tin đơn hàng');
                     const order = await resp.json();
-
                     document.getElementById('modalOrderId').textContent = `#${order.id}`;
                     document.getElementById('modalCustomerName').textContent = order.customerName || 'N/A';
                     const createdAt = new Date(order.createdAt);
                     document.getElementById('modalOrderDate').textContent = createdAt.toLocaleDateString('vi-VN');
                     document.getElementById('modalQuantity').textContent = `${order.totalQuantity} món`;
                     document.getElementById('modalTotalAmount').textContent = formatCurrency(order.grandTotal);
-
                     const [statusText, statusClass] = mapStatus(order.status);
                     const modalStatus = document.getElementById('modalStatus');
                     modalStatus.textContent = statusText;
                     modalStatus.className = '';
                     modalStatus.classList.add('badge', ...statusClass.split(' '), 'rounded-pill', 'px-3', 'py-2');
-
                     const tbody = document.getElementById('modalOrderItems');
                     tbody.innerHTML = '';
-
                     if (order.orderDetails && order.orderDetails.length > 0) {
-                            order.orderDetails.forEach(item => {
-        const tr2 = document.createElement('tr');
-        tr2.classList.add('bg-light');
-        const totalPrice = item.quantity * item.unitPrice;
-        productTotal += totalPrice;
-
-        tr2.innerHTML = `
-            <td>${item.productName || ''}</td>
-            <td>${item.quantity}</td>
-            <td>${formatCurrency(item.unitPrice)}</td>
-            <td>${formatCurrency(totalPrice)}</td>
-        `;
-        tbody.appendChild(tr2);
-    });
-
+                        order.orderDetails.forEach(item => {
+                            const tr2 = document.createElement('tr');
+                            tr2.classList.add('bg-light');
+                            const totalPrice = item.quantity * item.unitPrice;
+                            productTotal += totalPrice;
+                            tr2.innerHTML = `
+                                <td>${item.productName || ''}</td>
+                                <td>${item.quantity}</td>
+                                <td>${formatCurrency(item.unitPrice)}</td>
+                                <td>${formatCurrency(totalPrice)}</td>
+                            `;
+                            tbody.appendChild(tr2);
+                        });
                     } else {
                         tbody.innerHTML = `<tr><td colspan="4" class="text-center">Không có sản phẩm</td></tr>`;
                     }
-
                     orderDetailsModal.show();
-
                 } catch (error) {
-                    alert(error.message);
+                    showCustomToast(error.message, false);
                 }
             });
         });
-
         // --- Modal Xác nhận đơn hàng ---
         const confirmOrderModalEl = document.getElementById('confirmOrderModal');
         const confirmOrderModal = new bootstrap.Modal(confirmOrderModalEl);
-
         // --- Modal Từ chối đơn hàng ---
         const rejectOrderModalEl = document.getElementById('rejectOrderModal');
         const rejectOrderModal = new bootstrap.Modal(rejectOrderModalEl);
-
         // Hàm cập nhật trạng thái chung
         async function updateOrderStatus(orderId, newStatus) {
             try {
@@ -869,13 +848,12 @@
                     const text = await response.text();
                     throw new Error(text || 'Cập nhật trạng thái thất bại');
                 }
-                alert('Cập nhật trạng thái thành công!');
+                showCustomToast('Cập nhật trạng thái thành công!', true);
                 location.reload(); // Reload trang sau khi thành công
             } catch (error) {
-                alert('Lỗi: ' + error.message);
+                showCustomToast('Lỗi: ' + error.message, false);
             }
         }
-
         // Gán sự kiện mở modal xác nhận khi bấm nút xác nhận (btn-success) trên bảng
         document.querySelectorAll('.btn-success').forEach(button => {
             button.addEventListener('click', function (e) {
@@ -884,23 +862,20 @@
                 if (!tr) return;
                 const orderId = tr.getAttribute('data-order-id');
                 if (!orderId) return;
-
                 confirmOrderModalEl.dataset.orderId = orderId; // Lưu orderId vào dataset của modal
                 confirmOrderModal.show();
             });
         });
-
         // Xử lý nút xác nhận trong modal xác nhận đơn hàng
         document.getElementById('btnConfirmAccept').addEventListener('click', function () {
             const orderId = confirmOrderModalEl.dataset.orderId;
             if (!orderId) {
-                alert('Không xác định được đơn hàng');
+                showCustomToast('Không xác định được đơn hàng', false);
                 return;
             }
             updateOrderStatus(orderId, 'ChoLayHang'); // Gọi hàm cập nhật trạng thái
             confirmOrderModal.hide(); // Đóng modal
         });
-
         // Gán sự kiện mở modal từ chối khi bấm nút từ chối (btn-danger) trên bảng
         document.querySelectorAll('.btn-danger').forEach(button => {
             button.addEventListener('click', function (e) {
@@ -909,38 +884,70 @@
                 if (!tr) return;
                 const orderId = tr.getAttribute('data-order-id');
                 if (!orderId) return;
-
                 rejectOrderModalEl.dataset.orderId = orderId; // Lưu orderId vào dataset của modal
                 rejectOrderModal.show();
             });
         });
-         
         document.getElementById('btnConfirmReject').addEventListener('click', function () {
             const orderId = rejectOrderModalEl.dataset.orderId;
             if (!orderId) {
-                alert('Không xác định được đơn hàng');
+                showCustomToast('Không xác định được đơn hàng', false);
                 return;
             }
             updateOrderStatus(orderId, 'DaHuy'); // Gọi hàm cập nhật trạng thái
             rejectOrderModal.hide(); // Đóng modal
         });
+        // --- Nút cập nhật trạng thái trong Modal chi tiết ---
+        document.getElementById("btnUpdateStatus").addEventListener("click", async function () {
+            const orderIdText = document.getElementById("modalOrderId").textContent;
+            const orderId = orderIdText.replace("#", "").trim();
+            if (!orderId) {
+                showCustomToast("Không tìm thấy mã đơn", false);
+                return;
+            }
+            try {
+                const resp = await fetch(`${API_BASE_URL}/orders/${orderId}/nextstatus`, {
+                    method: "PATCH"
+                });
+                if (!resp.ok) {
+                    const err = await resp.json();
+                    throw new Error(err.message || "Cập nhật trạng thái thất bại");
+                }
+                const data = await resp.json();
+                showCustomToast(data.message || "Cập nhật thành công!", true);
+                // 🔄 Cập nhật badge trạng thái trong modal
+                const [statusText, statusClass] = mapStatus(data.status);
+                const modalStatus = document.getElementById("modalStatus");
+                modalStatus.textContent = statusText;
+                modalStatus.className = "";
+                modalStatus.classList.add("badge", ...statusClass.split(" "), "rounded-pill", "px-3", "py-2");
+                // 🔄 Cập nhật badge ở ngoài bảng luôn
+                const row = document.querySelector(`tr[data-order-id="${orderId}"]`);
+                if (row) {
+                    const statusCell = row.querySelector(".order-status");
+                    if (statusCell) {
+                        statusCell.textContent = statusText;
+                        statusCell.className = "";
+                        statusCell.classList.add("badge", ...statusClass.split(" "), "rounded-pill", "px-3", "py-2");
+                    }
+                }
+            } catch (error) {
+                showCustomToast("❌ Lỗi: " + error.message, false);
+            }
+        });
         // --- PHẦN QUẢN LÝ THỐNG KÊ ---
         const userId = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(userIdStr));
-
         const startDateInput = document.getElementById('startDate');
         const endDateInput = document.getElementById('endDate');
         const quickDateSelectButton = document.getElementById('quickDateSelectButton');
         const dropdownItems = document.querySelectorAll('#quickDateSelectButton + .dropdown-menu .dropdown-item');
-
         function formatNumber(num) {
             return num.toLocaleString('vi-VN');
         }
-
         function formatPercentChange(value) {
             const sign = value > 0 ? '+' : value < 0 ? '-' : '';
             return `${sign}${Math.abs(value).toFixed(1)}%`;
         }
-
         async function fetchStatistics(start, end) {
             try {
                 let url = `${API_BASE_URL}/orders/statistics-by-user/${userId}`;
@@ -948,19 +955,16 @@
                 if (start) params.push(`start=${encodeURIComponent(start.toISOString())}`);
                 if (end) params.push(`end=${encodeURIComponent(end.toISOString())}`);
                 if (params.length > 0) url += "?" + params.join("&");
-
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(await response.text() || 'Lỗi lấy dữ liệu thống kê');
-
                 const json = await response.json();
                 console.log("📊 API response:", json);
                 return json;
             } catch (error) {
-                alert('Không tải được số liệu: ' + error.message);
+                showCustomToast('Không tải được số liệu: ' + error.message, false);
                 return null;
             }
         }
-
         function updateStatisticsUI(data) {
             if (!data) return;
             const cardMap = {
@@ -969,15 +973,12 @@
                 shippingOrders: '.card.bg-success',
                 completedOrders: '.card.bg-primary'
             };
-
             for (const key in cardMap) {
                 if (typeof data[key] !== 'undefined') {
                     const card = document.querySelector(cardMap[key]);
                     if (!card) continue;
-
                     const h3 = card.querySelector('h3.display-6');
                     if (h3) h3.textContent = formatNumber(data[key] || 0);
-
                     const small = card.querySelector('small');
                     const percentKey = key + 'PercentChange';
                     if (small) {
@@ -993,7 +994,6 @@
                 }
             }
         }
-
         function handleQuickDateSelect(value) {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -1046,14 +1046,12 @@
             if (label) quickDateSelectButton.textContent = label.textContent.trim();
             loadStatistics();
         }
-
         async function loadStatistics() {
             const start = startDateInput.value ? new Date(startDateInput.value) : null;
             const end = endDateInput.value ? new Date(endDateInput.value) : null;
             const data = await fetchStatistics(start, end);
             updateStatisticsUI(data);
         }
-
         startDateInput.addEventListener('change', loadStatistics);
         endDateInput.addEventListener('change', loadStatistics);
         dropdownItems.forEach(item => {
@@ -1062,8 +1060,35 @@
                 handleQuickDateSelect(this.getAttribute('data-value'));
             });
         });
-
         loadStatistics();
     });
+        function showCustomToast(message, isSuccess = false) {
+        const container = document.getElementById('custom-toast-container');
+        if (!container) return;
+
+        const toastId = `toast-${Date.now()}`;
+        const toastHTML = `
+            <div id="${toastId}" class="toast custom-toast shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
+                <div class="toast-header ${isSuccess ? "bg-success" : "bg-danger"} text-white">
+                    <img src="${isSuccess ? "/icons/happy.gif" : "/icons/sad.gif"}" class="rounded me-2" alt="${isSuccess ? "Success" : "Error"}" width="24" height="24">
+                    <strong class="me-auto">${isSuccess ? "Thành công" : "Lỗi"}</strong>
+                    <small>Vừa xong</small>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"
+                            style="width: 26.4px; height: 26.4px;"></button>
+                </div>
+                <div class="toast-body">
+                    ${message}
+                </div>
+            </div>
+        `;
+
+        container.insertAdjacentHTML('beforeend', toastHTML);
+        const toastEl = document.getElementById(toastId);
+        const bsToast = new bootstrap.Toast(toastEl, { autohide: true, delay: 3000 });
+        bsToast.show();
+        toastEl.addEventListener('hidden.bs.toast', () => {
+            toastEl.remove();
+        });
+    }
+
 </script>
- 

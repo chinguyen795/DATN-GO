@@ -4,7 +4,18 @@
     ViewData["Title"] = "Order Page";
     ViewData["UseContainer"] = false;
 }
+<style>
+    #aiChatBox {
+        z-index: 2000 !important;
+        position: fixed !important;
+    }
 
+    .modal-backdrop {
+        z-index: 1040 !important;
+    }
+
+
+</style>
 <div class="px-0">
     <div class="row">
         <div class="col-lg-3 col-xl-2 d-none d-lg-block sidebar bg-white border-end">
@@ -193,7 +204,18 @@
                                                 </p>
                                                 <div>
                                                     <a href="@Url.Action("DetailOrder", "Order", new { id = order.Id })" class="btn btn-danger btn-sm">Chi tiết</a>
+                                                    @if (order.Status == "ChoXuLy" || order.Status == "ChoLayHang")
+                                                    {
+                                                        <a href="@Url.Action("CancelOrderConfirm", "Order", new { id = order.Id })"
+                                                           class="btn btn-outline-danger btn-sm ms-2">
+                                                            Hủy đơn
+                                                        </a>
+
+                                                    }
+
+
                                                 </div>
+
                                             </div>
                                         </div>
                                     }
@@ -206,7 +228,15 @@
         </div>
     </div>
 </div>
+<script>
+        document.addEventListener('DOMContentLoaded', function() {
+        var chatBox = document.getElementById('aiChatBox');
+        if(chatBox) {
+            document.body.appendChild(chatBox);
+        }
+    });
 
+</script>
 @functions {
     // Chuyển tab Id sang trạng thái order tương ứng của bạn
     private string GetStatusDisplayName(string status)
@@ -234,5 +264,5 @@
             _ => "bg-secondary"
         };
     }
-
+   
 }

@@ -11,11 +11,13 @@ namespace DATN_GO.Controllers
     {
         private readonly OrderService _orderService;
         private readonly UserService _userService;
+        private readonly ILogger<OrderController> _logger;
 
-        public OrderController(OrderService orderService, UserService userService)
+        public OrderController(OrderService orderService, UserService userService, ILogger<OrderController> logger)
         {
             _orderService = orderService;
             _userService = userService;
+            _logger = logger;
         }
 
         // GET: /Order/DetailOrder/{id}
@@ -84,6 +86,45 @@ namespace DATN_GO.Controllers
             TempData["SuccessMessage"] = "Đặt hàng COD thành công!";
             return RedirectToAction("DetailOrder", new { id });
         }
+
+        
+        public async Task<IActionResult> CancelOrderConfirm(int id)
+        {
+            var userIdStr = HttpContext.Session.GetString("Id");
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
+                return Redirect("https://localhost:7180/Login");
+
+            var order = await _orderService.GetOrderDetailByIdAsync(id, userId);
+            if (order == null)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy đơn hàng hoặc bạn không có quyền hủy.";
+                return RedirectToAction("Index");
+            }
+
+            return View(order); // View dùng @model OrderDetailVM
+        }
+
+        public async Task<IActionResult> CancelOrder(int id)
+        {
+            var userIdStr = HttpContext.Session.GetString("Id");
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
+                return Unauthorized(new { message = "Bạn cần đăng nhập để hủy đơn." });
+
+            var result = await _orderService.CancelOrderAsync(id, userId);
+
+            // Ghi log
+            if (result.Success)
+            {
+                _logger.LogInformation("User {UserId} đã hủy đơn hàng {OrderId} thành công.", userId, id);
+            }
+            else
+            {
+                _logger.LogWarning("User {UserId} hủy đơn hàng {OrderId} thất bại. {Message}", userId, id, result.Message);
+            }
+
+            return RedirectToAction("DetailOrder", new { id });
+        }
+
 
     }
 }

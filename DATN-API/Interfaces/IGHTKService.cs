@@ -8,5 +8,8 @@ namespace DATN_API.Interfaces
         Task<int?> CalculateShippingFeeAsync(GHTKFeeRequestViewModel model);
         Task<string?> CreateOrderAsync(GHTKCreateOrderRequest payload);
         Task<(bool Success, string? Label, string Raw)> CreateOrderDebugAsync(GHTKCreateOrderRequest payload);
+
+
+        Task<bool> CancelOrderAsync(string labelId);
     }
 }

@@ -292,5 +292,32 @@ namespace DATN_GO.Service
             }
         }
 
+
+        public async Task<(bool Success, string Message)> CancelOrderAsync(int orderId, int userId)
+        {
+            try
+            {
+                var url = $"{_baseUrl}orders/{orderId}/cancel/user/{userId}";
+                var response = await _httpClient.PostAsync(url, null); // POST không cần body
+
+                var message = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"[OrderService] ✅ Hủy đơn {orderId} thành công. API trả: {message}");
+                    return (true, "Đơn hàng đã được hủy thành công.");
+                }
+                else
+                {
+                    Console.WriteLine($"[OrderService] ❌ Hủy đơn {orderId} thất bại. API trả: {message}");
+                    return (false, $"Hủy đơn thất bại: {message}");
+                }
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Lỗi khi gọi API hủy đơn: {ex.Message}");
+            }
+        }
+
     }
 }

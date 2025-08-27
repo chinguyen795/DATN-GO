@@ -1,186 +1,199 @@
-﻿@model DATN_GO.ViewModels.OrderViewModel
+﻿@if (Model != null)
+{
+    <div class="container-fluid py-4">
+        <!-- Back Button -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <a asp-controller="Order" asp-action="Index" class="btn btn-outline-crimson">
+                    <i class="bi bi-arrow-left me-2"></i>Quay lại danh sách đơn hàng
+                </a>
+            </div>
+        </div>
 
-@{
-    ViewData["Title"] = "Chi tiết hóa đơn";
-    ViewData["UseContainer"] = false;
-}
-
-<div class="px-0">
-    <div class="row">
-        <!-- Left Sidebar -->
-        <div class="col-lg-3 col-xl-2 d-none d-lg-block sidebar bg-white border-end">
-            <div class="position-sticky" style="top: 1rem;">
-                <div class="p-3 border-bottom">
-                    <div class="d-flex align-items-center mb-3">
-                        <img src="https://i.pinimg.com/736x/f0/cd/c4/f0cdc47ddb7f9dd5e86c3e7915c8b337.jpg" alt="Profile"
-                             class="rounded-circle me-2" style="width: 45px; height: 45px;">
-                        <div>
-                            <h6 class="mb-0">@ViewBag.UserFullName</h6>
-                            <small class="text-muted">@ViewBag.UserNickName</small>
-
+        <!-- Order Header Card -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow border-0">
+                    <div class="card-header bg-crimson text-white py-3">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <h4 class="mb-0">
+                                    <i class="bi bi-receipt-cutoff me-2"></i>
+                                    Đơn hàng #@Model.OrderId
+                                </h4>
+                            </div>
+                            <div class="col-md-6 text-md-end">
+                                <span class="badge bg-light text-dark fs-6 px-3 py-2">@Model.Status</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-4">
+                            <div class="col-md-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-light rounded-circle p-3 me-3">
+                                        <i class="bi bi-calendar3 text-crimson fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted">Ngày đặt</small>
+                                        <div class="fw-semibold">@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-light rounded-circle p-3 me-3">
+                                        <i class="bi bi-credit-card text-success fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted">Thanh toán</small>
+                                        <div class="fw-semibold">@Model.PaymentMethod</div>
+                                        <small class="text-success">@Model.PaymentStatus</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-light rounded-circle p-3 me-3">
+                                        <i class="bi bi-truck text-info fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted">Vận chuyển</small>
+                                        <div class="fw-semibold">Giao hàng tiết kiệm</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-light rounded-circle p-3 me-3">
+                                        <i class="bi bi-qr-code text-warning fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted">Mã vận đơn</small>
+                                        <div class="fw-semibold">@Model.LabelId</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                <ul class="nav flex-column p-3">
-                    <li class="nav-item mb-2">
-                        <a href="Profile.html" class="nav-link text-dark">
-                            <i class="bi bi-person-circle me-2"></i>
-                            Thông tin cá nhân
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a href="#" class="nav-link active text-danger">
-                            <i class="bi bi-box-seam me-2"></i> Đơn hàng của tôi
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a href="Address.html" class="nav-link text-dark">
-                            <i class="bi bi-geo-alt me-2"></i>
-                            Địa chỉ
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a href="Vouchers.html" class="nav-link text-dark">
-                            <i class="bi bi-ticket-perforated me-2"></i>
-                            Voucher
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a href="#" class="nav-link text-dark">
-                            <i class="bi bi-bell me-2"></i>
-                            Thông báo
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link text-dark">
-                            <i class="bi bi-box-arrow-right me-2"></i>
-                            Đăng xuất
-                        </a>
-                    </li>
-                </ul>
             </div>
         </div>
-         
-        <div class="col-lg-9 col-xl-10 p-4">
-            <div class="bg-white p-4 rounded shadow-lg">
-                <div class="mb-4">
-                    <h4 class="text-danger mb-0">
-                        <i class="bi bi-receipt me-2"></i>
-                        Chi tiết hóa đơn - Mã đơn hàng: #@Model.Id
-                    </h4>
-                    <small class="text-muted">Ngày đặt hàng: @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+
+        <!-- Products Card -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow border-0">
+                    <div class="card-header bg-light py-3">
+                        <h5 class="mb-0">
+                            <i class="bi bi-basket3 me-2 text-crimson"></i>
+                            Sản phẩm đã đặt
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col" class="border-0 ps-4">Hình ảnh</th>
+                                        <th scope="col" class="border-0">Tên sản phẩm</th>
+                                        <th scope="col" class="border-0 text-center">Số lượng</th>
+                                        <th scope="col" class="border-0 text-end">Đơn giá</th>
+                                        <th scope="col" class="border-0 text-end pe-4">Tạm tính</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Items)
+                                    {
+                                        <tr>
+                                            <td class="ps-4 py-3">
+                                                @if (!string.IsNullOrEmpty(item.Image))
+                                                {
+                                                    <img src="@item.Image"
+                                                         class="rounded shadow-sm"
+                                                         width="70"
+                                                         height="70"
+                                                         style="object-fit: cover;" />
+                                                }
+                                                else
+                                                {
+                                                    <div class="bg-light rounded d-flex align-items-center justify-content-center"
+                                                         style="width: 70px; height: 70px;">
+                                                        <i class="bi bi-image text-muted"></i>
+                                                    </div>
+                                                }
+                                            </td>
+                                            <td class="py-3">
+                                                <div class="fw-semibold text-dark">@item.ProductName</div>
+                                            </td>
+                                            <td class="text-center py-3">
+                                                <span class="badge bg-secondary rounded-pill px-3">@item.Quantity</span>
+                                            </td>
+                                            <td class="text-end py-3">
+                                                <span class="text-muted">@item.Price.ToString("N0") đ</span>
+                                            </td>
+                                            <td class="text-end pe-4 py-3">
+                                                <span class="fw-semibold text-dark">@item.SubTotal.ToString("N0") đ</span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-                 
-                <div class="mb-4">
-                    <h5>Thông tin khách hàng</h5>
-                    <dl class="row">
-                        <dt class="col-sm-3">Tên khách hàng:</dt>
-                        <dd class="col-sm-9">@Model.CustomerName</dd>
+            </div>
+        </div>
 
-                        <dt class="col-sm-3">Số điện thoại:</dt>
-                        <dd class="col-sm-9">@Model.CustomerPhone ?? "Chưa có"</dd>
+        <!-- Order Summary Card -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow border-0">
+                    <div class="card-body p-4">
+                        <div class="row justify-content-end">
+                            <div class="col-md-6 col-lg-4">
+                                <div class="bg-light rounded p-4">
+                                    <h6 class="text-uppercase text-muted mb-3">Tóm tắt đơn hàng</h6>
 
-                        <dt class="col-sm-3">Phương thức giao hàng:</dt>
-                        <dd class="col-sm-9">@Model.ShippingMethodName</dd>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Tạm tính:</span>
+                                        <span class="fw-semibold">@Model.ItemsTotal.ToString("N0") đ</span>
+                                    </div>
 
-                        <dt class="col-sm-3">Phí vận chuyển:</dt>
-                        <dd class="col-sm-9">@Model.ShippingFee.ToString("N0") ₫</dd>
-                        <dt class="col-sm-3">Voucher áp dụng:</dt>
-                        <dd class="col-sm-9">
-                            @((Model.VoucherReduce ?? 0).ToString("N0")) ₫
-                        </dd>
+                                    <div class="d-flex justify-content-between mb-3 pb-3 border-bottom">
+                                        <span>Phí vận chuyển:</span>
+                                        <span class="fw-semibold">@Model.DeliveryFee.ToString("N0") đ</span>
+                                    </div>
 
-                        <dt class="col-sm-3">Phương thức thanh toán:</dt>
-                        <dd class="col-sm-9">@Model.PaymentMethod</dd>
-
-                        <dt class="col-sm-3">Trạng thái thanh toán:</dt>
-                        <dd class="col-sm-9">@Model.PaymentStatus ?? "Chưa cập nhật"</dd>
-
-                        <dt class="col-sm-3">Trạng thái đơn hàng:</dt>
-                        <dd class="col-sm-9">
-                            <span class="badge @GetBadgeClass(Model.Status)">
-                                @Model.Status
-                            </span>
-                        </dd>
-                    </dl>
-                </div>
-
-                <!-- Order details: products list -->
-                <div class="mb-4">
-                    <h5>Chi tiết sản phẩm</h5>
-                    <table class="table table-bordered align-middle">
-                        <thead class="table-danger">
-                            <tr>
-                                <th>Hình ảnh</th>
-                                <th>Tên sản phẩm</th>
-                                <th>Số lượng</th>
-                                <th>Đơn giá</th>
-                                <th>Thành tiền</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model.OrderDetails)
-                            {
-                                <tr>
-                                    <td style="width: 160px;">
-                                        <img src="@(item.ProductImage ?? "https://via.placeholder.com/80x80.png?text=No+Image")"
-                                             alt="@item.ProductName" class="img-fluid rounded" />
-                                    </td>
-                                    <td>@item.ProductName</td>
-                                    <td>@item.Quantity</td>
-                                    <td>@item.UnitPrice.ToString("N0") ₫</td>
-                                    <td class="text-danger fw-bold">@((item.UnitPrice * item.Quantity).ToString("N0")) ₫</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Summary -->
-                <div class="text-end fs-5">
-                    <p class="mb-1">
-                        <strong>Tổng số lượng:</strong> @Model.TotalQuantity sản phẩm
-                    </p>
-                    <p class="mb-1">
-                        <strong>Tổng tiền hàng:</strong> @Model.TotalPrice.ToString("N0") ₫
-                    </p>
-                    <p class="mb-1">
-                        <strong>Phí vận chuyển:</strong> @Model.ShippingFee.ToString("N0") ₫
-                    </p>
-                    <p class="mb-1">
-                        <strong>Giảm giá voucher:</strong> -@((Model.VoucherReduce ?? 0).ToString("N0")) ₫
-                    </p>
-                    <p class="mb-0 text-danger fw-bold fs-4">
-                        Tổng thanh toán: @Model.GrandTotal.ToString("N0") ₫
-                    </p>
-                </div>
-
-                <div class="mt-4 d-flex justify-content-between">
-                    <a href="@Url.Action("Index", "Order")" class="btn btn-outline-secondary">
-                        <i class="bi bi-arrow-left-circle me-1"></i> Quay lại danh sách đơn hàng
-                    </a>
-                    <button class="btn btn-danger">
-                        <i class="bi bi-printer me-1"></i> In hóa đơn
-                    </button>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="fs-5 fw-bold text-crimson">Tổng cộng:</span>
+                                        <span class="fs-4 fw-bold text-crimson">@Model.TotalPrice.ToString("N0") đ</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-
-@functions {
-    // Hàm lấy class badge bootstrap cho từng trạng thái đơn hàng (để hiển thị màu sắc phù hợp)
-    private string GetBadgeClass(string status)
-    {
-        return status.ToLower() switch
-        {
-            "chờ xác nhận" => "bg-warning",
-            "chờ lấy hàng" => "bg-info",
-            "đang giao" => "bg-success",
-            "đã giao" => "bg-primary",
-            "đã hủy" => "bg-danger",
-            _ => "bg-secondary",
-        };
-    }
+}
+else
+{
+    <div class="container-fluid py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6 text-center">
+                <div class="card shadow border-0">
+                    <div class="card-body py-5">
+                        <i class="bi bi-exclamation-triangle text-warning display-1 mb-3"></i>
+                        <h3 class="text-muted mb-3">Không tìm thấy đơn hàng</h3>
+                        <p class="text-muted">Đơn hàng bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.</p>
+                        <a asp-controller="Order" asp-action="Index" class="btn btn-crimson">
+                            <i class="bi bi-arrow-left me-2"></i>Quay lại danh sách đơn hàng
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 }

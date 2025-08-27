@@ -140,7 +140,7 @@ namespace DATN_API.Controllers
             if (isValid && rspCode == "00")
             {
                 order.PaymentStatus = "Paid";
-                order.Status = OrderStatus.DaHoanThanh;   // hoặc trạng thái bạn dùng
+                order.Status = OrderStatus.ChoLayHang;   // hoặc trạng thái bạn dùng
                 order.PaymentDate = DateTime.UtcNow;
 
                 // 💥 xoá các item đã tick trong giỏ

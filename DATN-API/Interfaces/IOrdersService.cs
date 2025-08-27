@@ -29,5 +29,10 @@ namespace DATN_API.Services.Interfaces
         Task<decimal> GetTotalRevenueAsync();
         Task<string?> PushOrderToGhtkAndSaveLabelCodAsync(int orderId);
 
+
+
+        Task<(bool Success, string Message)> CancelOrderAsync(int orderId, int userId);
+
+        Task<(bool Success, string Message, OrderStatus? Status)> UpdateToNextStatusAsync(int orderId);
     }
 }

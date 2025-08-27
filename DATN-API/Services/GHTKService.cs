@@ -119,6 +119,42 @@ namespace DATN_API.Services
                 return (false, null, respStr);
             }
         }
+        public async Task<bool> CancelOrderAsync(string labelId)
+        {
+            if (string.IsNullOrWhiteSpace(labelId)) return false;
+
+            var baseUrl = _config["GHTK:BaseUrl"] ?? "";
+            var token = _config["GHTK:Token"] ?? ""; // lấy token staging từ config
+            var url = $"{baseUrl.TrimEnd('/')}/services/shipment/cancel/{labelId}";
+
+            Console.WriteLine("[GHTK] Hủy đơn: " + url);
+
+            using var request = new HttpRequestMessage(HttpMethod.Post, url);
+            request.Headers.Add("Token", token);
+
+            var response = await _httpClient.SendAsync(request);
+            var respStr = await response.Content.ReadAsStringAsync();
+
+            Console.WriteLine("[GHTK] Cancel Status: " + response.StatusCode);
+            Console.WriteLine("[GHTK] Cancel Body  : " + respStr);
+
+            try
+            {
+                var obj = JObject.Parse(respStr);
+                var ok = obj["success"]?.Value<bool>() == true;
+
+                if (!ok)
+                {
+                    Console.WriteLine("[GHTK] Lỗi hủy đơn: " + obj["message"]?.ToString());
+                }
+
+                return ok;
+            }
+            catch
+            {
+                return false;
+            }
+        }
 
     }
 }
