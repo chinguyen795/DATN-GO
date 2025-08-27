@@ -1318,10 +1318,10 @@ namespace DATN_API.Migrations
                     b.Property<int?>("CategoryId")
                         .HasColumnType("int");
 
-                    b.Property<int>("CreatedByRoleId")
+                    b.Property<int?>("CreatedByRoleId")
                         .HasColumnType("int");
 
-                    b.Property<int>("CreatedByUserId")
+                    b.Property<int?>("CreatedByUserId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("EndDate")
@@ -1354,7 +1354,7 @@ namespace DATN_API.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
-                    b.Property<int>("UsedCount")
+                    b.Property<int?>("UsedCount")
                         .HasColumnType("int");
 
                     b.HasKey("Id");

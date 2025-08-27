@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DATN_API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250827071325_demo")]
-    partial class demo
+    [Migration("20250827095252_sadsad434")]
+    partial class sadsad434
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1321,10 +1321,10 @@ namespace DATN_API.Migrations
                     b.Property<int?>("CategoryId")
                         .HasColumnType("int");
 
-                    b.Property<int>("CreatedByRoleId")
+                    b.Property<int?>("CreatedByRoleId")
                         .HasColumnType("int");
 
-                    b.Property<int>("CreatedByUserId")
+                    b.Property<int?>("CreatedByUserId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("EndDate")
@@ -1357,7 +1357,7 @@ namespace DATN_API.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
-                    b.Property<int>("UsedCount")
+                    b.Property<int?>("UsedCount")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
