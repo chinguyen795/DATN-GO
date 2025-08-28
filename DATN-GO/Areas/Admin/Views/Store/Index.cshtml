@@ -700,8 +700,16 @@
                                 </div>
                             </div>
                         </div>
-                        <h6 class="mt-4">${data.variantName1 || 'Biến thể 1'} ${data.variantName2 ? ' / ' + data.variantName2 : ''}</h6>
-                        <div class="table-responsive">
+        <!-- Sau phần dl -->
+        <div class="mt-3">
+            <h6>Mô tả sản phẩm</h6>
+            <div class="border p-3 rounded bg-light">
+                ${data.description ?
+                            data.description.replace(/\n/g, '<br>') :
+                            '<em class="text-muted">Chưa có mô tả</em>'
+                        }
+            </div>
+        </div>                        <div class="table-responsive">
                             <table class="table table-bordered table-sm">
                                 <thead class="table-light">
                                     <tr>

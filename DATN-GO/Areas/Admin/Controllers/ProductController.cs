@@ -154,8 +154,8 @@ namespace DATN_GO.Areas.Admin.Controllers
                 variantName1 = variantName1,
                 variantName2 = variantName2,
                 variants = variantData,
-                mainImage = product?.MainImage 
-
+                mainImage = product?.MainImage,
+                description = product?.Description
             });
         }
 

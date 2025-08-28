@@ -83,8 +83,7 @@
                                         <th>Ảnh</th>
                                         <th>Sản phẩm</th>
                                         <th>Danh mục</th>
-                                        <th>Giá</th>
-                                        <th>Tồn kho</th>
+                  
                                         <th>Cửa hàng</th>
                                         <th>Trạng thái</th>
                                         <th>Thao tác</th>
@@ -101,8 +100,7 @@
                                             </td>
                                             <td>@p.Name</td>
                                             <td>@p.CategoryName</td>
-                                            <td>@String.Format("{0:#,##0}₫", p.CostPrice)</td>
-                                            <td>@p.Quantity</td>
+                                
                                             <td>@p.StoreName</td>
                                             <td><span class="badge badge-warning">@GetStatusDisplayName(p.Status)</span></td>
                                             <td>
@@ -508,11 +506,20 @@
                                         <dt>Giá</dt><dd>${data.price > 0 ? data.price.toLocaleString('vi-VN') + ' ₫' : 'Chưa có giá'}</dd>
                                         <dt>Ngày tạo</dt><dd>${data.createat || 'Chưa có'}</dd>
                                     </dl>
+
                                 </div>
                             </div>
                         </div>
-                        <h6 class="mt-4">${data.variantName1 || 'Biến thể 1'} ${data.variantName2 ? ' / ' + data.variantName2 : ''}</h6>
-                        <div class="table-responsive">
+        <!-- Sau phần dl -->
+        <div class="mt-3">
+            <h6>Mô tả sản phẩm</h6>
+            <div class="border p-3 rounded bg-light">
+                ${data.description ?
+                            data.description.replace(/\n/g, '<br>') :
+                            '<em class="text-muted">Chưa có mô tả</em>'
+                        }
+            </div>
+        </div>                        <div class="table-responsive">
                             <table class="table table-bordered table-sm">
                                 <thead class="table-light">
                                     <tr>
