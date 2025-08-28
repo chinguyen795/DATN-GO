@@ -1,10 +1,10 @@
 ﻿@model List<DATN_GO.ViewModels.OrderViewModel>
 @using DATN_GO.Models
 @{
-    var userIdStr = Context.Session.GetString("Id");  
+    var userIdStr = Context.Session.GetString("Id");
     if (string.IsNullOrEmpty(userIdStr))
     {
-        Context.Response.Redirect("https://localhost:7180/Login");  
+        Context.Response.Redirect("https://localhost:7180/Login");
     }
     else
     {
@@ -119,38 +119,36 @@
 
             <span class="page-title">ĐƠN HÀNG @userIdStr</span>
 
-
             <div class="navbar-right ">
 
                 <ul class="nav navbar-nav">
                     <li class="custom-dropdown">
-                        <a class="notify-toggler custom-dropdown-toggler" asp-controller="Notification" asp-action="Notification">
+                        <a asp-area="Seller" asp-controller="Notification" asp-action="Notification" class="notify-toggler custom-dropdown-toggler">
                             <i class="mdi mdi-bell-outline icon"></i>
                         </a>
                     </li>
                     <!-- User Account -->
                     <li class="dropdown user-menu">
                         <button class="dropdown-toggle nav-link" data-toggle="dropdown">
-                            <img src="~/images/avt-user.jpg" alt="User Profile" width="32" height="32" style="object-fit: cover;" loading="lazy">
-                            <span class="d-none d-lg-inline-block">@ViewBag.StoreName</span>
+                            <img src="~/images/avt-user.jpg" alt="User Profile" width="32" height="32"
+                                 style="object-fit: cover;" loading="lazy">
+                            <span class="d-none d-lg-inline-block">Meo Meo</span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-right">
                             <li>
-                                <a class="dropdown-link-item" asp-controller="Profile" asp-action="Index" asp-area="">
+                                <a class="dropdown-link-item" href="user-profile.html">
                                     <i class="mdi mdi-account-outline"></i>
-                                    <span class="nav-text">Hồ Sơ</span>
+                                    <span class="nav-text">Hồ Sơ</span>
                                 </a>
                             </li>
-
                             <li class="dropdown-footer">
-                                <a class="dropdown-link-item" href="/Seller/Order/Logout">
+                                <a class="dropdown-link-item" href="sign-in.html">
                                     <i class="mdi mdi-logout"></i> Đăng Xuất
                                 </a>
                             </li>
                         </ul>
                     </li>
                 </ul>
-
             </div>
         </nav>
 
@@ -163,7 +161,7 @@
     <div class="content-wrapper">
         <main class="py-5">
             <div class="container-fluid">
-                
+
                 <div class="modal fade" id="orderDetailsModal" tabindex="-1"
                      aria-labelledby="orderDetailsModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -816,11 +814,11 @@
                             const totalPrice = item.quantity * item.unitPrice;
                             productTotal += totalPrice;
                             tr2.innerHTML = `
-                                <td>${item.productName || ''}</td>
-                                <td>${item.quantity}</td>
-                                <td>${formatCurrency(item.unitPrice)}</td>
-                                <td>${formatCurrency(totalPrice)}</td>
-                            `;
+                                        <td>${item.productName || ''}</td>
+                                        <td>${item.quantity}</td>
+                                        <td>${formatCurrency(item.unitPrice)}</td>
+                                        <td>${formatCurrency(totalPrice)}</td>
+                                    `;
                             tbody.appendChild(tr2);
                         });
                     } else {
@@ -1062,25 +1060,25 @@
         });
         loadStatistics();
     });
-        function showCustomToast(message, isSuccess = false) {
+    function showCustomToast(message, isSuccess = false) {
         const container = document.getElementById('custom-toast-container');
         if (!container) return;
 
         const toastId = `toast-${Date.now()}`;
         const toastHTML = `
-            <div id="${toastId}" class="toast custom-toast shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
-                <div class="toast-header ${isSuccess ? "bg-success" : "bg-danger"} text-white">
-                    <img src="${isSuccess ? "/icons/happy.gif" : "/icons/sad.gif"}" class="rounded me-2" alt="${isSuccess ? "Success" : "Error"}" width="24" height="24">
-                    <strong class="me-auto">${isSuccess ? "Thành công" : "Lỗi"}</strong>
-                    <small>Vừa xong</small>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"
-                            style="width: 26.4px; height: 26.4px;"></button>
-                </div>
-                <div class="toast-body">
-                    ${message}
-                </div>
-            </div>
-        `;
+                    <div id="${toastId}" class="toast custom-toast shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
+                        <div class="toast-header ${isSuccess ? "bg-success" : "bg-danger"} text-white">
+                            <img src="${isSuccess ? "/icons/happy.gif" : "/icons/sad.gif"}" class="rounded me-2" alt="${isSuccess ? "Success" : "Error"}" width="24" height="24">
+                            <strong class="me-auto">${isSuccess ? "Thành công" : "Lỗi"}</strong>
+                            <small>Vừa xong</small>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"
+                                    style="width: 26.4px; height: 26.4px;"></button>
+                        </div>
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                    </div>
+                `;
 
         container.insertAdjacentHTML('beforeend', toastHTML);
         const toastEl = document.getElementById(toastId);
@@ -1092,3 +1090,4 @@
     }
 
 </script>
+

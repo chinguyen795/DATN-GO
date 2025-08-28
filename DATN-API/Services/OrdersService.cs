@@ -876,7 +876,7 @@ namespace DATN_API.Services
                     }
 
                     // ✅ Cộng dồn vào ví (giữ số dư cũ)
-                    store.MoneyAmout = (store.MoneyAmout ?? 0m) + credit;
+                    store.MoneyAmout = ((store.MoneyAmout ?? 0m) + credit) * 0.95m;
                 }
             }
 
