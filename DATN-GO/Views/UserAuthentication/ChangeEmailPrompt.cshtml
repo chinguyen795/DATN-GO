@@ -7,7 +7,7 @@
     <div class="row justify-content-center">
         <div class="col-lg-6">
             <div class="bg-white p-4 p-md-5 rounded shadow-sm">
-                <h4 class="text-danger text-center mb-4">Chỉnh sửa Email</h4>
+                <h4 class="text-crimson text-center mb-4">Chỉnh sửa Email</h4>
 
                 @if (!string.IsNullOrEmpty(ViewBag.CurrentEmail))
                 {
@@ -29,11 +29,11 @@
                         <div class="input-group">
                             <input asp-for="Email" class="form-control border-only-bottom" id="newEmail" name="newEmail" placeholder="Nhập email mới của bạn" required />
                         </div>
-                        <span asp-validation-for="Email" class="text-danger"></span>
+                        <span asp-validation-for="Email" class="text-crimson"></span>
                        
                     </div>
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-danger">
+                        <button type="submit" class="btn btn-crimson">
                             <i class="bi bi-check-circle me-1"></i>Gửi mã xác nhận
                         </button>
                     </div>

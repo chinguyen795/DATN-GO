@@ -37,13 +37,13 @@
                             <div class="mb-3">
                                 <label asp-for="Identifier" class="form-label">Tài khoản</label>
                                 <input asp-for="Identifier" class="form-control form-control-lg" placeholder="Email / Số điện thoại" />
-                                <span asp-validation-for="Identifier" class="text-danger"></span>
+                                <span asp-validation-for="Identifier" class="text-crimson"></span>
                             </div>
 
                             <div class="mb-3">
                                 <label asp-for="Password" class="form-label">Mật khẩu</label>
                                 <input asp-for="Password" type="password" class="form-control form-control-lg" placeholder="Nhập mật khẩu" />
-                                <span asp-validation-for="Password" class="text-danger"></span>
+                                <span asp-validation-for="Password" class="text-crimson"></span>
                             </div>
 
                             <div class="mb-3 text-end">
@@ -58,7 +58,7 @@
                         <hr class="my-4">
 
                         <div class="d-grid gap-2">
-                            <button id="googleLoginBtn" class="btn btn-outline-danger">
+                            <button id="googleLoginBtn" class="btn btn-outline-crimson">
                                 <i class="fab fa-google me-2"></i>Đăng nhập với Google
                             </button>
                             <button class="btn btn-outline-primary">
@@ -123,7 +123,7 @@
             const toastHtml = `
                 <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" id="dynamicToast"
                      style="position: fixed; top: 1rem; right: 1rem; z-index: 1060; min-width: 320px;">
-                    <div class="toast-header d-flex align-items-center ${isSuccess ? "bg-success" : "bg-danger"} text-white">
+                    <div class="toast-header d-flex align-items-center ${isSuccess ? "bg-success" : "bg-crimson"} text-white">
                         <img src="${iconUrl}" alt="icon" width="20" height="20" class="me-2" />
                         <strong class="me-auto">${title}</strong>
                         <small class="text-white">Vừa xong</small>
