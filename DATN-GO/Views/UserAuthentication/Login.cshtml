@@ -75,10 +75,47 @@
             </div>
         </div>
     </div>
-
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1056">
+        @if (TempData["ToastMessage"] != null && TempData["ToastType"] != null)
+        {
+            var toastType = TempData["ToastType"].ToString();
+            var isSuccess = toastType == "success";
+            <div class="toast @(isSuccess ? "" : "mt-3")" role="alert" aria-live="assertive" aria-atomic="true"
+                 id="autoToast">
+                <div class="toast-header @(isSuccess ? "bg-success" : "bg-danger") text-white">
+                    <img src="@(isSuccess ? "/icons/happy.gif" : "/icons/sad.gif")" class="rounded me-2"
+                         alt="@(isSuccess ? "Success" : "Error")" width="20" height="20">
+                    <strong class="me-auto">@((isSuccess) ? "Thành công" : "Lỗi")</strong>
+                    <small>Vừa xong</small>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"
+                            aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                    @TempData["ToastMessage"]
+                </div>
+            </div>
+        }
+    </div>
     <!-- Google Identity Services -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="~/js/NotificationToast.js"></script>
+    <script src="~/js/Toast.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 
+    <!-- Kích hoạt toast -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toastElement = document.getElementById('autoToast');
+            if (toastElement) {
+                const toast = new bootstrap.Toast(toastElement, {
+                    autohide: true,
+                    delay: 5000
+                });
+                toast.show();
+            }
+        });
+    </script>
     <script>
         window.onload = function () {
             google.accounts.id.initialize({

@@ -11,8 +11,8 @@ namespace DATN_GO.ViewModels.Authentication
 
 
         [Required(ErrorMessage = "Vui lòng nhập mật khẩu.")]
-        [MinLength(7, ErrorMessage = "Mật khẩu phải từ 7 ký tự trở lên.")]
-        [MaxLength(100, ErrorMessage = "Mật khẩu không được vượt quá 100 ký tự.")]
+        [StringLength(15, MinimumLength = 7, ErrorMessage = "Mật khẩu phải từ 7-15 ký tự.")]
+
         public string Password { get; set; }
     }
 

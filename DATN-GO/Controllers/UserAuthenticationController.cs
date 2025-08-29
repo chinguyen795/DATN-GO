@@ -58,7 +58,7 @@ namespace DATN_GO.Controllers
             {
                 TempData["ToastMessage"] = "Tài khoản hoặc mật khẩu không đúng!";
                 TempData["ToastType"] = "danger";
-                return RedirectToAction("Login");
+                return View("Login", model);
             }
         }
 
