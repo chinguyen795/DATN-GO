@@ -8,6 +8,7 @@ using DATN_API.Services.Interfaces;
 using DATN_API.Services;
 using DATN_API.Interfaces;
 using DATN_API.Services.Ai;
+using DATN_API.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -89,6 +90,8 @@ builder.Services.AddCors(options =>
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IVNPayService, VNPayService>();
 builder.Services.AddScoped<IGHTKService, GHTKService>();
+builder.Services.AddScoped<IMomoService, MomoService>();
+
 
 
 builder.Services.AddAuthorization();

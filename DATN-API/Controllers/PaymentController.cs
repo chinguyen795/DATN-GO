@@ -2,6 +2,7 @@
 using DATN_API.Interfaces;
 using DATN_API.Models;
 using DATN_API.Services.Interfaces;
+using DATN_API.Services;
 using DATN_API.ViewModels.Vnpay;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,10 +17,13 @@ namespace DATN_API.Controllers
         private readonly ICartService _cartService;
         private readonly IVNPayService _vnp;
         private readonly IOrdersService _orders;
+        private readonly IMomoService _momo;
         private readonly IVouchersService _vouchers;
 
+        public PaymentController(ApplicationDbContext db, ICartService cartService, IVNPayService vnp, IOrdersService orders, IMomoService momo)
         public PaymentController(ApplicationDbContext db, ICartService cartService, IVNPayService vnp, IOrdersService orders, IVouchersService vouchers) // <-- inject)
         {
+            _db = db; _cartService = cartService; _vnp = vnp; _orders = orders; _momo = momo;
             _db = db; _cartService = cartService; _vnp = vnp; _orders = orders; _vouchers = vouchers;
         }
 
@@ -410,6 +414,170 @@ namespace DATN_API.Controllers
                 await tx.RollbackAsync();
                 return StatusCode(500, new { message = "Lỗi hệ thống khi tạo đơn COD.", detail = e.Message });
             }
+        }
+        [HttpPost("momo-create")]
+        public async Task<IActionResult> CreateMomo([FromBody] CreateVnpOrderRequest req)
+        {
+            // 1) Lấy cart đã tick, tính ship, voucher... (giống VNPay)
+            var cart = await _cartService.GetCartByUserIdAsync(req.UserId);
+            if (cart == null) return BadRequest("Cart not found");
+
+            var shippingGroups = await _cartService.GetShippingGroupsByUserIdAsync(req.UserId, req.AddressId);
+            var shippingFee = shippingGroups.Sum(g => g.ShippingFee);
+
+            var selected = cart.CartItems.Where(x => x.IsSelected).ToList();
+            if (!selected.Any()) return BadRequest("Không có sản phẩm nào được chọn.");
+
+            var subTotal = selected.Sum(x => x.TotalValue);
+            decimal voucherReduce = 0;
+            if (req.UserVoucherId.HasValue)
+            {
+                var voucher = cart.Vouchers.FirstOrDefault(v => v.Id == req.UserVoucherId.Value);
+                if (voucher != null) voucherReduce = voucher.Reduce;
+            }
+            var grandTotal = (long)Math.Max(0, subTotal + shippingFee - voucherReduce);
+
+            // 2) Bảo đảm ShippingMethod (như VNPay)
+            var representativeStoreId = selected.First().StoreId;
+            var shipMethod = await _db.ShippingMethods
+                .FirstOrDefaultAsync(sm => sm.StoreId == representativeStoreId && sm.MethodName == "GHTK_AUTO");
+            if (shipMethod == null)
+            {
+                shipMethod = new ShippingMethods
+                {
+                    StoreId = representativeStoreId,
+                    MethodName = "GHTK_AUTO",
+                    Price = 0
+                };
+                _db.ShippingMethods.Add(shipMethod);
+                await _db.SaveChangesAsync();
+            }
+
+            // 3) Tạo Orders (pending)
+            var order = new Orders
+            {
+                UserId = req.UserId,
+                OrderDate = DateTime.UtcNow,
+                PaymentMethod = "MoMo",
+                PaymentStatus = "Unpaid",
+                Status = OrderStatus.ChoXuLy,
+                TotalPrice = grandTotal,
+                DeliveryFee = shippingFee,
+                ShippingMethodId = shipMethod.Id
+            };
+            _db.Orders.Add(order);
+            await _db.SaveChangesAsync();
+
+            foreach (var item in selected)
+            {
+                _db.OrderDetails.Add(new OrderDetails
+                {
+                    OrderId = order.Id,
+                    ProductId = item.ProductId,
+                    Quantity = item.Quantity,
+                    Price = item.Price
+                });
+            }
+            await _db.SaveChangesAsync();
+
+            // 4) Gọi MoMo tạo URL thanh toán
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
+            var info = $"Thanh toán MoMo cho đơn #{order.Id}";
+            var (ok, payUrl, message) = await _momo.CreatePaymentAsync(order.Id.ToString(), grandTotal, info, ip);
+
+            if (!ok || string.IsNullOrWhiteSpace(payUrl))
+                return BadRequest(new { message = message ?? "Không tạo được thanh toán MoMo" });
+
+            return Ok(new { payUrl, orderId = order.Id });
+        }
+
+        [HttpGet("momo-callback")]
+        public async Task<IActionResult> MomoCallback()
+        {
+            // gom dữ liệu query vào dict<string,string>
+            var dict = Request.Query.ToDictionary(k => k.Key, v => v.Value.ToString());
+
+            // Validate (không bắt buộc trong sandbox nhưng nên có)
+            var signature = dict.TryGetValue("signature", out var sig) ? sig : "";
+            var valid = _momo.ValidateSignature(dict, signature);
+
+            var errorCode = dict.GetValueOrDefault("errorCode");
+            var momoOrderId = dict.GetValueOrDefault("orderId"); // dạng "1234_1693499999999"
+            if (string.IsNullOrWhiteSpace(momoOrderId))
+                return Redirect("https://localhost:7180/Checkout/Failure?message=Missing%20orderId");
+
+            // tách orderId thật
+            var realIdStr = momoOrderId.Split('_')[0];
+            if (!int.TryParse(realIdStr, out var realOrderId))
+                return Redirect("https://localhost:7180/Checkout/Failure?message=Invalid%20orderId");
+
+            var order = await _db.Orders.FirstOrDefaultAsync(o => o.Id == realOrderId);
+            if (order == null)
+                return Redirect("https://localhost:7180/Checkout/Failure?message=Order%20not%20found");
+
+            if (valid && errorCode == "0")
+            {
+                // thanh toán thành công
+                order.PaymentStatus = "Paid";
+                order.Status = OrderStatus.ChoLayHang;
+                order.PaymentDate = DateTime.UtcNow;
+
+                try { await _cartService.ClearSelectedAsync(order.UserId); } catch { }
+
+                await _db.SaveChangesAsync();
+
+                // (optional) đẩy sang GHTK nếu muốn
+                try
+                {
+                    if (string.IsNullOrEmpty(order.LabelId))
+                        await _orders.PushOrderToGhtkAndSaveLabelAsync(order.Id);
+                }
+                catch { }
+
+                // 👉 Redirect thẳng sang MVC trang chi tiết đơn
+                return Redirect($"https://localhost:7180/OrderUser/Detail/{order.Id}");
+            }
+            else
+            {
+                if (order.PaymentStatus != "Paid")
+                {
+                    order.PaymentStatus = "Failed";
+                    await _db.SaveChangesAsync();
+                }
+                return Redirect($"https://localhost:7180/Checkout/Failure?orderId={order.Id}&message=MoMo%20Failed");
+            }
+        }
+
+        [HttpPost("momo-ipn")]
+        public async Task<IActionResult> MomoIpn()
+        {
+            // IPN có thể gửi form hoặc json – ở đây đọc query+form đều được
+            var data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var kv in Request.Query) data[kv.Key] = kv.Value.ToString();
+            if (Request.HasFormContentType)
+                foreach (var kv in Request.Form) data[kv.Key] = kv.Value.ToString();
+
+            var signature = data.GetValueOrDefault("signature") ?? "";
+            var valid = _momo.ValidateSignature(data, signature);
+
+            var errorCode = data.GetValueOrDefault("errorCode");
+            var momoOrderId = data.GetValueOrDefault("orderId") ?? "";
+            var realStr = momoOrderId.Split('_').FirstOrDefault();
+            if (!int.TryParse(realStr, out var orderId)) return Ok(new { Result = 0 });
+
+            var order = await _db.Orders.FirstOrDefaultAsync(o => o.Id == orderId);
+            if (order == null) return Ok(new { Result = 0 });
+
+            if (valid && errorCode == "0" && order.PaymentStatus != "Paid")
+            {
+                order.PaymentStatus = "Paid";
+                order.Status = OrderStatus.ChoLayHang;
+                order.PaymentDate = DateTime.UtcNow;
+                try { await _cartService.ClearSelectedAsync(order.UserId); } catch { }
+                await _db.SaveChangesAsync();
+            }
+
+            return Ok(new { Result = 1 });
         }
     }
 }

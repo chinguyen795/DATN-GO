@@ -378,11 +378,43 @@
                 return;
             }
 
+
+    if (method === 'momo') {
+      const userVoucherId = voucherSelect?.value ? Number(voucherSelect.value) : null;
+      const body = { userId, addressId, userVoucherId };
+
+      const payRes = await fetch(`${API_BASE_URL}Payment/momo-create`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(body)
+      });
+
+      btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
+
+      if (!payRes.ok) {
+        const msg = await payRes.text();
+        return toast('Tạo thanh toán MoMo thất bại: ' + msg);
+      }
+
+      const { payUrl } = await payRes.json();
+      if (!payUrl) return toast('Không nhận được payUrl từ server.');
+
+      window.location.href = payUrl;  // chuyển qua cổng MoMo
+      return;
+    }
+
         } catch (e) {
             console.error(e);
             btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
             toast('Có lỗi xảy ra. Vui lòng thử lại.');
         }
+
+
+      } catch (e) {
+        console.error(e);
+        btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
+        toast('Có lỗi xảy ra. Vui lòng thử lại.');
+      }
     });
 </script>
 
