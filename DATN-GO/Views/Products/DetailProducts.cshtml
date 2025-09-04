@@ -1054,231 +1054,382 @@
 
 <!-- Cart Validation Script - FIXED -->
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  // ====== Config & helpers ======
-  const tokenEl = document.querySelector('#__quickAddToken input[name="__RequestVerificationToken"]');
-  const ANTIFORGERY = tokenEl ? tokenEl.value : null;
-  const BUY_NOW_KEY = '__BUY_NOW_PIDS'; // dùng cho "Mua ngay" để auto-tick khi vào Cart
+    document.addEventListener('DOMContentLoaded', () => {
+        // ====== Config & helpers ======
+        const tokenEl = document.querySelector('#__quickAddToken input[name="__RequestVerificationToken"]');
+        const ANTIFORGERY = tokenEl ? tokenEl.value : null;
+        const BUY_NOW_KEY = '__BUY_NOW_PIDS';
 
-  function toastOk(msg)  { if (window.showToast) showToast(msg, true);  else alert(msg); }
-  function toastErr(msg) { if (window.showToast) showToast(msg, false); else alert(msg); }
+        function toastOk(msg) { if (window.showToast) showToast(msg, true); else alert(msg); }
+        function toastErr(msg) { if (window.showToast) showToast(msg, false); else alert(msg); }
 
-  function getRequestedQty() {
-    const qtyEl = document.querySelector('#productQuantityInput');
-    const q = parseInt(qtyEl?.value);
-    return Number.isFinite(q) && q > 0 ? q : 1;
-  }
+        function getRequestedQty() {
+            const qtyEl = document.querySelector('#productQuantityInput');
+            const q = parseInt(qtyEl?.value);
+            return Number.isFinite(q) && q > 0 ? q : 1;
+        }
 
-  function getAvailableFromUI(btn, fallback = null) {
-    const dataAvail = btn?.dataset?.available;
-    if (dataAvail !== undefined && dataAvail !== null && dataAvail !== '') {
-      const n = parseInt(dataAvail);
-      if (Number.isFinite(n)) return n;
-    }
-    const quantityDisplayEl = document.getElementById('productQuantityDisplay');
-    if (quantityDisplayEl) {
-      const displayText = quantityDisplayEl.textContent || '';
-      const match = displayText.match(/Còn lại:\s*(\d+)/i);
-      if (match) {
-        const n = parseInt(match[1]);
-        if (Number.isFinite(n)) return n;
-      }
-    }
-    if (fallback !== null && Number.isFinite(parseInt(fallback))) {
-      return parseInt(fallback);
-    }
-    return null;
-  }
+        function getAvailableFromUI(btn, fallback = null) {
+            const dataAvail = btn?.dataset?.available;
+            if (dataAvail !== undefined && dataAvail !== null && dataAvail !== '') {
+                const n = parseInt(dataAvail);
+                if (Number.isFinite(n)) return n;
+            }
+            const quantityDisplayEl = document.getElementById('productQuantityDisplay');
+            if (quantityDisplayEl) {
+                const displayText = quantityDisplayEl.textContent || '';
+                const match = displayText.match(/Còn lại:\s*(\d+)/i);
+                if (match) {
+                    const n = parseInt(match[1]);
+                    if (Number.isFinite(n)) return n;
+                }
+            }
+            if (fallback !== null && Number.isFinite(parseInt(fallback))) {
+                return parseInt(fallback);
+            }
+            return null;
+        }
 
-  async function quickAdd(pid, qty = 1) {
-    const fd = new FormData();
-    fd.append('productId', pid);
-    fd.append('quantity', String(qty));
-    const headers = { 'X-Requested-With': 'XMLHttpRequest' };
-    if (ANTIFORGERY) headers['RequestVerificationToken'] = ANTIFORGERY;
+        async function quickAdd(pid, qty = 1) {
+            const fd = new FormData();
+            fd.append('productId', pid);
+            fd.append('quantity', String(qty));
+            const headers = { 'X-Requested-With': 'XMLHttpRequest' };
+            if (ANTIFORGERY) headers['RequestVerificationToken'] = ANTIFORGERY;
 
-    const res = await fetch('/Cart/QuickAdd', {
-      method: 'POST',
-      body: fd,
-      headers,
-      credentials: 'same-origin'
+            const res = await fetch('/Cart/QuickAdd', {
+                method: 'POST',
+                body: fd,
+                headers,
+                credentials: 'same-origin'
+            });
+
+            const data = await res.json().catch(() => ({}));
+            const ok = res.ok && (data?.success === undefined || data?.success === true);
+            return { ok, data, status: res.status };
+        }
+
+        async function selectServer(pid, selected = true) {
+            try {
+                const fd = new FormData();
+                fd.append('productId', pid);
+                fd.append('selected', String(selected));
+                const headers = { 'X-Requested-With': 'XMLHttpRequest' };
+                if (ANTIFORGERY) headers['RequestVerificationToken'] = ANTIFORGERY;
+
+                const res = await fetch('/Cart/Select', {
+                    method: 'POST',
+                    body: fd,
+                    headers,
+                    credentials: 'same-origin'
+                });
+                return res.ok;
+            } catch {
+                return false;
+            }
+        }
+
+        function selectLocalBuyNow(pid) {
+            try {
+                const arr = JSON.parse(localStorage.getItem(BUY_NOW_KEY) || '[]');
+                if (!arr.includes(pid)) arr.push(pid);
+                localStorage.setItem(BUY_NOW_KEY, JSON.stringify(arr));
+            } catch { }
+        }
+
+        function bumpCartBadge(data) {
+            if (typeof window.__CartBadge?.set === 'function' && typeof data?.cartCount === 'number') {
+                window.__CartBadge.set(data.cartCount);
+            } else if (typeof window.__CartBadge?.add === 'function') {
+                window.__CartBadge.add(1);
+            }
+            try {
+                const cartIcon = document.querySelector('.bi-cart-fill, .header-icon');
+                if (cartIcon) {
+                    cartIcon.classList.add('shake');
+                    setTimeout(() => cartIcon.classList.remove('shake'), 600);
+                }
+            } catch { }
+        }
+
+        function guardStockOrToast(btn, requestedQty, explicitAvailable = null) {
+            const available = getAvailableFromUI(btn, explicitAvailable);
+            if (available === null) return { pass: true, available: null };
+            if (available <= 0) {
+                toastErr('Sản phẩm này hiện đã hết hàng.');
+                return { pass: false, available };
+            }
+            if (requestedQty > available) {
+                toastErr(`Số lượng bạn chọn (${requestedQty}) vượt quá số lượng tồn (${available}).`);
+                return { pass: false, available };
+            }
+            return { pass: true, available };
+        }
+
+        // NEW: Function to validate variant selections
+        function validateVariantSelection() {
+            // Check if this product has variants
+            if (typeof totalVariantGroups === 'undefined' || totalVariantGroups === 0) {
+                return { valid: true, message: '', selectedValues: [] };
+            }
+
+            // Get all variant groups
+            const uniqueGroups = [...new Set(Array.from(document.querySelectorAll('[name^="variant_"]')).map(v => v.name))];
+
+            if (uniqueGroups.length === 0) {
+                return { valid: true, message: '', selectedValues: [] };
+            }
+
+            // Check if all groups have selections
+            const selectedGroups = uniqueGroups.filter(groupName =>
+                document.querySelector(`input[name="${groupName}"]:checked`)
+            );
+
+            if (selectedGroups.length < uniqueGroups.length) {
+                return {
+                    valid: false,
+                    message: 'Vui lòng chọn đầy đủ các tùy chọn sản phẩm.',
+                    selectedValues: []
+                };
+            }
+
+            // Get selected variant values
+            const selectedValues = Array.from(document.querySelectorAll('[name^="variant_"]:checked'))
+                .map(input => parseInt(input.value))
+                .sort((a, b) => a - b);
+
+            // Validate combination exists
+            if (typeof variantCombinations !== 'undefined' && variantCombinations.length > 0) {
+                const match = variantCombinations.find(variant => {
+                    const sortedIds = [...variant.variantValueIds].sort((a, b) => a - b);
+                    return JSON.stringify(sortedIds) === JSON.stringify(selectedValues);
+                });
+
+                if (!match) {
+                    return {
+                        valid: false,
+                        message: 'Tổ hợp sản phẩm không tồn tại. Vui lòng chọn lại.',
+                        selectedValues: []
+                    };
+                }
+
+                // Check stock for this variant combination
+                const variantStock = match.quantity || match.Quantity || 0;
+                if (variantStock <= 0) {
+                    return {
+                        valid: false,
+                        message: 'Tùy chọn này hiện đã hết hàng.',
+                        selectedValues: []
+                    };
+                }
+
+                return {
+                    valid: true,
+                    message: '',
+                    selectedValues: selectedValues,
+                    availableStock: variantStock
+                };
+            }
+
+            return { valid: true, message: '', selectedValues: selectedValues };
+        }
+
+        // NEW: Function to submit with variant data
+        async function submitWithVariants(productId, selectedVariantIds, quantity, isBuyNow) {
+            try {
+                const formData = new FormData();
+                formData.append('ProductId', productId);
+                formData.append('Quantity', quantity.toString());
+                formData.append('BuyNow', isBuyNow.toString());
+
+                // Add variant value IDs
+                selectedVariantIds.forEach(id => {
+                    formData.append('VariantValueIds', id.toString());
+                });
+
+                // Add antiforgery token
+                const tokenEl = document.querySelector('input[name="__RequestVerificationToken"]');
+                if (tokenEl) {
+                    formData.append('__RequestVerificationToken', tokenEl.value);
+                }
+
+                const response = await fetch('/Cart/AddToCart', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin'
+                });
+
+                if (response.ok) {
+                    const result = await response.json().catch(() => ({}));
+
+                    if (isBuyNow) {
+                        // For buy now, try to select item and redirect
+                        await selectServer(productId, true).catch(() => selectLocalBuyNow(productId));
+                        window.location.href = '/Cart';
+                    } else {
+                        // For add to cart, show success message
+                        bumpCartBadge(result);
+                        toastOk(result?.message || 'Đã thêm vào giỏ hàng!');
+                    }
+                } else {
+                    const errorData = await response.json().catch(() => ({}));
+                    toastErr(errorData?.message || 'Thêm sản phẩm vào giỏ hàng thất bại.');
+                }
+            } catch (error) {
+                console.error('Error submitting with variants:', error);
+                toastErr('Lỗi kết nối. Vui lòng thử lại.');
+            }
+        }
+
+        // ====== Thêm vào giỏ (FIXED for variants) ======
+        document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const pid = btn.dataset.productId;
+                const hasVariant = (btn.dataset.hasVariant === 'true');
+                const requestedQty = getRequestedQty();
+
+                // Check if this product has variants
+                const variantCheck = validateVariantSelection();
+
+                if (!variantCheck.valid) {
+                    toastErr(variantCheck.message);
+                    return;
+                }
+
+                // If product has variants, use form submission
+                if (variantCheck.selectedValues.length > 0) {
+                    // Check stock for variant
+                    if (variantCheck.availableStock && requestedQty > variantCheck.availableStock) {
+                        toastErr(`Số lượng bạn chọn (${requestedQty}) vượt quá số lượng tồn (${variantCheck.availableStock}).`);
+                        return;
+                    }
+
+                    await submitWithVariants(pid, variantCheck.selectedValues, requestedQty, false);
+                    return;
+                }
+
+                // Original logic for products without variants
+                if (hasVariant) {
+                    window.location.href = `/Products/DetailProducts/${pid}`;
+                    return;
+                }
+
+                const check = guardStockOrToast(btn, requestedQty);
+                if (!check.pass) return;
+
+                try {
+                    const { ok, data, status } = await quickAdd(pid, requestedQty);
+                    if (ok) {
+                        bumpCartBadge(data);
+                        toastOk(data?.message || 'Đã thêm vào giỏ hàng!');
+                        return;
+                    }
+                    const msg = (data?.message || '').toLowerCase();
+                    if (status === 409 || msg.includes('hết hàng') || msg.includes('out of stock')) {
+                        toastErr(data?.message || 'Sản phẩm này hiện đã hết hàng.');
+                        return;
+                    }
+                    if (status === 400 || msg.includes('vượt quá') || msg.includes('insufficient')) {
+                        toastErr(data?.message || 'Số lượng vượt quá tồn kho.');
+                        return;
+                    }
+                    if (status === 401 || msg.includes('đăng nhập') || msg.includes('unauth')) {
+                        window.location.href = '/Login';
+                        return;
+                    }
+                    toastErr(data?.message || 'Thêm sản phẩm vào giỏ hàng thất bại.');
+                } catch (err) {
+                    console.error(err);
+                    toastErr('Lỗi kết nối. Vui lòng thử lại.');
+                }
+            });
+        });
+
+        // ====== Mua ngay (FIXED for variants) ======
+        document.querySelectorAll('.buy-now-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const pid = btn.dataset.productId;
+                const hasVariant = (btn.dataset.hasVariant === 'true');
+                const requestedQty = getRequestedQty();
+
+                // Check if this product has variants
+                const variantCheck = validateVariantSelection();
+
+                if (!variantCheck.valid) {
+                    toastErr(variantCheck.message);
+                    return;
+                }
+
+                const prevHTML = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = 'Đang xử lý...';
+
+                try {
+                    // If product has variants, use form submission
+                    if (variantCheck.selectedValues.length > 0) {
+                        // Check stock for variant
+                        if (variantCheck.availableStock && requestedQty > variantCheck.availableStock) {
+                            toastErr(`Số lượng bạn chọn (${requestedQty}) vượt quá số lượng tồn (${variantCheck.availableStock}).`);
+                            return;
+                        }
+
+                        await submitWithVariants(pid, variantCheck.selectedValues, requestedQty, true);
+                        return;
+                    }
+
+                    // Original logic for products without variants
+                    if (hasVariant) {
+                        window.location.href = `/Products/DetailProducts/${pid}`;
+                        return;
+                    }
+
+                    const check = guardStockOrToast(btn, requestedQty);
+                    if (!check.pass) return;
+
+                    const { ok, data, status } = await quickAdd(pid, requestedQty);
+                    if (ok) {
+                        const ticked = await selectServer(pid, true);
+                        if (!ticked) selectLocalBuyNow(pid);
+
+                        if (typeof window.__CartBadge?.set === 'function' && typeof data?.cartCount === 'number') {
+                            window.__CartBadge.set(data.cartCount);
+                        } else if (typeof window.__CartBadge?.add === 'function') {
+                            window.__CartBadge.add(1);
+                        }
+
+                        window.location.href = '/Cart';
+                        return;
+                    }
+
+                    const msg = (data?.message || '').toLowerCase();
+                    if (status === 409 || msg.includes('hết hàng') || msg.includes('out of stock')) {
+                        toastErr(data?.message || 'Sản phẩm này hiện đã hết hàng.');
+                        return;
+                    }
+                    if (status === 400 || msg.includes('vượt quá') || msg.includes('insufficient')) {
+                        toastErr(data?.message || 'Số lượng vượt quá tồn kho.');
+                        return;
+                    }
+                    if (status === 401 || msg.includes('đăng nhập') || msg.includes('unauth')) {
+                        window.location.href = '/Login';
+                        return;
+                    }
+
+                    window.location.href = `/Products/DetailProducts/${pid}`;
+                } catch (err) {
+                    console.error(err);
+                    window.location.href = `/Products/DetailProducts/${pid}`;
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = prevHTML;
+                }
+            });
+        });
     });
-
-    const data = await res.json().catch(() => ({}));
-    const ok = res.ok && (data?.success === undefined || data?.success === true);
-    return { ok, data, status: res.status };
-  }
-
-  async function selectServer(pid, selected = true) {
-    try {
-      const fd = new FormData();
-      fd.append('productId', pid);
-      fd.append('selected', String(selected));
-      const headers = { 'X-Requested-With': 'XMLHttpRequest' };
-      if (ANTIFORGERY) headers['RequestVerificationToken'] = ANTIFORGERY;
-
-      const res = await fetch('/Cart/Select', {
-        method: 'POST',
-        body: fd,
-        headers,
-        credentials: 'same-origin'
-      });
-      return res.ok;
-    } catch {
-      return false;
-    }
-  }
-
-  function selectLocalBuyNow(pid) {
-    try {
-      const arr = JSON.parse(localStorage.getItem(BUY_NOW_KEY) || '[]');
-      if (!arr.includes(pid)) arr.push(pid);
-      localStorage.setItem(BUY_NOW_KEY, JSON.stringify(arr));
-    } catch {}
-  }
-
-  function bumpCartBadge(data) {
-    if (typeof window.__CartBadge?.set === 'function' && typeof data?.cartCount === 'number') {
-      window.__CartBadge.set(data.cartCount);
-    } else if (typeof window.__CartBadge?.add === 'function') {
-      window.__CartBadge.add(1);
-    }
-    try {
-      const cartIcon = document.querySelector('.bi-cart-fill, .header-icon');
-      if (cartIcon) {
-        cartIcon.classList.add('shake');
-        setTimeout(() => cartIcon.classList.remove('shake'), 600);
-      }
-    } catch {}
-  }
-
-  function guardStockOrToast(btn, requestedQty, explicitAvailable = null) {
-    const available = getAvailableFromUI(btn, explicitAvailable);
-    if (available === null) return { pass: true, available: null };
-    if (available <= 0) {
-      toastErr('Sản phẩm này hiện đã hết hàng.');
-      return { pass: false, available };
-    }
-    if (requestedQty > available) {
-      toastErr(`Số lượng bạn chọn (${requestedQty}) vượt quá số lượng tồn (${available}).`);
-      return { pass: false, available };
-    }
-    return { pass: true, available };
-  }
-
-  // ====== Thêm vào giỏ (KHÔNG tick, KHÔNG redirect) ======
-  document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const pid = btn.dataset.productId;
-      const hasVariant = (btn.dataset.hasVariant === 'true');
-      const requestedQty = getRequestedQty();
-
-      if (hasVariant) {
-        window.location.href = `/Products/DetailProducts/${pid}`;
-        return;
-      }
-
-      const check = guardStockOrToast(btn, requestedQty);
-      if (!check.pass) return;
-
-      try {
-        const { ok, data, status } = await quickAdd(pid, requestedQty);
-        if (ok) {
-          bumpCartBadge(data);
-          toastOk(data?.message || 'Đã thêm vào giỏ hàng!');
-          return;
-        }
-        const msg = (data?.message || '').toLowerCase();
-        if (status === 409 || msg.includes('hết hàng') || msg.includes('out of stock')) {
-          toastErr(data?.message || 'Sản phẩm này hiện đã hết hàng.');
-          return;
-        }
-        if (status === 400 || msg.includes('vượt quá') || msg.includes('insufficient')) {
-          toastErr(data?.message || 'Số lượng vượt quá tồn kho.');
-          return;
-        }
-        if (status === 401 || msg.includes('đăng nhập') || msg.includes('unauth')) {
-          window.location.href = '/Login';
-          return;
-        }
-        toastErr(data?.message || 'Thêm sản phẩm vào giỏ hàng thất bại.');
-      } catch (err) {
-        console.error(err);
-        toastErr('Lỗi kết nối. Vui lòng thử lại.');
-      }
-    });
-  });
-
-  // ====== Mua ngay (CÓ tick + redirect /Cart, KHÔNG hiển thị toast) ======
-  document.querySelectorAll('.buy-now-btn').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const pid = btn.dataset.productId;
-      const hasVariant = (btn.dataset.hasVariant === 'true');
-      const requestedQty = getRequestedQty();
-
-      if (hasVariant) {
-        window.location.href = `/Products/DetailProducts/${pid}`;
-        return;
-      }
-
-      const check = guardStockOrToast(btn, requestedQty);
-      if (!check.pass) return;
-
-      const prevHTML = btn.innerHTML;
-      btn.disabled = true;
-      btn.innerHTML = 'Đang xử lý...';
-
-      try {
-        const { ok, data, status } = await quickAdd(pid, requestedQty);
-        if (ok) {
-          // Tick server; nếu fail → LS để trang Cart tự tick
-          const ticked = await selectServer(pid, true);
-          if (!ticked) selectLocalBuyNow(pid);
-
-          // Cập nhật badge âm thầm (không toast)
-          if (typeof window.__CartBadge?.set === 'function' && typeof data?.cartCount === 'number') {
-            window.__CartBadge.set(data.cartCount);
-          } else if (typeof window.__CartBadge?.add === 'function') {
-            window.__CartBadge.add(1);
-          }
-
-          // 👉 Không gọi toastOk. Nhảy thẳng qua /Cart.
-          window.location.href = '/Cart';
-          return;
-        }
-
-        const msg = (data?.message || '').toLowerCase();
-        if (status === 409 || msg.includes('hết hàng') || msg.includes('out of stock')) {
-          // Có lỗi tồn kho → hiển thị lỗi (chỉ lỗi, không toast success)
-          toastErr(data?.message || 'Sản phẩm này hiện đã hết hàng.');
-          return;
-        }
-        if (status === 400 || msg.includes('vượt quá') || msg.includes('insufficient')) {
-          toastErr(data?.message || 'Số lượng vượt quá tồn kho.');
-          return;
-        }
-        if (status === 401 || msg.includes('đăng nhập') || msg.includes('unauth')) {
-          window.location.href = '/Login';
-          return;
-        }
-
-        // Lỗi khác → qua trang chi tiết (không toast success)
-        window.location.href = `/Products/DetailProducts/${pid}`;
-      } catch (err) {
-        console.error(err);
-        window.location.href = `/Products/DetailProducts/${pid}`;
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = prevHTML;
-      }
-    });
-  });
-});
 </script>
-

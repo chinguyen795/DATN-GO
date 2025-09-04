@@ -109,20 +109,35 @@ namespace DATN_GO.Controllers
         }
 
 
-
-        [HttpPost]
-        public async Task<IActionResult> UpdateQuantity(UpdateQuantityRequest request)
+        [HttpPut]
+        [HttpPost] // Support both PUT và POST
+        public async Task<IActionResult> UpdateQuantity([FromBody] UpdateQuantityRequest request)
         {
-            var success = await _cartService.UpdateQuantityAsync(request.CartId, request.NewQuantity);
-
-            if (!success)
+            try
             {
-                TempData["Error"] = "Cập nhật số lượng thất bại.";
+                // Validate input
+                if (request.NewQuantity <= 0)
+                {
+                    return BadRequest(new { message = "Số lượng phải lớn hơn 0" });
+                }
+
+                var success = await _cartService.UpdateQuantityAsync(request.CartId, request.NewQuantity);
+
+                if (success)
+                {
+                    return Ok(new { message = "Cập nhật thành công" });
+                }
+                else
+                {
+                    return BadRequest(new { message = "Cập nhật số lượng thất bại" });
+                }
             }
-
-            return RedirectToAction("Index");
+            catch (Exception ex)
+            {
+                // Log error here if you have logging
+                return StatusCode(500, new { message = "Có lỗi xảy ra", error = ex.Message });
+            }
         }
-
 
         [HttpPost]
         public async Task<IActionResult> UpdateVoucherDropdown([FromBody] List<int> selectedCartIds)

@@ -194,12 +194,7 @@ namespace DATN_GO.Controllers
             var reviews = await _reviewService.GetReviewsByProductIdAsync(id) ?? new List<ReviewViewModel>();
             ViewBag.PurchaseCount = reviews.FirstOrDefault()?.PurchaseCount ?? 0;
 
-            // =========================
-            // GỢI Ý SẢN PHẨM CÙNG SHOP (RANDOM)
-            // =========================
-            // NOTE: Nếu _productService chưa có GetByStoreIdAsync, tạo nhanh method đó,
-            // hoặc dùng _context.Products… (tùy kiến trúc của bạn).
-            // === Gợi ý theo StoreId (random) ===
+       
             var sameStore = await _productService.GetProductsByStoreIdAsync(product.StoreId)
                             ?? new List<Products>();
 
