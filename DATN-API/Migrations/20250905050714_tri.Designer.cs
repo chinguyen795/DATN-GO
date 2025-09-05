@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DATN_API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250905032259_Add_IsStockDeducted_to_Orders")]
-    partial class Add_IsStockDeducted_to_Orders
+    [Migration("20250905050714_tri")]
+    partial class tri
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

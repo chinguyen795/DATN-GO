@@ -257,7 +257,18 @@
                 </ul>
 
                 <div class="mb-4 border-top pt-3">
+
                     <label class="form-label fw-semibold mb-3">Phương thức thanh toán</label>
+
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="paymentMoMo"
+                               value="momo" checked>
+                        <label class="form-check-label d-flex align-items-center" for="paymentMoMo">
+                            <img src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png"
+                                 alt="MoMo" height="24" class="me-2">
+                            <span>MoMo</span>
+                        </label>
+                    </div>
                     <div class="form-check mb-2">
                         <input class="form-check-input" type="radio" name="paymentMethod" id="paymentVNPay"
                                value="vnpay">
@@ -294,89 +305,83 @@
     const toast = (msg) => alert(msg);
 
     btn?.addEventListener('click', async () => {
-        try {
-            const method = (document.querySelector('input[name="paymentMethod"]:checked')?.value || '').toLowerCase();
+      try {
+        const method = (document.querySelector('input[name="paymentMethod"]:checked')?.value || '').toLowerCase();
 
-            const userId = Number(document.getElementById('userId')?.value || 0);
-            if (!userId) return toast('Bạn cần đăng nhập.');
+        const userId = Number(document.getElementById('userId')?.value || 0);
+        if (!userId) return toast('Bạn cần đăng nhập.');
 
-            const addressId = Number(addressSelect?.value || 0);
-            if (!addressId) return toast('Vui lòng chọn địa chỉ giao hàng.');
+        const addressId = Number(addressSelect?.value || 0);
+        if (!addressId) return toast('Vui lòng chọn địa chỉ giao hàng.');
 
-            // Lấy các cart đã tick
-            const selectedIds = [...document.querySelectorAll('.item-checkbox')]
-                .filter(cb => cb.checked)
-                .map(cb => Number(cb.dataset.cartId));
-            if (selectedIds.length === 0) return toast('Vui lòng chọn ít nhất một sản phẩm.');
+        // Lấy các cart đã tick
+        const selectedIds = [...document.querySelectorAll('.item-checkbox')]
+          .filter(cb => cb.checked)
+          .map(cb => Number(cb.dataset.cartId));
+        if (selectedIds.length === 0) return toast('Vui lòng chọn ít nhất một sản phẩm.');
 
-            // Cập nhật IsSelected trên API
-            btn.disabled = true; btn.textContent = 'Đang xử lý...';
-            const upRes = await fetch(`${API_BASE_URL}Cart/update-selection`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(selectedIds)
-            });
-            if (!upRes.ok) {
-                btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
-                return toast('Cập nhật lựa chọn giỏ hàng thất bại.');
-            }
+        // Cập nhật IsSelected trên API
+        btn.disabled = true; btn.textContent = 'Đang xử lý...';
+        const upRes = await fetch(`${API_BASE_URL}Cart/update-selection`, {
+          method: 'PUT',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(selectedIds)
+        });
+        if (!upRes.ok) {
+          btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
+          return toast('Cập nhật lựa chọn giỏ hàng thất bại.');
+        }
 
-            if (method === 'vnpay') {
-                // Tạo đơn + lấy VNPay URL
-                const userVoucherId = voucherSelect?.value ? Number(voucherSelect.value) : null;
-                const body = { userId, addressId, userVoucherId };
+        if (method === 'vnpay') {
+          // Tạo đơn + lấy VNPay URL
+          const userVoucherId = voucherSelect?.value ? Number(voucherSelect.value) : null;
+          const body = { userId, addressId, userVoucherId };
 
-                const payRes = await fetch(`${API_BASE_URL}Payment/vnpay-create`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
-                });
+          const payRes = await fetch(`${API_BASE_URL}Payment/vnpay-create`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(body)
+          });
 
-                if (!payRes.ok) {
-                    btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
-                    const msg = await payRes.text();
-                    return toast('Tạo thanh toán VNPay thất bại: ' + msg);
-                }
+          if (!payRes.ok) {
+            btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
+            const msg = await payRes.text();
+            return toast('Tạo thanh toán VNPay thất bại: ' + msg);
+          }
 
-                const { paymentUrl } = await payRes.json();
-                if (!paymentUrl) {
-                    btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
-                    return toast('Không lấy được paymentUrl từ server.');
-                }
+          const { paymentUrl } = await payRes.json();
+          if (!paymentUrl) {
+            btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
+            return toast('Không lấy được paymentUrl từ server.');
+          }
 
-                // Redirect sang VNPay
-                window.location.href = paymentUrl;
-                return;
-            }
-            if (method === 'cod') {
-                const userVoucherId = voucherSelect?.value ? Number(voucherSelect.value) : null;
-                const body = { userId, addressId, userVoucherId };
+          // Redirect sang VNPay
+          window.location.href = paymentUrl;
+          return;
+        }
+    if (method === 'cod') {
+      const userVoucherId = voucherSelect?.value ? Number(voucherSelect.value) : null;
+      const body = { userId, addressId, userVoucherId };
 
-                const payRes = await fetch(`${API_BASE_URL}Payment/cod-create`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
-                });
+      const payRes = await fetch(`${API_BASE_URL}Payment/cod-create`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(body)
+      });
 
-                btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
+      btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
 
-                if (!payRes.ok) {
-                    const msg = await payRes.text();
-                    return toast('Tạo đơn COD thất bại: ' + msg);
-                }
+      if (!payRes.ok) {
+        const msg = await payRes.text();
+        return toast('Tạo đơn COD thất bại: ' + msg);
+      }
 
-                const { orderId, labelId } = await payRes.json();
-                toast(`Đặt hàng COD thành công${labelId ? ' - Mã vận đơn: ' + labelId : ''}`);
-                window.location.href = `/Checkout/Success?orderId=${orderId}`;
-                return;
-            }
+      const { orderId, labelId } = await payRes.json();
+      toast(`Đặt hàng COD thành công${labelId ? ' - Mã vận đơn: ' + labelId : ''}`);
+      window.location.href = `/Checkout/Success?orderId=${orderId}`;
+      return;
+    }
 
-            if (method === 'momo') {
-                // TODO: sau này bạn bổ sung MoMo
-                btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
-                toast('MoMo chưa được tích hợp. Hãy chọn VNPay hoặc COD.');
-                return;
-            }
 
 
     if (method === 'momo') {
@@ -403,11 +408,6 @@
       return;
     }
 
-        } catch (e) {
-            console.error(e);
-            btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
-            toast('Có lỗi xảy ra. Vui lòng thử lại.');
-        }
 
 
       } catch (e) {
@@ -418,6 +418,66 @@
     });
 </script>
 
+
+<script>
+    (() => {
+      // Key dành riêng cho "Mua ngay" (khác với key add-to-cart)
+      const BUY_NOW_KEY = '__BUY_NOW_PIDS';
+
+      document.addEventListener('DOMContentLoaded', () => {
+        // Luôn reset "Select All"
+        const selectAll = document.getElementById('selectAllItems');
+        if (selectAll) selectAll.checked = false;
+
+        // Ép tất cả checkbox về unchecked (chống trình duyệt nhớ state)
+        const boxes = document.querySelectorAll('.item-checkbox');
+        boxes.forEach(cb => cb.checked = false);
+
+        // Lấy danh sách productId được "Mua ngay"
+        let buyNowPids = [];
+        try {
+          buyNowPids = JSON.parse(localStorage.getItem(BUY_NOW_KEY) || '[]') || [];
+        } catch { buyNowPids = []; }
+
+        if (Array.isArray(buyNowPids) && buyNowPids.length) {
+          // Tick đúng các item có data-product-id trùng
+          buyNowPids.forEach(pid => {
+            const targets =
+              document.querySelectorAll(`.item-checkbox[data-product-id="${pid}"]`);
+            targets.forEach(cb => {
+              if (!cb.checked) {
+                cb.checked = true;
+                // Nếu có logic tính tiền theo 'change', dispatch event
+                cb.dispatchEvent(new Event('change', { bubbles: true }));
+              }
+            });
+          });
+
+          // Nếu tất cả đều tick → sync selectAll
+          const allChecked = [...boxes].length > 0 && [...boxes].every(x => x.checked);
+          if (selectAll) selectAll.checked = allChecked;
+
+          // Dùng xong thì clear để không tick lại lần sau
+          localStorage.removeItem(BUY_NOW_KEY);
+        }
+
+        // Đồng bộ Select All <-> từng dòng
+        selectAll?.addEventListener('change', (e) => {
+          const checked = e.target.checked;
+          document.querySelectorAll('.item-checkbox').forEach(cb => {
+            cb.checked = checked;
+            cb.dispatchEvent(new Event('change', { bubbles: true }));
+          });
+        });
+        document.querySelectorAll('.item-checkbox').forEach(cb => {
+          cb.addEventListener('change', () => {
+            const list = Array.from(document.querySelectorAll('.item-checkbox'));
+            if (selectAll) selectAll.checked = (list.length && list.every(x => x.checked));
+          });
+        });
+      });
+    })();
+</script>
 <!-- Script Pagination - Simple Show More/Collapse -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {

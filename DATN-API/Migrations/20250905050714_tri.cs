@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DATN_API.Migrations
 {
     /// <inheritdoc />
-    public partial class _28sfsf : Migration
+    public partial class tri : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -640,6 +640,7 @@ namespace DATN_API.Migrations
                     PaymentDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     PaymentStatus = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     DeliveryFee = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    IsStockDeducted = table.Column<bool>(type: "bit", nullable: false),
                     AddressesId = table.Column<int>(type: "int", nullable: true),
                     ShippingMethodsId = table.Column<int>(type: "int", nullable: true),
                     VouchersId = table.Column<int>(type: "int", nullable: true)
