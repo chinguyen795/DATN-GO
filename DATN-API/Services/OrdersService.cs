@@ -759,7 +759,38 @@ namespace DATN_API.Services
             // Cập nhật trạng thái
             order.Status = OrderStatus.DaHuy;
 
-            // ✅ Chỉ hoàn tiền nếu ShippingMethodId == 1
+            // ✅ HOÀN KHO nếu đơn đã từng trừ kho (idempotent nhờ IsStockDeducted)
+            if (order.IsStockDeducted)
+            {
+                // Lấy chi tiết đơn
+                var details = await _context.OrderDetails
+                    .Where(d => d.OrderId == order.Id)
+                    .ToListAsync();
+
+                if (details.Count > 0)
+                {
+                    var pids = details.Select(d => d.ProductId).Distinct().ToList();
+
+                    // Lấy sản phẩm cần hoàn kho
+                    var products = await _context.Products
+                        .Where(p => pids.Contains(p.Id))
+                        .ToDictionaryAsync(p => p.Id);
+
+                    // Cộng trả hàng
+                    foreach (var d in details)
+                    {
+                        if (products.TryGetValue(d.ProductId, out var p))
+                        {
+                            p.Quantity += d.Quantity;
+                        }
+                    }
+                }
+
+                // Bỏ cờ để tránh hoàn kho lặp lại
+                order.IsStockDeducted = false;
+            }
+
+            // ✅ Chỉ hoàn tiền nếu ShippingMethodId == 1 (theo logic hiện tại)
             decimal total = order.TotalPrice;
             bool didRefund = false;
 
@@ -798,6 +829,7 @@ namespace DATN_API.Services
 
             return (true, msg);
         }
+
 
 
 
@@ -884,6 +916,88 @@ namespace DATN_API.Services
             await tx.CommitAsync();
 
             return (true, "Cập nhật thành công", order.Status);
+        }
+        // Services/OrdersService.cs
+        public async Task<(bool Success, string Message)> EnsureStockDeductedAsync(int orderId)
+        {
+            // Dùng transaction để an toàn khi nhiều tiến trình
+            await using var tx = await _context.Database.BeginTransactionAsync();
+
+            var order = await _context.Orders
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                .FirstOrDefaultAsync(o => o.Id == orderId);
+
+            if (order == null) return (false, "Không tìm thấy đơn hàng");
+
+            // Đã trừ tồn rồi -> idempotent
+            if (order.IsStockDeducted)
+            {
+                await tx.CommitAsync();
+                return (true, "Đã trừ tồn trước đó");
+            }
+
+            // Chỉ trừ khi đơn ở/đi tới ChoLayHang
+            if (order.Status != OrderStatus.ChoLayHang)
+                return (false, "Đơn chưa ở trạng thái ChoLayHang");
+
+            // Kiểm tra tồn khả dụng
+            foreach (var od in order.OrderDetails)
+            {
+                if (od.Product == null)
+                    return (false, $"Sản phẩm #{od.ProductId} không tồn tại");
+
+                if (od.Product.Quantity < od.Quantity)
+                    return (false, $"Sản phẩm '{od.Product.Name}' không đủ tồn kho (còn {od.Product.Quantity}, cần {od.Quantity})");
+            }
+
+            // Trừ tồn
+            foreach (var od in order.OrderDetails)
+            {
+                od.Product!.Quantity -= od.Quantity;
+                if (od.Product.Quantity < 0) od.Product.Quantity = 0; // phòng hộ
+            }
+
+            order.IsStockDeducted = true;
+
+            await _context.SaveChangesAsync();
+            await tx.CommitAsync();
+            return (true, "Đã trừ tồn kho");
+        }
+        // OrdersService.cs  (thêm vào class OrdersService)
+
+        private async Task RestoreStockIfNeededAsync(Orders order)
+        {
+            // chỉ hoàn kho nếu trước đó đã trừ kho
+            if (!order.IsStockDeducted) return;
+
+            var details = await _context.OrderDetails
+                .Where(d => d.OrderId == order.Id)
+                .ToListAsync();
+
+            if (details.Count == 0)
+            {
+                // không có chi tiết -> bỏ cờ và thoát
+                order.IsStockDeducted = false;
+                return;
+            }
+
+            var pids = details.Select(d => d.ProductId).Distinct().ToList();
+            var products = await _context.Products
+                .Where(p => pids.Contains(p.Id))
+                .ToDictionaryAsync(p => p.Id);
+
+            foreach (var d in details)
+            {
+                if (products.TryGetValue(d.ProductId, out var p))
+                {
+                    // cộng trả đúng số lượng đã trừ
+                    p.Quantity += d.Quantity;
+                }
+            }
+
+            // đánh dấu đã hoàn kho
+            order.IsStockDeducted = false;
         }
 
 

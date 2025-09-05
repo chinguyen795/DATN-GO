@@ -50,7 +50,7 @@ namespace DATN_API.Models
         public DeliveryTrackings? DeliveryTracking { get; set; }
         [JsonIgnore]
         public ICollection<OrderDetails>? OrderDetails { get; set; }
-
+        public bool IsStockDeducted { get; set; } = false;   // <-- thêm
 
     }
     [JsonConverter(typeof(JsonStringEnumConverter))]
