@@ -207,16 +207,8 @@ namespace DATN_API.Services
                 }
                 else
                 {
-                    // Dùng để map ValueName -> (VariantId, VariantValueId)
                     var variantDict = new Dictionary<string, (int variantId, int variantValueId)>(StringComparer.OrdinalIgnoreCase);
-                    var price = new Prices
-                    {
-                        ProductId = product.Id,
-                        Price = model.Price ?? 0,
-                        VariantCompositionId = null
-                    };
-                    _context.Prices.Add(price);
-                    await _context.SaveChangesAsync();
+
                     // Tạo Variant và VariantValue
                     foreach (var variant in model.Variants.Take(2))
                     {
@@ -245,6 +237,8 @@ namespace DATN_API.Services
                     }
 
                     // Tạo ProductVariant + VariantComposition
+                    List<ProductVariants> createdVariants = new();
+
                     foreach (var combo in model.Combinations)
                     {
                         var pv = new ProductVariants
@@ -263,6 +257,8 @@ namespace DATN_API.Services
                         };
                         _context.ProductVariants.Add(pv);
                         await _context.SaveChangesAsync();
+
+                        createdVariants.Add(pv);
 
                         var pairs = combo.Values
                             .Select(val => val.Trim())
@@ -283,6 +279,20 @@ namespace DATN_API.Services
 
                         await _context.SaveChangesAsync();
                     }
+
+                    // Sau khi tạo hết variant → chọn giá nhỏ nhất
+                    var minPrice = createdVariants.Any() ? createdVariants.Min(x => x.Price) : (model.Price ?? 0);
+
+                    var price = new Prices
+                    {
+                        ProductId = product.Id,
+                        Price = minPrice,
+                        VariantCompositionId = null
+                    };
+
+                    _context.Prices.Add(price);
+                    await _context.SaveChangesAsync();
+
                 }
 
                 await transaction.CommitAsync();

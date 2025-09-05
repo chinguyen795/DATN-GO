@@ -13,37 +13,95 @@
         overflow: hidden;
         text-overflow: ellipsis;
     }
+
+    /* Styles cho pagination */
+    .load-more-btn {
+        background: linear-gradient(45deg, #dc3545, #c82333);
+        border: none;
+        border-radius: 25px;
+        padding: 12px 30px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+    }
+
+        .load-more-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+            background: linear-gradient(45deg, #c82333, #a71e2a);
+        }
+
+        .load-more-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+    .pagination-info {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-radius: 10px;
+        padding: 15px;
+        margin: 15px 0;
+        text-align: center;
+        border-left: 4px solid #dc3545;
+    }
+
+    .cart-item-row.fade-in {
+        animation: fadeInUp 0.5s ease-out;
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 </style>
 
-    <h2 class="text-center mb-4 text-crimson">Giỏ Hàng Của Bạn</h2>
-    <div class="row container-fluid">
-        <!-- Cart Items Table -->
-        <div class="col-lg-8">
-            <div class="card border-crimson mb-3">
-                <div class="card-header bg-crimson text-white">
-                    Sản phẩm trong giỏ
+<h2 class="text-center mb-4 text-crimson">Giỏ Hàng Của Bạn</h2>
+<div class="row container-fluid">
+    <!-- Cart Items Table -->
+    <div class="col-lg-8">
+        <div class="card border-crimson mb-3">
+            <div class="card-header bg-crimson text-white d-flex justify-content-between align-items-center">
+                <span>Sản phẩm trong giỏ</span>
+                <div class="pagination-info bg-white text-dark px-3 py-1 rounded">
+                    <small>
+                        Hiển thị: <span id="showing-count">0</span> / <span id="total-count">@Model.CartItems.Count</span> sản phẩm
+                    </small>
                 </div>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th scope="col" class="text-center">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="selectAllItems">
-                                    </div>
-                                </th>
-                                <th scope="col" class="text-start ps-3">Sản phẩm</th>
-                                <th scope="col" class="text-center">Số lượng</th>
-                                <th scope="col" class="text-end">Giá</th>
-                                <th scope="col" class="text-end">Tổng</th>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col" class="text-center">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="selectAllItems">
+                                </div>
+                            </th>
+                            <th scope="col" class="text-start ps-3">Sản phẩm</th>
+                            <th scope="col" class="text-center">Số lượng</th>
+                            <th scope="col" class="text-end">Giá</th>
+                            <th scope="col" class="text-end">Tổng</th>
                             <th scope="col" class="text-center"><i class="bi bi-gear"></i></th>
                         </tr>
-                        </thead>
-                        <tbody id="cart-items-body">
-                        @foreach (var item in Model.CartItems)
+                    </thead>
+                    <tbody id="cart-items-body">
+                        @for (int i = 0; i < Model.CartItems.Count; i++)
                         {
-                            <tr class="cart-item-row" data-cart-id="@item.CartId" data-store-id="@item.StoreId" 
-                            data-product-id="@item.ProductId"> <!-- 👈 thêm -->
+                            var item = Model.CartItems[i];
+                            <tr class="cart-item-row @(i >= 10 ? "d-none" : "")"
+                                data-cart-id="@item.CartId"
+                                data-store-id="@item.StoreId"
+                                data-product-id="@item.ProductId"
+                                data-item-index="@i">
                                 <td class="text-center align-middle">
                                     <div class="form-check">
                                         <input class="form-check-input item-checkbox" type="checkbox"
@@ -56,9 +114,19 @@
                                 </td>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <img src="@item.Image" alt="@item.ProductName" class="img-fluid rounded me-3" style="width: 60px; height: 60px; object-fit: cover;">
-                                        <div>
-                                            <p class="mb-1 fw-bold text-truncate-2">@item.ProductName</p>
+                                        <!-- Clickable Product Image -->
+                                        <a href="/Products/DetailProducts/@item.ProductId" class="text-decoration-none">
+                                            <img src="@item.Image"
+                                                 alt="@item.ProductName"
+                                                 class="img-fluid rounded me-3 product-image-hover"
+                                                 style="width: 60px; height: 60px; object-fit: cover; cursor: pointer; transition: transform 0.2s ease;">
+                                        </a>
+                                        <div class="flex-grow-1">
+                                            <!-- Clickable Product Name -->
+                                            <a href="/Products/DetailProducts/@item.ProductId"
+                                               class="text-decoration-none text-dark product-name-link">
+                                                <p class="mb-1 fw-bold text-truncate-2 product-name-hover">@item.ProductName</p>
+                                            </a>
                                             @if (item.Variants != null && item.Variants.Count > 0)
                                             {
                                                 <small class="text-muted">@string.Join(" | ", item.Variants)</small>
@@ -112,20 +180,32 @@
                                         </button>
                                     </form>
                                 </td>
-
                             </tr>
                         }
-                        </tbody>
-                    </table>
-                </div>
-               
+                    </tbody>
+                </table>
             </div>
+
+            <!-- Load More Button -->
+            @if (Model.CartItems.Count > 10)
+            {
+                <div class="card-footer text-center bg-light">
+                    <button type="button" id="load-more-btn" class="btn btn-crimson load-more-btn">
+                        <i class="bi bi-arrow-down-circle me-2"></i>
+                        Xem thêm sản phẩm
+                        <span class="badge bg-light text-dark ms-2" id="remaining-count">@(Model.CartItems.Count - 10)</span>
+                    </button>
+               
+                </div>
+            }
         </div>
+    </div>
+
     <!-- Cart Summary -->
-        <div class="col-lg-4">
+    <div class="col-lg-4">
         <div id="cart-summary-card" class="card border-crimson shadow-sm mb-3">
             <div class="card-header bg-crimson text-white">
-                <strong>Tổng cộng</strong> 
+                <strong>Tổng cộng</strong>
             </div>
             <div class="card-body p-4">
                 <div class="mb-4">
@@ -134,11 +214,14 @@
                         <select class="selectpicker w-100" id="voucherSelect" name="SelectedVoucherId"
                                 data-live-search="true" data-width="auto" title="Chọn voucher">
                         </select>
-
                     </div>
                 </div>
                 <div class="mb-4 border-top pt-3">
                     <label class="form-label fw-semibold mb-2">Địa chỉ giao hàng</label>
+                    <a asp-controller="Address" asp-action="Address" class="me-1 small fw-medium fw-semibold">
+                        <i class="bi bi-plus-circle-fill me-1"></i>
+                        <span>Thêm mới</span>
+                    </a>
                     <div>
                         <select class="form-select" id="addressSelect">
                             @foreach (var address in Model.Addresses)
@@ -172,18 +255,9 @@
                         <p>Tổng cộng: <strong id="grand-total">0₫</strong></p>
                     </li>
                 </ul>
-               
+
                 <div class="mb-4 border-top pt-3">
                     <label class="form-label fw-semibold mb-3">Phương thức thanh toán</label>
-                    @* <div class="form-check mb-2"> *@
-                    @*     <input class="form-check-input" type="radio" name="paymentMethod" id="paymentMoMo" *@
-                    @*            value="momo" checked> *@
-                    @*     <label class="form-check-label d-flex align-items-center" for="paymentMoMo"> *@
-                    @*         <img src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png" *@
-                    @*              alt="MoMo" height="24" class="me-2"> *@
-                    @*         <span>MoMo</span> *@
-                    @*     </label> *@
-                    @* </div> *@
                     <div class="form-check mb-2">
                         <input class="form-check-input" type="radio" name="paymentMethod" id="paymentVNPay"
                                value="vnpay">
@@ -210,9 +284,7 @@
             </div>
         </div>
     </div>
-     
-    </div>
-
+</div>
 
 <script>
     const API_BASE_URL = '@ViewBag.ApiBaseUrl';
@@ -222,98 +294,187 @@
     const toast = (msg) => alert(msg);
 
     btn?.addEventListener('click', async () => {
-      try {
-        const method = (document.querySelector('input[name="paymentMethod"]:checked')?.value || '').toLowerCase();
+        try {
+            const method = (document.querySelector('input[name="paymentMethod"]:checked')?.value || '').toLowerCase();
 
-        const userId = Number(document.getElementById('userId')?.value || 0);
-        if (!userId) return toast('Bạn cần đăng nhập.');
+            const userId = Number(document.getElementById('userId')?.value || 0);
+            if (!userId) return toast('Bạn cần đăng nhập.');
 
-        const addressId = Number(addressSelect?.value || 0);
-        if (!addressId) return toast('Vui lòng chọn địa chỉ giao hàng.');
+            const addressId = Number(addressSelect?.value || 0);
+            if (!addressId) return toast('Vui lòng chọn địa chỉ giao hàng.');
 
-        // Lấy các cart đã tick
-        const selectedIds = [...document.querySelectorAll('.item-checkbox')]
-          .filter(cb => cb.checked)
-          .map(cb => Number(cb.dataset.cartId));
-        if (selectedIds.length === 0) return toast('Vui lòng chọn ít nhất một sản phẩm.');
+            // Lấy các cart đã tick
+            const selectedIds = [...document.querySelectorAll('.item-checkbox')]
+                .filter(cb => cb.checked)
+                .map(cb => Number(cb.dataset.cartId));
+            if (selectedIds.length === 0) return toast('Vui lòng chọn ít nhất một sản phẩm.');
 
-        // Cập nhật IsSelected trên API
-        btn.disabled = true; btn.textContent = 'Đang xử lý...';
-        const upRes = await fetch(`${API_BASE_URL}Cart/update-selection`, {
-          method: 'PUT',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify(selectedIds)
-        });
-        if (!upRes.ok) {
-          btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
-          return toast('Cập nhật lựa chọn giỏ hàng thất bại.');
-        }
+            // Cập nhật IsSelected trên API
+            btn.disabled = true; btn.textContent = 'Đang xử lý...';
+            const upRes = await fetch(`${API_BASE_URL}Cart/update-selection`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(selectedIds)
+            });
+            if (!upRes.ok) {
+                btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
+                return toast('Cập nhật lựa chọn giỏ hàng thất bại.');
+            }
 
-        if (method === 'vnpay') {
-          // Tạo đơn + lấy VNPay URL
-          const userVoucherId = voucherSelect?.value ? Number(voucherSelect.value) : null;
-          const body = { userId, addressId, userVoucherId };
+            if (method === 'vnpay') {
+                // Tạo đơn + lấy VNPay URL
+                const userVoucherId = voucherSelect?.value ? Number(voucherSelect.value) : null;
+                const body = { userId, addressId, userVoucherId };
 
-          const payRes = await fetch(`${API_BASE_URL}Payment/vnpay-create`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(body)
-          });
+                const payRes = await fetch(`${API_BASE_URL}Payment/vnpay-create`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
 
-          if (!payRes.ok) {
+                if (!payRes.ok) {
+                    btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
+                    const msg = await payRes.text();
+                    return toast('Tạo thanh toán VNPay thất bại: ' + msg);
+                }
+
+                const { paymentUrl } = await payRes.json();
+                if (!paymentUrl) {
+                    btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
+                    return toast('Không lấy được paymentUrl từ server.');
+                }
+
+                // Redirect sang VNPay
+                window.location.href = paymentUrl;
+                return;
+            }
+            if (method === 'cod') {
+                const userVoucherId = voucherSelect?.value ? Number(voucherSelect.value) : null;
+                const body = { userId, addressId, userVoucherId };
+
+                const payRes = await fetch(`${API_BASE_URL}Payment/cod-create`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
+
+                if (!payRes.ok) {
+                    const msg = await payRes.text();
+                    return toast('Tạo đơn COD thất bại: ' + msg);
+                }
+
+                const { orderId, labelId } = await payRes.json();
+                toast(`Đặt hàng COD thành công${labelId ? ' - Mã vận đơn: ' + labelId : ''}`);
+                window.location.href = `/Checkout/Success?orderId=${orderId}`;
+                return;
+            }
+
+            if (method === 'momo') {
+                // TODO: sau này bạn bổ sung MoMo
+                btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
+                toast('MoMo chưa được tích hợp. Hãy chọn VNPay hoặc COD.');
+                return;
+            }
+
+        } catch (e) {
+            console.error(e);
             btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
-            const msg = await payRes.text();
-            return toast('Tạo thanh toán VNPay thất bại: ' + msg);
-          }
-
-          const { paymentUrl } = await payRes.json();
-          if (!paymentUrl) {
-            btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
-            return toast('Không lấy được paymentUrl từ server.');
-          }
-
-          // Redirect sang VNPay
-          window.location.href = paymentUrl;
-          return;
+            toast('Có lỗi xảy ra. Vui lòng thử lại.');
         }
-    if (method === 'cod') {
-      const userVoucherId = voucherSelect?.value ? Number(voucherSelect.value) : null;
-      const body = { userId, addressId, userVoucherId };
+    });
+</script>
 
-      const payRes = await fetch(`${API_BASE_URL}Payment/cod-create`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(body)
-      });
+<!-- Script Pagination - Simple Show More/Collapse -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const loadMoreBtn = document.getElementById('load-more-btn');
 
-      btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
-
-      if (!payRes.ok) {
-        const msg = await payRes.text();
-        return toast('Tạo đơn COD thất bại: ' + msg);
-      }
-
-      const { orderId, labelId } = await payRes.json();
-      toast(`Đặt hàng COD thành công${labelId ? ' - Mã vận đơn: ' + labelId : ''}`);
-      window.location.href = `/Checkout/Success?orderId=${orderId}`;
-      return;
-    }
-
-
-
-        if (method === 'momo') {
-          // TODO: sau này bạn bổ sung MoMo
-          btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
-          toast('MoMo chưa được tích hợp. Hãy chọn VNPay hoặc COD.');
-          return;
+        // Đảm bảo chỉ hiển thị 10 items đầu tiên
+        function resetToInitial() {
+            const allItems = document.querySelectorAll('.cart-item-row');
+            allItems.forEach((item, index) => {
+                if (index >= 10) {
+                    item.classList.add('d-none');
+                } else {
+                    item.classList.remove('d-none');
+                }
+            });
         }
 
+        function updateButtonAndCounts() {
+            const totalItems = document.querySelectorAll('.cart-item-row').length;
+            const visibleItems = document.querySelectorAll('.cart-item-row:not(.d-none)').length;
+            const hiddenItems = totalItems - visibleItems;
 
-      } catch (e) {
-        console.error(e);
-        btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
-        toast('Có lỗi xảy ra. Vui lòng thử lại.');
-      }
+            // Cập nhật số đếm
+            document.getElementById('showing-count').textContent = visibleItems;
+            document.getElementById('total-count').textContent = totalItems;
+
+            const remainingCountElement = document.getElementById('remaining-count');
+            if (remainingCountElement) {
+                remainingCountElement.textContent = hiddenItems;
+            }
+
+            // Nếu ≤ 10 items, ẩn button
+            if (totalItems <= 10) {
+                const cardFooter = loadMoreBtn?.closest('.card-footer');
+                if (cardFooter) {
+                    cardFooter.style.display = 'none';
+                }
+                return;
+            }
+
+            // Hiển thị button
+            const cardFooter = loadMoreBtn?.closest('.card-footer');
+            if (cardFooter) {
+                cardFooter.style.display = 'block';
+            }
+
+            if (hiddenItems > 0) {
+                // Còn items ẩn - hiện nút "Xem thêm"
+                loadMoreBtn.innerHTML = `
+                        <i class="bi bi-arrow-down-circle me-2"></i>
+                        Xem thêm sản phẩm
+                        <span class="badge bg-light text-dark ms-2">${hiddenItems}</span>
+                    `;
+            } else {
+                // Đã hiện hết - hiện nút "Rút gọn"
+                loadMoreBtn.innerHTML = `
+                        <i class="bi bi-arrow-up-circle me-2"></i>
+                        Rút gọn
+                    `;
+            }
+        }
+
+        if (loadMoreBtn) {
+            loadMoreBtn.addEventListener('click', function () {
+                const totalItems = document.querySelectorAll('.cart-item-row').length;
+                const visibleItems = document.querySelectorAll('.cart-item-row:not(.d-none)').length;
+                const hiddenItems = document.querySelectorAll('.cart-item-row.d-none');
+
+                if (hiddenItems.length > 0) {
+                    // Có items ẩn - hiện thêm 10 items hoặc hết items còn lại
+                    const itemsToShow = Math.min(10, hiddenItems.length);
+                    for (let i = 0; i < itemsToShow; i++) {
+                        hiddenItems[i].classList.remove('d-none');
+                        // Thêm animation fade-in
+                        hiddenItems[i].classList.add('fade-in');
+                    }
+                } else {
+                    // Không còn items ẩn - rút gọn về 10 items đầu
+                    resetToInitial();
+                }
+
+                // Cập nhật button và counts sau khi thay đổi
+                updateButtonAndCounts();
+            });
+        }
+
+        // Khởi tạo ban đầu
+        resetToInitial();
+        updateButtonAndCounts();
     });
 </script>
 
@@ -381,31 +542,35 @@
                 saveCheckboxState();
             }
 
-            // Cập nhật Select All theo trạng thái hiện tại
-            const selectAll = document.getElementById('selectAllItems');
-            const allCheckboxes = document.querySelectorAll('.item-checkbox');
-            if (selectAll && allCheckboxes.length > 0) {
-                selectAll.checked = Array.from(allCheckboxes).every(cb => cb.checked);
+            // Cập nhật Select All theo trạng thái hiện tại (chỉ tính items hiện tại được hiển thị)
+            function updateSelectAllState() {
+                const selectAll = document.getElementById('selectAllItems');
+                const visibleCheckboxes = document.querySelectorAll('.cart-item-row:not(.d-none) .item-checkbox');
+                if (selectAll && visibleCheckboxes.length > 0) {
+                    selectAll.checked = Array.from(visibleCheckboxes).every(cb => cb.checked);
+                }
             }
 
+            updateSelectAllState();
+
             // Event listeners
+            const selectAll = document.getElementById('selectAllItems');
             selectAll?.addEventListener('change', (e) => {
                 const checked = e.target.checked;
-                document.querySelectorAll('.item-checkbox').forEach(cb => {
+                // Chỉ áp dụng cho items hiện tại được hiển thị
+                document.querySelectorAll('.cart-item-row:not(.d-none) .item-checkbox').forEach(cb => {
                     cb.checked = checked;
                     cb.dispatchEvent(new Event('change', { bubbles: true }));
                 });
                 saveCheckboxState();
             });
 
-            document.querySelectorAll('.item-checkbox').forEach(cb => {
-                cb.addEventListener('change', () => {
-                    const list = Array.from(document.querySelectorAll('.item-checkbox'));
-                    if (selectAll) {
-                        selectAll.checked = (list.length && list.every(x => x.checked));
-                    }
+            // Delegate event cho checkbox items (bao gồm cả items sẽ load thêm)
+            document.addEventListener('change', (e) => {
+                if (e.target.classList.contains('item-checkbox')) {
+                    updateSelectAllState();
                     saveCheckboxState();
-                });
+                }
             });
         });
 
@@ -415,6 +580,7 @@
         };
     })();
 </script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
 

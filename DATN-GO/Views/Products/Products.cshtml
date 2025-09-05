@@ -28,7 +28,7 @@
 </style>
 
 <!-- Filter bar -->
-<div class="bg-crimson rounded-3 mt-3 mb-5 py-3">
+<div class="bg-crimson rounded-3 mt-3 mb-3 py-3">
     <div class="d-flex flex-row align-items-center justify-content-between flex-wrap mx-2">
         <div class="text-white fw-bold me-2 my-auto">
             <button class="btn btn-outline-light d-lg-none me-2" type="button" data-bs-toggle="offcanvas"
@@ -223,14 +223,9 @@
                 decimal? salePrice = null;
                 if (priceInfo != null)
                 {
-                    if (priceInfo.IsVariant)
-                    {
-                        salePrice = priceInfo.MinPrice ?? priceInfo.MaxPrice;
-                    }
-                    else
-                    {
+                    
                         salePrice = priceInfo.Price ?? 0;
-                    }
+                    
                 }
 
                 float ratingVal = 0;
@@ -248,38 +243,55 @@
                      data-rating="@store?.Rating"
                      data-price="@salePrice">
                     <a href="/Products/DetailProducts/@item.Id" class="text-decoration-none text-dark d-block h-100">
-                        <div class="product-card card h-100 border-0 shadow-sm hover-scale">
+                        <div class="product-card card h-100 border rounded shadow hover-scale">
                             <div class="position-relative">
                                 <img src="@(images.FirstOrDefault() ?? "/image/default.png")"
                                      class="card-img-top"
                                      style="height: 200px; object-fit: cover;"
-                                     alt="@item.Name" />
+                                     alt="@item.Name"
+                                     data-bs-toggle="tooltip"
+                                     title="@item.Name" />
                             </div>
                             <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="badge bg-light text-crimson">@category?.Name</span>
-                                    <div class="rating text-warning">
-                                        @if (ratingVal <= 0)
-                                        {
-                                            <span class="text-muted small fst-italic">Chưa có đánh giá</span>
-                                        }
-                                        else
-                                        {
-                                            <i class="bi bi-star-fill"></i>
-                                            <span class="ms-1 text-dark">@ratingVal.ToString("0.0")</span>
-                                        }
-                                    </div>
-
+                                <!-- Badge (tooltip category) -->
+                                <div class="mb-2">
+                                    <span class="badge bg-light text-crimson"
+                                          data-bs-toggle="tooltip"
+                                          title="@category?.Name">@category?.Name</span>
                                 </div>
+
+                                <!-- Rating (tooltip số sao/ghi chú) -->
+                                <div class="rating text-warning mb-2"
+                                     data-bs-toggle="tooltip"
+                                     title="@(ratingVal <= 0 ? "Chưa có đánh giá" : $"Đánh giá: {ratingVal:0.0} sao")">
+                                    @if (ratingVal <= 0)
+                                    {
+                                        <span class="text-muted small fst-italic">Chưa có đánh giá</span>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-star-fill" aria-hidden="true"></i>
+                                        <span class="ms-1 text-dark">@ratingVal.ToString("0.0")</span>
+                                    }
+                                </div>
+
+                                <!-- Tên sản phẩm -->
                                 <h5 class="card-title fw-bold mb-1 text-truncate"
                                     data-bs-toggle="tooltip"
-                                    data-bs-placement="top"
                                     title="@item.Name">
                                     @item.Name
                                 </h5>
-                                <p class="card-text text-muted small mb-2">@store?.Name</p>
+
+                                <!-- Tên cửa hàng -->
+                                <p class="card-text text-muted small mb-2"
+                                   data-bs-toggle="tooltip"
+                                   title="@store?.Name">@store?.Name</p>
+
+                                <!-- Giá + nút hành động -->
                                 <div>
-                                    <div class="mb-2">
+                                    <div class="mb-2"
+                                         data-bs-toggle="tooltip"
+                                         title="@(salePrice.HasValue && salePrice > 0 ? salePrice?.ToString("N0") + " đ" : "Chưa có giá")">
                                         @if (salePrice.HasValue && salePrice > 0)
                                         {
                                             <span class="text-crimson fw-bold">@salePrice?.ToString("N0") đ</span>
@@ -296,6 +308,8 @@
                                                 type="button"
                                                 data-product-id="@item.Id"
                                                 data-has-variant="@(hasVariant.ToString().ToLower())"
+                                                data-bs-toggle="tooltip"
+                                                title="Thêm sản phẩm @item.Name vào giỏ"
                                                 onclick="event.stopPropagation();">
                                             <i class="bi bi-cart-plus"></i> Thêm
                                         </button>
@@ -304,6 +318,8 @@
                                                 type="button"
                                                 data-product-id="@item.Id"
                                                 data-has-variant="@(hasVariant.ToString().ToLower())"
+                                                data-bs-toggle="tooltip"
+                                                title="Mua ngay sản phẩm @item.Name"
                                                 onclick="event.stopPropagation();">
                                             Mua ngay
                                         </button>
@@ -319,7 +335,12 @@
         </div>
         <!-- Nút xem thêm -->
         <div class="text-center mt-3 mb-3">
-            <button id="loadMoreBtn" class="btn btn-outline-crimson px-4">Xem thêm</button>
+            <button id="loadMoreBtn"
+                    class="btn btn-outline-crimson px-4"
+                    data-bs-toggle="tooltip"
+                    title="Hiển thị thêm sản phẩm">
+                Xem thêm
+            </button>
         </div>
     </div>
 </div>

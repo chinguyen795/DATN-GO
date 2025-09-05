@@ -153,7 +153,6 @@ namespace DATN_API.Controllers
                 Status = UserStatus.Active,
                 Gender = GenderType.Other,
                 CreateAt = DateTime.Now,
-                Balance = 0
             };
 
             _context.Users.Add(user);
@@ -385,6 +384,182 @@ namespace DATN_API.Controllers
             return Ok(exists);
         }
 
+        [HttpPost("SendForgotPasswordOTP")]
+        public async Task<IActionResult> SendForgotPasswordOTP([FromBody] string input)
+        {
+            bool isPhone = IsPhone(input);
+
+            if (_lastCodeSentTime.TryGetValue(input, out DateTime lastSent) && (DateTime.UtcNow - lastSent) < _resendDelay)
+                return BadRequest($"Vui lòng chờ {(_resendDelay - (DateTime.UtcNow - lastSent)).Seconds} giây trước khi gửi lại mã.");
+
+            var code = new Random().Next(100000, 999999).ToString();
+            _verificationCodes[input] = code;
+            _lastCodeSentTime[input] = DateTime.UtcNow;
+
+            try
+            {
+                if (isPhone)
+                {
+                    // Gửi mã OTP qua Twilio (SMS)
+                    TwilioClient.Init(_configuration["Twilio:AccountSID"], _configuration["Twilio:AuthToken"]);
+                    await MessageResource.CreateAsync(
+                        body: $"Mã xác thực của bạn là: {code}",
+                        from: new Twilio.Types.PhoneNumber(_configuration["Twilio:Phone"]),
+                        to: new Twilio.Types.PhoneNumber(input)
+                    );
+                    return Ok("Mã OTP đã được gửi qua SMS!");
+                }
+                else
+                {
+                    // Kiểm tra nếu đây là email hợp lệ
+                    try
+                    {
+                        var mailAddress = new MailAddress(input);
+                    }
+                    catch
+                    {
+                        return BadRequest("Định dạng email không hợp lệ!");
+                    }
+
+                    // Gửi mã OTP qua email
+                    bool sent = SendEmail(input, "Mã xác thực quên mật khẩu", $"Mã xác thực của bạn là: {code}");
+                    return sent ? Ok("Mã xác thực đã được gửi qua email!") : BadRequest("Không thể gửi email!");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Đã có lỗi xảy ra khi gửi OTP: {ex.Message}");
+            }
+        }
+
+        [HttpPost("ResetPassword")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
+        {
+            string identifier = request.Identifier;
+            bool isPhone = IsPhone(identifier);
+
+            // Kiểm tra xem mã OTP đã được xác minh chưa
+            // Thực tế, ở đây bạn cần xác nhận rằng người dùng đã xác thực OTP (sử dụng cơ chế đã được xác nhận OTP của bạn, ví dụ: _verifiedAccounts)
+            if (!_verifiedAccounts.Contains(identifier)) // Bạn cần kiểm tra OTP đã xác minh ở đâu đó
+                return BadRequest("Bạn chưa xác minh mã OTP hoặc email!");
+
+            // Kiểm tra mật khẩu xác nhận
+            if (request.Password != request.ConfirmPassword)
+                return BadRequest("Mật khẩu xác nhận không khớp!");
+
+            // Kiểm tra xem tài khoản có tồn tại trong hệ thống không
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == identifier || u.Phone == identifier);
+
+            if (user == null)
+                return BadRequest("Tài khoản không tồn tại!");
+
+            // Cập nhật mật khẩu mới
+            user.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+
+            // Xóa thông tin OTP sau khi cập nhật mật khẩu thành công
+            _verifiedAccounts.Remove(identifier);
+
+            return Ok("Mật khẩu đã được thay đổi thành công!");
+        }
+
+        // Gửi OTP tới số điện thoại mới
+        [HttpPost("SendOtpToNewPhone")]
+        public async Task<IActionResult> SendOtpToNewPhone([FromBody] string newPhone)
+        {
+            // Kiểm tra định dạng số điện thoại VN (+84xxxxxxxxx)
+            if (!IsPhone(newPhone))
+                return BadRequest("Số điện thoại mới không hợp lệ!");
+
+            // Kiểm tra đã tồn tại chưa
+            if (await _context.Users.AnyAsync(u => u.Phone == newPhone))
+                return BadRequest("Số điện thoại đã được sử dụng!");
+
+            // Check delay resend OTP
+            if (_lastCodeSentTime.TryGetValue(newPhone, out DateTime lastSent) &&
+                (DateTime.UtcNow - lastSent) < _resendDelay)
+            {
+                return BadRequest($"Vui lòng chờ {(_resendDelay - (DateTime.UtcNow - lastSent)).Seconds} giây trước khi gửi lại mã.");
+            }
+
+            var code = new Random().Next(100000, 999999).ToString();
+            _verificationCodes[newPhone] = code;
+            _lastCodeSentTime[newPhone] = DateTime.UtcNow;
+
+            try
+            {
+                // Gửi OTP bằng Twilio
+                TwilioClient.Init(_configuration["Twilio:AccountSID"], _configuration["Twilio:AuthToken"]);
+                await MessageResource.CreateAsync(
+                    body: $"Mã xác thực đổi số điện thoại của bạn là: {code}",
+                    from: new Twilio.Types.PhoneNumber(_configuration["Twilio:PhoneNumber"]),
+                    to: new Twilio.Types.PhoneNumber(newPhone)
+                );
+                return Ok("Mã OTP đã được gửi tới số điện thoại mới!");
+            }
+            catch (TwilioException ex)
+            {
+                return BadRequest($"Lỗi gửi OTP: {ex.Message}");
+            }
+        }
+
+        // Đổi số điện thoại
+        [HttpPost("ChangePhone")]
+        public async Task<IActionResult> ChangePhone([FromBody] ChangePhoneRequest request)
+        {
+            if (string.IsNullOrEmpty(request.NewPhone) || string.IsNullOrEmpty(request.OtpCode) || request.UserId == 0)
+                return BadRequest("Vui lòng cung cấp đầy đủ ID người dùng, số điện thoại mới và mã OTP.");
+
+            var user = await _context.Users.FindAsync(request.UserId);
+            if (user == null)
+                return NotFound("Không tìm thấy người dùng.");
+
+            if (!IsPhone(request.NewPhone))
+                return BadRequest("Định dạng số điện thoại không hợp lệ!");
+
+            if (await _context.Users.AnyAsync(u => u.Phone == request.NewPhone && u.Id != user.Id))
+                return BadRequest("Số điện thoại mới đã được sử dụng bởi tài khoản khác!");
+
+            if (!_verificationCodes.TryGetValue(request.NewPhone, out string storedCode) || storedCode != request.OtpCode)
+                return BadRequest("Mã OTP không đúng.");
+
+            if (_lastCodeSentTime.TryGetValue(request.NewPhone, out DateTime sentTime) &&
+                (DateTime.UtcNow - sentTime) > _codeExpiration)
+            {
+                _verificationCodes.Remove(request.NewPhone);
+                _lastCodeSentTime.Remove(request.NewPhone);
+                return BadRequest("Mã OTP đã hết hạn.");
+            }
+
+            try
+            {
+                user.Phone = request.NewPhone;
+                await _context.SaveChangesAsync();
+
+                _verificationCodes.Remove(request.NewPhone);
+                _lastCodeSentTime.Remove(request.NewPhone);
+                _verifiedAccounts.Remove(request.NewPhone);
+
+                return Ok("Đổi số điện thoại thành công!");
+            }
+            catch (DbUpdateException ex)
+            {
+                Console.WriteLine($"Lỗi khi cập nhật số điện thoại: {ex.Message}");
+                return StatusCode(500, "Đã xảy ra lỗi khi cập nhật số điện thoại. Vui lòng thử lại sau.");
+            }
+        }
+
+        // Request model
+        public class ChangePhoneRequest
+        {
+            public int UserId { get; set; }
+            public string NewPhone { get; set; }
+            public string OtpCode { get; set; }
+        }
+
+
         public class ChangePasswordWithIdentifierRequest
         {
             public string Identifier { get; set; }
@@ -417,6 +592,13 @@ namespace DATN_API.Controllers
             public int UserId { get; set; }
             public string NewEmail { get; set; }
             public string OtpCode { get; set; }
+        }
+
+        public class ResetPasswordRequest
+        {
+            public string Identifier { get; set; } // Số điện thoại hoặc email của người dùng
+            public string Password { get; set; } // Mật khẩu mới
+            public string ConfirmPassword { get; set; } // Xác nhận mật khẩu mới
         }
     }
 }

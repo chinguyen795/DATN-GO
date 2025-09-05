@@ -195,7 +195,6 @@
                 displayPrice = priceInfo.Price ?? product.CostPrice ?? 0;
             }
 
-
             var prodCost = ViewBag.DebugPrice ?? 0m;
             var prodOriginal = product.OriginalPrice > 0 ? product.OriginalPrice : prodCost * 1.3m;
             var prodDiscount = prodOriginal > prodCost ? Math.Round((prodOriginal - prodCost) / prodOriginal * 100) : 0;
@@ -222,15 +221,24 @@
                                  class="card-img-top rounded-top"
                                  style="height: 200px; object-fit: cover;"
                                  alt="@product.Name"
+                                 data-bs-toggle="tooltip" data-bs-container="body" title="@product.Name"
                                  onerror="this.onerror=null;this.src='/images/no-image.png';" />
                         </a>
                     </div>
 
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge bg-light text-danger">@product.CategoryName</span>
+                            <!-- Badge danh mục -->
+                            <span class="badge bg-light text-danger"
+                                  data-bs-toggle="tooltip" data-bs-container="body"
+                                  title="@product.CategoryName">
+                                @product.CategoryName
+                            </span>
 
-                            <div class="rating d-flex align-items-center text-warning">
+                            <!-- Rating (tooltip cả 2 case) -->
+                            <div class="rating d-flex align-items-center text-warning"
+                                 data-bs-toggle="tooltip" data-bs-container="body"
+                                 title="@(ratingAvg <= 0 ? "Chưa có đánh giá" : $"Đánh giá: {ratingAvg:0.0} sao")">
                                 @if (ratingAvg <= 0)
                                 {
                                     <span class="text-muted small fst-italic">Chưa có đánh giá</span>
@@ -241,30 +249,37 @@
                                     <span class="ms-1 text-dark">@ratingAvg.ToString("0.0")</span>
                                 }
                             </div>
-
                         </div>
 
-                        <h5 class="card-title fw-bold mb-1 text-truncate-1">
+                        <!-- Tên sản phẩm -->
+                        <h5 class="card-title fw-bold mb-1 text-truncate-1"
+                            data-bs-toggle="tooltip" data-bs-container="body" title="@product.Name">
                             <a asp-controller="Products"
                                asp-action="DetailProducts"
                                asp-route-id="@product.Id"
-                               class="text-dark text-decoration-none"
-                               data-bs-toggle="tooltip"
-                               data-bs-placement="top"
-                               data-bs-container="body"
-                               data-bs-title="@product.Name">
+                               class="text-dark text-decoration-none">
                                 @product.Name
                             </a>
                         </h5>
 
-                        <p class="card-text text-muted small mb-2 text-truncate-1">@product.StoreName</p>
+                        <!-- Tên cửa hàng -->
+                        <p class="card-text text-muted small mb-2 text-truncate-1"
+                           data-bs-toggle="tooltip" data-bs-container="body" title="@product.StoreName">
+                            @product.StoreName
+                        </p>
 
                         <div>
                             <!-- Giá -->
-                            <div class="mb-2">
+                            <div class="mb-2"
+                                 data-bs-toggle="tooltip" data-bs-container="body"
+                                 title="@(prodCost > 0 ? string.Format("{0:N0} ₫", prodCost) : "Chưa có giá")">
                                 <span class="text-danger fw-bold">
                                     @string.Format("{0:N0} ₫", prodCost)
                                 </span>
+                                @* Nếu muốn show giảm giá:
+                            @if (prodDiscount > 0) {
+                            <span class="ms-2 text-muted small">(-@prodDiscount%)</span>
+                            } *@
                             </div>
 
                             <!-- Hai nút dưới giá -->
@@ -273,6 +288,8 @@
                                         type="button"
                                         data-product-id="@product.Id"
                                         data-has-variant="@(hasVariant.ToString().ToLower())"
+                                        data-bs-toggle="tooltip" data-bs-container="body"
+                                        title="Thêm sản phẩm @product.Name vào giỏ"
                                         onclick="event.stopPropagation();">
                                     <i class="bi bi-cart-plus icon-sm"></i> Thêm
                                 </button>
@@ -281,12 +298,13 @@
                                         type="button"
                                         data-product-id="@product.Id"
                                         data-has-variant="@(hasVariant.ToString().ToLower())"
+                                        data-bs-toggle="tooltip" data-bs-container="body"
+                                        title="Mua ngay sản phẩm @product.Name"
                                         onclick="event.stopPropagation();">
                                     Mua ngay
                                 </button>
                             </div>
                         </div>
-
 
                     </div>
                 </div>

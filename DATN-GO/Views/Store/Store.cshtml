@@ -181,7 +181,6 @@
             {
                 var quantity = store.TotalProductQuantity;
                 var cartQuantity = store.TotalSoldProducts;
-                // Gán key trạng thái
                 var statusKey = store.Status switch
                 {
                     StoreStatus.Active => "active",
@@ -192,7 +191,6 @@
                     _ => "unknown"
                 };
 
-                // Gán class trạng thái
                 var statusClass = store.Status switch
                 {
                     StoreStatus.Active => "bg-success",
@@ -203,7 +201,6 @@
                     _ => "bg-secondary"
                 };
 
-                // Hiển thị text trạng thái
                 string statusText = store.Status switch
                 {
                     StoreStatus.Active => "Hoạt động",
@@ -215,7 +212,7 @@
                 };
 
                 <div class="col-lg-4 col-md-6 col-sm-6 mb-3 store-wrapper">
-                    <div class="card h-100 store-card"
+                    <div class="store-card card h-100 border rounded shadow hover-scale"
                          data-name="@store.Name?.ToLower()"
                          data-address="@store.Address?.ToLower()"
                          data-status="@statusText.ToLower()"
@@ -229,34 +226,41 @@
                                 <div class="row">
                                     <div class="col-4 align-items-center pt-2">
                                         <img src="@store.Avatar" alt="@store.Name" height="70" width="70"
-                                             class="rounded-circle object-fit-cover border">
+                                             class="rounded-circle object-fit-cover border"
+                                             data-bs-toggle="tooltip" title="@store.Name" />
                                     </div>
                                     <div class="col-8">
-                                        <h5 class="fw-bold text-truncate">@store.Name</h5>
-                                        <div class="d-flex align-items-center mb-1">
+                                        <h5 class="fw-bold text-truncate"
+                                            data-bs-toggle="tooltip" title="@store.Name">
+                                            @store.Name
+                                        </h5>
+                                        <div class="d-flex align-items-center mb-1"
+                                             data-bs-toggle="tooltip" title="@store.Address">
                                             <i class="bi bi-geo-alt text-crimson me-1"></i>
                                             <p class="text-truncate mb-0 small">@store.Address</p>
                                         </div>
-                                        <div class="d-flex align-items-center mb-2">
+                                        <div class="d-flex align-items-center mb-2"
+                                             data-bs-toggle="tooltip" title="@statusText">
                                             <i class="bi bi-shop text-crimson me-1"></i>
                                             <span class="badge @statusClass ms-2">@statusText</span>
                                         </div>
                                         <div class="row text-nowrap align-items-center gx-2">
                                             <!-- Rating -->
-                                            <div class="col d-flex align-items-center">
+                                            <div class="col d-flex align-items-center"
+                                                 data-bs-toggle="tooltip" title="Đánh giá: @store.AverageRating.ToString("0.0") (@store.ReviewCount lượt)">
                                                 <span class="fw-bold">@store.AverageRating.ToString("0.0")</span>
                                                 <i class="bi bi-star-fill text-crimson ms-1"></i>
                                                 <small class="text-muted ms-1">(@store.ReviewCount)</small>
                                             </div>
-
                                             <!-- Orders -->
-                                            <div class="col d-flex align-items-center justify-content-center">
+                                            <div class="col d-flex align-items-center justify-content-center"
+                                                 data-bs-toggle="tooltip" title="Đã bán: @store.TotalSoldProducts sản phẩm">
                                                 <span>@store.TotalSoldProducts</span>
                                                 <i class="bi bi-bag-check-fill text-crimson ms-1"></i>
                                             </div>
-
                                             <!-- Products -->
-                                            <div class="col d-flex align-items-center justify-content-end">
+                                            <div class="col d-flex align-items-center justify-content-end"
+                                                 data-bs-toggle="tooltip" title="Tổng sản phẩm: @store.TotalProductQuantity">
                                                 <span>@store.TotalProductQuantity</span>
                                                 <i class="bi bi-box-fill text-crimson ms-1"></i>
                                             </div>
@@ -266,10 +270,10 @@
                             </div>
                         </a>
                         <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center p-3">
-@*                             <a href="@Url.Action("Chat", "Chat", new { storeId = store.Id })" class="btn btn-outline-crimson btn-sm">
-                                <i class="bi bi-chat-dots"></i>
-                            </a> *@
-                            <a href="@Url.Action("Detail", "Store", new { id = store.Id })" class="btn btn-crimson flex-grow-1" style="text-transform: capitalize;">
+                            <a href="@Url.Action("Detail", "Store", new { id = store.Id })"
+                               class="btn btn-crimson flex-grow-1"
+                               style="text-transform: capitalize;"
+                               data-bs-toggle="tooltip" title="Xem chi tiết cửa hàng @store.Name">
                                 <i class="bi bi-shop me-2"></i>Xem cửa hàng
                             </a>
                         </div>

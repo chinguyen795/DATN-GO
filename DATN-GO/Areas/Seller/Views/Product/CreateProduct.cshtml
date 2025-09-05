@@ -1,4 +1,4 @@
-﻿﻿@{
+﻿@{
     Layout = "~/Areas/Seller/Views/Shared/_LayoutSeller.cshtml";
 }
 <!-- jQuery -->
@@ -126,15 +126,16 @@
                                         <input type="text" class="form-control" id="brandproduct" name="Brand" placeholder="Tên thương hiệu">
                                     </div>
 
-                                    <div class="form-group">
-                                        <label for="sellingprice">Giá bán</label>
-                                        <input type="number" class="form-control" id="sellingprice" name="Price" placeholder="Giá bán sản phẩm">
-                                    </div>
                                 </div>
 
                                 <div class="border-start border-danger border-3 ps-3 mb-3" id="no-variant-section">
                                     <div class="alert alert-info alert-icon" role="alert">
                                         <i class="mdi mdi-alert-circle-outline"></i>Mục này chỉ áp dụng cho sản phẩm không có biến thể!
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="sellingprice">Giá bán</label>
+                                        <input type="number" class="form-control" id="sellingprice" name="Price" placeholder="Giá bán sản phẩm">
                                     </div>
                                     <div class="form-group">
                                         <label for="importprice">Giá nhập</label>
@@ -294,37 +295,37 @@
 
     // Template for variant type
     const variantTypeTemplate = (id) => `
-            <div class="variant-type mb-3 w-100" data-type-id="${id}">
-                <div class="card w-100" style="width:100vw;min-width:73vw;max-width:100vw;">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h6 class="mb-0">Loại tùy chọn ${id}</h6>
-                            <button type="button" class="btn btn-danger btn-sm" onclick="removeVariantType(${id})" style="text-transform: capitalize;">
-                                <i class="mdi mdi-delete"></i> Xóa
-                            </button>
-                        </div>
-                        <div class="form-group">
-                            <label>Tên biến thể:</label>
-                            <input type="text" class="form-control variant-type-name" placeholder="Ví dụ: Màu sắc, Kích thước...">
-                        </div>
-                        <div class="variant-values mt-3">
-                            <label>Giá trị biến thể:</label>
-                            <div class="variant-values-container">
-                                <div class="d-flex align-items-center mb-2">
-                                    <input type="text" class="form-control variant-value" placeholder="Nhập giá trị" style="margin-right:16px;">
-                                    <button type="button" class="btn btn-outline-danger" onclick="removeVariantValue(this)">
-                                        <i class="mdi mdi-delete"></i>
-                                    </button>
-                                </div>
+                <div class="variant-type mb-3 w-100" data-type-id="${id}">
+                    <div class="card w-100" style="width:100vw;min-width:73vw;max-width:100vw;">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0">Loại tùy chọn ${id}</h6>
+                                <button type="button" class="btn btn-danger btn-sm" onclick="removeVariantType(${id})" style="text-transform: capitalize;">
+                                    <i class="mdi mdi-delete"></i> Xóa
+                                </button>
                             </div>
-                            <button type="button" class="btn btn-outline-danger btn-sm mt-2" onclick="addVariantValue(${id})" style="text-transform: capitalize;">
-                                <i class="mdi mdi-plus"></i> Thêm giá trị
-                            </button>
+                            <div class="form-group">
+                                <label>Tên biến thể:</label>
+                                <input type="text" class="form-control variant-type-name" placeholder="Ví dụ: Màu sắc, Kích thước...">
+                            </div>
+                            <div class="variant-values mt-3">
+                                <label>Giá trị biến thể:</label>
+                                <div class="variant-values-container">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <input type="text" class="form-control variant-value" placeholder="Nhập giá trị" style="margin-right:16px;">
+                                        <button type="button" class="btn btn-outline-danger" onclick="removeVariantValue(this)">
+                                            <i class="mdi mdi-delete"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-outline-danger btn-sm mt-2" onclick="addVariantValue(${id})" style="text-transform: capitalize;">
+                                    <i class="mdi mdi-plus"></i> Thêm giá trị
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        `;
+            `;
 
     // Lưu ảnh cho biến thể
     function saveVariantImage(typeId, imgSrc) {
@@ -434,13 +435,13 @@
 
         // Thêm giá trị mới vào phần tử giao diện mà không làm mất giá trị cũ
         container.insertAdjacentHTML('beforeend', `
-                <div class="d-flex align-items-center gap-2 mb-2">
-                    <input type="text" class="form-control variant-value me-2" placeholder="Nhập giá trị">
-                    <button type="button" class="btn btn-outline-danger" onclick="removeVariantValue(this)">
-                        <i class="mdi mdi-delete"></i>
-                    </button>
-                </div>
-            `);
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <input type="text" class="form-control variant-value me-2" placeholder="Nhập giá trị">
+                        <button type="button" class="btn btn-outline-danger" onclick="removeVariantValue(this)">
+                            <i class="mdi mdi-delete"></i>
+                        </button>
+                    </div>
+                `);
 
         // Cập nhật mảng variantTypes mà không làm mất giá trị cũ
         const variantTypeObj = variantTypes.find(type => type.id === typeId);
@@ -686,31 +687,31 @@
         applyAllRow.style.background = "#f9f9f9";
 
         applyAllRow.innerHTML = `
-        <th colspan="${validTypes.length + 6}">
-            <div class="d-flex gap-2 flex-wrap">
-                <input type="number" id="applyAllPrice" class="form-control form-control-sm" placeholder="Giá bán cho tất cả" style="max-width: 150px;">
-                <input type="number" id="applyAllCost" class="form-control form-control-sm" placeholder="Giá vốn cho tất cả" style="max-width: 150px;">
-                <input type="number" id="applyAllQuantity" class="form-control form-control-sm" placeholder="Số lượng cho tất cả" style="max-width: 150px;">
-                <input type="number" id="applyAllWeight" class="form-control form-control-sm" placeholder="Khối lượng cho tất cả" style="max-width: 150px;">
-                <input type="number" id="applyAllLength" class="form-control form-control-sm" placeholder="D" style="max-width: 80px;">
-                <input type="number" id="applyAllWidth" class="form-control form-control-sm" placeholder="R" style="max-width: 80px;">
-                <input type="number" id="applyAllHeight" class="form-control form-control-sm" placeholder="C" style="max-width: 80px;">
-                <button type="button" class="btn btn-primary btn-sm" onclick="applyValuesToAll()">Áp dụng cho tất cả</button>
-            </div>
-        </th>
-    `;
+            <th colspan="${validTypes.length + 6}">
+                <div class="d-flex gap-2 flex-wrap">
+                    <input type="number" id="applyAllPrice" class="form-control form-control-sm" placeholder="Giá bán cho tất cả" style="max-width: 150px;">
+                    <input type="number" id="applyAllCost" class="form-control form-control-sm" placeholder="Giá vốn cho tất cả" style="max-width: 150px;">
+                    <input type="number" id="applyAllQuantity" class="form-control form-control-sm" placeholder="Số lượng cho tất cả" style="max-width: 150px;">
+                    <input type="number" id="applyAllWeight" class="form-control form-control-sm" placeholder="Khối lượng cho tất cả" style="max-width: 150px;">
+                    <input type="number" id="applyAllLength" class="form-control form-control-sm" placeholder="D" style="max-width: 80px;">
+                    <input type="number" id="applyAllWidth" class="form-control form-control-sm" placeholder="R" style="max-width: 80px;">
+                    <input type="number" id="applyAllHeight" class="form-control form-control-sm" placeholder="C" style="max-width: 80px;">
+                    <button type="button" class="btn btn-primary btn-sm" onclick="applyValuesToAll()">Áp dụng cho tất cả</button>
+                </div>
+            </th>
+        `;
 
         // Tạo tr header
         let headerRow = document.createElement("tr");
         headerRow.innerHTML = `
-        ${validTypes.map(type => `<th>${type.name}</th>`).join('')}
-        <th>Giá Bán</th>
-        <th>Giá Vốn</th>
-        <th>Tồn Kho</th>
-        <th>KL (kg)</th>
-        <th>K.Thước (DxRxC)</th>
-        <th>Ảnh</th>
-    `;
+            ${validTypes.map(type => `<th>${type.name}</th>`).join('')}
+            <th>Giá Bán</th>
+            <th>Giá Vốn</th>
+            <th>Tồn Kho</th>
+            <th>KL (kg)</th>
+            <th>K.Thước (DxRxC)</th>
+            <th>Ảnh</th>
+        `;
 
         thead.appendChild(applyAllRow);
         thead.appendChild(headerRow);
@@ -737,98 +738,98 @@
             const savedData = variantData[originalKey] || {};
 
             return `
-                <tr class="align-middle" data-variant-key="${originalKey}" data-row-index="${rowIndex}">
-                    ${values.map((value, i) => `
-                        <td class='align-middle' style='min-width: 100px; text-align: center;'>
-                            <input type="text"
-                                class="form-control form-control-sm variant-value-cell"
-                                data-index="${i}"
-                                value="${value}"
-                                tabindex="0" />
+                    <tr class="align-middle" data-variant-key="${originalKey}" data-row-index="${rowIndex}">
+                        ${values.map((value, i) => `
+                            <td class='align-middle' style='min-width: 100px; text-align: center;'>
+                                <input type="text"
+                                    class="form-control form-control-sm variant-value-cell"
+                                    data-index="${i}"
+                                    value="${value}"
+                                    tabindex="0" />
+                            </td>
+                        `).join('')}
+
+                        <td class='align-middle' style='min-width: 120px;'>
+                            <input type="number"
+                                class="form-control form-control-sm variant-price"
+                                placeholder="Giá bán"
+                                value="${savedData.price || ''}"
+                                tabindex="0">
                         </td>
-                    `).join('')}
 
-                    <td class='align-middle' style='min-width: 120px;'>
-                        <input type="number"
-                            class="form-control form-control-sm variant-price"
-                            placeholder="Giá bán"
-                            value="${savedData.price || ''}"
-                            tabindex="0">
-                    </td>
-
-                    <td class='align-middle' style='min-width: 120px;'>
-                        <input type="number"
-                            class="form-control form-control-sm variant-cost-price"
-                            placeholder="Giá vốn"
-                            value="${savedData.cost || ''}"
-                            tabindex="0">
-                    </td>
-
-                    <td class='align-middle' style='min-width: 120px;'>
-                        <input type="number"
-                            class="form-control form-control-sm variant-quantity"
-                            placeholder="Số lượng"
-                            value="${savedData.quantity || ''}"
-                            tabindex="0">
-                    </td>
-
-                    <td class='align-middle' style='min-width: 120px;'>
-                        <input type="number"
-                            class="form-control form-control-sm variant-weight"
-                            placeholder="Khối lượng"
-                            value="${savedData.weight || ''}"
-                            tabindex="0">
-                    </td>
-
-                    <td class='align-middle' style='min-width: 180px;'>
-                        <div class="d-flex gap-1 align-items-center">
+                        <td class='align-middle' style='min-width: 120px;'>
                             <input type="number"
-                                class="form-control form-control-sm variant-length"
-                                placeholder="D"
-                                value="${savedData.dimensions?.D || ''}"
+                                class="form-control form-control-sm variant-cost-price"
+                                placeholder="Giá vốn"
+                                value="${savedData.cost || ''}"
                                 tabindex="0">
-                            <input type="number"
-                                class="form-control form-control-sm variant-width"
-                                placeholder="R"
-                                value="${savedData.dimensions?.R || ''}"
-                                tabindex="0">
-                            <input type="number"
-                                class="form-control form-control-sm variant-height"
-                                placeholder="C"
-                                value="${savedData.dimensions?.C || ''}"
-                                tabindex="0">
-                        </div>
-                    </td>
+                        </td>
 
-                    <td class='align-middle' style='min-width: 120px; text-align: center;'>
-                        <div id="imgPreview-${uniqueKey}" data-original-key="${originalKey}" data-row-index="${rowIndex}" style="margin-top: 8px; display: block; position: relative; width: max-content; margin-left: auto; margin-right: auto;">
-                            ${imgSrc ? `
-                                <div style="position: relative;">
-                                    <img src="${imgSrc}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 8px #0001;" />
-                                    <button type="button" class="btn btn-sm btn-primary"
-                                        style="position: absolute; top: 2px; right: 2px; width: 24px; height: 24px; padding: 0; border-radius: 50%;"
-                                        onclick="triggerFileInput('${uniqueKey}')">
-                                        <i class="mdi mdi-pencil" style="font-size: 12px;"></i>
-                                    </button>
-                                </div>
-                            ` : `
-                                <div class="preview-box" style="width:100px; height:100px; border:2px dashed #ccc; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer;"
-                                     onclick="triggerFileInput('${uniqueKey}')">
-                                    <i class="mdi mdi-image-area" style="font-size: 24px; color: #bbb;"></i>
-                                </div>
-                            `}
-                            <input type="file"
-                                   id="file-${uniqueKey}"
-                                   data-unique-key="${uniqueKey}"
-                                   data-original-key="${originalKey}"
-                                   data-row-index="${rowIndex}"
-                                   accept="image/*"
-                                   style="display: none;"
-                                   onchange="uploadVariantImage(this, '${uniqueKey}', '${originalKey}', ${rowIndex})">
-                        </div>
-                    </td>
-                </tr>
-            `;
+                        <td class='align-middle' style='min-width: 120px;'>
+                            <input type="number"
+                                class="form-control form-control-sm variant-quantity"
+                                placeholder="Số lượng"
+                                value="${savedData.quantity || ''}"
+                                tabindex="0">
+                        </td>
+
+                        <td class='align-middle' style='min-width: 120px;'>
+                            <input type="number"
+                                class="form-control form-control-sm variant-weight"
+                                placeholder="Khối lượng"
+                                value="${savedData.weight || ''}"
+                                tabindex="0">
+                        </td>
+
+                        <td class='align-middle' style='min-width: 180px;'>
+                            <div class="d-flex gap-1 align-items-center">
+                                <input type="number"
+                                    class="form-control form-control-sm variant-length"
+                                    placeholder="D"
+                                    value="${savedData.dimensions?.D || ''}"
+                                    tabindex="0">
+                                <input type="number"
+                                    class="form-control form-control-sm variant-width"
+                                    placeholder="R"
+                                    value="${savedData.dimensions?.R || ''}"
+                                    tabindex="0">
+                                <input type="number"
+                                    class="form-control form-control-sm variant-height"
+                                    placeholder="C"
+                                    value="${savedData.dimensions?.C || ''}"
+                                    tabindex="0">
+                            </div>
+                        </td>
+
+                        <td class='align-middle' style='min-width: 120px; text-align: center;'>
+                            <div id="imgPreview-${uniqueKey}" data-original-key="${originalKey}" data-row-index="${rowIndex}" style="margin-top: 8px; display: block; position: relative; width: max-content; margin-left: auto; margin-right: auto;">
+                                ${imgSrc ? `
+                                    <div style="position: relative;">
+                                        <img src="${imgSrc}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 8px #0001;" />
+                                        <button type="button" class="btn btn-sm btn-primary"
+                                            style="position: absolute; top: 2px; right: 2px; width: 24px; height: 24px; padding: 0; border-radius: 50%;"
+                                            onclick="triggerFileInput('${uniqueKey}')">
+                                            <i class="mdi mdi-pencil" style="font-size: 12px;"></i>
+                                        </button>
+                                    </div>
+                                ` : `
+                                    <div class="preview-box" style="width:100px; height:100px; border:2px dashed #ccc; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer;"
+                                         onclick="triggerFileInput('${uniqueKey}')">
+                                        <i class="mdi mdi-image-area" style="font-size: 24px; color: #bbb;"></i>
+                                    </div>
+                                `}
+                                <input type="file"
+                                       id="file-${uniqueKey}"
+                                       data-unique-key="${uniqueKey}"
+                                       data-original-key="${originalKey}"
+                                       data-row-index="${rowIndex}"
+                                       accept="image/*"
+                                       style="display: none;"
+                                       onchange="uploadVariantImage(this, '${uniqueKey}', '${originalKey}', ${rowIndex})">
+                            </div>
+                        </td>
+                    </tr>
+                `;
         }).join('');
 
         tableContainer.style.display = 'block';
@@ -869,20 +870,20 @@
         const reader = new FileReader();
         reader.onload = function (e) {
             previewDiv.innerHTML = `
-                <div style="position: relative;">
-                    <img src="${e.target.result}"
-                         style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 8px #0001;" />
-                    <button type="button" class="btn btn-sm btn-primary"
-                        style="position: absolute; top: 2px; right: 2px; width: 24px; height: 24px; padding: 0; border-radius: 50%;"
-                        onclick="triggerFileInput('${uniqueKey}')">
-                        <i class="mdi mdi-pencil" style="font-size: 12px;"></i>
-                    </button>
-                    <div id="uploadStatus-${uniqueKey}"
-                         style="position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); font-size: 10px; color: orange;">
-                         Uploading...
+                    <div style="position: relative;">
+                        <img src="${e.target.result}"
+                             style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 8px #0001;" />
+                        <button type="button" class="btn btn-sm btn-primary"
+                            style="position: absolute; top: 2px; right: 2px; width: 24px; height: 24px; padding: 0; border-radius: 50%;"
+                            onclick="triggerFileInput('${uniqueKey}')">
+                            <i class="mdi mdi-pencil" style="font-size: 12px;"></i>
+                        </button>
+                        <div id="uploadStatus-${uniqueKey}"
+                             style="position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); font-size: 10px; color: orange;">
+                             Uploading...
+                        </div>
                     </div>
-                </div>
-            `;
+                `;
         };
         reader.readAsDataURL(file);
 
@@ -900,16 +901,16 @@
 
             if (data.success) {
                 previewDiv.innerHTML = `
-                    <div style="position: relative;">
-                        <img src="${data.url}"
-                             style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 8px #0001;" />
-                        <button type="button" class="btn btn-sm btn-primary"
-                            style="position: absolute; top: 2px; right: 2px; width: 24px; height: 24px; padding: 0; border-radius: 50%;"
-                            onclick="triggerFileInput('${uniqueKey}')">
-                            <i class="mdi mdi-pencil" style="font-size: 12px;"></i>
-                        </button>
-                    </div>
-                `;
+                        <div style="position: relative;">
+                            <img src="${data.url}"
+                                 style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 8px #0001;" />
+                            <button type="button" class="btn btn-sm btn-primary"
+                                style="position: absolute; top: 2px; right: 2px; width: 24px; height: 24px; padding: 0; border-radius: 50%;"
+                                onclick="triggerFileInput('${uniqueKey}')">
+                                <i class="mdi mdi-pencil" style="font-size: 12px;"></i>
+                            </button>
+                        </div>
+                    `;
 
                 // Lưu ảnh với originalKey (để có thể share giữa các variant giống nhau)
                 variantImages[originalKey] = data.url;
@@ -1026,13 +1027,14 @@
             if (!name) return showCustomToast("⚠️ Vui lòng nhập tên sản phẩm.");
             if (!categoryId) return showCustomToast("⚠️ Bạn chưa chọn danh mục sản phẩm.");
             if (!image || image.size === 0) return showCustomToast("⚠️ Vui lòng tải lên hình ảnh sản phẩm.");
-            if (!price || parseFloat(price) <= 0) return showCustomToast("⚠️ Giá bán sản phẩm không hợp lệ.");
+
             if (!description) return showCustomToast("⚠️ Vui lòng nhập mô tả sản phẩm.");
             // ==== VALIDATION KHÔNG CÓ VARIANT ====
             if (!hasVariant) {
                 if (!cost || parseFloat(cost) <= 0) return showCustomToast("⚠️ Giá nhập không được để trống.");
                 if (!quantity || parseInt(quantity) <= 0) return showCustomToast("⚠️ Số lượng sản phẩm không được để trống.");
                 if (!weight || parseFloat(weight) <= 0) return showCustomToast("⚠️ Khối lượng sản phẩm không hợp lệ.");
+                if (!price || parseFloat(price) <= 0) return showCustomToast("⚠️ Giá bán sản phẩm không hợp lệ.");
                 if (!length || parseFloat(length) <= 0 ||
                     !width || parseFloat(width) <= 0 ||
                     !height || parseFloat(height) <= 0)
@@ -1119,7 +1121,7 @@
                 processData: false,
                 success: function (res) {
                     showCustomToast('Thêm thành công', true);
-                        location.href = '/Seller/Product/Product';
+                    location.href = '/Seller/Product/Product';
                 },
                 error: function (xhr) {
                     console.error('❌ Lỗi khi gửi request:', xhr);
@@ -1146,17 +1148,17 @@
             const toastId = `toast-${Date.now()}`;
 
             const toastHTML = `
-                <div id="${toastId}" class="toast custom-toast shadow-lg"
-                     role="alert" aria-live="assertive" aria-atomic="true"
-                     data-bs-autohide="true" data-bs-delay="3000">
-                    <div class="toast-header ${isSuccess ? "bg-success" : "bg-danger"} text-white">
-                        <img src="${isSuccess ? "/icons/happy.gif" : "/icons/sad.gif"}" class="rounded me-2" width="24" height="24">
-                        <strong class="me-auto">${isSuccess ? "Thành công" : "Lỗi"}</strong>
-                        <small>Vừa xong</small>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
-                    </div>
-                    <div class="toast-body">${message}</div>
-                </div>`;
+                        <div id="${toastId}" class="toast custom-toast shadow-lg"
+                             role="alert" aria-live="assertive" aria-atomic="true"
+                             data-bs-autohide="true" data-bs-delay="3000">
+                            <div class="toast-header ${isSuccess ? "bg-success" : "bg-danger"} text-white">
+                                <img src="${isSuccess ? "/icons/happy.gif" : "/icons/sad.gif"}" class="rounded me-2" width="24" height="24">
+                                <strong class="me-auto">${isSuccess ? "Thành công" : "Lỗi"}</strong>
+                                <small>Vừa xong</small>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                            </div>
+                            <div class="toast-body">${message}</div>
+                        </div>`;
 
             container.insertAdjacentHTML('beforeend', toastHTML);
 

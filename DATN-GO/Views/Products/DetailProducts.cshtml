@@ -1,42 +1,42 @@
 ﻿﻿﻿﻿@using DATN_GO.ViewModels
 @{
-    var images = ViewBag.Images as List<string> ?? new List<string>();
-    var variants = ViewBag.VariantOptions as List<VariantWithValuesViewModel>;
-    var variantCombinations = ViewBag.VariantCombinations as List<DATN_GO.ViewModels.VariantCombinationViewModel> ?? new
-    List<DATN_GO.ViewModels.VariantCombinationViewModel>();
-    var priceInfo = ViewBag.MinMaxPrice as DATN_GO.ViewModels.MinMaxPriceResponse;
+	var images = ViewBag.Images as List<string> ?? new List<string>();
+	var variants = ViewBag.VariantOptions as List<VariantWithValuesViewModel>;
+	var variantCombinations = ViewBag.VariantCombinations as List<DATN_GO.ViewModels.VariantCombinationViewModel> ?? new
+	List<DATN_GO.ViewModels.VariantCombinationViewModel>();
+	var priceInfo = ViewBag.MinMaxPrice as DATN_GO.ViewModels.MinMaxPriceResponse;
 }
 @{
-    var reviews = (List<ReviewViewModel>)ViewBag.Reviews ?? new List<ReviewViewModel>();
-    var ratingCounts = reviews
-        .GroupBy(r => r.Rating)
-        .ToDictionary(g => g.Key, g => g.Count());
+	var reviews = (List<ReviewViewModel>)ViewBag.Reviews ?? new List<ReviewViewModel>();
+	var ratingCounts = reviews
+		.GroupBy(r => r.Rating)
+		.ToDictionary(g => g.Key, g => g.Count());
 
-    var totalReviews = reviews.Count;
-    var averageRating = totalReviews > 0 ? reviews.Average(r => r.Rating) : 0;
-    var purchaseCount = ViewBag.PurchaseCount;
+	var totalReviews = reviews.Count;
+	var averageRating = totalReviews > 0 ? reviews.Average(r => r.Rating) : 0;
+	var purchaseCount = ViewBag.PurchaseCount;
 
-    var productName = ViewBag.ProductName as string ?? "";
-    var productBrand = ViewBag.ProductBrand as string ?? "";
-    var productPlaceOfOrigin = ViewBag.ProductPlaceOfOrigin as string ?? "";
-    var productQuantity = ViewBag.ProductQuantity ?? 0;
-    var categoryName = ViewBag.CategoryName as string ?? "";
-    var storeadddress = ViewBag.StoreAddress as string ?? "";
+	var productName = ViewBag.ProductName as string ?? "";
+	var productBrand = ViewBag.ProductBrand as string ?? "";
+	var productPlaceOfOrigin = ViewBag.ProductPlaceOfOrigin as string ?? "";
+	var productQuantity = ViewBag.ProductQuantity ?? 0;
+	var categoryName = ViewBag.CategoryName as string ?? "";
+	var storeadddress = ViewBag.StoreAddress as string ?? "";
 }
 
 <style>
-    .rating i {
-        cursor: pointer;
-        transition: color 0.2s ease;
-    }
+	.rating i {
+		cursor: pointer;
+		transition: color 0.2s ease;
+	}
 
-        .rating i.text-warning {
-            color: gold !important;
-        }
+		.rating i.text-warning {
+			color: gold !important;
+		}
 
 	.text-truncate-2 {
 		display: -webkit-box;
-		-webkit-line-clamp: 2; /* số dòng hiển thị */
+		-webkit-line-clamp: 1; /* số dòng hiển thị */
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -45,1391 +45,1411 @@
 
 
 <div class="row mb-5">
-    <!-- Product Image Section -->
-    <div class="col-md-6 mb-4">
-        <!-- Main Carousel -->
-        @if (images.Count > 0)
-        {
-            <!-- Carousel Main -->
-            <div id="productCarousel" class="carousel slide mb-3" data-bs-ride="carousel">
-                <div class="carousel-inner">
-                    @for (int i = 0; i < images.Count; i++)
-                    {
-                        <div class="carousel-item @(i == 0 ? "active" : "")">
-                            <img src="@images[i]" class="d-block w-100 border rounded mainProductImage"
-                                 alt="Hình ảnh sản phẩm">
-                        </div>
-                    }
-                </div>
+	<!-- Product Image Section -->
+	<div class="col-md-6 mb-4">
+		<!-- Main Carousel -->
+		@if (images.Count > 0)
+		{
+			<!-- Carousel Main -->
+			<div id="productCarousel" class="carousel slide mb-3" data-bs-ride="carousel">
+				<div class="carousel-inner">
+					@for (int i = 0; i < images.Count; i++)
+					{
+						<div class="carousel-item @(i == 0 ? "active" : "")">
+							<img src="@images[i]" class="d-block w-100 border rounded mainProductImage"
+								 alt="Hình ảnh sản phẩm">
+						</div>
+					}
+				</div>
 
-                <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Previous</span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Next</span>
-                </button>
-            </div>
+				<button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+					<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+					<span class="visually-hidden">Previous</span>
+				</button>
+				<button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+					<span class="carousel-control-next-icon" aria-hidden="true"></span>
+					<span class="visually-hidden">Next</span>
+				</button>
+			</div>
 
-            <!-- Thumbnails with Navigation -->
-            @if (variants != null && variants.Count > 0)
-            {
-                <div class="position-relative">
-                    <button class="thumbnail-nav prev" type="button" id="scrollPrev">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <div class="thumbnails-container">
-                        <div class="thumbnails-wrapper">
-                            @for (int i = 0; i < images.Count; i++)
-                            {
-                                var matchingVariant = variantCombinations.FirstOrDefault(v => v.Image == images[i]);
+			<!-- Thumbnails with Navigation -->
+			@if (variants != null && variants.Count > 0)
+			{
+				<div class="position-relative">
+					<button class="thumbnail-nav prev" type="button" id="scrollPrev">
+						<i class="fas fa-chevron-left"></i>
+					</button>
+					<div class="thumbnails-container">
+						<div class="thumbnails-wrapper">
+							@for (int i = 0; i < images.Count; i++)
+							{
+								var matchingVariant = variantCombinations.FirstOrDefault(v => v.Image == images[i]);
 
-                                <img src="@images[i]"
-                                     class="product-thumbnail @(i == 0 ? "active" : "")"
-                                     data-bs-target="#productCarousel"
-                                     data-bs-slide-to="@i"
-                                     data-variant-value-ids="@(matchingVariant != null ? string.Join(",", matchingVariant.VariantValueIds) : "")" />
-                            }
-                        </div>
-                    </div>
-                    <button class="thumbnail-nav next" type="button" id="scrollNext">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
-            }
+								<img src="@images[i]"
+									 class="product-thumbnail @(i == 0 ? "active" : "")"
+									 data-bs-target="#productCarousel"
+									 data-bs-slide-to="@i"
+									 data-variant-value-ids="@(matchingVariant != null ? string.Join(",", matchingVariant.VariantValueIds) : "")" />
+							}
+						</div>
+					</div>
+					<button class="thumbnail-nav next" type="button" id="scrollNext">
+						<i class="fas fa-chevron-right"></i>
+					</button>
+				</div>
+			}
 
-        }
-        else
-        {
-            <p>Không có hình ảnh sản phẩm.</p>
-        }
-    </div>
-    <!-- Product Information Section -->
-    <div class="col-md-6">
-        <!-- Store Information -->
-        <div class="pb-2 mb-2 border-bottom">
-            <div class="d-flex align-items-center">
-                <img src="@ViewBag.StoreLogo" alt="Logo cửa hàng" class="rounded-circle me-2 logo-store"
-                     style="width: 48px; height: 48px; object-fit: cover;">
-                <div class="flex-grow-1">
-                    <h5 class="mb-0">@ViewBag.StoreName</h5>
-                    <div class="d-flex align-items-center mt-1">
-                        <div class="text-muted me-3">
-                            <!--<small>
-                                    <i class="fas fa-star text-warning"></i>
-                            @($"{ViewBag.Rating} ({ViewBag.Reviews} đánh giá)")
-                                </small>-->
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Product Information -->
-        <h2 class="mb-3 text-truncate-2" data-bs-toggle="tooltip" data-bs-placement="top" title="@ViewBag.ProductName">
-            @ViewBag.ProductName
-        </h2>
-        <div class="mb-3 d-flex align-items-center">
-            <span class="text-danger fw-bold fs-3"
-                  style="white-space: nowrap; font-family: Arial, sans-serif; font-size: 16px; font-weight: 600;">
-                <span id="productPriceDisplay" class="text-crimson fw-bold fs-3">
-                    @if (priceInfo != null)
-                    {
-                        if (priceInfo.IsVariant)
-                        {
-                            if (priceInfo.MinPrice == priceInfo.MaxPrice)
-                            {
-                                @($"{(priceInfo.MinPrice):N0} đ")
-                            }
-                            else
-                            {
-                                @($"{(priceInfo.MinPrice):N0} đ - {(priceInfo.MaxPrice):N0} đ")
-                            }
-                        }
-                        else
-                        {
-                            @($"{(priceInfo.Price):N0} đ")
-                        }
-                    }
-                    else
-                    {
-                        <span class="text-muted">Không có giá</span>
-                    }
-                </span>
-            </span>
-        </div>
+		}
+		else
+		{
+			<p>Không có hình ảnh sản phẩm.</p>
+		}
+	</div>
+	<!-- Product Information Section -->
+	<div class="col-md-6">
+		<!-- Store Information -->
+		<div class="pb-2 mb-2 border-bottom">
+			<div class="d-flex align-items-center">
+				<img src="@ViewBag.StoreLogo" alt="Logo cửa hàng" class="rounded-circle me-2 logo-store"
+					 style="width: 48px; height: 48px; object-fit: cover;">
+				<div class="flex-grow-1">
+					<h5 class="mb-0">@ViewBag.StoreName</h5>
+					<div class="d-flex align-items-center mt-1">
+						<div class="text-muted me-3">
+							<!--<small>
+									<i class="fas fa-star text-warning"></i>
+							@($"{ViewBag.Rating} ({ViewBag.Reviews} đánh giá)")
+								</small>-->
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- Product Information -->
+		<h2 class="mb-3 text-truncate-2" data-bs-toggle="tooltip" data-bs-placement="top" title="@ViewBag.ProductName">
+			@ViewBag.ProductName
+		</h2>
+		<div class="mb-3 d-flex align-items-center">
+			<span class="text-danger fw-bold fs-3"
+				  style="white-space: nowrap; font-family: Arial, sans-serif; font-size: 16px; font-weight: 600;">
+				<span id="productPriceDisplay" class="text-crimson fw-bold fs-3">
+					@if (priceInfo != null)
+					{
+						if (priceInfo.IsVariant)
+						{
+							if (priceInfo.MinPrice == priceInfo.MaxPrice)
+							{
+								@($"{(priceInfo.MinPrice):N0} đ")
+							}
+							else
+							{
+								@($"{(priceInfo.MinPrice):N0} đ - {(priceInfo.MaxPrice):N0} đ")
+							}
+						}
+						else
+						{
+							@($"{(priceInfo.Price):N0} đ")
+						}
+					}
+					else
+					{
+						<span class="text-muted">Không có giá</span>
+					}
+				</span>
+			</span>
+		</div>
 
-        <!-- Rating -->
-        <div class="mb-4">
-            <div class="d-flex align-items-center">
-                @if (totalReviews <= 0)
-                {
-                    <span class="text-muted fst-italic">Chưa có đánh giá</span>
-                }
-                else
-                {
-                    <div class="text-warning me-2">
-                        <i class="bi bi-star-fill"></i>
-                    </div>
-                    <span>
-                        @averageRating.ToString("0.0") (@totalReviews đánh giá) | @purchaseCount lượt mua
-                    </span>
-                }
-            </div>
-        </div>
-
-
-
-        <!-- Product Variants -->
-        <div class="mb-4">
-            @if (variants != null)
-            {
-                @for (int i = 0; i < variants.Count; i++)
-                {
-                    var variant = variants[i];
-                    <div class="mb-3">
-                        <h5>@variant.VariantName</h5>
-                        <div class="d-flex gap-2 flex-wrap">
-                            @foreach (var value in variant.Values)
-                            {
-                                var inputId = $"variant_{variant.VariantName}_{value.Id}";
-                                <input type="radio"
-                                       class="btn-check"
-                                       name="variant_@variant.VariantName"
-                                       id="@inputId"
-                                       value="@value.Id"
-                                       autocomplete="off" />
-                                <label class="btn btn-outline-danger" for="@inputId">
-                                    @value.ValueName
-                                </label>
-                            }
-                        </div>
-                    </div>
-                }
-            }
-        </div>
-
-
-        <!-- Quantity Selector -->
-        <div class="mb-4">
-            <h5>Số lượng</h5>
-            <div class="d-flex align-items-center gap-3">
-                <div class="input-group quantity-input-group">
-                    <button class="btn btn-outline-secondary" type="button" id="btnDecreaseProductQuantity">-</button>
-                    <input class="form-control text-center" value="1" min="1" id="productQuantityInput" step="1" style="width: 100%; max-width: 120px;">
-                    <button class="btn btn-outline-secondary" type="button" id="btnIncreaseProductQuantity">+</button>
-                </div>
-                <span class="text-muted" id="productQuantityDisplay">Còn lại: @Model.Quantity sản phẩm</span>
-            </div>
-        </div>
-
-
-            <form id="addToCartForm"
-                  asp-controller="Cart"
-                  asp-action="AddToCart"
-                  method="post"
-                  novalidate>
-                @Html.AntiForgeryToken()
-
-                <!-- Hidden product ID -->
-                <input type="hidden" name="ProductId" value="@Model.Id" />
-
-                <!-- Hidden variant inputs will be injected here -->
-                <div id="variantInputsContainer"></div>
-
-                <!-- Hidden Quantity -->
-                <input type="hidden" name="Quantity" id="QuantityHidden" value="1" />
-
-                <!-- Flag to distinguish actions (false = add, true = buy now) -->
-                <input type="hidden" name="BuyNow" id="BuyNowFlag" value="false" />
-
-                <!-- giữ nguyên thiết kế: 2 block d-grid, mỗi block 1 nút lớn -->
-                <div class="d-grid gap-2 mt-3">
-                    <button type="button"
-                            class="btn btn-outline-primary btn-lg add-to-cart-btn"
-                            data-product-id="@Model.Id"
-                            aria-label="Thêm sản phẩm @Model.Name vào giỏ hàng">
-                        Thêm vào giỏ hàng
-                    </button>
-                </div>
-
-                <div class="d-grid gap-2 mt-3">
-                    <button type="button"
-                            class="btn btn-crimson btn-lg buy-now-btn"
-                            data-product-id="@Model.Id"
-                            aria-label="Mua ngay sản phẩm @Model.Name">
-                        Mua ngay
-                    </button>
-                </div>
-            </form>
+		<!-- Rating -->
+		<div class="mb-4">
+			<div class="d-flex align-items-center">
+				@if (totalReviews <= 0)
+				{
+					<span class="text-muted fst-italic">Chưa có đánh giá</span>
+				}
+				else
+				{
+					<div class="text-warning me-2">
+						<i class="bi bi-star-fill"></i>
+					</div>
+					<span>
+						@averageRating.ToString("0.0") (@totalReviews đánh giá) | @purchaseCount lượt mua
+					</span>
+				}
+			</div>
+		</div>
 
 
 
+		<!-- Product Variants -->
+		<div class="mb-4">
+			@if (variants != null)
+			{
+				@for (int i = 0; i < variants.Count; i++)
+				{
+					var variant = variants[i];
+					<div class="mb-3">
+						<h5>@variant.VariantName</h5>
+						<div class="d-flex gap-2 flex-wrap">
+							@foreach (var value in variant.Values)
+							{
+								var inputId = $"variant_{variant.VariantName}_{value.Id}";
+								<input type="radio"
+									   class="btn-check"
+									   name="variant_@variant.VariantName"
+									   id="@inputId"
+									   value="@value.Id"
+									   autocomplete="off" />
+								<label class="btn btn-outline-danger" for="@inputId">
+									@value.ValueName
+								</label>
+							}
+						</div>
+					</div>
+				}
+			}
+		</div>
 
 
-    </div>
+		<!-- Quantity Selector -->
+		<div class="mb-4">
+			<h5>Số lượng</h5>
+			<div class="d-flex align-items-center gap-3">
+				<div class="input-group quantity-input-group">
+					<button class="btn btn-outline-secondary" type="button" id="btnDecreaseProductQuantity">-</button>
+					<input class="form-control text-center" value="1" min="1" id="productQuantityInput" step="1" style="width: 100%; max-width: 120px;">
+					<button class="btn btn-outline-secondary" type="button" id="btnIncreaseProductQuantity">+</button>
+				</div>
+				<span class="text-muted" id="productQuantityDisplay">Còn lại: @Model.Quantity sản phẩm</span>
+			</div>
+		</div>
+
+
+		<form id="addToCartForm"
+			  asp-controller="Cart"
+			  asp-action="AddToCart"
+			  method="post"
+			  novalidate>
+			@Html.AntiForgeryToken()
+
+			<!-- Hidden product ID -->
+			<input type="hidden" name="ProductId" value="@Model.Id" />
+
+			<!-- Hidden variant inputs will be injected here -->
+			<div id="variantInputsContainer"></div>
+
+			<!-- Hidden Quantity -->
+			<input type="hidden" name="Quantity" id="QuantityHidden" value="1" />
+
+			<!-- Flag to distinguish actions (false = add, true = buy now) -->
+			<input type="hidden" name="BuyNow" id="BuyNowFlag" value="false" />
+
+			<!-- giữ nguyên thiết kế: 2 block d-grid, mỗi block 1 nút lớn -->
+			<div class="d-grid gap-2 mt-3">
+				<button type="button"
+						class="btn btn-crimson btn-lg rounded-pill add-to-cart-btn"
+						data-product-id="@Model.Id"
+						aria-label="Thêm sản phẩm @Model.Name vào giỏ hàng">
+					Thêm vào giỏ hàng
+				</button>
+			</div>
+
+			<div class="d-grid gap-2 mt-3">
+				<button type="button"
+						class="btn btn-outline-crimson rounded-pill btn-lg buy-now-btn"
+						data-product-id="@Model.Id"
+						aria-label="Mua ngay sản phẩm @Model.Name">
+					Mua ngay
+				</button>
+			</div>
+		</form>
+
+
+
+
+
+	</div>
 </div>
 
 <div class="d-flex align-items-center container mb-3 p-0">
-    <hr class="flex-grow-1 border-danger border-1 opacity-100">
+	<hr class="flex-grow-1 border-danger border-1 opacity-100">
 </div>
 
 <div class="mb-3">
-    <h3>Thông tin chi tiết:</h3>
-    <div class="text mb-3">
-        <div class="py-2 border-bottom">
-            <strong>Nơi xuất xứ:</strong> @Model.PlaceOfOrigin
-        </div>
-        <div class="py-2 border-bottom">
-            <strong>Thương hiệu:</strong> @Model.Brand
-        </div>
-        <div class="py-2 border-bottom">
-            <strong>Danh mục:</strong> @ViewBag.CategoryName
-        </div>
-        <div class="py-2 border-bottom">
-            <strong>Giao từ:</strong> @ViewBag.StoreAddress
-        </div>
-        <div class="py-2">
-            <strong>Mô tả:</strong> @Model.Description
-        </div>
-    </div>
-    </div>
+	<h3>Thông tin chi tiết:</h3>
+	<div class="text mb-3">
+		<div class="py-2 border-bottom">
+			<strong>Nơi xuất xứ:</strong> @Model.PlaceOfOrigin
+		</div>
+		<div class="py-2 border-bottom">
+			<strong>Thương hiệu:</strong> @Model.Brand
+		</div>
+		<div class="py-2 border-bottom">
+			<strong>Danh mục:</strong> @ViewBag.CategoryName
+		</div>
+		<div class="py-2 border-bottom">
+			<strong>Giao từ:</strong> @ViewBag.StoreAddress
+		</div>
+		<div class="py-2">
+			<strong>Mô tả:</strong> @Model.Description
+		</div>
+	</div>
+</div>
 
 <!-- Comments Section -->
 
 <div class="d-flex align-items-center container mb-3 p-0">
-    <hr class="flex-grow-1 border-danger border-1 opacity-100">
+	<hr class="flex-grow-1 border-danger border-1 opacity-100">
 </div>
 
 <div class="row mt-4">
-    <h3>Đánh giá sản phẩm</h3>
+	<h3>Đánh giá sản phẩm</h3>
 
-    <div class="col-12">
+	<div class="col-12">
 
-        <div id="commentsSection">
-            <div class="mb-3">
-                <h5 class="mb-1">Sản phẩm đạt: </h5>
-                <div class="d-flex align-items-center">
-                    <div class="text-warning me-2">
-                        @for (int i = 1; i <= 5; i++)
-                        {
-                            if (i <= Math.Floor(averageRating))
-                            {
-                                <i class="fas fa-star"></i>
-                            }
-                            else if (i - averageRating < 1)  // sao nửa
-                            {
-                                <i class="fas fa-star-half-alt"></i>
-                            }
-                            else
-                            {
-                                <i class="far fa-star"></i>
-                            }
-                        }
-                    </div>
-                    <span class="fw-bold">@averageRating.ToString("0.0")/5</span>
-                    <span class="text-muted ms-2">(@totalReviews đánh giá)</span>
-                </div>
-            </div>
+		<div id="commentsSection">
+			<div class="mb-3">
+				<h5 class="mb-1">Sản phẩm đạt: </h5>
+				<div class="d-flex align-items-center">
+					<div class="text-warning me-2">
+						@for (int i = 1; i <= 5; i++)
+						{
+							if (i <= Math.Floor(averageRating))
+							{
+								<i class="fas fa-star"></i>
+							}
+							else if (i - averageRating < 1)  // sao nửa
+							{
+								<i class="fas fa-star-half-alt"></i>
+							}
+							else
+							{
+								<i class="far fa-star"></i>
+							}
+						}
+					</div>
+					<span class="fw-bold">@averageRating.ToString("0.0")/5</span>
+					<span class="text-muted ms-2">(@totalReviews đánh giá)</span>
+				</div>
+			</div>
 
-            <!-- Comment Filters -->
-            <div class="d-flex flex-wrap gap-3 mb-4 align-items-center">
-                <div class="d-flex align-items-center">
-                    <span class="me-2">Sắp xếp theo:</span>
-                    <select class="form-select form-select-sm" style="width: auto;">
-                        <option value="latest">Mới nhất</option>
-                        <option value="oldest">Cũ nhất</option>
-                    </select>
+			<!-- Comment Filters -->
+			<div class="d-flex flex-wrap gap-3 mb-4 align-items-center">
+				<div class="d-flex align-items-center">
+					<span class="me-2">Sắp xếp theo:</span>
+					<select class="form-select form-select-sm" style="width: auto;">
+						<option value="latest">Mới nhất</option>
+						<option value="oldest">Cũ nhất</option>
+					</select>
 
-                </div>
-                <div class="d-flex gap-2 flex-wrap">
-                    <button class="btn btn-outline-danger btn-sm rating-filter active" data-rating="">
-                        Tất cả (@totalReviews)
-                    </button>
-                    <button class="btn btn-outline-danger btn-sm rating-filter" data-rating="5">
-                        5 <i class="fas fa-star text-warning"></i> (@(ratingCounts.ContainsKey(5) ? ratingCounts[5] : 0))
-                    </button>
-                    <button class="btn btn-outline-danger btn-sm rating-filter" data-rating="4">
-                        4 <i class="fas fa-star text-warning"></i> (@(ratingCounts.ContainsKey(4) ? ratingCounts[4] : 0))
-                    </button>
-                    <button class="btn btn-outline-danger btn-sm rating-filter" data-rating="3">
-                        3 <i class="fas fa-star text-warning"></i> (@(ratingCounts.ContainsKey(3) ? ratingCounts[3] : 0))
-                    </button>
-                    <button class="btn btn-outline-danger btn-sm rating-filter" data-rating="2">
-                        2 <i class="fas fa-star text-warning"></i> (@(ratingCounts.ContainsKey(2) ? ratingCounts[2] : 0))
-                    </button>
-                    <button class="btn btn-outline-danger btn-sm rating-filter" data-rating="1">
-                        1 <i class="fas fa-star text-warning"></i> (@(ratingCounts.ContainsKey(1) ? ratingCounts[1] : 0))
-                    </button>
+				</div>
+				<div class="d-flex gap-2 flex-wrap">
+					<button class="btn btn-outline-danger btn-sm rating-filter active" data-rating="">
+						Tất cả (@totalReviews)
+					</button>
+					<button class="btn btn-outline-danger btn-sm rating-filter" data-rating="5">
+						5 <i class="fas fa-star text-warning"></i> (@(ratingCounts.ContainsKey(5) ? ratingCounts[5] : 0))
+					</button>
+					<button class="btn btn-outline-danger btn-sm rating-filter" data-rating="4">
+						4 <i class="fas fa-star text-warning"></i> (@(ratingCounts.ContainsKey(4) ? ratingCounts[4] : 0))
+					</button>
+					<button class="btn btn-outline-danger btn-sm rating-filter" data-rating="3">
+						3 <i class="fas fa-star text-warning"></i> (@(ratingCounts.ContainsKey(3) ? ratingCounts[3] : 0))
+					</button>
+					<button class="btn btn-outline-danger btn-sm rating-filter" data-rating="2">
+						2 <i class="fas fa-star text-warning"></i> (@(ratingCounts.ContainsKey(2) ? ratingCounts[2] : 0))
+					</button>
+					<button class="btn btn-outline-danger btn-sm rating-filter" data-rating="1">
+						1 <i class="fas fa-star text-warning"></i> (@(ratingCounts.ContainsKey(1) ? ratingCounts[1] : 0))
+					</button>
 
-                </div>
+				</div>
 
-            </div>
-            <!-- Write Comment -->
-            @if (ViewBag.CanReview)
-            {
-                <div class="mb-4 border-bottom pb-4">
-                    <form id="commentForm" asp-action="Create" asp-controller="Review" method="post" enctype="multipart/form-data">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="ProductId" value="@Model.Id" />
-                        <input type="hidden" name="Rating" id="ratingInput" value="5" />
-                        <input type="hidden" id="OrderId" name="OrderId" value="@ViewBag.OrderId" />
+			</div>
+			<!-- Write Comment -->
+			@if (ViewBag.CanReview)
+			{
+				<div class="mb-4 border-bottom pb-4">
+					<form id="commentForm" asp-action="Create" asp-controller="Review" method="post" enctype="multipart/form-data">
+						@Html.AntiForgeryToken()
+						<input type="hidden" name="ProductId" value="@Model.Id" />
+						<input type="hidden" name="Rating" id="ratingInput" value="5" />
+						<input type="hidden" id="OrderId" name="OrderId" value="@ViewBag.OrderId" />
 
-                        <div class="mb-3">
-                            <label class="form-label">Đánh giá của bạn</label>
-                            <div class="rating mb-3">
-                                <i class="far fa-star fs-5" data-rating="1"></i>
-                                <i class="far fa-star fs-5" data-rating="2"></i>
-                                <i class="far fa-star fs-5" data-rating="3"></i>
-                                <i class="far fa-star fs-5" data-rating="4"></i>
-                                <i class="far fa-star fs-5" data-rating="5"></i>
-                            </div>
-                            <textarea id="comment" name="CommentText" class="form-control" rows="4" required></textarea>
-
-
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Thêm hình ảnh (tối đa 3 ảnh)</label>
-                            <div class="d-flex gap-3">
-                                @for (int i = 1; i <= 3; i++)
-                                {
-                                    var inputId = $"imageInput{i}";
-                                    var previewId = $"imagePreview{i}";
-                                    <div class="position-relative d-inline-block text-center">
-                                        <img id="@previewId" src="https://via.placeholder.com/120?text=Ảnh+@i"
-                                             style="width:120px;height:120px;object-fit:cover;cursor:pointer;">
-                                        <input type="file" id="@inputId" name="mediaFiles" accept="image/*" class="d-none">
-                                        <label for="@inputId" class="position-absolute bottom-0 end-0 bg-white p-2 shadow-sm"
-                                               style="cursor:pointer;">
-                                            <i class="bi bi-camera-fill text-crimson"></i>
-                                        </label>
-                                    </div>
-                                }
-                            </div>
-                        </div>
-
-                        <button type="submit" class="btn btn-crimson">Gửi đánh giá</button>
-                    </form>
-                </div>
-            }
-            else
-            {
-                <p class="text-muted"></p>
-            }
-            <!-- Comments List -->
-            <div class="comments-list">
-                @if (ViewBag.Reviews != null && ((List<ReviewViewModel>)ViewBag.Reviews).Any())
-                {
-                    @foreach (var review in (List<ReviewViewModel>)ViewBag.Reviews)
-                    {
-                        <div class="review-item mb-3 pb-3 border-bottom"
-                             data-rating="@review.Rating"
-                             data-date="@review.CreatedDate.ToString("yyyy-MM-ddTHH:mm:ss")">
-                            <div class="d-flex mb-3">
-                                <img src="@review.AvatarUrl" class="rounded-circle me-2" alt="User Avatar" style="width:40px;height:40px;">
-                                <div>
-                                    <h6 class="mb-1">@review.UserName</h6>
-                                    <div class="text-warning mb-1">
-                                        @for (int i = 1; i <= 5; i++)
-                                        {
-                                            if (i <= review.Rating)
-                                            {
-                                                <i class="fas fa-star"></i>
-                                            }
-                                            else
-                                            {
-                                                <i class="far fa-star"></i>
-                                            }
-                                        }
-                                    </div>
-                                    <small class="text-muted">@review.CreatedDate.ToString("dd/MM/yyyy")</small>
-                                </div>
-                            </div>
-
-                            <p>@review.CommentText</p>
-
-                            @if (review.MediaUrls != null && review.MediaUrls.Any())
-                            {
-                                <div class="d-flex gap-2 mb-2">
-                                    @foreach (var img in review.MediaUrls)
-                                    {
-                                        <img src="@img" alt="Review Image" class="rounded" style="width:80px;height:80px;object-fit:cover;">
-                                    }
-                                </div>
-                            }
-                        </div>
-                    }
-                }
-                else
-                {
-                    <p class="text-muted">Chưa có đánh giá nào cho sản phẩm này.</p>
-                }
-            </div>
-            <div class="text-center mt-3">
-                <button id="loadMoreBtn" class="btn btn-outline-crimson btn-sm my-3">Xem thêm</button>
-            </div>
-
-        </div>
+						<div class="mb-3">
+							<label class="form-label">Đánh giá của bạn</label>
+							<div class="rating mb-3">
+								<i class="far fa-star fs-5" data-rating="1"></i>
+								<i class="far fa-star fs-5" data-rating="2"></i>
+								<i class="far fa-star fs-5" data-rating="3"></i>
+								<i class="far fa-star fs-5" data-rating="4"></i>
+								<i class="far fa-star fs-5" data-rating="5"></i>
+							</div>
+							<textarea id="comment" name="CommentText" class="form-control" rows="4" required></textarea>
 
 
-    </div>
+						</div>
+
+						<div class="mb-3">
+							<label class="form-label">Thêm hình ảnh (tối đa 3 ảnh)</label>
+							<div class="d-flex gap-3">
+								@for (int i = 1; i <= 3; i++)
+								{
+									var inputId = $"imageInput{i}";
+									var previewId = $"imagePreview{i}";
+									<div class="position-relative d-inline-block text-center">
+										<img id="@previewId" src="https://via.placeholder.com/120?text=Ảnh+@i"
+											 style="width:120px;height:120px;object-fit:cover;cursor:pointer;">
+										<input type="file" id="@inputId" name="mediaFiles" accept="image/*" class="d-none">
+										<label for="@inputId" class="position-absolute bottom-0 end-0 bg-white p-2 shadow-sm"
+											   style="cursor:pointer;">
+											<i class="bi bi-camera-fill text-crimson"></i>
+										</label>
+									</div>
+								}
+							</div>
+						</div>
+
+						<button type="submit" class="btn btn-crimson">Gửi đánh giá</button>
+					</form>
+				</div>
+			}
+			else
+			{
+				<p class="text-muted"></p>
+			}
+			<!-- Comments List -->
+			<div class="comments-list">
+				@if (ViewBag.Reviews != null && ((List<ReviewViewModel>)ViewBag.Reviews).Any())
+				{
+					@foreach (var review in (List<ReviewViewModel>)ViewBag.Reviews)
+					{
+						<div class="review-item mb-3 pb-3 border-bottom"
+							 data-rating="@review.Rating"
+							 data-date="@review.CreatedDate.ToString("yyyy-MM-ddTHH:mm:ss")">
+							<div class="d-flex mb-3">
+								<img src="@review.AvatarUrl" class="rounded-circle me-2" alt="User Avatar" style="width:40px;height:40px;">
+								<div>
+									<h6 class="mb-1">@review.UserName</h6>
+									<div class="text-warning mb-1">
+										@for (int i = 1; i <= 5; i++)
+										{
+											if (i <= review.Rating)
+											{
+												<i class="fas fa-star"></i>
+											}
+											else
+											{
+												<i class="far fa-star"></i>
+											}
+										}
+									</div>
+									<small class="text-muted">@review.CreatedDate.ToString("dd/MM/yyyy")</small>
+								</div>
+							</div>
+
+							<p>@review.CommentText</p>
+
+							@if (review.MediaUrls != null && review.MediaUrls.Any())
+							{
+								<div class="d-flex gap-2 mb-2">
+									@foreach (var img in review.MediaUrls)
+									{
+										<img src="@img" alt="Review Image" class="rounded" style="width:80px;height:80px;object-fit:cover;">
+									}
+								</div>
+							}
+						</div>
+					}
+				}
+				else
+				{
+					<p class="text-muted">Chưa có đánh giá nào cho sản phẩm này.</p>
+				}
+			</div>
+			<div class="text-center mt-3">
+				<button id="loadMoreBtn" class="btn btn-outline-crimson btn-sm my-3">Xem thêm</button>
+			</div>
+
+		</div>
+
+
+	</div>
 </div>
 
 
 @{
-    var suggested = ViewBag.SuggestedByStore as IEnumerable<dynamic>;
+	var suggested = ViewBag.SuggestedByStore as IEnumerable<dynamic>;
 }
 
 @if (suggested != null && suggested.Any())
 {
-    <hr class="mt-5" />
-    <section class="mt-4 mb-5">
-        <div class="d-flex align-items-center justify-content-between mb-3">
-            <h4 class="mb-0">Sản phẩm gợi ý từ shop này</h4>
-        </div>
+	<hr class="mt-5" />
+	<section class="mt-4 mb-5">
+		<div class="d-flex align-items-center justify-content-between mb-3">
+			<h4 class="mb-0">Sản phẩm gợi ý</h4>
+		</div>
 
-        <div class="row g-3">
-            @foreach (var p in suggested)
-            {
-                <div class="col-6 col-md-4 col-lg-3">
-                    <div class="card h-100 shadow-sm border-0">
-                        <!-- Hình ảnh -->
-                        <a href="/Products/DetailProducts/@p.Id" class="text-decoration-none">
-                            <img src="@(string.IsNullOrWhiteSpace(p.Image) ? "/images/no-image.png" : p.Image)"
-                                 class="card-img-top rounded-top"
-                                 alt="@p.Name"
-                                 style="object-fit:cover; aspect-ratio: 1/1; border-bottom:1px solid #eee;" />
-                        </a>
+		<div class="row g-3">
+			@foreach (var p in suggested)
+			{
+				var formattedPrice = String.Format("{0:N0} đ", (decimal)p.Price);
 
-                        <div class="card-body d-flex flex-column">
-                            <!-- Tên sản phẩm -->
-                            <a href="/Products/DetailProducts/@p.Id" 
-                               class="stretched-link text-decoration-none text-dark">
-                                <div class="fw-semibold text-truncate mb-2" title="@p.Name">@p.Name</div>
-                            </a>
+				<div class="col-6 col-md-4 col-lg-3">
+					<div class="card h-100 shadow-sm border-0">
+						<!-- Hình ảnh -->
+						<a href="/Products/DetailProducts/@p.Id" class="text-decoration-none">
+							<img src="@(string.IsNullOrWhiteSpace(p.Image) ? "/images/no-image.png" : p.Image)"
+								 class="card-img-top rounded-top"
+								 alt="@p.Name"
+								 style="object-fit:cover; aspect-ratio: 1/1; border-bottom:1px solid #eee;"
+								 data-bs-toggle="tooltip"
+								 data-bs-container="body"
+								 data-bs-placement="top"
+								 data-bs-title="@p.Name" />
+						</a>
 
-                            <!-- Giá -->
-                            <div class="fw-bold text-danger mb-3">
-                                @String.Format("{0:N0} đ", (decimal)p.Price)
-                            </div>
+						<div class="card-body d-flex flex-column">
+							<!-- Tên sản phẩm -->
+							<a href="/Products/DetailProducts/@p.Id"
+							   class="stretched-link text-decoration-none text-dark"
+							   data-bs-toggle="tooltip"
+							   data-bs-container="body"
+							   data-bs-placement="top"
+							   data-bs-title="@p.Name">
+								<div class="fw-semibold text-truncate-2 mb-2">
+									@p.Name
+								</div>
+							</a>
 
-                            <!-- Form hành động -->
-                            <form asp-controller="Cart"
-                                  asp-action="AddToCart"
-                                  method="post"
-                                  novalidate
-                                  class="mt-auto">
-                                @Html.AntiForgeryToken()
+							<!-- Giá (tooltip số tiền) -->
+							<div class="fw-bold text-danger mb-3"
+								 data-bs-toggle="tooltip"
+								 data-bs-placement="top"
+								 data-bs-container="body"
+								 data-bs-title="@formattedPrice">
+								@formattedPrice
+							</div>
 
-                                <!-- Hidden product ID -->
-                                <input type="hidden" name="ProductId" value="@p.Id" />
+							<!-- Form hành động -->
+							<form asp-controller="Cart" asp-action="AddToCart" method="post" novalidate class="mt-auto">
+								@Html.AntiForgeryToken()
 
-                                <!-- Hidden variant inputs -->
-                                <div class="variantInputsContainer"></div>
+								<input type="hidden" name="ProductId" value="@p.Id" />
+								<div class="variantInputsContainer"></div>
+								<input type="hidden" name="Quantity" value="1" />
+								<input type="hidden" name="BuyNow" value="false" />
 
-                                <!-- Hidden Quantity -->
-                                <input type="hidden" name="Quantity" value="1" />
+								<div class="d-grid gap-2">
+									<!-- Thêm vào giỏ -->
+									<button class="btn btn-crimson btn-sm rounded-pill add-to-cart-btn"
+											type="button"
+											data-product-id="@p.Id"
+											data-has-variant=""
+											data-bs-toggle="tooltip"
+											data-bs-container="body"
+											data-bs-title="Thêm sản phẩm @p.Name vào giỏ">
+										<i class="bi bi-cart-plus icon-sm"></i> Thêm
+									</button>
 
-                                <!-- Flag phân biệt hành động -->
-                                <input type="hidden" name="BuyNow" value="false" />
-
-
-                                <div class="d-grid gap-2">
-                                    <!-- Thêm vào giỏ -->
-                                    <button class="btn btn-crimson btn-sm rounded-pill add-to-cart-btn"
-                                            type="button"
-                                            data-product-id="@p.Id"
-                                            data-has-variant="">
-                                        <i class="bi bi-cart-plus icon-sm"></i> Thêm
-                                    </button>
-
-                                    <!-- Mua ngay -->
-                                    <button class="btn btn-outline-danger btn-sm rounded-pill buy-now-btn"
-                                            type="button"
-                                            data-product-id="@p.Id"
-                                            data-has-variant="">
-                                        Mua ngay
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            }
-        </div>
-    </section>
+									<!-- Mua ngay -->
+									<button class="btn btn-outline-danger btn-sm rounded-pill buy-now-btn"
+											type="button"
+											data-product-id="@p.Id"
+											data-has-variant=""
+											data-bs-toggle="tooltip"
+											data-bs-container="body"
+											data-bs-title="Mua ngay sản phẩm @p.Name">
+										Mua ngay
+									</button>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+			}
+		</div>
+	</section>
 }
+
 
 
 
 <!-- Token ẩn cho QuickAdd -->
 <form id="__quickAddToken" style="display:none">
-    @Html.AntiForgeryToken()
+	@Html.AntiForgeryToken()
 </form>
 
 <script>
-    let currentRating = 5; // Mặc định 5 sao
+	let currentRating = 5; // Mặc định 5 sao
 
-    document.querySelectorAll(".rating i").forEach(star => {
-        // Hover: highlight tạm
-        star.addEventListener("mouseenter", function () {
-            let hoverValue = parseInt(this.getAttribute("data-rating"));
-            highlightStars(hoverValue);
-        });
+	document.querySelectorAll(".rating i").forEach(star => {
+		// Hover: highlight tạm
+		star.addEventListener("mouseenter", function () {
+			let hoverValue = parseInt(this.getAttribute("data-rating"));
+			highlightStars(hoverValue);
+		});
 
-        // Rời chuột: quay lại trạng thái đã chọn
-        star.addEventListener("mouseleave", function () {
-            highlightStars(currentRating);
-        });
+		// Rời chuột: quay lại trạng thái đã chọn
+		star.addEventListener("mouseleave", function () {
+			highlightStars(currentRating);
+		});
 
-        // Click: chọn cố định
-        star.addEventListener("click", function () {
-            currentRating = parseInt(this.getAttribute("data-rating"));
-            document.getElementById("ratingInput").value = currentRating;
-            highlightStars(currentRating);
-        });
-    });
+		// Click: chọn cố định
+		star.addEventListener("click", function () {
+			currentRating = parseInt(this.getAttribute("data-rating"));
+			document.getElementById("ratingInput").value = currentRating;
+			highlightStars(currentRating);
+		});
+	});
 
-    // Hàm đổi màu sao
-    function highlightStars(rating) {
-        document.querySelectorAll(".rating i").forEach((s, idx) => {
-            if (idx < rating) {
-                s.classList.add("fas", "text-warning");
-                s.classList.remove("far");
-            } else {
-                s.classList.add("far");
-                s.classList.remove("fas", "text-warning");
-            }
-        });
-    }
+	// Hàm đổi màu sao
+	function highlightStars(rating) {
+		document.querySelectorAll(".rating i").forEach((s, idx) => {
+			if (idx < rating) {
+				s.classList.add("fas", "text-warning");
+				s.classList.remove("far");
+			} else {
+				s.classList.add("far");
+				s.classList.remove("fas", "text-warning");
+			}
+		});
+	}
 
-    document.addEventListener('DOMContentLoaded', function () {
-        // Gọi mặc định highlight 5 sao khi load trang
-        highlightStars(5);
-        document.getElementById("ratingInput").value = 5;
+	document.addEventListener('DOMContentLoaded', function () {
+		// Gọi mặc định highlight 5 sao khi load trang
+		highlightStars(5);
+		document.getElementById("ratingInput").value = 5;
 
-        // Preview ảnh upload
-        for (let i = 1; i <= 3; i++) {
-            const input = document.getElementById('imageInput' + i);
-            const img = document.getElementById('imagePreview' + i);
+		// Preview ảnh upload
+		for (let i = 1; i <= 3; i++) {
+			const input = document.getElementById('imageInput' + i);
+			const img = document.getElementById('imagePreview' + i);
 
-            if (input) {
-                input.addEventListener('change', function () {
-                    if (this.files && this.files[0]) {
-                        const reader = new FileReader();
-                        reader.onload = function (e) {
-                            img.src = e.target.result;
-                        };
-                        reader.readAsDataURL(this.files[0]);
-                    }
-                });
-            }
-        }
-    });
+			if (input) {
+				input.addEventListener('change', function () {
+					if (this.files && this.files[0]) {
+						const reader = new FileReader();
+						reader.onload = function (e) {
+							img.src = e.target.result;
+						};
+						reader.readAsDataURL(this.files[0]);
+					}
+				});
+			}
+		}
+	});
 
-    document.addEventListener('DOMContentLoaded', function () {
-        for (let i = 1; i <= 3; i++) {
-            const input = document.getElementById('imageInput' + i);
-            const img = document.getElementById('imagePreview' + i);
+	document.addEventListener('DOMContentLoaded', function () {
+		for (let i = 1; i <= 3; i++) {
+			const input = document.getElementById('imageInput' + i);
+			const img = document.getElementById('imagePreview' + i);
 
-            if (input) {
-                input.addEventListener('change', function () {
-                    if (this.files && this.files[0]) {
-                        const reader = new FileReader();
-                        reader.onload = function (e) {
-                            img.src = e.target.result;
-                        };
-                        reader.readAsDataURL(this.files[0]);
-                    }
-                });
-            }
-        }
-    });
+			if (input) {
+				input.addEventListener('change', function () {
+					if (this.files && this.files[0]) {
+						const reader = new FileReader();
+						reader.onload = function (e) {
+							img.src = e.target.result;
+						};
+						reader.readAsDataURL(this.files[0]);
+					}
+				});
+			}
+		}
+	});
 
-    document.querySelectorAll(".rating-filter").forEach(btn => {
-        btn.addEventListener("click", function () {
-            // Xóa active cũ, thêm active cho nút hiện tại
-            document.querySelectorAll(".rating-filter").forEach(b => b.classList.remove("active"));
-            this.classList.add("active");
+	document.querySelectorAll(".rating-filter").forEach(btn => {
+		btn.addEventListener("click", function () {
+			// Xóa active cũ, thêm active cho nút hiện tại
+			document.querySelectorAll(".rating-filter").forEach(b => b.classList.remove("active"));
+			this.classList.add("active");
 
-            let rating = this.dataset.rating; // lấy số sao từ button
+			let rating = this.dataset.rating; // lấy số sao từ button
 
-            // Lọc danh sách review
-            document.querySelectorAll(".review-item").forEach(item => {
-                if (!rating || item.dataset.rating === rating) {
-                    item.style.display = "";
-                } else {
-                    item.style.display = "none";
-                }
-            });
-        });
-    });
+			// Lọc danh sách review
+			document.querySelectorAll(".review-item").forEach(item => {
+				if (!rating || item.dataset.rating === rating) {
+					item.style.display = "";
+				} else {
+					item.style.display = "none";
+				}
+			});
+		});
+	});
 
-    const sortSelect = document.querySelector(".form-select");
+	const sortSelect = document.querySelector(".form-select");
 
-    sortSelect.addEventListener("change", function () {
-        const sortValue = this.value;
-        const reviewsContainer = document.querySelector(".comments-list");
-        const reviews = Array.from(reviewsContainer.querySelectorAll(".review-item"));
+	sortSelect.addEventListener("change", function () {
+		const sortValue = this.value;
+		const reviewsContainer = document.querySelector(".comments-list");
+		const reviews = Array.from(reviewsContainer.querySelectorAll(".review-item"));
 
-        reviews.sort((a, b) => {
-            const dateA = new Date(a.dataset.date);
-            const dateB = new Date(b.dataset.date);
+		reviews.sort((a, b) => {
+			const dateA = new Date(a.dataset.date);
+			const dateB = new Date(b.dataset.date);
 
-            if (sortValue === "latest") {
-                return dateB - dateA; // mới nhất trước
-            } else if (sortValue === "oldest") {
-                return dateA - dateB; // cũ nhất trước
-            }
-        });
+			if (sortValue === "latest") {
+				return dateB - dateA; // mới nhất trước
+			} else if (sortValue === "oldest") {
+				return dateA - dateB; // cũ nhất trước
+			}
+		});
 
-        // Clear và append lại review theo thứ tự mới
-        reviewsContainer.innerHTML = "";
-        reviews.forEach(r => reviewsContainer.appendChild(r));
-    });
+		// Clear và append lại review theo thứ tự mới
+		reviewsContainer.innerHTML = "";
+		reviews.forEach(r => reviewsContainer.appendChild(r));
+	});
 
-    const reviews = document.querySelectorAll(".review-item");
-    const loadMoreBtn = document.getElementById("loadMoreBtn");
-    let visibleCount = 5; // ban đầu hiển thị 5
+	const reviews = document.querySelectorAll(".review-item");
+	const loadMoreBtn = document.getElementById("loadMoreBtn");
+	let visibleCount = 5; // ban đầu hiển thị 5
 
-    function showReviews() {
-        reviews.forEach((review, index) => {
-            if (index < visibleCount) {
-                review.style.display = "block";
-            } else {
-                review.style.display = "none";
-            }
-        });
+	function showReviews() {
+		reviews.forEach((review, index) => {
+			if (index < visibleCount) {
+				review.style.display = "block";
+			} else {
+				review.style.display = "none";
+			}
+		});
 
-        // Ẩn nút nếu không còn review để load
-        if (visibleCount >= reviews.length) {
-            loadMoreBtn.style.display = "none";
-        } else {
-            loadMoreBtn.style.display = "inline-block";
-        }
-    }
+		// Ẩn nút nếu không còn review để load
+		if (visibleCount >= reviews.length) {
+			loadMoreBtn.style.display = "none";
+		} else {
+			loadMoreBtn.style.display = "inline-block";
+		}
+	}
 
-    // Lần đầu gọi
-    showReviews();
+	// Lần đầu gọi
+	showReviews();
 
-    // Khi bấm Xem thêm
-    loadMoreBtn.addEventListener("click", () => {
-        visibleCount += 5;
-        showReviews();
-    });
+	// Khi bấm Xem thêm
+	loadMoreBtn.addEventListener("click", () => {
+		visibleCount += 5;
+		showReviews();
+	});
 </script>
 
 <!-- Debug Script 1 - Kiểm tra dữ liệu variant combinations -->
 <script>
-    // Debug variant combinations data structure
-    document.addEventListener('DOMContentLoaded', function () {
-        console.log("=== VARIANT COMBINATIONS DEBUG ===");
-        console.log("Raw variantCombinations:", variantCombinations);
+	// Debug variant combinations data structure
+	document.addEventListener('DOMContentLoaded', function () {
+		console.log("=== VARIANT COMBINATIONS DEBUG ===");
+		console.log("Raw variantCombinations:", variantCombinations);
 
-        if (variantCombinations && variantCombinations.length > 0) {
-            console.log("First combination keys:", Object.keys(variantCombinations[0]));
+		if (variantCombinations && variantCombinations.length > 0) {
+			console.log("First combination keys:", Object.keys(variantCombinations[0]));
 
-            variantCombinations.forEach((combo, index) => {
-                console.log(`Combination ${index}:`, {
-                    variantValueIds: combo.variantValueIds,
-                    quantity: combo.quantity,
-                    Quantity: combo.Quantity, // Kiểm tra cả viết hoa
-                    price: combo.price,
-                    Price: combo.Price, // Kiểm tra cả viết hoa
-                    image: combo.image,
-                    Image: combo.Image // Kiểm tra cả viết hoa
-                });
-            });
-        } else {
-            console.log("No variant combinations found");
-        }
-    });
+			variantCombinations.forEach((combo, index) => {
+				console.log(`Combination ${index}:`, {
+					variantValueIds: combo.variantValueIds,
+					quantity: combo.quantity,
+					Quantity: combo.Quantity, // Kiểm tra cả viết hoa
+					price: combo.price,
+					Price: combo.Price, // Kiểm tra cả viết hoa
+					image: combo.image,
+					Image: combo.Image // Kiểm tra cả viết hoa
+				});
+			});
+		} else {
+			console.log("No variant combinations found");
+		}
+	});
 </script>
 
 <!-- Debug Script 2 - Kiểm tra việc chọn variant -->
 <script>
-    // Debug script - thêm vào trước các script khác
-    document.addEventListener('DOMContentLoaded', function () {
-        console.log("=== DEBUGGING VARIANT SELECTION ===");
+	// Debug script - thêm vào trước các script khác
+	document.addEventListener('DOMContentLoaded', function () {
+		console.log("=== DEBUGGING VARIANT SELECTION ===");
 
-        // Kiểm tra các elements
-        const variantInputs = document.querySelectorAll('[name^="variant_"]');
-        console.log("Found variant inputs:", variantInputs.length);
+		// Kiểm tra các elements
+		const variantInputs = document.querySelectorAll('[name^="variant_"]');
+		console.log("Found variant inputs:", variantInputs.length);
 
-        variantInputs.forEach((input, index) => {
-            console.log(`Input ${index}:`, {
-                name: input.name,
-                value: input.value,
-                type: input.type,
-                checked: input.checked
-            });
-        });
+		variantInputs.forEach((input, index) => {
+			console.log(`Input ${index}:`, {
+				name: input.name,
+				value: input.value,
+				type: input.type,
+				checked: input.checked
+			});
+		});
 
-        // Kiểm tra form submit
-        const form = document.getElementById("addToCartForm");
-        if (form) {
-            console.log("Form found:", form);
+		// Kiểm tra form submit
+		const form = document.getElementById("addToCartForm");
+		if (form) {
+			console.log("Form found:", form);
 
-            form.addEventListener("submit", function (e) {
-                console.log("=== FORM SUBMIT TRIGGERED ===");
+			form.addEventListener("submit", function (e) {
+				console.log("=== FORM SUBMIT TRIGGERED ===");
 
-                // Kiểm tra các input đã check
-                const checkedInputs = document.querySelectorAll('[name^="variant_"]:checked');
-                console.log("Checked variant inputs:", checkedInputs.length);
+				// Kiểm tra các input đã check
+				const checkedInputs = document.querySelectorAll('[name^="variant_"]:checked');
+				console.log("Checked variant inputs:", checkedInputs.length);
 
-                checkedInputs.forEach((input, index) => {
-                    console.log(`Checked input ${index}:`, {
-                        name: input.name,
-                        value: input.value,
-                        checked: input.checked
-                    });
-                });
+				checkedInputs.forEach((input, index) => {
+					console.log(`Checked input ${index}:`, {
+						name: input.name,
+						value: input.value,
+						checked: input.checked
+					});
+				});
 
-                // Kiểm tra unique groups
-                const allVariantInputs = document.querySelectorAll('[name^="variant_"]');
-                const uniqueGroups = [...new Set(Array.from(allVariantInputs).map(v => v.name))];
-                console.log("Unique groups:", uniqueGroups);
+				// Kiểm tra unique groups
+				const allVariantInputs = document.querySelectorAll('[name^="variant_"]');
+				const uniqueGroups = [...new Set(Array.from(allVariantInputs).map(v => v.name))];
+				console.log("Unique groups:", uniqueGroups);
 
-                // Kiểm tra từng group
-                uniqueGroups.forEach(groupName => {
-                    const checked = document.querySelector(`input[name="${groupName}"]:checked`);
-                    console.log(`Group ${groupName}:`, checked ? "HAS SELECTION" : "NO SELECTION");
-                    if (checked) {
-                        console.log("Selected value:", checked.value);
-                    }
-                });
-            });
-        }
+				// Kiểm tra từng group
+				uniqueGroups.forEach(groupName => {
+					const checked = document.querySelector(`input[name="${groupName}"]:checked`);
+					console.log(`Group ${groupName}:`, checked ? "HAS SELECTION" : "NO SELECTION");
+					if (checked) {
+						console.log("Selected value:", checked.value);
+					}
+				});
+			});
+		}
 
-        // Thêm event listener cho các button variant
-        const variantButtons = document.querySelectorAll('.btn-check');
-        console.log("Found variant buttons:", variantButtons.length);
+		// Thêm event listener cho các button variant
+		const variantButtons = document.querySelectorAll('.btn-check');
+		console.log("Found variant buttons:", variantButtons.length);
 
-        variantButtons.forEach((button, index) => {
-            console.log(`Button ${index}:`, {
-                name: button.name,
-                value: button.value,
-                id: button.id
-            });
+		variantButtons.forEach((button, index) => {
+			console.log(`Button ${index}:`, {
+				name: button.name,
+				value: button.value,
+				id: button.id
+			});
 
-            button.addEventListener('change', function () {
-                console.log(`Button ${index} changed:`, {
-                    name: this.name,
-                    value: this.value,
-                    checked: this.checked
-                });
-            });
-        });
-    });
+			button.addEventListener('change', function () {
+				console.log(`Button ${index} changed:`, {
+					name: this.name,
+					value: this.value,
+					checked: this.checked
+				});
+			});
+		});
+	});
 </script>
 
 <!-- Main Variant Script -->
 <script>
-    const variantCombinations = @Html.Raw(Json.Serialize(variantCombinations));
-    console.log("Variant Combinations:", variantCombinations);
+	const variantCombinations = @Html.Raw(Json.Serialize(variantCombinations));
+	console.log("Variant Combinations:", variantCombinations);
 
-    let currentVariantPrice = parseFloat("@((priceInfo != null && !priceInfo.IsVariant && priceInfo.Price.HasValue) ? priceInfo.Price.Value.ToString("0.##") : "0")");
+	let currentVariantPrice = parseFloat("@((priceInfo != null && !priceInfo.IsVariant && priceInfo.Price.HasValue) ? priceInfo.Price.Value.ToString("0.##") : "0")");
 
-    // -------------------------
-    // FIX: Tách trường hợp có biến thể / không có biến thể
-    // -------------------------
-    let totalQuantity = 0;
-    if (@(priceInfo != null && priceInfo.IsVariant ? "true" : "false")) {
-        // Có biến thể -> cộng tất cả quantity của variant combinations
-        totalQuantity = variantCombinations.reduce((sum, v) => sum + (v.quantity || v.Quantity || 0), 0);
-    } else {
-        // Không có biến thể -> lấy quantity trực tiếp từ Model
-        totalQuantity = parseInt("@Model.Quantity") || 0;
-    }
+	// -------------------------
+	// FIX: Tách trường hợp có biến thể / không có biến thể
+	// -------------------------
+	let totalQuantity = 0;
+	if (@(priceInfo != null && priceInfo.IsVariant ? "true" : "false")) {
+		// Có biến thể -> cộng tất cả quantity của variant combinations
+		totalQuantity = variantCombinations.reduce((sum, v) => sum + (v.quantity || v.Quantity || 0), 0);
+	} else {
+		// Không có biến thể -> lấy quantity trực tiếp từ Model
+		totalQuantity = parseInt("@Model.Quantity") || 0;
+	}
 
-    let availableStock = totalQuantity;
+	let availableStock = totalQuantity;
 
-    // FIX: Hiển thị thông báo phù hợp cho sản phẩm có variant
-    const quantityDisplay = document.getElementById("productQuantityDisplay");
-    if (quantityDisplay) {
-        if (@(priceInfo != null && priceInfo.IsVariant ? "true" : "false")) {
-            quantityDisplay.textContent = `Còn lại: ${totalQuantity} sản phẩm (chọn biến thể để xem chi tiết)`;
-        } else {
-            quantityDisplay.textContent = `Còn lại: ${totalQuantity} sản phẩm`;
-        }
-    }
+	// FIX: Hiển thị thông báo phù hợp cho sản phẩm có variant
+	const quantityDisplay = document.getElementById("productQuantityDisplay");
+	if (quantityDisplay) {
+		if (@(priceInfo != null && priceInfo.IsVariant ? "true" : "false")) {
+			quantityDisplay.textContent = `Còn lại: ${totalQuantity} sản phẩm (chọn biến thể để xem chi tiết)`;
+		} else {
+			quantityDisplay.textContent = `Còn lại: ${totalQuantity} sản phẩm`;
+		}
+	}
 
-    const selectedVariantsMap = new Map();
+	const selectedVariantsMap = new Map();
 
-    // FIX: Đếm tổng số variant groups
-    const totalVariantGroups = @(variants?.Count ?? 0);
-    console.log("Total variant groups:", totalVariantGroups);
+	// FIX: Đếm tổng số variant groups
+	const totalVariantGroups = @(variants?.Count ?? 0);
+	console.log("Total variant groups:", totalVariantGroups);
 
-    function updateTotalPrice() {
-        const quantity = parseInt(document.getElementById("productQuantityInput").value) || 1;
-        const total = quantity * currentVariantPrice;
-        document.getElementById("productPriceDisplay").textContent = total.toLocaleString("vi-VN") + " đ";
-    }
+	function updateTotalPrice() {
+		const quantity = parseInt(document.getElementById("productQuantityInput").value) || 1;
+		const total = quantity * currentVariantPrice;
+		document.getElementById("productPriceDisplay").textContent = total.toLocaleString("vi-VN") + " đ";
+	}
 
-    // FIX: Xử lý chọn biến thể - hỗ trợ cả 1 và nhiều biến thể
-    document.querySelectorAll('.btn-check').forEach(input => {
-        input.addEventListener('change', () => {
-            selectedVariantsMap.set(input.name, parseInt(input.value));
+	// FIX: Xử lý chọn biến thể - hỗ trợ cả 1 và nhiều biến thể
+	document.querySelectorAll('.btn-check').forEach(input => {
+		input.addEventListener('change', () => {
+			selectedVariantsMap.set(input.name, parseInt(input.value));
 
-            const selectedArray = Array.from(selectedVariantsMap.values()).sort((a, b) => a - b);
-            console.log("Selected variants:", selectedArray);
-            console.log("Total variant groups:", totalVariantGroups);
-            console.log("All variant combinations:", variantCombinations);
+			const selectedArray = Array.from(selectedVariantsMap.values()).sort((a, b) => a - b);
+			console.log("Selected variants:", selectedArray);
+			console.log("Total variant groups:", totalVariantGroups);
+			console.log("All variant combinations:", variantCombinations);
 
-            // FIX: Kiểm tra match dựa trên số lượng variant đã chọn
-            let match = null;
+			// FIX: Kiểm tra match dựa trên số lượng variant đã chọn
+			let match = null;
 
-            if (totalVariantGroups === 1) {
-                // Chỉ có 1 variant group -> tìm combination có chứa giá trị đã chọn
-                const selectedValue = selectedArray[0];
-                match = variantCombinations.find(variant => {
-                    console.log("Checking variant:", variant.variantValueIds, "against selected:", selectedValue);
-                    return variant.variantValueIds.length === 1 && variant.variantValueIds[0] === selectedValue;
-                });
-            } else {
-                // Có nhiều variant groups -> cần chọn đủ tất cả
-                if (selectedArray.length === totalVariantGroups) {
-                    match = variantCombinations.find(variant => {
-                        const sortedIds = [...variant.variantValueIds].sort((a, b) => a - b);
-                        return JSON.stringify(sortedIds) === JSON.stringify(selectedArray);
-                    });
-                }
-            }
+			if (totalVariantGroups === 1) {
+				// Chỉ có 1 variant group -> tìm combination có chứa giá trị đã chọn
+				const selectedValue = selectedArray[0];
+				match = variantCombinations.find(variant => {
+					console.log("Checking variant:", variant.variantValueIds, "against selected:", selectedValue);
+					return variant.variantValueIds.length === 1 && variant.variantValueIds[0] === selectedValue;
+				});
+			} else {
+				// Có nhiều variant groups -> cần chọn đủ tất cả
+				if (selectedArray.length === totalVariantGroups) {
+					match = variantCombinations.find(variant => {
+						const sortedIds = [...variant.variantValueIds].sort((a, b) => a - b);
+						return JSON.stringify(sortedIds) === JSON.stringify(selectedArray);
+					});
+				}
+			}
 
-            console.log("Found match:", match);
+			console.log("Found match:", match);
 
-            // Nếu tìm thấy match, cập nhật giá và số lượng
-            if (match) {
-                // FIX: Xử lý cả viết thường và viết hoa
-                currentVariantPrice = match.price || match.Price || 0;
-                updateTotalPrice();
+			// Nếu tìm thấy match, cập nhật giá và số lượng
+			if (match) {
+				// FIX: Xử lý cả viết thường và viết hoa
+				currentVariantPrice = match.price || match.Price || 0;
+				updateTotalPrice();
 
-                if (quantityDisplay) {
-                    const matchQuantity = match.quantity || match.Quantity || 0;
-                    quantityDisplay.textContent = `Còn lại: ${matchQuantity} sản phẩm`;
-                }
+				if (quantityDisplay) {
+					const matchQuantity = match.quantity || match.Quantity || 0;
+					quantityDisplay.textContent = `Còn lại: ${matchQuantity} sản phẩm`;
+				}
 
-                const mainImage = document.getElementById('mainProductImage');
-                const matchImage = match.image || match.Image;
-                if (mainImage && matchImage) {
-                    mainImage.src = matchImage;
-                }
-            } else {
-                // Nếu không có kết hợp đầy đủ hoặc chưa chọn đủ
-                if (totalVariantGroups === 1 || selectedArray.length < totalVariantGroups) {
-                    // Giữ nguyên hiển thị ban đầu cho đến khi chọn đủ
-                    const defaultPrice = @((priceInfo != null && priceInfo.MinPrice.HasValue) ? priceInfo.MinPrice.Value.ToString("0.##") : "0");
-                    currentVariantPrice = parseFloat(defaultPrice);
-                    updateTotalPrice();
-                } else {
-                    // Không tìm thấy combination phù hợp
-                    currentVariantPrice = 0;
-                    updateTotalPrice();
+				const mainImage = document.getElementById('mainProductImage');
+				const matchImage = match.image || match.Image;
+				if (mainImage && matchImage) {
+					mainImage.src = matchImage;
+				}
+			} else {
+				// Nếu không có kết hợp đầy đủ hoặc chưa chọn đủ
+				if (totalVariantGroups === 1 || selectedArray.length < totalVariantGroups) {
+					// Giữ nguyên hiển thị ban đầu cho đến khi chọn đủ
+					const defaultPrice = @((priceInfo != null && priceInfo.MinPrice.HasValue) ? priceInfo.MinPrice.Value.ToString("0.##") : "0");
+					currentVariantPrice = parseFloat(defaultPrice);
+					updateTotalPrice();
+				} else {
+					// Không tìm thấy combination phù hợp
+					currentVariantPrice = 0;
+					updateTotalPrice();
 
-                    if (quantityDisplay) {
-                        quantityDisplay.textContent = `Còn lại: ${totalQuantity} sản phẩm`;
-                    }
-                }
-            }
+					if (quantityDisplay) {
+						quantityDisplay.textContent = `Còn lại: ${totalQuantity} sản phẩm`;
+					}
+				}
+			}
 
-            updateFormHiddenInputs();
-        });
-    });
+			updateFormHiddenInputs();
+		});
+	});
 
-    const quantityInput = document.getElementById("productQuantityInput");
-    const hiddenQuantity = document.getElementById("QuantityHidden");
+	const quantityInput = document.getElementById("productQuantityInput");
+	const hiddenQuantity = document.getElementById("QuantityHidden");
 
-    document.getElementById("btnIncreaseProductQuantity").addEventListener("click", () => {
-        quantityInput.value = parseInt(quantityInput.value) + 1;
-        hiddenQuantity.value = quantityInput.value;
-        updateTotalPrice();
-        updateFormHiddenInputs();
-    });
+	document.getElementById("btnIncreaseProductQuantity").addEventListener("click", () => {
+		quantityInput.value = parseInt(quantityInput.value) + 1;
+		hiddenQuantity.value = quantityInput.value;
+		updateTotalPrice();
+		updateFormHiddenInputs();
+	});
 
-    document.getElementById("btnDecreaseProductQuantity").addEventListener("click", () => {
-        quantityInput.value = Math.max(1, parseInt(quantityInput.value) - 1);
-        hiddenQuantity.value = quantityInput.value;
-        updateTotalPrice();
-        updateFormHiddenInputs();
-    });
+	document.getElementById("btnDecreaseProductQuantity").addEventListener("click", () => {
+		quantityInput.value = Math.max(1, parseInt(quantityInput.value) - 1);
+		hiddenQuantity.value = quantityInput.value;
+		updateTotalPrice();
+		updateFormHiddenInputs();
+	});
 
-    quantityInput.addEventListener("input", () => {
-        hiddenQuantity.value = quantityInput.value;
-        updateTotalPrice();
-        updateFormHiddenInputs();
-    });
+	quantityInput.addEventListener("input", () => {
+		hiddenQuantity.value = quantityInput.value;
+		updateTotalPrice();
+		updateFormHiddenInputs();
+	});
 
-    function updateFormHiddenInputs() {
-        const container = document.getElementById("variantInputsContainer");
-        if (!container) return;
+	function updateFormHiddenInputs() {
+		const container = document.getElementById("variantInputsContainer");
+		if (!container) return;
 
-        container.innerHTML = "";
+		container.innerHTML = "";
 
-        const checkedRadios = document.querySelectorAll("input[type=radio]:checked");
+		const checkedRadios = document.querySelectorAll("input[type=radio]:checked");
 
-        if (checkedRadios.length === 0) {
-            const emptyInput = document.createElement("input");
-            emptyInput.type = "hidden";
-            emptyInput.name = "VariantValueIds";
-            emptyInput.value = "";
-            container.appendChild(emptyInput);
-        } else {
-            checkedRadios.forEach(radio => {
-                const input = document.createElement("input");
-                input.type = "hidden";
-                input.name = "VariantValueIds";
-                input.value = radio.value;
-                container.appendChild(input);
-            });
-        }
+		if (checkedRadios.length === 0) {
+			const emptyInput = document.createElement("input");
+			emptyInput.type = "hidden";
+			emptyInput.name = "VariantValueIds";
+			emptyInput.value = "";
+			container.appendChild(emptyInput);
+		} else {
+			checkedRadios.forEach(radio => {
+				const input = document.createElement("input");
+				input.type = "hidden";
+				input.name = "VariantValueIds";
+				input.value = radio.value;
+				container.appendChild(input);
+			});
+		}
 
-        hiddenQuantity.value = quantityInput.value || "1";
-    }
+		hiddenQuantity.value = quantityInput.value || "1";
+	}
 
-    function setMainImage(src) {
-        const mainImage = document.getElementById('mainProductImage');
-        if (mainImage) {
-            mainImage.src = src;
-        }
-    }
+	function setMainImage(src) {
+		const mainImage = document.getElementById('mainProductImage');
+		if (mainImage) {
+			mainImage.src = src;
+		}
+	}
 
-    function highlightThumbnailBySrc(src) {
-        document.querySelectorAll('.product-thumbnail').forEach(img => {
-            img.classList.toggle('active', img.src === src);
-        });
-    }
+	function highlightThumbnailBySrc(src) {
+		document.querySelectorAll('.product-thumbnail').forEach(img => {
+			img.classList.toggle('active', img.src === src);
+		});
+	}
 
-    document.querySelectorAll('.product-thumbnail').forEach(thumbnail => {
-        thumbnail.addEventListener('click', () => {
-            setMainImage(thumbnail.src);
-            highlightThumbnailBySrc(thumbnail.src);
+	document.querySelectorAll('.product-thumbnail').forEach(thumbnail => {
+		thumbnail.addEventListener('click', () => {
+			setMainImage(thumbnail.src);
+			highlightThumbnailBySrc(thumbnail.src);
 
-            const variantIdsStr = thumbnail.getAttribute('data-variant-value-ids');
-            if (variantIdsStr) {
-                const variantIds = variantIdsStr.split(',').map(id => parseInt(id.trim()));
-                variantIds.forEach(id => {
-                    const input = document.querySelector(`input[type=radio][value="${id}"]`);
-                    if (input && !input.checked) {
-                        input.checked = true;
-                        input.dispatchEvent(new Event('change'));
-                    }
-                });
-            }
-        });
-    });
+			const variantIdsStr = thumbnail.getAttribute('data-variant-value-ids');
+			if (variantIdsStr) {
+				const variantIds = variantIdsStr.split(',').map(id => parseInt(id.trim()));
+				variantIds.forEach(id => {
+					const input = document.querySelector(`input[type=radio][value="${id}"]`);
+					if (input && !input.checked) {
+						input.checked = true;
+						input.dispatchEvent(new Event('change'));
+					}
+				});
+			}
+		});
+	});
 
-    // FIX: Cập nhật logic cho cả 1 và nhiều biến thể
-    document.querySelectorAll('.btn-check').forEach(input => {
-        input.addEventListener('change', () => {
-            if (!input.checked) return;
+	// FIX: Cập nhật logic cho cả 1 và nhiều biến thể
+	document.querySelectorAll('.btn-check').forEach(input => {
+		input.addEventListener('change', () => {
+			if (!input.checked) return;
 
-            const selectedValues = Array.from(document.querySelectorAll('.btn-check:checked')).map(i => parseInt(i.value));
+			const selectedValues = Array.from(document.querySelectorAll('.btn-check:checked')).map(i => parseInt(i.value));
 
-            let match = null;
-            if (totalVariantGroups === 1) {
-                // Chỉ có 1 variant group - tìm combination có đúng 1 giá trị khớp
-                const selectedValue = selectedValues[0];
-                match = variantCombinations.find(v => {
-                    return v.variantValueIds.length === 1 && v.variantValueIds[0] === selectedValue;
-                });
-            } else {
-                // Có nhiều variant groups
-                match = variantCombinations.find(v => {
-                    return v.variantValueIds.every(id => selectedValues.includes(id)) &&
-                        selectedValues.every(id => v.variantValueIds.includes(id));
-                });
-            }
+			let match = null;
+			if (totalVariantGroups === 1) {
+				// Chỉ có 1 variant group - tìm combination có đúng 1 giá trị khớp
+				const selectedValue = selectedValues[0];
+				match = variantCombinations.find(v => {
+					return v.variantValueIds.length === 1 && v.variantValueIds[0] === selectedValue;
+				});
+			} else {
+				// Có nhiều variant groups
+				match = variantCombinations.find(v => {
+					return v.variantValueIds.every(id => selectedValues.includes(id)) &&
+						selectedValues.every(id => v.variantValueIds.includes(id));
+				});
+			}
 
-            if (match && (match.image || match.Image)) {
-                const matchImage = match.image || match.Image;
-                setMainImage(matchImage);
-                highlightThumbnailBySrc(matchImage);
-            }
-        });
-    });
+			if (match && (match.image || match.Image)) {
+				const matchImage = match.image || match.Image;
+				setMainImage(matchImage);
+				highlightThumbnailBySrc(matchImage);
+			}
+		});
+	});
 
-    updateFormHiddenInputs();
+	updateFormHiddenInputs();
 </script>
 
 <!-- Cart Validation Script - FIXED -->
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // ====== Config & helpers ======
-        const tokenEl = document.querySelector('#__quickAddToken input[name="__RequestVerificationToken"]');
-        const ANTIFORGERY = tokenEl ? tokenEl.value : null;
-        const BUY_NOW_KEY = '__BUY_NOW_PIDS';
+	document.addEventListener('DOMContentLoaded', () => {
+		// ====== Config & helpers ======
+		const tokenEl = document.querySelector('#__quickAddToken input[name="__RequestVerificationToken"]');
+		const ANTIFORGERY = tokenEl ? tokenEl.value : null;
+		const BUY_NOW_KEY = '__BUY_NOW_PIDS';
 
-        function toastOk(msg) { if (window.showToast) showToast(msg, true); else alert(msg); }
-        function toastErr(msg) { if (window.showToast) showToast(msg, false); else alert(msg); }
+		function toastOk(msg) { if (window.showToast) showToast(msg, true); else alert(msg); }
+		function toastErr(msg) { if (window.showToast) showToast(msg, false); else alert(msg); }
 
-        function getRequestedQty() {
-            const qtyEl = document.querySelector('#productQuantityInput');
-            const q = parseInt(qtyEl?.value);
-            return Number.isFinite(q) && q > 0 ? q : 1;
-        }
+		function getRequestedQty() {
+			const qtyEl = document.querySelector('#productQuantityInput');
+			const q = parseInt(qtyEl?.value);
+			return Number.isFinite(q) && q > 0 ? q : 1;
+		}
 
-        function getAvailableFromUI(btn, fallback = null) {
-            const dataAvail = btn?.dataset?.available;
-            if (dataAvail !== undefined && dataAvail !== null && dataAvail !== '') {
-                const n = parseInt(dataAvail);
-                if (Number.isFinite(n)) return n;
-            }
-            const quantityDisplayEl = document.getElementById('productQuantityDisplay');
-            if (quantityDisplayEl) {
-                const displayText = quantityDisplayEl.textContent || '';
-                const match = displayText.match(/Còn lại:\s*(\d+)/i);
-                if (match) {
-                    const n = parseInt(match[1]);
-                    if (Number.isFinite(n)) return n;
-                }
-            }
-            if (fallback !== null && Number.isFinite(parseInt(fallback))) {
-                return parseInt(fallback);
-            }
-            return null;
-        }
+		function getAvailableFromUI(btn, fallback = null) {
+			const dataAvail = btn?.dataset?.available;
+			if (dataAvail !== undefined && dataAvail !== null && dataAvail !== '') {
+				const n = parseInt(dataAvail);
+				if (Number.isFinite(n)) return n;
+			}
+			const quantityDisplayEl = document.getElementById('productQuantityDisplay');
+			if (quantityDisplayEl) {
+				const displayText = quantityDisplayEl.textContent || '';
+				const match = displayText.match(/Còn lại:\s*(\d+)/i);
+				if (match) {
+					const n = parseInt(match[1]);
+					if (Number.isFinite(n)) return n;
+				}
+			}
+			if (fallback !== null && Number.isFinite(parseInt(fallback))) {
+				return parseInt(fallback);
+			}
+			return null;
+		}
 
-        async function quickAdd(pid, qty = 1) {
-            const fd = new FormData();
-            fd.append('productId', pid);
-            fd.append('quantity', String(qty));
-            const headers = { 'X-Requested-With': 'XMLHttpRequest' };
-            if (ANTIFORGERY) headers['RequestVerificationToken'] = ANTIFORGERY;
+		async function quickAdd(pid, qty = 1) {
+			const fd = new FormData();
+			fd.append('productId', pid);
+			fd.append('quantity', String(qty));
+			const headers = { 'X-Requested-With': 'XMLHttpRequest' };
+			if (ANTIFORGERY) headers['RequestVerificationToken'] = ANTIFORGERY;
 
-            const res = await fetch('/Cart/QuickAdd', {
-                method: 'POST',
-                body: fd,
-                headers,
-                credentials: 'same-origin'
-            });
+			const res = await fetch('/Cart/QuickAdd', {
+				method: 'POST',
+				body: fd,
+				headers,
+				credentials: 'same-origin'
+			});
 
-            const data = await res.json().catch(() => ({}));
-            const ok = res.ok && (data?.success === undefined || data?.success === true);
-            return { ok, data, status: res.status };
-        }
+			const data = await res.json().catch(() => ({}));
+			const ok = res.ok && (data?.success === undefined || data?.success === true);
+			return { ok, data, status: res.status };
+		}
 
-        async function selectServer(pid, selected = true) {
-            try {
-                const fd = new FormData();
-                fd.append('productId', pid);
-                fd.append('selected', String(selected));
-                const headers = { 'X-Requested-With': 'XMLHttpRequest' };
-                if (ANTIFORGERY) headers['RequestVerificationToken'] = ANTIFORGERY;
+		async function selectServer(pid, selected = true) {
+			try {
+				const fd = new FormData();
+				fd.append('productId', pid);
+				fd.append('selected', String(selected));
+				const headers = { 'X-Requested-With': 'XMLHttpRequest' };
+				if (ANTIFORGERY) headers['RequestVerificationToken'] = ANTIFORGERY;
 
-                const res = await fetch('/Cart/Select', {
-                    method: 'POST',
-                    body: fd,
-                    headers,
-                    credentials: 'same-origin'
-                });
-                return res.ok;
-            } catch {
-                return false;
-            }
-        }
+				const res = await fetch('/Cart/Select', {
+					method: 'POST',
+					body: fd,
+					headers,
+					credentials: 'same-origin'
+				});
+				return res.ok;
+			} catch {
+				return false;
+			}
+		}
 
-        function selectLocalBuyNow(pid) {
-            try {
-                const arr = JSON.parse(localStorage.getItem(BUY_NOW_KEY) || '[]');
-                if (!arr.includes(pid)) arr.push(pid);
-                localStorage.setItem(BUY_NOW_KEY, JSON.stringify(arr));
-            } catch { }
-        }
+		function selectLocalBuyNow(pid) {
+			try {
+				const arr = JSON.parse(localStorage.getItem(BUY_NOW_KEY) || '[]');
+				if (!arr.includes(pid)) arr.push(pid);
+				localStorage.setItem(BUY_NOW_KEY, JSON.stringify(arr));
+			} catch { }
+		}
 
-        function bumpCartBadge(data) {
-            if (typeof window.__CartBadge?.set === 'function' && typeof data?.cartCount === 'number') {
-                window.__CartBadge.set(data.cartCount);
-            } else if (typeof window.__CartBadge?.add === 'function') {
-                window.__CartBadge.add(1);
-            }
-            try {
-                const cartIcon = document.querySelector('.bi-cart-fill, .header-icon');
-                if (cartIcon) {
-                    cartIcon.classList.add('shake');
-                    setTimeout(() => cartIcon.classList.remove('shake'), 600);
-                }
-            } catch { }
-        }
+		function bumpCartBadge(data) {
+			if (typeof window.__CartBadge?.set === 'function' && typeof data?.cartCount === 'number') {
+				window.__CartBadge.set(data.cartCount);
+			} else if (typeof window.__CartBadge?.add === 'function') {
+				window.__CartBadge.add(1);
+			}
+			try {
+				const cartIcon = document.querySelector('.bi-cart-fill, .header-icon');
+				if (cartIcon) {
+					cartIcon.classList.add('shake');
+					setTimeout(() => cartIcon.classList.remove('shake'), 600);
+				}
+			} catch { }
+		}
 
-        function guardStockOrToast(btn, requestedQty, explicitAvailable = null) {
-            const available = getAvailableFromUI(btn, explicitAvailable);
-            if (available === null) return { pass: true, available: null };
-            if (available <= 0) {
-                toastErr('Sản phẩm này hiện đã hết hàng.');
-                return { pass: false, available };
-            }
-            if (requestedQty > available) {
-                toastErr(`Số lượng bạn chọn (${requestedQty}) vượt quá số lượng tồn (${available}).`);
-                return { pass: false, available };
-            }
-            return { pass: true, available };
-        }
+		function guardStockOrToast(btn, requestedQty, explicitAvailable = null) {
+			const available = getAvailableFromUI(btn, explicitAvailable);
+			if (available === null) return { pass: true, available: null };
+			if (available <= 0) {
+				toastErr('Sản phẩm này hiện đã hết hàng.');
+				return { pass: false, available };
+			}
+			if (requestedQty > available) {
+				toastErr(`Số lượng bạn chọn (${requestedQty}) vượt quá số lượng tồn (${available}).`);
+				return { pass: false, available };
+			}
+			return { pass: true, available };
+		}
 
-        // NEW: Function to validate variant selections
-        function validateVariantSelection() {
-            // Check if this product has variants
-            if (typeof totalVariantGroups === 'undefined' || totalVariantGroups === 0) {
-                return { valid: true, message: '', selectedValues: [] };
-            }
+		// NEW: Function to validate variant selections
+		function validateVariantSelection() {
+			// Check if this product has variants
+			if (typeof totalVariantGroups === 'undefined' || totalVariantGroups === 0) {
+				return { valid: true, message: '', selectedValues: [] };
+			}
 
-            // Get all variant groups
-            const uniqueGroups = [...new Set(Array.from(document.querySelectorAll('[name^="variant_"]')).map(v => v.name))];
+			// Get all variant groups
+			const uniqueGroups = [...new Set(Array.from(document.querySelectorAll('[name^="variant_"]')).map(v => v.name))];
 
-            if (uniqueGroups.length === 0) {
-                return { valid: true, message: '', selectedValues: [] };
-            }
+			if (uniqueGroups.length === 0) {
+				return { valid: true, message: '', selectedValues: [] };
+			}
 
-            // Check if all groups have selections
-            const selectedGroups = uniqueGroups.filter(groupName =>
-                document.querySelector(`input[name="${groupName}"]:checked`)
-            );
+			// Check if all groups have selections
+			const selectedGroups = uniqueGroups.filter(groupName =>
+				document.querySelector(`input[name="${groupName}"]:checked`)
+			);
 
-            if (selectedGroups.length < uniqueGroups.length) {
-                return {
-                    valid: false,
-                    message: 'Vui lòng chọn đầy đủ các tùy chọn sản phẩm.',
-                    selectedValues: []
-                };
-            }
+			if (selectedGroups.length < uniqueGroups.length) {
+				return {
+					valid: false,
+					message: 'Vui lòng chọn đầy đủ các tùy chọn sản phẩm.',
+					selectedValues: []
+				};
+			}
 
-            // Get selected variant values
-            const selectedValues = Array.from(document.querySelectorAll('[name^="variant_"]:checked'))
-                .map(input => parseInt(input.value))
-                .sort((a, b) => a - b);
+			// Get selected variant values
+			const selectedValues = Array.from(document.querySelectorAll('[name^="variant_"]:checked'))
+				.map(input => parseInt(input.value))
+				.sort((a, b) => a - b);
 
-            // Validate combination exists
-            if (typeof variantCombinations !== 'undefined' && variantCombinations.length > 0) {
-                const match = variantCombinations.find(variant => {
-                    const sortedIds = [...variant.variantValueIds].sort((a, b) => a - b);
-                    return JSON.stringify(sortedIds) === JSON.stringify(selectedValues);
-                });
+			// Validate combination exists
+			if (typeof variantCombinations !== 'undefined' && variantCombinations.length > 0) {
+				const match = variantCombinations.find(variant => {
+					const sortedIds = [...variant.variantValueIds].sort((a, b) => a - b);
+					return JSON.stringify(sortedIds) === JSON.stringify(selectedValues);
+				});
 
-                if (!match) {
-                    return {
-                        valid: false,
-                        message: 'Tổ hợp sản phẩm không tồn tại. Vui lòng chọn lại.',
-                        selectedValues: []
-                    };
-                }
+				if (!match) {
+					return {
+						valid: false,
+						message: 'Tổ hợp sản phẩm không tồn tại. Vui lòng chọn lại.',
+						selectedValues: []
+					};
+				}
 
-                // Check stock for this variant combination
-                const variantStock = match.quantity || match.Quantity || 0;
-                if (variantStock <= 0) {
-                    return {
-                        valid: false,
-                        message: 'Tùy chọn này hiện đã hết hàng.',
-                        selectedValues: []
-                    };
-                }
+				// Check stock for this variant combination
+				const variantStock = match.quantity || match.Quantity || 0;
+				if (variantStock <= 0) {
+					return {
+						valid: false,
+						message: 'Tùy chọn này hiện đã hết hàng.',
+						selectedValues: []
+					};
+				}
 
-                return {
-                    valid: true,
-                    message: '',
-                    selectedValues: selectedValues,
-                    availableStock: variantStock
-                };
-            }
+				return {
+					valid: true,
+					message: '',
+					selectedValues: selectedValues,
+					availableStock: variantStock
+				};
+			}
 
-            return { valid: true, message: '', selectedValues: selectedValues };
-        }
+			return { valid: true, message: '', selectedValues: selectedValues };
+		}
 
-        // NEW: Function to submit with variant data
-        async function submitWithVariants(productId, selectedVariantIds, quantity, isBuyNow) {
-            try {
-                const formData = new FormData();
-                formData.append('ProductId', productId);
-                formData.append('Quantity', quantity.toString());
-                formData.append('BuyNow', isBuyNow.toString());
+		// NEW: Function to submit with variant data
+		async function submitWithVariants(productId, selectedVariantIds, quantity, isBuyNow) {
+			try {
+				const formData = new FormData();
+				formData.append('ProductId', productId);
+				formData.append('Quantity', quantity.toString());
+				formData.append('BuyNow', isBuyNow.toString());
 
-                // Add variant value IDs
-                selectedVariantIds.forEach(id => {
-                    formData.append('VariantValueIds', id.toString());
-                });
+				// Add variant value IDs
+				selectedVariantIds.forEach(id => {
+					formData.append('VariantValueIds', id.toString());
+				});
 
-                // Add antiforgery token
-                const tokenEl = document.querySelector('input[name="__RequestVerificationToken"]');
-                if (tokenEl) {
-                    formData.append('__RequestVerificationToken', tokenEl.value);
-                }
+				// Add antiforgery token
+				const tokenEl = document.querySelector('input[name="__RequestVerificationToken"]');
+				if (tokenEl) {
+					formData.append('__RequestVerificationToken', tokenEl.value);
+				}
 
-                const response = await fetch('/Cart/AddToCart', {
-                    method: 'POST',
-                    body: formData,
-                    credentials: 'same-origin'
-                });
+				const response = await fetch('/Cart/AddToCart', {
+					method: 'POST',
+					body: formData,
+					credentials: 'same-origin'
+				});
 
-                if (response.ok) {
-                    const result = await response.json().catch(() => ({}));
+				if (response.ok) {
+					const result = await response.json().catch(() => ({}));
 
-                    if (isBuyNow) {
-                        // For buy now, try to select item and redirect
-                        await selectServer(productId, true).catch(() => selectLocalBuyNow(productId));
-                        window.location.href = '/Cart';
-                    } else {
-                        // For add to cart, show success message
-                        bumpCartBadge(result);
-                        toastOk(result?.message || 'Đã thêm vào giỏ hàng!');
-                    }
-                } else {
-                    const errorData = await response.json().catch(() => ({}));
-                    toastErr(errorData?.message || 'Thêm sản phẩm vào giỏ hàng thất bại.');
-                }
-            } catch (error) {
-                console.error('Error submitting with variants:', error);
-                toastErr('Lỗi kết nối. Vui lòng thử lại.');
-            }
-        }
+					if (isBuyNow) {
+						// For buy now, try to select item and redirect
+						await selectServer(productId, true).catch(() => selectLocalBuyNow(productId));
+						window.location.href = '/Cart';
+					} else {
+						// For add to cart, show success message
+						bumpCartBadge(result);
+						toastOk(result?.message || 'Đã thêm vào giỏ hàng!');
+					}
+				} else {
+					const errorData = await response.json().catch(() => ({}));
+					toastErr(errorData?.message || 'Thêm sản phẩm vào giỏ hàng thất bại.');
+				}
+			} catch (error) {
+				console.error('Error submitting with variants:', error);
+				toastErr('Lỗi kết nối. Vui lòng thử lại.');
+			}
+		}
 
-        // ====== Thêm vào giỏ (FIXED for variants) ======
-        document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
+		// ====== Thêm vào giỏ (FIXED for variants) ======
+		document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+			btn.addEventListener('click', async (e) => {
+				e.preventDefault();
+				e.stopPropagation();
 
-                const pid = btn.dataset.productId;
-                const hasVariant = (btn.dataset.hasVariant === 'true');
-                const requestedQty = getRequestedQty();
+				const pid = btn.dataset.productId;
+				const hasVariant = (btn.dataset.hasVariant === 'true');
+				const requestedQty = getRequestedQty();
 
-                // Check if this product has variants
-                const variantCheck = validateVariantSelection();
+				// Check if this product has variants
+				const variantCheck = validateVariantSelection();
 
-                if (!variantCheck.valid) {
-                    toastErr(variantCheck.message);
-                    return;
-                }
+				if (!variantCheck.valid) {
+					toastErr(variantCheck.message);
+					return;
+				}
 
-                // If product has variants, use form submission
-                if (variantCheck.selectedValues.length > 0) {
-                    // Check stock for variant
-                    if (variantCheck.availableStock && requestedQty > variantCheck.availableStock) {
-                        toastErr(`Số lượng bạn chọn (${requestedQty}) vượt quá số lượng tồn (${variantCheck.availableStock}).`);
-                        return;
-                    }
+				// If product has variants, use form submission
+				if (variantCheck.selectedValues.length > 0) {
+					// Check stock for variant
+					if (variantCheck.availableStock && requestedQty > variantCheck.availableStock) {
+						toastErr(`Số lượng bạn chọn (${requestedQty}) vượt quá số lượng tồn (${variantCheck.availableStock}).`);
+						return;
+					}
 
-                    await submitWithVariants(pid, variantCheck.selectedValues, requestedQty, false);
-                    return;
-                }
+					await submitWithVariants(pid, variantCheck.selectedValues, requestedQty, false);
+					return;
+				}
 
-                // Original logic for products without variants
-                if (hasVariant) {
-                    window.location.href = `/Products/DetailProducts/${pid}`;
-                    return;
-                }
+				// Original logic for products without variants
+				if (hasVariant) {
+					window.location.href = `/Products/DetailProducts/${pid}`;
+					return;
+				}
 
-                const check = guardStockOrToast(btn, requestedQty);
-                if (!check.pass) return;
+				const check = guardStockOrToast(btn, requestedQty);
+				if (!check.pass) return;
 
-                try {
-                    const { ok, data, status } = await quickAdd(pid, requestedQty);
-                    if (ok) {
-                        bumpCartBadge(data);
-                        toastOk(data?.message || 'Đã thêm vào giỏ hàng!');
-                        return;
-                    }
-                    const msg = (data?.message || '').toLowerCase();
-                    if (status === 409 || msg.includes('hết hàng') || msg.includes('out of stock')) {
-                        toastErr(data?.message || 'Sản phẩm này hiện đã hết hàng.');
-                        return;
-                    }
-                    if (status === 400 || msg.includes('vượt quá') || msg.includes('insufficient')) {
-                        toastErr(data?.message || 'Số lượng vượt quá tồn kho.');
-                        return;
-                    }
-                    if (status === 401 || msg.includes('đăng nhập') || msg.includes('unauth')) {
-                        window.location.href = '/Login';
-                        return;
-                    }
-                    toastErr(data?.message || 'Thêm sản phẩm vào giỏ hàng thất bại.');
-                } catch (err) {
-                    console.error(err);
-                    toastErr('Lỗi kết nối. Vui lòng thử lại.');
-                }
-            });
-        });
+				try {
+					const { ok, data, status } = await quickAdd(pid, requestedQty);
+					if (ok) {
+						bumpCartBadge(data);
+						toastOk(data?.message || 'Đã thêm vào giỏ hàng!');
+						return;
+					}
+					const msg = (data?.message || '').toLowerCase();
+					if (status === 409 || msg.includes('hết hàng') || msg.includes('out of stock')) {
+						toastErr(data?.message || 'Sản phẩm này hiện đã hết hàng.');
+						return;
+					}
+					if (status === 400 || msg.includes('vượt quá') || msg.includes('insufficient')) {
+						toastErr(data?.message || 'Số lượng vượt quá tồn kho.');
+						return;
+					}
+					if (status === 401 || msg.includes('đăng nhập') || msg.includes('unauth')) {
+						window.location.href = '/Login';
+						return;
+					}
+					toastErr(data?.message || 'Thêm sản phẩm vào giỏ hàng thất bại.');
+				} catch (err) {
+					console.error(err);
+					toastErr('Lỗi kết nối. Vui lòng thử lại.');
+				}
+			});
+		});
 
-        // ====== Mua ngay (FIXED for variants) ======
-        document.querySelectorAll('.buy-now-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
+		// ====== Mua ngay (FIXED for variants) ======
+		document.querySelectorAll('.buy-now-btn').forEach(btn => {
+			btn.addEventListener('click', async (e) => {
+				e.preventDefault();
+				e.stopPropagation();
 
-                const pid = btn.dataset.productId;
-                const hasVariant = (btn.dataset.hasVariant === 'true');
-                const requestedQty = getRequestedQty();
+				const pid = btn.dataset.productId;
+				const hasVariant = (btn.dataset.hasVariant === 'true');
+				const requestedQty = getRequestedQty();
 
-                // Check if this product has variants
-                const variantCheck = validateVariantSelection();
+				// Check if this product has variants
+				const variantCheck = validateVariantSelection();
 
-                if (!variantCheck.valid) {
-                    toastErr(variantCheck.message);
-                    return;
-                }
+				if (!variantCheck.valid) {
+					toastErr(variantCheck.message);
+					return;
+				}
 
-                const prevHTML = btn.innerHTML;
-                btn.disabled = true;
-                btn.innerHTML = 'Đang xử lý...';
+				const prevHTML = btn.innerHTML;
+				btn.disabled = true;
+				btn.innerHTML = 'Đang xử lý...';
 
-                try {
-                    // If product has variants, use form submission
-                    if (variantCheck.selectedValues.length > 0) {
-                        // Check stock for variant
-                        if (variantCheck.availableStock && requestedQty > variantCheck.availableStock) {
-                            toastErr(`Số lượng bạn chọn (${requestedQty}) vượt quá số lượng tồn (${variantCheck.availableStock}).`);
-                            return;
-                        }
+				try {
+					// If product has variants, use form submission
+					if (variantCheck.selectedValues.length > 0) {
+						// Check stock for variant
+						if (variantCheck.availableStock && requestedQty > variantCheck.availableStock) {
+							toastErr(`Số lượng bạn chọn (${requestedQty}) vượt quá số lượng tồn (${variantCheck.availableStock}).`);
+							return;
+						}
 
-                        await submitWithVariants(pid, variantCheck.selectedValues, requestedQty, true);
-                        return;
-                    }
+						await submitWithVariants(pid, variantCheck.selectedValues, requestedQty, true);
+						return;
+					}
 
-                    // Original logic for products without variants
-                    if (hasVariant) {
-                        window.location.href = `/Products/DetailProducts/${pid}`;
-                        return;
-                    }
+					// Original logic for products without variants
+					if (hasVariant) {
+						window.location.href = `/Products/DetailProducts/${pid}`;
+						return;
+					}
 
-                    const check = guardStockOrToast(btn, requestedQty);
-                    if (!check.pass) return;
+					const check = guardStockOrToast(btn, requestedQty);
+					if (!check.pass) return;
 
-                    const { ok, data, status } = await quickAdd(pid, requestedQty);
-                    if (ok) {
-                        const ticked = await selectServer(pid, true);
-                        if (!ticked) selectLocalBuyNow(pid);
+					const { ok, data, status } = await quickAdd(pid, requestedQty);
+					if (ok) {
+						const ticked = await selectServer(pid, true);
+						if (!ticked) selectLocalBuyNow(pid);
 
-                        if (typeof window.__CartBadge?.set === 'function' && typeof data?.cartCount === 'number') {
-                            window.__CartBadge.set(data.cartCount);
-                        } else if (typeof window.__CartBadge?.add === 'function') {
-                            window.__CartBadge.add(1);
-                        }
+						if (typeof window.__CartBadge?.set === 'function' && typeof data?.cartCount === 'number') {
+							window.__CartBadge.set(data.cartCount);
+						} else if (typeof window.__CartBadge?.add === 'function') {
+							window.__CartBadge.add(1);
+						}
 
-                        window.location.href = '/Cart';
-                        return;
-                    }
+						window.location.href = '/Cart';
+						return;
+					}
 
-                    const msg = (data?.message || '').toLowerCase();
-                    if (status === 409 || msg.includes('hết hàng') || msg.includes('out of stock')) {
-                        toastErr(data?.message || 'Sản phẩm này hiện đã hết hàng.');
-                        return;
-                    }
-                    if (status === 400 || msg.includes('vượt quá') || msg.includes('insufficient')) {
-                        toastErr(data?.message || 'Số lượng vượt quá tồn kho.');
-                        return;
-                    }
-                    if (status === 401 || msg.includes('đăng nhập') || msg.includes('unauth')) {
-                        window.location.href = '/Login';
-                        return;
-                    }
+					const msg = (data?.message || '').toLowerCase();
+					if (status === 409 || msg.includes('hết hàng') || msg.includes('out of stock')) {
+						toastErr(data?.message || 'Sản phẩm này hiện đã hết hàng.');
+						return;
+					}
+					if (status === 400 || msg.includes('vượt quá') || msg.includes('insufficient')) {
+						toastErr(data?.message || 'Số lượng vượt quá tồn kho.');
+						return;
+					}
+					if (status === 401 || msg.includes('đăng nhập') || msg.includes('unauth')) {
+						window.location.href = '/Login';
+						return;
+					}
 
-                    window.location.href = `/Products/DetailProducts/${pid}`;
-                } catch (err) {
-                    console.error(err);
-                    window.location.href = `/Products/DetailProducts/${pid}`;
-                } finally {
-                    btn.disabled = false;
-                    btn.innerHTML = prevHTML;
-                }
-            });
-        });
-    });
+					window.location.href = `/Products/DetailProducts/${pid}`;
+				} catch (err) {
+					console.error(err);
+					window.location.href = `/Products/DetailProducts/${pid}`;
+				} finally {
+					btn.disabled = false;
+					btn.innerHTML = prevHTML;
+				}
+			});
+		});
+	});
+</script>
+
+<script>
+	document.addEventListener("DOMContentLoaded", function () {
+		var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+		tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+			new bootstrap.Tooltip(tooltipTriggerEl);
+		});
+	});
 </script>
