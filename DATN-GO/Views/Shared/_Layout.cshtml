@@ -434,6 +434,7 @@
                 <p class="small">GO: mamnon02@gmail.com</p>
             </div>
         </div>
+
     </footer>
 
 
@@ -911,5 +912,156 @@
         });
 
         document.addEventListener('DOMContentLoaded', init);
+    })();
+</script>
+@* CART *@
+<script>
+    (function () {
+        // ===== TRUST WRITE FENCE: chỉ server-refresh được phép set =====
+        const TRUST_KEY = Math.random().toString(36).slice(2);
+        let scheduleTimer = null;
+
+        // ===== UI + ANIMATION =====
+        const getBadges = () => Array.from(document.querySelectorAll('.cart-count-badge'));
+        const style = document.createElement('style');
+        style.textContent = `
+    @@keyframes cart-bump {
+          0%{transform:translate(-50%,-50%) scale(1)}
+          30%{transform:translate(-50%,-50%) scale(1.15)}
+          100%{transform:translate(-50%,-50%) scale(1)}
+        }
+        .cart-count-badge.bump { animation: cart-bump 250ms ease; }
+      `;
+        document.head.appendChild(style);
+
+        function show(el, n) { el.style.display = n > 0 ? '' : 'none'; }
+
+        function animateTo(el, target, opts = { trusted: false }) {
+            const current = parseInt(el.textContent || '0') || 0;
+
+            // nếu không trusted (local try-set) → đừng animate, chỉ queue refresh
+            if (!opts.trusted) { return; }
+
+            if (current === target) { show(el, target); return; }
+            const diff = target - current, steps = Math.min(12, Math.abs(diff)), step = diff / steps;
+            let i = 0; el.classList.add('bump');
+            const t = setInterval(() => {
+                i++;
+                const v = i < steps ? Math.round(current + step * i) : target;
+                el.textContent = v; show(el, v);
+                if (i >= steps) { clearInterval(t); setTimeout(() => el.classList.remove('bump'), 200); }
+            }, 20);
+        }
+
+        function setCartCountTrusted(n, key) {
+            if (key !== TRUST_KEY) { scheduleRefresh(); return; } // chỉ nhận từ server-refresh
+            const nn = Math.max(0, parseInt(n) || 0);
+            getBadges().forEach(b => animateTo(b, nn, { trusted: true }));
+            try { localStorage.setItem('cartCount', String(nn)); } catch { }
+        }
+
+        function scheduleRefresh() {
+            clearTimeout(scheduleTimer);
+            scheduleTimer = setTimeout(refreshCartCount, 150);
+        }
+
+        // Public API: chặn set/add local → chỉ schedule refresh
+        window.__CartBadge = {
+            set(n) { scheduleRefresh(); }, // ignore value (no flicker)
+            add() { scheduleRefresh(); }  // ignore delta (no flicker)
+        };
+
+        // ===== DATA: luôn dùng DISTINCT COUNT từ server =====
+        async function refreshCartCount() {
+            try {
+                // Ưu tiên render sẵn từ server (tin cậy)
+                if (typeof window.__CART_COUNT_INIT === 'number') {
+                    setCartCountTrusted(window.__CART_COUNT_INIT, TRUST_KEY);
+                } else {
+                    const r = await fetch('/Cart/Count', { credentials: 'same-origin' });
+                    if (!r.ok) throw new Error('count failed');
+                    const d = await r.json();
+                    const n = Number.isFinite(d?.count) ? d.count : 0; // DISTINCT lines
+                    setCartCountTrusted(n, TRUST_KEY);
+                }
+            } catch (e) {
+                console.warn('refreshCartCount error:', e);
+                // Fallback: đừng animate từ local để tránh flicker, nhưng vẫn hiển thị nếu trống
+                try {
+                    const cached = parseInt(localStorage.getItem('cartCount') || '0') || 0;
+                    setCartCountTrusted(cached, TRUST_KEY);
+                } catch { setCartCountTrusted(0, TRUST_KEY); }
+            }
+        }
+
+        // ===== WIRING: debounce + đa tab + intercepts =====
+        (function wireCartChanged() {
+            window.addEventListener('cart:changed', scheduleRefresh);
+
+            // BroadcastChannel sync
+            const bc = (function () { try { return new BroadcastChannel('cart'); } catch { return null; } })();
+            bc?.addEventListener('message', (ev) => {
+                if (ev?.data === 'cart:changed' || ev?.data?.type === 'cart:changed') scheduleRefresh();
+                // Bị cài đặt khác tab cố set số? → cũng chỉ refresh
+                if (ev?.data?.type === 'cart:count') scheduleRefresh();
+            });
+
+            // Quay lại tab → cập nhật lại
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') scheduleRefresh();
+            });
+
+            window.__cartBC = bc;
+        })();
+
+        // Intercept fetch/XHR: mọi API Cart thành công → chỉ schedule refresh (không set tạm)
+        ; (function interceptFetch() {
+            if (!window.fetch) return;
+            const _fetch = window.fetch;
+            window.fetch = function (input, init) {
+                const url = typeof input === 'string' ? input : (input?.url || '');
+                const p = _fetch(input, init);
+                p.then(res => {
+                    try {
+                        if (res.ok && /\/Cart\/(QuickAdd|Add|Remove|UpdateQuantity|Select|Clear|Momo|Vnpay|Cod|Count)/i.test(url)) {
+                            window.dispatchEvent(new CustomEvent('cart:changed'));
+                            try { window.__cartBC?.postMessage('cart:changed'); } catch { }
+                        }
+                    } catch { }
+                });
+                return p;
+            };
+        })();
+
+        ; (function interceptXHR() {
+            if (!window.XMLHttpRequest) return;
+            const _open = XMLHttpRequest.prototype.open;
+            const _send = XMLHttpRequest.prototype.send;
+            let _url = '';
+            XMLHttpRequest.prototype.open = function (method, url) {
+                _url = url || '';
+                return _open.apply(this, arguments);
+            };
+            XMLHttpRequest.prototype.send = function (body) {
+                this.addEventListener('load', function () {
+                    try {
+                        if (this.status >= 200 && this.status < 300 &&
+                            /\/Cart\/(QuickAdd|Add|Remove|UpdateQuantity|Select|Clear|Momo|Vnpay|Cod|Count)/i.test(_url)) {
+                            window.dispatchEvent(new CustomEvent('cart:changed'));
+                            try { window.__cartBC?.postMessage('cart:changed'); } catch { }
+                        }
+                    } catch { }
+                });
+                return _send.apply(this, arguments);
+            };
+        })();
+
+        // Storage sync: có ai set localStorage → mình không tin, chỉ refresh
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'cartCount' && e.newValue != null) scheduleRefresh();
+        });
+
+        // INIT
+        document.addEventListener('DOMContentLoaded', refreshCartCount);
     })();
 </script>

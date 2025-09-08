@@ -5,6 +5,50 @@
     var totalPages = ViewBag.TotalPages ?? 1;
 }
 
+@functions {
+    public string ResolveProductImage(object prod, Microsoft.AspNetCore.Mvc.IUrlHelper url)
+    {
+        if (prod == null) return url.Content("~/images/no-image.png");
+
+        var t = prod.GetType();
+        // Các tên field ảnh “thường gặp” — thêm/bớt tùy codebase của bạn
+        string[] candidates = new[] {
+            "ThumbnailUrl", "ImageUrl", "MainImage", "Avatar", "Image",
+            "PictureUrl", "ImgUrl", "Url", "PhotoUrl", "ImagePath"
+        };
+
+        foreach (var name in candidates)
+        {
+            var prop = t.GetProperty(name);
+            if (prop == null) continue;
+
+            var val = prop.GetValue(prod) as string;
+            if (string.IsNullOrWhiteSpace(val)) continue;
+
+            val = val.Trim();
+
+            // Nếu là absolute URL thì trả luôn
+            if (val.StartsWith("http://", System.StringComparison.OrdinalIgnoreCase) ||
+                val.StartsWith("https://", System.StringComparison.OrdinalIgnoreCase))
+            {
+                return val;
+            }
+
+            // Nếu bắt đầu bằng "~" thì dùng Url.Content thẳng
+            if (val.StartsWith("~"))
+            {
+                return url.Content(val);
+            }
+
+            // Nếu là path tương đối, chuẩn hoá về ~/...
+            return url.Content("~/" + val.TrimStart('/'));
+        }
+
+        // fallback
+        return url.Content("~/images/no-image.png");
+    }
+}
+
 <!-- ===================== STYLES ===================== -->
 <style>
     .card.hover-shadow-lg {
@@ -146,6 +190,29 @@
     .form-check.form-switch .form-check-input {
         cursor: pointer;
     }
+
+    .scope-select .list-group-item {
+        border: 1px solid var(--bs-border-color);
+        border-radius: .75rem; /* ~rounded-3 */
+        background-color: #fff;
+    }
+
+        .scope-select .list-group-item:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,.05);
+        }
+
+    #addSelectedPreview img,
+    #editSelectedPreview img {
+        width: 32px;
+        height: 32px;
+        object-fit: cover;
+        border-radius: .5rem;
+        margin-right: 6px; /* khoảng cách ngang */
+        margin-bottom: 6px; /* khoảng cách dọc nếu xuống hàng */
+    }
+
+
+
 </style>
 
 <div class="page-wrapper">
@@ -154,29 +221,26 @@
         <nav class="navbar navbar-expand-lg navbar-light" id="navbar">
             <button id="sidebar-toggler" class="sidebar-toggle"><span class="sr-only">Toggle navigation</span></button>
             <span class="page-title">MÃ ƯU ĐÃI</span>
-
-            <div class="navbar-right">
+            <div class="navbar-right ">
                 <ul class="nav navbar-nav">
                     <li class="custom-dropdown">
-                        <a class="notify-toggler custom-dropdown-toggler" asp-controller="Notification" asp-action="Index">
+                        <a class="notify-toggler custom-dropdown-toggler" href="Notification.html">
                             <i class="mdi mdi-bell-outline icon"></i>
                         </a>
                     </li>
                     <li class="dropdown user-menu">
                         <button class="dropdown-toggle nav-link" data-toggle="dropdown">
-                            <img src="@(!string.IsNullOrEmpty(ViewBag.UserInfo?.Avatar) ? ViewBag.UserInfo.Avatar : "/images/avt-user.jpg")"
-                                 width="32" height="32" style="object-fit: cover;" loading="lazy" />
-                            <span class="d-none d-lg-inline-block">@ViewBag.UserInfo?.FullName</span>
+                            <img src="~/images/avt-user.jpg" alt="User Profile" width="32" height="32" style="object-fit: cover;" loading="lazy">
+                            <span class="d-none d-lg-inline-block">@ViewBag.StoreName</span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-right">
                             <li>
-                                <a class="dropdown-link-item" asp-controller="Profile" asp-action="Index" asp-area="">
-                                    <i class="mdi mdi-account-outline"></i>
-                                    <span class="nav-text">Hồ Sơ</span>
+                                <a class="dropdown-link-item" href="user-profile.html">
+                                    <i class="mdi mdi-account-outline"></i><span class="nav-text">Hồ Sơ</span>
                                 </a>
                             </li>
                             <li class="dropdown-footer">
-                                <a class="dropdown-link-item" href="/Admin/Decorates/Logout">
+                                <a class="dropdown-link-item" href="sign-in.html">
                                     <i class="mdi mdi-logout"></i> Đăng Xuất
                                 </a>
                             </li>
@@ -270,8 +334,9 @@
                                                                 data-bs-toggle="modal"
                                                                 data-bs-target="#editVoucherModal"
                                                                 data-id="@voucher.Id"
-                                                                data-discount="@voucher.Reduce"
-                                                                data-minorder="@voucher.MinOrder"
+                                                                data-discount="@voucher.Reduce.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                                                data-minorder="@voucher.MinOrder.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+
                                                                 data-quantity="@voucher.Quantity"
                                                                 data-start="@voucher.StartDate.ToString("yyyy-MM-dd")"
                                                                 data-end="@voucher.EndDate.ToString("yyyy-MM-dd")"
@@ -280,7 +345,9 @@
                                                                 data-status="@((int)voucher.Status)"
                                                                 data-ispercentage="@voucher.IsPercentage.ToString().ToLower()"
                                                                 data-maxdiscount="@(voucher.MaxDiscount?.ToString() ?? "")"
-                                                                
+                                                                data-applyallcategories="@voucher.ApplyAllCategories.ToString().ToLower()"
+                                                                data-applyallproducts="@voucher.ApplyAllProducts.ToString().ToLower()"
+                                                                data-selectedproductids="@(voucher.SelectedProductIds != null ? string.Join(",", voucher.SelectedProductIds) : "")"
                                                                 title="Chỉnh sửa">
                                                             <i class="bi-pencil"></i>
                                                         </button>
@@ -326,6 +393,18 @@
                                 </div>
                             </div>
                         }
+                        <script>
+                            window.__voucherProducts = window.__voucherProducts || {};
+                            @foreach (var voucher in Model)
+                            {
+                                var json = System.Text.Json.JsonSerializer.Serialize(voucher.SelectedProductIds ?? new List<int>());
+                                @:window.__voucherProducts[@voucher.Id] = @Html.Raw(json);
+                                //  ^^^^^^^^^^^^^^^^^^^^^^  KHÔNG đặt "@voucher.Id" trong dấu nháy!
+                            }
+                            // (optional) debug
+                            console.log('voucherProducts', window.__voucherProducts);
+                        </script>
+
 
                         @if (ViewBag.TotalPages > 1)
                         {
@@ -362,13 +441,16 @@
         <div class="modal-content">
             <form id="voucherForm" asp-area="Admin" asp-controller="Voucher" asp-action="Create" method="post">
                 @Html.AntiForgeryToken()
+
+                <!-- Header -->
                 <div class="modal-header bg-danger">
-                    <h5 class="modal-title text-white">Thêm Voucher</h5>
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h5 class="modal-title text-white" id="addVoucherModalLabel">Thêm Voucher</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
                 </div>
 
+                <!-- Body -->
                 <div class="modal-body">
-                    <!-- Kiểu giảm giá -->
+                    <!-- Type -->
                     <div class="mb-3">
                         <label class="form-label d-block">Kiểu giảm giá</label>
                         <div class="form-check form-check-inline">
@@ -382,7 +464,7 @@
                         <div class="form-text">Nếu chọn %, có thể thiết lập “Giảm tối đa”.</div>
                     </div>
 
-                    <!-- Mức giảm -->
+                    <!-- Reduce -->
                     <div class="mb-4" id="reduceWrapper">
                         <label class="form-label" for="discountAmount"><span id="reduceLabel">Mức Giảm Giá (VNĐ)</span></label>
                         <div class="input-group">
@@ -398,12 +480,12 @@
                         <label class="form-label" for="maxDiscount">Giảm tối đa (VND) – tùy chọn</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-graph-down"></i></span>
-                            <input type="number" class="form-control" id="maxDiscount" name="MaxDiscount" min="0" placeholder="Ví dụ: 50000">
+                            <input type="number" class="form-control" id="maxDiscount" name="MaxDiscount" min="0" placeholder="VD: 50000">
                             <span class="input-group-text">VND</span>
                         </div>
                     </div>
 
-                    <!-- Min Order -->
+                    <!-- Min / Qty -->
                     <div class="mb-4">
                         <label class="form-label" for="minOrder">Đơn Hàng Tối Thiểu (VNĐ)</label>
                         <div class="input-group">
@@ -412,8 +494,6 @@
                         </div>
                         <div class="text-danger small mt-1" id="minOrderError"></div>
                     </div>
-
-                    <!-- Quantity -->
                     <div class="mb-4">
                         <label class="form-label" for="quantity">Số Lượng</label>
                         <div class="input-group">
@@ -441,7 +521,6 @@
                         </div>
                     </div>
 
-                    <!-- Status -->
                     <div class="mb-4">
                         <label class="form-label" for="status">Trạng Thái</label>
                         <div class="input-group status-toggle">
@@ -453,36 +532,90 @@
                         </div>
                     </div>
 
-        
 
-                   
-
-                    <div class="mb-4">
-                        <label class="form-label" for="categoryId">Danh mục</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-tags"></i></span>
-                            <select class="form-control" id="categoryId" name="CategoryId" required>
-                                <option value="">-- Chọn danh mục --</option>
-                                @foreach (var cat in ViewBag.Categories)
-                                {
-                                    <option value="@cat.Id">@cat.Name</option>
-                                }
-                            </select>
+                    <!-- Apply all -->
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="ApplyAllProducts" name="ApplyAllProducts" value="true">
+                            <input type="hidden" name="ApplyAllProducts" value="false">
+                            <label class="form-check-label fw-bold" for="ApplyAllProducts">
+                                Áp dụng tất cả sản phẩm
+                            </label>
                         </div>
-                        <div class="text-danger small mt-1" id="categoryIdError"></div>
                     </div>
+
+                    <!-- Selector row -->
+                    <!-- Chọn nhóm sản phẩm (UI) -->
+                    <div class="mb-3" id="addProductGroupSummary">
+                        <div class="list-group scope-select">
+                            <button type="button"
+                                    class="list-group-item list-group-item-action d-flex justify-content-between align-items-center px-3 py-2 border rounded"
+                                    data-bs-toggle="modal" data-bs-target="#productPickerModal">
+                                <div>
+                                    <div class="fw-semibold text-secondary">Áp dụng cho nhóm sản phẩm</div>
+                                    <small class="text-muted">Nhấn để chọn sản phẩm</small>
+                                </div>
+                                <small id="addSelectedCount" class="text-muted">0 đã chọn</small>
+                            </button>
+                        </div>
+                        <!-- Preview thumbnails dưới ô chọn -->
+                        <div id="addSelectedPreview" class="mt-2 d-flex flex-wrap gap-2"></div>
+                    </div>
+
+                    <!-- Hidden inputs -->
+                    <div id="addSelectedInputs"></div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="ApplyAllCategories" name="ApplyAllCategories" value="true">
+                            <input type="hidden" name="ApplyAllCategories" value="false" />
+                            <label class="form-check-label fw-bold" for="ApplyAllCategories">
+                                Áp dụng tất cả danh mục
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Tabs phạm vi -->
+                    <ul class="nav nav-tabs" id="addScopeTabs">
+                        <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#addTabCategory">Theo danh mục</a></li>
+                    </ul>
+                    <div class="tab-content border rounded-bottom p-3" id="addScopeTabsContent">
+                        <div class="tab-pane fade show active" id="addTabCategory">
+                            <div id="addCategoryBlock" class="mt-2">
+                                <label class="form-label" for="categoryId">Danh mục</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-tags"></i></span>
+                                    <select class="form-control" id="categoryId" name="CategoryId">
+                                        <option value="">-- Chọn danh mục --</option>
+                                        @foreach (var cat in ViewBag.Categories)
+                                        {
+                                            <option value="@cat.Id">@cat.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="addTabProducts">
+                            <!-- KHÔNG tạo addSelectedInputs lần 2 -->
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="Type" value="0" />
+                    <input type="hidden" name="StoreId" value="@ViewBag.StoreId" />
                 </div>
 
+                <!-- Footer -->
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal" style="text-transform: capitalize;">Đóng</button>
-                    <button type="submit" class="btn btn-danger btn-pill" style="text-transform: capitalize;">Thêm Voucher</button>
+                    <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-danger btn-pill">Thêm Voucher</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Modal Sửa Voucher -->
+
+<!-- Modal Sửa Voucher (ĐÃ HOÀN THIỆN) -->
 <div class="modal fade" id="editVoucherModal" tabindex="-1" aria-labelledby="editVoucherModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -492,7 +625,7 @@
 
                 <div class="modal-header bg-danger">
                     <h5 class="modal-title text-white" id="editVoucherModalLabel">Sửa Voucher</h5>
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <button type="button" class="close btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
                 <div class="modal-body">
@@ -583,34 +716,89 @@
                         </div>
                     </div>
 
-                 
-          
-
-                    <!-- Category -->
-                    <div class="mb-4">
-                        <label class="form-label" for="editCategoryId">Danh mục</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-tags-fill"></i></span>
-                            <select class="form-control" name="CategoryId" id="editCategoryId">
-                                <option value="">-- Chọn danh mục --</option>
-                                @foreach (var cat in ViewBag.Categories)
-                                {
-                                    <option value="@cat.Id">@cat.Name</option>
-                                }
-                            </select>
+                    <!-- ====== PHẠM VI ÁP DỤNG (EDIT) ====== -->
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="editApplyAllCategories" name="ApplyAllCategories" value="true">
+                            <input type="hidden" name="ApplyAllCategories" value="false" />
+                            <label class="form-check-label" for="editApplyAllCategories">Áp dụng tất cả danh mục</label>
                         </div>
-                        <div class="text-danger small mt-1" id="editCategoryIdError"></div>
+                        <div class="form-check form-switch mt-2">
+                            <input class="form-check-input" type="checkbox" id="editApplyAllProducts" name="ApplyAllProducts" value="true">
+                            <input type="hidden" name="ApplyAllProducts" value="false" />
+                            <label class="form-check-label" for="editApplyAllProducts">
+                                Áp dụng tất cả sản phẩm
+                                <small class="ms-2">• <a href="#" onclick="showProductsTab('edit'); openProductPicker('edit'); return false;">Chọn sản phẩm</a></small>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- TÓM TẮT CHỌN SẢN PHẨM + PREVIEW (giống Add) -->
+                    <div class="mb-3" id="editProductGroupSummary">
+                        <div class="list-group scope-select">
+                            <button type="button"
+                                    class="list-group-item list-group-item-action d-flex justify-content-between align-items-center px-3 py-2 border rounded"
+                                    onclick="openProductPicker('edit')">
+                                <div>
+                                    <div class="fw-semibold text-secondary">Áp dụng cho nhóm sản phẩm</div>
+                                    <small class="text-muted">Nhấn để chọn sản phẩm</small>
+                                </div>
+                                <small id="editSelectedCount" class="text-muted">0 đã chọn</small>
+                            </button>
+                        </div>
+                        <div id="editSelectedPreview" class="mt-2 d-flex flex-wrap gap-2"></div>
+                    </div>
+                    <!-- Hidden inputs để submit danh sách đã chọn -->
+                    <div id="editSelectedInputs"></div>
+
+                    <!-- Tabs phạm vi -->
+                    <ul class="nav nav-tabs" id="editScopeTabs">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-bs-toggle="tab" href="#editTabCategory">Theo danh mục</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#editTabProducts">Theo sản phẩm</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content border rounded-bottom p-3" id="editScopeTabsContent">
+                        <!-- SỬA id/for/sel đúng 'edit...' (không dùng 'add...' nữa) -->
+                        <div class="tab-pane fade show active" id="editTabCategory">
+                            <div id="editCategoryBlock" class="mt-2">
+                                <label class="form-label" for="editCategoryId">Danh mục</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-tags"></i></span>
+                                    <select class="form-control" id="editCategoryId" name="CategoryId">
+                                        <option value="">-- Chọn danh mục --</option>
+                                        @foreach (var cat in ViewBag.Categories)
+                                        {
+                                            <option value="@cat.Id">@cat.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="text-danger small mt-1" id="editCategoryIdError"></div>
+                            </div>
+                        </div>
+
+                        <!-- Tab sản phẩm (chỉ còn preview; chọn qua picker) -->
+                        <div class="tab-pane fade" id="editTabProducts">
+                            <div class="mt-2">
+                                <label class="form-label d-block mb-1">Sản phẩm áp dụng</label>
+                               
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal" style="text-transform: capitalize;">Đóng</button>
-                    <button type="submit" class="btn btn-danger btn-pill" style="text-transform: capitalize;">Lưu Thay Đổi</button>
+                    <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-danger btn-pill">Lưu Thay Đổi</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
 
 <!-- Modal Xóa Voucher -->
 <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
@@ -635,197 +823,588 @@
     </div>
 </div>
 
-<!-- ===================== SCRIPTS ===================== -->
+<div class="modal fade" id="productPickerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+        <div class="modal-content">
+
+            <!-- Header -->
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Thêm Sản Phẩm</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body">
+                <!-- Ô tìm kiếm -->
+                <div class="mb-3">
+                    <input type="text" class="form-control" id="ppSearch" placeholder="Nhập từ khóa sản phẩm...">
+                </div>
+
+                <!-- Danh sách sản phẩm -->
+                <div id="ppList" class="list-group list-group-flush" style="max-height:60vh; overflow:auto;">
+                    @foreach (var p in ViewBag.Products)
+                    {
+                        var img = ResolveProductImage(p, Url);
+                        <label class="list-group-item d-flex align-items-center">
+                            <input class="form-check-input me-3 pp-item"
+                                   type="checkbox"
+                                   value="@p.Id"
+                                   data-name="@p.Name"
+                                   data-img="@img" />
+                            <img src="@img" alt="@p.Name" loading="lazy"
+                                 class="pp-thumb me-2"
+                                 style="width:40px; height:40px; object-fit:cover; border-radius:4px;" />
+                            <span>@p.Name</span>
+                        </label>
+                    }
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer">
+                <div class="me-auto"><span id="ppSelectedCount">0 đã chọn</span></div>
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-danger" id="ppAddBtn">Thêm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-    // ==== Search debounce ====
+    // ====================== Search debounce ======================
     let searchTimeout;
     function submitSearch() {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-            document.getElementById('searchForm').submit();
-        }, 300);
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        document.getElementById('searchForm')?.submit();
+      }, 300);
     }
 
-    // ==== Sort persist ====
+    // ====================== Sort persist ======================
     document.addEventListener("DOMContentLoaded", function () {
-        const sortSelect = document.getElementById("sortSelect");
-        const currentSort = new URLSearchParams(window.location.search).get("sort");
-        if (currentSort) sortSelect.value = currentSort;
-        sortSelect.addEventListener("change", function () {
-            const url = new URL(window.location.href);
-            const selectedSort = sortSelect.value;
-            if (selectedSort) url.searchParams.set("sort", selectedSort); else url.searchParams.delete("sort");
-            const searchValue = document.querySelector('input[name="search"]')?.value;
-            if (searchValue) url.searchParams.set("search", searchValue);
-            window.location.href = url.toString();
+      const sortSelect = document.getElementById("sortSelect");
+      const currentSort = new URLSearchParams(window.location.search).get("sort");
+      if (currentSort) sortSelect.value = currentSort;
+      sortSelect?.addEventListener("change", function () {
+        const url = new URL(window.location.href);
+        const selectedSort = sortSelect.value;
+        if (selectedSort) url.searchParams.set("sort", selectedSort);
+        else url.searchParams.delete("sort");
+        const searchValue = document.querySelector('input[name="search"]')?.value;
+        if (searchValue) url.searchParams.set("search", searchValue);
+        window.location.href = url.toString();
+      });
+    });
+
+    // ====================== Auto-dismiss alerts ======================
+    document.addEventListener("DOMContentLoaded", function () {
+      const autoCloseAlerts = () => {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function (alert) {
+          setTimeout(() => {
+            alert.style.transition = 'opacity 0.5s ease';
+            alert.style.opacity = '0';
+            setTimeout(() => { if (alert && alert.parentNode) alert.parentNode.removeChild(alert); }, 500);
+          }, 2000);
         });
+      };
+      autoCloseAlerts();
+      const alertContainer = document.querySelector('div[style*="position: fixed"]');
+      if (alertContainer) {
+        const observer = new MutationObserver(m => { if (m.some(x => x.addedNodes.length)) autoCloseAlerts(); });
+        observer.observe(alertContainer, { childList: true });
+      }
     });
 
-    // ==== Auto-dismiss alerts ====
-    document.addEventListener("DOMContentLoaded", function () {
-        const autoCloseAlerts = () => {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(function (alert) {
-                setTimeout(() => {
-                    alert.style.transition = 'opacity 0.5s ease';
-                    alert.style.opacity = '0';
-                    setTimeout(() => { if (alert && alert.parentNode) alert.parentNode.removeChild(alert); }, 500);
-                }, 2000);
-            });
-        };
-        autoCloseAlerts();
-        const alertContainer = document.querySelector('div[style*="position: fixed"]');
-        if (alertContainer) {
-            const observer = new MutationObserver(m => { if (m.some(x => x.addedNodes.length)) autoCloseAlerts(); });
-            observer.observe(alertContainer, { childList: true });
-        }
-    });
-
-    // ==== Helpers ====
+    // ====================== Helpers ======================
     function toggleReduceUI(isPercent, labelId, suffixId, maxGroupId, amountInputId) {
-        const label = document.getElementById(labelId);
-        const suffix = document.getElementById(suffixId);
-        const maxGroup = document.getElementById(maxGroupId);
-        const amountInput = document.getElementById(amountInputId);
-        if (isPercent) {
-            label.textContent = "Mức Giảm Giá (%)";
-            suffix.textContent = "%";
-            maxGroup.classList.remove("d-none");
-            amountInput.setAttribute("min", "1");
-            amountInput.setAttribute("max", "100");
-            amountInput.placeholder = "Nhập phần trăm (1 - 100)";
-        } else {
-            label.textContent = "Mức Giảm Giá (VNĐ)";
-            suffix.textContent = "VND";
-            maxGroup.classList.add("d-none");
-            amountInput.removeAttribute("max");
-            amountInput.setAttribute("min", "1000");
-            amountInput.placeholder = "Nhập số tiền giảm (>= 1000)";
-        }
+      const label = document.getElementById(labelId);
+      const suffix = document.getElementById(suffixId);
+      const maxGroup = document.getElementById(maxGroupId);
+      const amountInput = document.getElementById(amountInputId);
+      if (isPercent) {
+        if (label) label.textContent = "Mức Giảm Giá (%)";
+        if (suffix) suffix.textContent = "%";
+        maxGroup?.classList.remove("d-none");
+        amountInput?.setAttribute("min", "1");
+        amountInput?.setAttribute("max", "100");
+        if (amountInput) amountInput.placeholder = "Nhập phần trăm (1 - 100)";
+      } else {
+        if (label) label.textContent = "Mức Giảm Giá (VNĐ)";
+        if (suffix) suffix.textContent = "VND";
+        maxGroup?.classList.add("d-none");
+        amountInput?.removeAttribute("max");
+        amountInput?.setAttribute("min", "1000");
+        if (amountInput) amountInput.placeholder = "Nhập số tiền giảm (>= 1000)";
+      }
     }
 
+    function setTabActive(anchorSelector){
+      const el = document.querySelector(anchorSelector);
+      if(!el) return;
+      new bootstrap.Tab(el).show();
+    }
 
+    function showProductsTab(mode){ // 'add' | 'edit'
+      if (mode === 'add') setTabActive('#addScopeTabs a[href="#addTabProducts"]');
+      else setTabActive('#editScopeTabs a[href="#editTabProducts"]');
+    }
 
-    // ==== ADD modal behavior ====
-    document.addEventListener('DOMContentLoaded', function () {
-        const rMoney = document.getElementById("reduceTypeMoney");
-        const rPercent = document.getElementById("reduceTypePercent");
-        const updateAddReduceUI = () => toggleReduceUI(rPercent.checked, "reduceLabel", "reduceSuffix", "maxDiscountGroup", "discountAmount");
-        if (rMoney && rPercent) { rMoney.addEventListener("change", updateAddReduceUI); rPercent.addEventListener("change", updateAddReduceUI); updateAddReduceUI(); }
+    function clearMultiSelect(sel) {
+      if (!sel) return;
+      [...sel.options].forEach(o => o.selected = false);
+    }
 
-        bindApplyAllToggle("applyAllProducts", "categoryId" ,"categoryIdHidden");
-
-        const today = new Date().toISOString().split("T")[0];
-        const startInput = document.getElementById("startDate");
-        const endInput = document.getElementById("endDate");
-        if (startInput) {
-            startInput.setAttribute("min", today);
-            startInput.addEventListener("change", function () {
-                if (endInput) {
-                    endInput.setAttribute("min", this.value);
-                    if (endInput.value && endInput.value < this.value) endInput.value = this.value;
-                }
-            });
+    // ====================== Ẩn/hiện khi chọn "tất cả" ======================
+    function wireAllProductsToggle(prefix){
+      const chk = document.getElementById(prefix==='edit' ? 'editApplyAllProducts' : 'ApplyAllProducts');
+      const summary = document.getElementById(prefix==='edit' ? 'editProductGroupSummary' : 'addProductGroupSummary');
+      const inputs  = document.getElementById(prefix==='edit' ? 'editSelectedInputs' : 'addSelectedInputs');
+      const preview = document.getElementById(prefix==='edit' ? 'editSelectedPreview' : 'addSelectedPreview');
+      const counter = document.getElementById(`${prefix||'add'}SelectedCount`);
+      const sync = () => {
+        const all = chk?.checked ?? false;
+        if (summary) summary.style.display = all ? 'none' : 'block';
+        if (all) {
+          if (inputs) inputs.innerHTML = '';
+          if (preview) preview.innerHTML = '';
+          if (counter) counter.textContent = '0 đã chọn';
         }
-        if (endInput) endInput.setAttribute("min", today);
+      };
+      chk?.addEventListener('change', sync);
+      sync();
+    }
 
-        window.updateStatusIcon = function () {
-            const statusVal = document.getElementById("status").value;
-            const icon = document.getElementById("statusIcon");
-            if (statusVal === "0") { icon.classList.remove("bi-toggle-off"); icon.classList.add("bi-toggle-on"); }
-            else { icon.classList.remove("bi-toggle-on"); icon.classList.add("bi-toggle-off"); }
-        };
-        updateStatusIcon();
+    function wireAllCategoriesToggle(prefix){
+      const chk = document.getElementById(prefix==='edit' ? 'editApplyAllCategories' : 'ApplyAllCategories');
+      const block = document.getElementById(prefix==='edit' ? 'editCategoryBlock' : 'addCategoryBlock');
+      const sel   = document.getElementById(prefix==='edit' ? 'editCategoryId' : 'addCategoryId');
+      const sync = () => {
+        const all = chk?.checked ?? false;
+        if (block) block.style.display = all ? 'none' : 'block';
+        if (all && sel) sel.value = '';
+      };
+      chk?.addEventListener('change', sync);
+      sync();
+    }
+
+    // ====================== ADD modal behavior ======================
+    document.addEventListener('DOMContentLoaded', function () {
+      const rMoney = document.getElementById("reduceTypeMoney");
+      const rPercent = document.getElementById("reduceTypePercent");
+      const updateAddReduceUI = () => toggleReduceUI(rPercent?.checked, "reduceLabel", "reduceSuffix", "maxDiscountGroup", "discountAmount");
+      if (rMoney && rPercent) {
+        rMoney.addEventListener("change", updateAddReduceUI);
+        rPercent.addEventListener("change", updateAddReduceUI);
+        updateAddReduceUI();
+      }
+
+      const today = new Date().toISOString().split("T")[0];
+      const startInput = document.getElementById("startDate");
+      const endInput = document.getElementById("endDate");
+      if (startInput) {
+        startInput.setAttribute("min", today);
+        startInput.addEventListener("change", function () {
+          if (endInput) {
+            endInput.setAttribute("min", this.value);
+            if (endInput.value && endInput.value < this.value) endInput.value = this.value;
+          }
+        });
+      }
+      if (endInput) endInput.setAttribute("min", today);
+
+      window.updateStatusIcon = function () {
+        const statusVal = document.getElementById("status")?.value;
+        const icon = document.getElementById("statusIcon");
+        if (!icon) return;
+        if (statusVal === "0") { icon.classList.remove("bi-toggle-off"); icon.classList.add("bi-toggle-on"); }
+        else { icon.classList.remove("bi-toggle-on"); icon.classList.add("bi-toggle-off"); }
+      };
+      updateStatusIcon();
+
+      // Basic validations
+      const addAmount = document.getElementById('discountAmount');
+      const addMin = document.getElementById('minOrder');
+      const addQty = document.getElementById('quantity');
+
+      if (addAmount) addAmount.addEventListener('input', function(){
+        const isPercent = document.getElementById('reduceTypePercent')?.checked;
+        const v = Number(this.value);
+        const el = document.getElementById('discountAmountError');
+        if (!v) { if (el) el.textContent='Mức giảm giá không được để trống.'; return; }
+        if (isPercent && (v < 1 || v > 100)) { if (el) el.textContent='Nếu %, giá trị phải trong 1–100.'; }
+        else if (!isPercent && v < 1000) { if (el) el.textContent='Nếu VND, giá trị phải ≥ 1000.'; }
+        else if (el) el.textContent='';
+      });
+
+      if (addMin) addMin.addEventListener('input', function(){
+        const v = Number(this.value);
+        const el = document.getElementById('minOrderError');
+        if (el) el.textContent = (isNaN(v) || v < 0) ? 'Đơn hàng tối thiểu không nhỏ hơn 0.' : '';
+      });
+
+      if (addQty) addQty.addEventListener('input', function(){
+        const v = Number(this.value);
+        const el = document.getElementById('quantityError');
+        if (el) el.textContent = (isNaN(v) || v < 1) ? 'Số lượng phải từ 1 trở lên.' : '';
+      });
     });
 
-    // ==== EDIT modal behavior ====
-    document.addEventListener('DOMContentLoaded', function () {
-        window.updateEditStatusIcon = function () {
-            const statusVal = document.getElementById("editStatus").value;
-            const icon = document.getElementById("editStatusIcon");
-            if (statusVal === "0") { icon.classList.remove("bi-toggle-off"); icon.classList.add("bi-toggle-on"); }
-            else { icon.classList.remove("bi-toggle-on"); icon.classList.add("bi-toggle-off"); }
-        };
+    // ====================== EDIT modal behavior ======================
+     document.addEventListener('DOMContentLoaded', function () {
+      // ===== icon trạng thái =====
+      window.updateEditStatusIcon = function () {
+        const statusVal = document.getElementById("editStatus")?.value;
+        const icon = document.getElementById("editStatusIcon");
+        if (!icon) return;
+        if (statusVal === "0") { icon.classList.remove("bi-toggle-off"); icon.classList.add("bi-toggle-on"); }
+        else { icon.classList.remove("bi-toggle-on"); icon.classList.add("bi-toggle-off"); }
+      };
 
-        bindApplyAllToggle("editApplyAllProducts", "editCategoryId");
+      // ===== bind nút Sửa trên mỗi thẻ voucher =====
+      document.querySelectorAll('.btn-edit-voucher').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          // essentials
+          document.getElementById('editVoucherId').value = btn.dataset.id || '';
+          document.getElementById('editDiscountAmount').value = btn.dataset.discount || '';
+          document.getElementById('editMinOrder').value = btn.dataset.minorder || '';
+          document.getElementById('editQuantity').value = btn.dataset.quantity || '';
+          document.getElementById('editStartDate').value = btn.dataset.start || '';
+          document.getElementById('editEndDate').value = btn.dataset.end || '';
 
-        document.querySelectorAll('.btn-edit-voucher').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                // essentials
-                document.getElementById('editVoucherId').value = btn.dataset.id || '';
-                document.getElementById('editDiscountAmount').value = btn.dataset.discount || '';
-                document.getElementById('editMinOrder').value = btn.dataset.minorder || '';
-                document.getElementById('editQuantity').value = btn.dataset.quantity || '';
-                document.getElementById('editStartDate').value = btn.dataset.start || '';
-                document.getElementById('editEndDate').value = btn.dataset.end || '';
+          // status
+          const editStatus = document.getElementById('editStatus');
+          if (editStatus) editStatus.value = (btn.dataset.status ?? "0");
+          updateEditStatusIcon();
 
-                // status
-                document.getElementById('editStatus').value = (btn.dataset.status ?? "0");
-                updateEditStatusIcon();
+          // type & max
+          const isPercent = (btn.dataset.ispercentage === 'true');
+          const rtPercent = document.getElementById('editReduceTypePercent');
+          const rtMoney   = document.getElementById('editReduceTypeMoney');
+          if (rtPercent) rtPercent.checked = isPercent;
+          if (rtMoney) rtMoney.checked = !isPercent;
 
-                // type & max
-                const isPercent = (btn.dataset.ispercentage === 'true');
-                document.getElementById('editReduceTypePercent').checked = isPercent;
-                document.getElementById('editReduceTypeMoney').checked = !isPercent;
-                toggleReduceUI(isPercent, "editReduceLabel", "editReduceSuffix", "editMaxDiscountGroup", "editDiscountAmount");
-                document.getElementById('editMaxDiscount').value = btn.dataset.maxdiscount || '';
+          toggleReduceUI(isPercent, "editReduceLabel", "editReduceSuffix", "editMaxDiscountGroup", "editDiscountAmount");
+          const md = document.getElementById('editMaxDiscount');
+          if (md) md.value = btn.dataset.maxdiscount || '';
 
-               document.getElementById('editCategoryId').value = btn.dataset.categoryid || "";
+          // category
+          const catSel = document.getElementById('editCategoryId');
+          if (catSel) catSel.value = btn.dataset.categoryid || "";
 
-            });
+          // flags
+          const chkCat  = document.getElementById('editApplyAllCategories');
+          const chkProd = document.getElementById('editApplyAllProducts');
+          if (chkCat)  chkCat.checked  = (btn.dataset.applyallcategories === 'true');
+          if (chkProd) chkProd.checked = (btn.dataset.applyallproducts === 'true');
+          wireAllCategoriesToggle('edit');
+          wireAllProductsToggle('edit');
+
+          // ==== selected products -> hidden inputs + counter + preview (có fallback) ====
+          let ids = [];
+          const raw = btn.dataset.selectedproductids || '';
+          if (raw) {
+            ids = raw.split(',').map(s => s.trim()).filter(Boolean);
+          } else {
+            const vid = btn.dataset.id || '';
+            const arr = (window.__voucherProducts && window.__voucherProducts[vid]) ? window.__voucherProducts[vid] : [];
+            ids = (arr || []).map(x => String(x));
+          }
+
+          const cont = document.getElementById('editSelectedInputs');
+          if (cont) {
+            cont.innerHTML = ids.map(id => `<input type="hidden" name="SelectedProductIds" value="${id}">`).join('');
+          }
+          const cnt = document.getElementById('editSelectedCount');
+          if (cnt) cnt.textContent = `${ids.length} đã chọn`;
+
+          // nếu còn select multiple cũ, đồng bộ lại (không bắt buộc)
+          const sel = document.getElementById('editSelectedProductIds');
+          if (sel) [...sel.options].forEach(o => o.selected = ids.includes(o.value));
+
+          // preview ảnh
+          buildPreviewFromIds('edit', ids);
         });
+      });
 
-        const today = new Date().toISOString().split("T")[0];
-        const es = document.getElementById('editStartDate');
-        const ee = document.getElementById('editEndDate');
-        if (es) {
-            es.setAttribute('min', today);
-            es.addEventListener('change', function () {
-                if (ee) {
-                    ee.setAttribute('min', this.value);
-                    if (ee.value && ee.value < this.value) ee.value = this.value;
-                }
-            });
+      // ===== giới hạn ngày =====
+      const today = new Date().toISOString().split("T")[0];
+      const es = document.getElementById('editStartDate');
+      const ee = document.getElementById('editEndDate');
+      if (es) {
+        es.setAttribute('min', today);
+        es.addEventListener('change', function () {
+          if (ee) {
+            ee.setAttribute('min', this.value);
+            if (ee.value && ee.value < this.value) ee.value = this.value;
+          }
+        });
+      }
+      if (ee) ee.setAttribute('min', today);
+    });
+
+    // ====================== Delete modal binding ======================
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.btn-delete-voucher').forEach(button => {
+        button.addEventListener('click', () => {
+          const voucherId = button.getAttribute("data-id");
+          const hidden = document.getElementById("deleteVoucherFormId");
+          if (hidden) hidden.value = voucherId;
+        });
+      });
+    });
+
+    // ====================== Scope UI init ======================
+    document.addEventListener('DOMContentLoaded', () => {
+      wireAllProductsToggle('');
+      wireAllProductsToggle('edit');
+      wireAllCategoriesToggle('');
+      wireAllCategoriesToggle('edit');
+    });
+
+     function toggleReduceUI(isPercent, labelId, suffixId, maxGroupId, amountInputId) {
+      const label = document.getElementById(labelId);
+      const suffix = document.getElementById(suffixId);
+      const maxGroup = document.getElementById(maxGroupId);
+      const amountInput = document.getElementById(amountInputId);
+      if (isPercent) {
+        if (label) label.textContent = "Mức Giảm Giá (%)";
+        if (suffix) suffix.textContent = "%";
+        maxGroup?.classList.remove("d-none");
+        amountInput?.setAttribute("min", "1");
+        amountInput?.setAttribute("max", "100");
+        if (amountInput) amountInput.placeholder = "Nhập phần trăm (1 - 100)";
+      } else {
+        if (label) label.textContent = "Mức Giảm Giá (VNĐ)";
+        if (suffix) suffix.textContent = "VND";
+        maxGroup?.classList.add("d-none");
+        amountInput?.removeAttribute("max");
+        amountInput?.setAttribute("min", "1000");
+        if (amountInput) amountInput.placeholder = "Nhập số tiền giảm (>= 1000)";
+      }
+    }
+
+    function wireAllProductsToggle(prefix){
+      const chk = document.getElementById(prefix==='edit' ? 'editApplyAllProducts' : 'ApplyAllProducts');
+      const summary = document.getElementById(prefix==='edit' ? 'editProductGroupSummary' : 'addProductGroupSummary');
+      const inputs  = document.getElementById(prefix==='edit' ? 'editSelectedInputs' : 'addSelectedInputs');
+      const preview = document.getElementById(prefix==='edit' ? 'editSelectedPreview' : 'addSelectedPreview');
+      const counter = document.getElementById(`${prefix || 'add'}SelectedCount`);
+      const sync = () => {
+        const all = chk?.checked ?? false;
+        if (summary) summary.style.display = all ? 'none' : 'block';
+        if (all) {
+          if (inputs) inputs.innerHTML = '';
+          if (preview) preview.innerHTML = '';
+          if (counter) counter.textContent = '0 đã chọn';
         }
-        if (ee) ee.setAttribute('min', today);
+      };
+      chk?.addEventListener('change', sync);
+      sync();
+    }
+
+    function wireAllCategoriesToggle(prefix){
+      const chk = document.getElementById(prefix==='edit' ? 'editApplyAllCategories' : 'ApplyAllCategories');
+      const block = document.getElementById(prefix==='edit' ? 'editCategoryBlock' : 'addCategoryBlock');
+      const sel   = document.getElementById(prefix==='edit' ? 'editCategoryId' : 'addCategoryId');
+      const sync = () => {
+        const all = chk?.checked ?? false;
+        if (block) block.style.display = all ? 'none' : 'block';
+        if (all && sel) sel.value = '';
+      };
+      chk?.addEventListener('change', sync);
+      sync();
+    }
+
+    // ---- Preview helpers (dùng chung cho add/edit) ----
+    function buildPreviewFromIds(prefix, ids) {
+      const container = document.getElementById(`${prefix}SelectedPreview`);
+      if (!container) return;
+      container.innerHTML = '';
+      const map = new Map();
+      document.querySelectorAll('#ppList .pp-item').forEach(cb => {
+        map.set(cb.value, { img: cb.dataset.img, name: cb.dataset.name });
+      });
+      ids.forEach(id => {
+        const m = map.get(id);
+        const img = document.createElement('img');
+        img.src = m?.img || '';
+        img.alt = m?.name || '';
+        container.appendChild(img);
+      });
+    }
+
+    function buildPreviewFromPicker(prefix) {
+      const container = document.getElementById(`${prefix}SelectedPreview`);
+      if (!container) return;
+      container.innerHTML = '';
+      document.querySelectorAll('#ppList .pp-item:checked').forEach(cb => {
+        const img = document.createElement('img');
+        img.src = cb.dataset.img || '';
+        img.alt = cb.dataset.name || '';
+        container.appendChild(img);
+      });
+    }
+
+    // ===== Unified: mở picker chọn sản phẩm cho Add/Edit =====
+    let ppMode = 'add'; // 'add' | 'edit'
+
+    function openProductPicker(mode) {
+      ppMode = mode;
+
+      // Prefill checkbox theo hidden inputs của form tương ứng
+      const selected = new Set(
+        [...document.querySelectorAll(`#${ppMode}SelectedInputs input[name="SelectedProductIds"]`)]
+          .map(i => i.value)
+      );
+      document.querySelectorAll('#ppList .pp-item').forEach(cb => {
+        cb.checked = selected.has(cb.value);
+      });
+
+      updatePPSelectedCount();
+      const pickerEl = document.getElementById('productPickerModal');
+      bootstrap.Modal.getOrCreateInstance(pickerEl, { backdrop: true, keyboard: true }).show();
+    }
+
+    function updatePPSelectedCount() {
+      const n = document.querySelectorAll('#ppList .pp-item:checked').length;
+      const label = document.getElementById('ppSelectedCount');
+      if (label) label.textContent = `${n} đã chọn`;
+      if (ppMode) buildPreviewFromPicker(ppMode); // chỉ xem nhanh khi đang mở picker
+    }
+
+    // Search trong picker
+    document.getElementById('ppSearch')?.addEventListener('input', function(){
+      const q = this.value.trim().toLowerCase();
+      document.querySelectorAll('#ppList .list-group-item').forEach(li => {
+        const name = li.querySelector('.pp-item')?.dataset.name?.toLowerCase() ?? '';
+        li.style.display = name.includes(q) ? '' : 'none';
+      });
     });
 
-    // ==== Delete modal binding ====
-    document.addEventListener('DOMContentLoaded', function () {
-        document.querySelectorAll('.btn-delete-voucher').forEach(button => {
-            button.addEventListener('click', () => {
-                const voucherId = button.getAttribute("data-id");
-                document.getElementById("deleteVoucherFormId").value = voucherId;
-            });
-        });
+    // Đếm chọn trong picker
+    document.getElementById('ppList')?.addEventListener('change', e => {
+      if (e.target.classList.contains('pp-item')) updatePPSelectedCount();
     });
 
-    // ==== Basic inline validations (optional, gọn) ====
+    // Commit chọn sản phẩm
+    document.getElementById('ppAddBtn')?.addEventListener('click', function () {
+      const ids = [...document.querySelectorAll('#ppList .pp-item:checked')].map(cb => cb.value);
+
+      // Cập nhật hidden inputs trên form Add/Edit
+      const box = document.getElementById(`${ppMode}SelectedInputs`);
+      if (box) {
+        box.innerHTML = ids.map(id => `<input type="hidden" name="SelectedProductIds" value="${id}">`).join('');
+      }
+
+      // Cập nhật số lượng hiển thị
+      const cnt = document.getElementById(`${ppMode}SelectedCount`);
+      if (cnt) cnt.textContent = `${ids.length} đã chọn`;
+
+      // Cập nhật preview ảnh chính trên form
+      buildPreviewFromIds(ppMode, ids);
+
+      // Đóng picker
+      const pickerEl = document.getElementById('productPickerModal');
+      bootstrap.Modal.getOrCreateInstance(pickerEl).hide();
+    });
+
+    // Giữ backdrop/scroll chuẩn khi đóng picker lồng trong modal
+    document.getElementById('productPickerModal')?.addEventListener('hidden.bs.modal', function () {
+      const parentOpen = document.querySelector('#addVoucherModal.show, #editVoucherModal.show');
+      if (parentOpen) {
+        document.body.classList.add('modal-open');
+      } else {
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('overflow');
+        document.body.style.removeProperty('padding-right');
+      }
+      const backs = [...document.querySelectorAll('.modal-backdrop')];
+      if (parentOpen && backs.length > 1) {
+        for (let i = 1; i < backs.length; i++) backs[i].remove();
+      }
+      if (!parentOpen && backs.length > 0) backs.forEach(b => b.remove());
+    });
+
+    // ===== Bind nút Edit voucher =====
+    function updateEditStatusIcon () {
+      const statusVal = document.getElementById("editStatus")?.value;
+      const icon = document.getElementById("editStatusIcon");
+      if (!icon) return;
+      if (statusVal === "0") { icon.classList.remove("bi-toggle-off"); icon.classList.add("bi-toggle-on"); }
+      else { icon.classList.remove("bi-toggle-on"); icon.classList.add("bi-toggle-off"); }
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
-        const addAmount = document.getElementById('discountAmount');
-        const addMin = document.getElementById('minOrder');
-        const addQty = document.getElementById('quantity');
+      // init toggles
+      wireAllProductsToggle('');
+      wireAllProductsToggle('edit');
+      wireAllCategoriesToggle('');
+      wireAllCategoriesToggle('edit');
 
-        if (addAmount) addAmount.addEventListener('input', function(){
-            const isPercent = document.getElementById('reduceTypePercent').checked;
-            const v = Number(this.value);
-            const el = document.getElementById('discountAmountError');
-            if (!v) { el.textContent='Mức giảm giá không được để trống.'; return; }
-            if (isPercent && (v < 1 || v > 100)) el.textContent='Nếu %, giá trị phải trong 1–100.';
-            else if (!isPercent && v < 1000) el.textContent='Nếu VND, giá trị phải ≥ 1000.';
-            else el.textContent='';
+      // Giới hạn ngày
+      const today = new Date().toISOString().split("T")[0];
+      const es = document.getElementById('editStartDate');
+      const ee = document.getElementById('editEndDate');
+      if (es) {
+        es.setAttribute('min', today);
+        es.addEventListener('change', function () {
+          if (ee) {
+            ee.setAttribute('min', this.value);
+            if (ee.value && ee.value < this.value) ee.value = this.value;
+          }
         });
+      }
+      if (ee) ee.setAttribute('min', today);
 
-        if (addMin) addMin.addEventListener('input', function(){
-            const v = Number(this.value);
-            const el = document.getElementById('minOrderError');
-            el.textContent = (isNaN(v) || v < 0) ? 'Đơn hàng tối thiểu không nhỏ hơn 0.' : '';
-        });
+      // Bind nút Edit
+      document.querySelectorAll('.btn-edit-voucher').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          // core fields
+          document.getElementById('editVoucherId').value      = btn.dataset.id || '';
+          document.getElementById('editDiscountAmount').value = btn.dataset.discount || '';
+          document.getElementById('editMinOrder').value       = btn.dataset.minorder || '';
+          document.getElementById('editQuantity').value       = btn.dataset.quantity || '';
+          document.getElementById('editStartDate').value      = btn.dataset.start || '';
+          document.getElementById('editEndDate').value        = btn.dataset.end || '';
 
-        if (addQty) addQty.addEventListener('input', function(){
-            const v = Number(this.value);
-            const el = document.getElementById('quantityError');
-            el.textContent = (isNaN(v) || v < 1) ? 'Số lượng phải từ 1 trở lên.' : '';
+          // status
+          const editStatus = document.getElementById('editStatus');
+          if (editStatus) editStatus.value = (btn.dataset.status ?? "0");
+          updateEditStatusIcon();
+
+          // type & max
+          const isPercent = (btn.dataset.ispercentage === 'true');
+          document.getElementById('editReduceTypePercent').checked = isPercent;
+          document.getElementById('editReduceTypeMoney').checked   = !isPercent;
+          toggleReduceUI(isPercent, "editReduceLabel", "editReduceSuffix", "editMaxDiscountGroup", "editDiscountAmount");
+          const md = document.getElementById('editMaxDiscount');
+          if (md) md.value = btn.dataset.maxdiscount || '';
+
+          // category
+          const catSel = document.getElementById('editCategoryId');
+          if (catSel) catSel.value = btn.dataset.categoryid || "";
+
+          // flags
+          const chkCat  = document.getElementById('editApplyAllCategories');
+          const chkProd = document.getElementById('editApplyAllProducts');
+          if (chkCat)  chkCat.checked  = (btn.dataset.applyallcategories === 'true');
+          if (chkProd) chkProd.checked = (btn.dataset.applyallproducts === 'true');
+          wireAllCategoriesToggle('edit');
+          wireAllProductsToggle('edit');
+
+          // Selected products -> hidden inputs + count + preview
+          const str = btn.dataset.selectedproductids || '';
+          const ids = str.split(',').map(s => s.trim()).filter(Boolean);
+
+          const cont = document.getElementById('editSelectedInputs');
+          if (cont) cont.innerHTML = ids.map(id => `<input type="hidden" name="SelectedProductIds" value="${id}">`).join('');
+
+          const cnt = document.getElementById('editSelectedCount');
+          if (cnt) cnt.textContent = `${ids.length} đã chọn`;
+
+          buildPreviewFromIds('edit', ids);
         });
+      });
     });
 </script>

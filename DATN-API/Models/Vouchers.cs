@@ -52,11 +52,16 @@ namespace DATN_API.Models
         public decimal? MaxDiscount { get; set; }
 
         /// <summary>Đã dùng bao nhiêu lần.</summary>
-        public int? UsedCount { get; set; } = 0;
+        public int UsedCount { get; set; } = 0;
 
     
         /// <summary>Thông tin người tạo để phân quyền (admin=3, shop=2).</summary>
         public int? CreatedByUserId { get; set; }
         public int? CreatedByRoleId { get; set; } // 3 = admin, 2 = shop
+
+        [Timestamp] public byte[]? RowVersion { get; set; }
+        public bool ApplyAllCategories { get; set; } = false; // NEW
+        public bool ApplyAllProducts { get; set; } = false; // NEW
+
     }
 }

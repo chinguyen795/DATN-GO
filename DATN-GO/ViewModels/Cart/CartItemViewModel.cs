@@ -13,6 +13,8 @@
         public List<string> Variants { get; set; }
         public bool IsSelected { get; set; }
         public int StoreId { get; set; }
+        public string StoreName { get; set; }
+        public string StoreAvatar { get; set; }
 
     }
 

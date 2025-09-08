@@ -65,7 +65,6 @@ namespace DATN_API.Controllers
                 .ToListAsync();
             return Ok(vouchers);
         }
-
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateVoucherDto dto)
         {
@@ -73,7 +72,6 @@ namespace DATN_API.Controllers
 
             var entity = new Vouchers
             {
-
                 IsPercentage = dto.IsPercentage,
                 Reduce = dto.Reduce,
                 MaxDiscount = dto.MaxDiscount,
@@ -81,14 +79,27 @@ namespace DATN_API.Controllers
                 StartDate = dto.StartDate,
                 EndDate = dto.EndDate,
                 Quantity = dto.Quantity,
-                CategoryId = dto.CategoryId,    
-                StoreId = dto.StoreId,           
+
+                // phạm vi
+                ApplyAllCategories = dto.ApplyAllCategories,
+                ApplyAllProducts = dto.ApplyAllProducts,
+                CategoryId = dto.ApplyAllCategories ? null : dto.CategoryId, // nếu chọn all categories thì bỏ CategoryId
+
+                // shop/sàn
+                StoreId = dto.StoreId,
                 CreatedByUserId = dto.CreatedByUserId,
                 CreatedByRoleId = dto.CreatedByRoleId,
 
                 Type = dto.StoreId == null ? VoucherType.Platform : VoucherType.Shop,
                 Status = VoucherStatus.Valid
             };
+
+            // map danh sách sản phẩm khi KHÔNG “tất cả sản phẩm”
+            if (!entity.ApplyAllProducts && dto.SelectedProductIds?.Any() == true)
+            {
+                entity.ProductVouchers = dto.SelectedProductIds.Distinct().Select(pid =>
+                    new ProductVouchers { ProductId = pid, Voucher = entity }).ToList();
+            }
 
             var validationError = _vouchersService.ValidateForCreateOrUpdate(entity, isCreate: true);
             if (validationError is not null) return BadRequest(validationError);
@@ -111,7 +122,6 @@ namespace DATN_API.Controllers
 
             if (voucher == null) return NotFound();
 
-
             voucher.IsPercentage = dto.IsPercentage;
             voucher.Reduce = dto.Reduce;
             voucher.MaxDiscount = dto.MaxDiscount;
@@ -119,9 +129,37 @@ namespace DATN_API.Controllers
             voucher.StartDate = dto.StartDate;
             voucher.EndDate = dto.EndDate;
             voucher.Quantity = dto.Quantity;
-            voucher.CategoryId = dto.CategoryId; 
+
+            voucher.ApplyAllCategories = dto.ApplyAllCategories;
+            voucher.ApplyAllProducts = dto.ApplyAllProducts;
+            voucher.CategoryId = dto.ApplyAllCategories ? null : dto.CategoryId;
+
             voucher.CreatedByUserId = dto.CreatedByUserId;
             voucher.CreatedByRoleId = dto.CreatedByRoleId;
+
+            // replace product list if NOT all products
+            if (!voucher.ApplyAllProducts)
+            {
+                voucher.ProductVouchers ??= new List<ProductVouchers>();
+                // clear old
+                _context.ProductVouchers.RemoveRange(voucher.ProductVouchers);
+                if (dto.SelectedProductIds?.Any() == true)
+                {
+                    voucher.ProductVouchers = dto.SelectedProductIds.Distinct()
+                        .Select(pid => new ProductVouchers { ProductId = pid, VoucherId = voucher.Id })
+                        .ToList();
+                }
+                else
+                {
+                    voucher.ProductVouchers = new List<ProductVouchers>();
+                }
+            }
+            else
+            {
+                // all products → xoá hết mapping
+                if (voucher.ProductVouchers?.Any() == true)
+                    _context.ProductVouchers.RemoveRange(voucher.ProductVouchers);
+            }
 
             var validationError = _vouchersService.ValidateForCreateOrUpdate(voucher, isCreate: false);
             if (validationError is not null) return BadRequest(validationError);
@@ -129,6 +167,9 @@ namespace DATN_API.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
+
+
+
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
@@ -157,17 +198,24 @@ namespace DATN_API.Controllers
 
             if (v == null) return NotFound("Không tìm thấy voucher.");
 
+            // NEW: chặn nếu user đã dùng voucher này
+            var used = await _context.UserVouchers
+                .AnyAsync(x => x.UserId == req.UserId && x.VoucherId == req.VoucherId && x.IsUsed);
+            if (used)
+                return BadRequest(new ApplyVoucherResponseDto
+                {
+                    DiscountOnSubtotal = 0,
+                    DiscountOnShipping = 0,
+                    Reason = "Bạn đã sử dụng voucher này rồi."
+                });
+
             var (discountSub, discountShip, reason) = _vouchersService.ApplyVoucher(
-                v,
-                req.OrderSubtotal,
-                req.ProductIdsInCart,
-                req.CategoryIdInCart
-            );
+                v, req.OrderSubtotal, req.ProductIdsInCart, req.CategoryIdInCart);
 
             var res = new ApplyVoucherResponseDto
             {
                 DiscountOnSubtotal = discountSub,
-                DiscountOnShipping = 0m, // luôn 0 vì đã bỏ freeship
+                DiscountOnShipping = 0m,
                 Reason = reason
             };
 

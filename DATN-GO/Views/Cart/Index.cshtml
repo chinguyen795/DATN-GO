@@ -38,17 +38,113 @@
             box-shadow: none;
         }
 
-    .pagination-info {
-        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-        border-radius: 10px;
-        padding: 15px;
-        margin: 15px 0;
-        text-align: center;
-        border-left: 4px solid #dc3545;
-    }
+
 
     .cart-item-row.fade-in {
         animation: fadeInUp 0.5s ease-out;
+    }
+
+    /* Store grouping styles */
+    .store-group {
+        margin-bottom: 1.5rem;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .store-header {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-bottom: 1px solid #e0e0e0;
+        padding: 15px 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+        .store-header:hover {
+            background: linear-gradient(135deg, #e9ecef, #dee2e6);
+        }
+
+    .store-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .store-logo {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #dc3545;
+    }
+
+    .store-name {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #333;
+        margin: 0;
+    }
+    /* Clickable store name area */
+    .store-name-link {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        text-decoration: none;
+        color: inherit;
+        flex: 1;
+        transition: all 0.2s ease;
+    }
+
+    .store-item-count {
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .store-controls {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .store-select-all {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    .collapse-icon {
+        transition: transform 0.3s ease;
+        color: #dc3545;
+    }
+
+    .store-group.collapsed .collapse-icon {
+        transform: rotate(-90deg);
+    }
+
+    .store-products {
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .store-group.collapsed .store-products {
+        max-height: 0;
+        padding: 0;
+    }
+
+    .store-products .table {
+        margin-bottom: 0;
+    }
+
+    .store-products thead th {
+        background-color: #f8f9fa;
+        border-top: none;
+        font-size: 0.9rem;
+        padding: 12px 8px;
     }
 
     @@keyframes fadeInUp {
@@ -62,6 +158,19 @@
             transform: translateY(0);
         }
     }
+    #scroll-loading {
+    border-top: 1px solid #dee2e6;
+}
+
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+}
+
+.fade-in {
+    animation: fadeInUp 0.5s ease-out;
+}
+
 </style>
 
 <h2 class="text-center mb-4 text-crimson">Giỏ Hàng Của Bạn</h2>
@@ -70,134 +179,160 @@
     <div class="col-lg-8">
         <div class="card border-crimson mb-3">
             <div class="card-header bg-crimson text-white d-flex justify-content-between align-items-center">
-                <span>Sản phẩm trong giỏ</span>
-                <div class="pagination-info bg-white text-dark px-3 py-1 rounded">
-                    <small>
-                        Hiển thị: <span id="showing-count">0</span> / <span id="total-count">@Model.CartItems.Count</span> sản phẩm
-                    </small>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="selectAllItems">
+                        <label class="form-check-label fw-bold" for="selectAllItems">
+                            Chọn tất cả
+                        </label>
+                    </div>
                 </div>
             </div>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th scope="col" class="text-center">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="selectAllItems">
+            <div class="card-body p-0">
+                @{
+                    var groupedItems = Model.CartItems.GroupBy(x => new { x.StoreId, x.StoreName }).ToList();
+                    int totalItemIndex = 0;
+                }
+
+                @foreach (var storeGroup in groupedItems)
+                {
+                    <div class="store-group" data-store-id="@storeGroup.Key.StoreId">
+                        <div class="store-header">
+                            <div class="store-info">
+                               
+                                <a href="/Store/Detail/@storeGroup.Key.StoreId" class="store-name-link">
+                                    <img src="@(string.IsNullOrEmpty(storeGroup.First().StoreAvatar) ? "/images/store-default.png" : storeGroup.First().StoreAvatar)"
+                                         alt="@storeGroup.Key.StoreName"
+                                         class="store-logo">
+                                         <div>
+                                        <h6 class="store-name">@storeGroup.Key.StoreName</h6>
+                                        <small class="store-item-count">@storeGroup.Count() sản phẩm</small>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="store-controls">
+                                <div class="store-select-all">
+                                    <input class="form-check-input store-checkbox"
+                                           type="checkbox"
+                                           id="store-@storeGroup.Key.StoreId"
+                                           data-store-id="@storeGroup.Key.StoreId">
+                                    <label for="store-@storeGroup.Key.StoreId">Chọn tất cả</label>
                                 </div>
-                            </th>
-                            <th scope="col" class="text-start ps-3">Sản phẩm</th>
-                            <th scope="col" class="text-center">Số lượng</th>
-                            <th scope="col" class="text-end">Giá</th>
-                            <th scope="col" class="text-end">Tổng</th>
-                            <th scope="col" class="text-center"><i class="bi bi-gear"></i></th>
-                        </tr>
-                    </thead>
-                    <tbody id="cart-items-body">
-                        @for (int i = 0; i < Model.CartItems.Count; i++)
-                        {
-                            var item = Model.CartItems[i];
-                            <tr class="cart-item-row @(i >= 10 ? "d-none" : "")"
-                                data-cart-id="@item.CartId"
-                                data-store-id="@item.StoreId"
-                                data-product-id="@item.ProductId"
-                                data-item-index="@i">
-                                <td class="text-center align-middle">
-                                    <div class="form-check">
-                                        <input class="form-check-input item-checkbox" type="checkbox"
-                                               data-cart-id="@item.CartId"
-                                               data-product-id="@item.ProductId"
-                                               data-price="@item.Price"
-                                               data-quantity="@item.Quantity"
-                                               data-total="@item.Total">
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <!-- Clickable Product Image -->
-                                        <a href="/Products/DetailProducts/@item.ProductId" class="text-decoration-none">
-                                            <img src="@item.Image"
-                                                 alt="@item.ProductName"
-                                                 class="img-fluid rounded me-3 product-image-hover"
-                                                 style="width: 60px; height: 60px; object-fit: cover; cursor: pointer; transition: transform 0.2s ease;">
-                                        </a>
-                                        <div class="flex-grow-1">
-                                            <!-- Clickable Product Name -->
-                                            <a href="/Products/DetailProducts/@item.ProductId"
-                                               class="text-decoration-none text-dark product-name-link">
-                                                <p class="mb-1 fw-bold text-truncate-2 product-name-hover">@item.ProductName</p>
-                                            </a>
-                                            @if (item.Variants != null && item.Variants.Count > 0)
-                                            {
-                                                <small class="text-muted">@string.Join(" | ", item.Variants)</small>
-                                            }
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="text-center">
-                                    <div class="input-group justify-content-center" style="width: 140px; margin: 0 auto;">
-                                        <!-- Nút Giảm -->
-                                        <button class="btn btn-outline-crimson btn-sm quantity-btn"
-                                                type="button"
-                                                data-action="decrease"
-                                                data-cart-id="@item.CartId"
-                                                data-current-qty="@item.Quantity"
-                                                data-max-qty="@item.MaxQuantity"
-                                                style="height: 35px; width: 35px;"
-                                        @(item.Quantity <= 1 ? "disabled" : "")>
-                                            <i class="bi bi-dash"></i>
-                                        </button>
+                                <!-- Separate collapse icon -->
+                                <i class="bi bi-chevron-down collapse-icon fs-5"
+                                   onclick="toggleStoreGroup(@storeGroup.Key.StoreId)"
+                                ></i>
+                            </div>
+                        </div>
 
-                                        <!-- Input số lượng -->
-                                        <input type="number"
-                                               class="form-control form-control-sm text-center quantity-input"
-                                               value="@item.Quantity"
-                                               min="1"
-                                               max="@item.MaxQuantity"
-                                               data-cart-id="@item.CartId"
-                                               style="max-width: 70px;" />
-
-                                        <!-- Nút Tăng -->
-                                        <button class="btn btn-outline-crimson btn-sm quantity-btn"
-                                                type="button"
-                                                data-action="increase"
+                        <div class="store-products">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th scope="col" class="text-center" style="width: 50px;"></th>
+                                            <th scope="col" class="text-start ps-3">Sản phẩm</th>
+                                            <th scope="col" class="text-center" style="width: 150px;">Số lượng</th>
+                                            <th scope="col" class="text-end" style="width: 100px;">Giá</th>
+                                            <th scope="col" class="text-end" style="width: 100px;">Tổng</th>
+                                            <th scope="col" class="text-center" style="width: 80px;"><i class="bi bi-gear"></i></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in storeGroup)
+                                        {
+                                            <tr class="cart-item-row @(totalItemIndex >= 10 ? "d-none" : "")"
                                                 data-cart-id="@item.CartId"
-                                                data-current-qty="@item.Quantity"
-                                                data-max-qty="@item.MaxQuantity"
-                                                style="height: 35px; width: 35px;"
-                                        @(item.Quantity >= item.MaxQuantity ? "disabled" : "")>
-                                            <i class="bi bi-plus"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                                <td class="text-end price" style="white-space: nowrap;">@item.Price.ToString("N0") đ</td>
-                                <td class="text-end total" style="white-space: nowrap;">@item.Total.ToString("N0") đ</td>
-                                <td class="text-center">
-                                    <form asp-action="Remove" asp-controller="Cart" method="post">
-                                        <input type="hidden" name="cartId" value="@item.CartId" />
-                                        <button type="submit" class="btn btn-sm btn-link text-crimson p-0">
-                                            <i class="bi bi-trash3 fs-5"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+                                                data-store-id="@item.StoreId"
+                                                data-product-id="@item.ProductId"
+                                                data-item-index="@totalItemIndex">
+                                                <td class="text-center align-middle">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input item-checkbox"
+                                                               type="checkbox"
+                                                               data-cart-id="@item.CartId"
+                                                               data-product-id="@item.ProductId"
+                                                               data-store-id="@item.StoreId"
+                                                               data-price="@item.Price"
+                                                               data-quantity="@item.Quantity"
+                                                               data-total="@item.Total">
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <a href="/Products/DetailProducts/@item.ProductId" class="text-decoration-none">
+                                                            <img src="@item.Image"
+                                                                 alt="@item.ProductName"
+                                                                 class="img-fluid rounded me-3 product-image-hover"
+                                                                 style="width: 60px; height: 60px; object-fit: cover; cursor: pointer; transition: transform 0.2s ease;">
+                                                        </a>
+                                                        <div class="flex-grow-1">
+                                                            <a href="/Products/DetailProducts/@item.ProductId"
+                                                               class="text-decoration-none text-dark product-name-link">
+                                                                <p class="mb-1 fw-bold text-truncate-2 product-name-hover">@item.ProductName</p>
+                                                            </a>
+                                                            @if (item.Variants != null && item.Variants.Count > 0)
+                                                            {
+                                                                <small class="text-muted">@string.Join(" | ", item.Variants)</small>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="text-center">
+                                                    <div class="input-group justify-content-center" style="width: 140px; margin: 0 auto;">
+                                                        <button class="btn btn-outline-crimson btn-sm quantity-btn"
+                                                                type="button"
+                                                                data-action="decrease"
+                                                                data-cart-id="@item.CartId"
+                                                                data-current-qty="@item.Quantity"
+                                                                data-max-qty="@item.MaxQuantity"
+                                                                style="height: 35px; width: 35px;"
+                                                        @(item.Quantity <= 1 ? "disabled" : "")>
+                                                            <i class="bi bi-dash"></i>
+                                                        </button>
+
+                                                        <input
+                                                               class="form-control form-control-sm text-center quantity-input"
+                                                               value="@item.Quantity"
+                                                               min="1"
+                                                               max="@item.MaxQuantity"
+                                                               data-cart-id="@item.CartId"
+                                                               style="max-width: 70px;" />
+
+                                                        <button class="btn btn-outline-crimson btn-sm quantity-btn"
+                                                                type="button"
+                                                                data-action="increase"
+                                                                data-cart-id="@item.CartId"
+                                                                data-current-qty="@item.Quantity"
+                                                                data-max-qty="@item.MaxQuantity"
+                                                                style="height: 35px; width: 35px;"
+                                                        @(item.Quantity >= item.MaxQuantity ? "disabled" : "")>
+                                                            <i class="bi bi-plus"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                                <td class="text-end price" style="white-space: nowrap;">@item.Price.ToString("N0") đ</td>
+                                                <td class="text-end total" style="white-space: nowrap;">@item.Total.ToString("N0") đ</td>
+                                                <td class="text-center">
+                                                    <form asp-action="Remove" asp-controller="Cart" method="post">
+                                                        <input type="hidden" name="cartId" value="@item.CartId" />
+                                                        <button type="submit" class="btn btn-sm btn-link text-crimson p-0">
+                                                            <i class="bi bi-trash3 fs-5"></i>
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                            totalItemIndex++;
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Load More Button -->
             </div>
-
-            <!-- Load More Button -->
-            @if (Model.CartItems.Count > 10)
-            {
-                <div class="card-footer text-center bg-light">
-                    <button type="button" id="load-more-btn" class="btn btn-crimson load-more-btn">
-                        <i class="bi bi-arrow-down-circle me-2"></i>
-                        Xem thêm sản phẩm
-                        <span class="badge bg-light text-dark ms-2" id="remaining-count">@(Model.CartItems.Count - 10)</span>
-                    </button>
-               
-                </div>
-            }
         </div>
     </div>
 
@@ -257,7 +392,6 @@
                 </ul>
 
                 <div class="mb-4 border-top pt-3">
-
                     <label class="form-label fw-semibold mb-3">Phương thức thanh toán</label>
 
                     <div class="form-check mb-2">
@@ -304,164 +438,244 @@
     const addressSelect = document.getElementById('addressSelect');
     const toast = (msg) => alert(msg);
 
+    // Store group toggle functionality
+    function toggleStoreGroup(storeId) {
+        const storeGroup = document.querySelector(`[data-store-id="${storeId}"]`);
+        if (storeGroup) {
+            storeGroup.classList.toggle('collapsed');
+        }
+    }
+
     btn?.addEventListener('click', async () => {
-      try {
-        const method = (document.querySelector('input[name="paymentMethod"]:checked')?.value || '').toLowerCase();
+        try {
+            const method = (document.querySelector('input[name="paymentMethod"]:checked')?.value || '').toLowerCase();
 
-        const userId = Number(document.getElementById('userId')?.value || 0);
-        if (!userId) return toast('Bạn cần đăng nhập.');
+            const userId = Number(document.getElementById('userId')?.value || 0);
+            if (!userId) return toast('Bạn cần đăng nhập.');
 
-        const addressId = Number(addressSelect?.value || 0);
-        if (!addressId) return toast('Vui lòng chọn địa chỉ giao hàng.');
+            const addressId = Number(addressSelect?.value || 0);
+            if (!addressId) return toast('Vui lòng chọn địa chỉ giao hàng.');
 
-        // Lấy các cart đã tick
-        const selectedIds = [...document.querySelectorAll('.item-checkbox')]
-          .filter(cb => cb.checked)
-          .map(cb => Number(cb.dataset.cartId));
-        if (selectedIds.length === 0) return toast('Vui lòng chọn ít nhất một sản phẩm.');
+            const selectedIds = [...document.querySelectorAll('.item-checkbox')]
+                .filter(cb => cb.checked)
+                .map(cb => Number(cb.dataset.cartId));
+            if (selectedIds.length === 0) return toast('Vui lòng chọn ít nhất một sản phẩm.');
 
-        // Cập nhật IsSelected trên API
-        btn.disabled = true; btn.textContent = 'Đang xử lý...';
-        const upRes = await fetch(`${API_BASE_URL}Cart/update-selection`, {
-          method: 'PUT',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify(selectedIds)
-        });
-        if (!upRes.ok) {
-          btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
-          return toast('Cập nhật lựa chọn giỏ hàng thất bại.');
-        }
+            btn.disabled = true; btn.textContent = 'Đang xử lý...';
+            const upRes = await fetch(`${API_BASE_URL}Cart/update-selection`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(selectedIds)
+            });
+            if (!upRes.ok) {
+                btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
+                return toast('Cập nhật lựa chọn giỏ hàng thất bại.');
+            }
 
-        if (method === 'vnpay') {
-          // Tạo đơn + lấy VNPay URL
-          const userVoucherId = voucherSelect?.value ? Number(voucherSelect.value) : null;
-          const body = { userId, addressId, userVoucherId };
+            if (method === 'vnpay') {
+                const userVoucherId = voucherSelect?.value ? Number(voucherSelect.value) : null;
+                const body = { userId, addressId, userVoucherId };
 
-          const payRes = await fetch(`${API_BASE_URL}Payment/vnpay-create`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(body)
-          });
+                const payRes = await fetch(`${API_BASE_URL}Payment/vnpay-create`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
 
-          if (!payRes.ok) {
+                if (!payRes.ok) {
+                    btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
+                    const msg = await payRes.text();
+                    return toast('Tạo thanh toán VNPay thất bại: ' + msg);
+                }
+
+                const { paymentUrl } = await payRes.json();
+                if (!paymentUrl) {
+                    btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
+                    return toast('Không lấy được paymentUrl từ server.');
+                }
+
+                window.location.href = paymentUrl;
+                return;
+            }
+
+            if (method === 'cod') {
+                const userVoucherId = voucherSelect?.value ? Number(voucherSelect.value) : null;
+                const body = { userId, addressId, userVoucherId };
+
+                const payRes = await fetch(`${API_BASE_URL}Payment/cod-create`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
+
+                if (!payRes.ok) {
+                    const msg = await payRes.text();
+                    return toast('Tạo đơn COD thất bại: ' + msg);
+                }
+
+                const { orderId, labelId } = await payRes.json();
+                toast(`Đặt hàng COD thành công${labelId ? ' - Mã vận đơn: ' + labelId : ''}`);
+                window.location.href = `/Checkout/Success?orderId=${orderId}`;
+                return;
+            }
+
+            if (method === 'momo') {
+                const userVoucherId = voucherSelect?.value ? Number(voucherSelect.value) : null;
+                const body = { userId, addressId, userVoucherId };
+
+                const payRes = await fetch(`${API_BASE_URL}Payment/momo-create`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
+
+                if (!payRes.ok) {
+                    const msg = await payRes.text();
+                    return toast('Tạo thanh toán MoMo thất bại: ' + msg);
+                }
+
+                const { payUrl } = await payRes.json();
+                if (!payUrl) return toast('Không nhận được payUrl từ server.');
+
+                window.location.href = payUrl;
+                return;
+            }
+
+        } catch (e) {
+            console.error(e);
             btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
-            const msg = await payRes.text();
-            return toast('Tạo thanh toán VNPay thất bại: ' + msg);
-          }
-
-          const { paymentUrl } = await payRes.json();
-          if (!paymentUrl) {
-            btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
-            return toast('Không lấy được paymentUrl từ server.');
-          }
-
-          // Redirect sang VNPay
-          window.location.href = paymentUrl;
-          return;
+            toast('Có lỗi xảy ra. Vui lòng thử lại.');
         }
-    if (method === 'cod') {
-      const userVoucherId = voucherSelect?.value ? Number(voucherSelect.value) : null;
-      const body = { userId, addressId, userVoucherId };
-
-      const payRes = await fetch(`${API_BASE_URL}Payment/cod-create`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(body)
-      });
-
-      btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
-
-      if (!payRes.ok) {
-        const msg = await payRes.text();
-        return toast('Tạo đơn COD thất bại: ' + msg);
-      }
-
-      const { orderId, labelId } = await payRes.json();
-      toast(`Đặt hàng COD thành công${labelId ? ' - Mã vận đơn: ' + labelId : ''}`);
-      window.location.href = `/Checkout/Success?orderId=${orderId}`;
-      return;
-    }
-
-
-
-    if (method === 'momo') {
-      const userVoucherId = voucherSelect?.value ? Number(voucherSelect.value) : null;
-      const body = { userId, addressId, userVoucherId };
-
-      const payRes = await fetch(`${API_BASE_URL}Payment/momo-create`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(body)
-      });
-
-      btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
-
-      if (!payRes.ok) {
-        const msg = await payRes.text();
-        return toast('Tạo thanh toán MoMo thất bại: ' + msg);
-      }
-
-      const { payUrl } = await payRes.json();
-      if (!payUrl) return toast('Không nhận được payUrl từ server.');
-
-      window.location.href = payUrl;  // chuyển qua cổng MoMo
-      return;
-    }
-
-
-
-      } catch (e) {
-        console.error(e);
-        btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
-        toast('Có lỗi xảy ra. Vui lòng thử lại.');
-      }
     });
 </script>
 
+<script>
+    (() => {
+        const BUY_NOW_KEY = '__BUY_NOW_PIDS';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const selectAll = document.getElementById('selectAllItems');
+            if (selectAll) selectAll.checked = false;
+
+            const boxes = document.querySelectorAll('.item-checkbox');
+            boxes.forEach(cb => cb.checked = false);
+
+            let buyNowPids = [];
+            try {
+                buyNowPids = JSON.parse(localStorage.getItem(BUY_NOW_KEY) || '[]') || [];
+            } catch { buyNowPids = []; }
+
+            if (Array.isArray(buyNowPids) && buyNowPids.length) {
+                buyNowPids.forEach(pid => {
+                    const targets = document.querySelectorAll(`.item-checkbox[data-product-id="${pid}"]`);
+                    targets.forEach(cb => {
+                        if (!cb.checked) {
+                            cb.checked = true;
+                            cb.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                    });
+                });
+
+                const allChecked = [...boxes].length > 0 && [...boxes].every(x => x.checked);
+                if (selectAll) selectAll.checked = allChecked;
+
+                localStorage.removeItem(BUY_NOW_KEY);
+            }
+
+            // Main select all functionality
+            selectAll?.addEventListener('change', (e) => {
+                const checked = e.target.checked;
+                document.querySelectorAll('.item-checkbox').forEach(cb => {
+                    cb.checked = checked;
+                    cb.dispatchEvent(new Event('change', { bubbles: true }));
+                });
+                updateStoreCheckboxes();
+            });
+
+            // Individual item checkbox events
+            document.querySelectorAll('.item-checkbox').forEach(cb => {
+                cb.addEventListener('change', () => {
+                    updateSelectAllState();
+                    updateStoreCheckboxes();
+                });
+            });
+
+            // Store checkbox events
+            document.querySelectorAll('.store-checkbox').forEach(storeCb => {
+                storeCb.addEventListener('change', (e) => {
+                    e.stopPropagation(); // Prevent toggle store group
+                    const storeId = storeCb.dataset.storeId;
+                    const checked = storeCb.checked;
+
+                    document.querySelectorAll(`.item-checkbox[data-store-id="${storeId}"]`).forEach(itemCb => {
+                        itemCb.checked = checked;
+                        itemCb.dispatchEvent(new Event('change', { bubbles: true }));
+                    });
+
+                    updateSelectAllState();
+                });
+            });
+        });
+
+        function updateSelectAllState() {
+            const selectAll = document.getElementById('selectAllItems');
+            const allItems = document.querySelectorAll('.item-checkbox');
+            if (selectAll && allItems.length > 0) {
+                selectAll.checked = Array.from(allItems).every(cb => cb.checked);
+            }
+        }
+
+        function updateStoreCheckboxes() {
+            document.querySelectorAll('.store-checkbox').forEach(storeCb => {
+                const storeId = storeCb.dataset.storeId;
+                const storeItems = document.querySelectorAll(`.item-checkbox[data-store-id="${storeId}"]`);
+
+                if (storeItems.length > 0) {
+                    storeCb.checked = Array.from(storeItems).every(cb => cb.checked);
+                }
+            });
+        }
+    })();
+</script>
 
 <script>
     (() => {
-      // Key dành riêng cho "Mua ngay" (khác với key add-to-cart)
       const BUY_NOW_KEY = '__BUY_NOW_PIDS';
 
       document.addEventListener('DOMContentLoaded', () => {
-        // Luôn reset "Select All"
         const selectAll = document.getElementById('selectAllItems');
         if (selectAll) selectAll.checked = false;
 
-        // Ép tất cả checkbox về unchecked (chống trình duyệt nhớ state)
         const boxes = document.querySelectorAll('.item-checkbox');
         boxes.forEach(cb => cb.checked = false);
 
-        // Lấy danh sách productId được "Mua ngay"
         let buyNowPids = [];
         try {
           buyNowPids = JSON.parse(localStorage.getItem(BUY_NOW_KEY) || '[]') || [];
         } catch { buyNowPids = []; }
 
         if (Array.isArray(buyNowPids) && buyNowPids.length) {
-          // Tick đúng các item có data-product-id trùng
           buyNowPids.forEach(pid => {
             const targets =
               document.querySelectorAll(`.item-checkbox[data-product-id="${pid}"]`);
             targets.forEach(cb => {
               if (!cb.checked) {
                 cb.checked = true;
-                // Nếu có logic tính tiền theo 'change', dispatch event
                 cb.dispatchEvent(new Event('change', { bubbles: true }));
               }
             });
           });
 
-          // Nếu tất cả đều tick → sync selectAll
           const allChecked = [...boxes].length > 0 && [...boxes].every(x => x.checked);
           if (selectAll) selectAll.checked = allChecked;
 
-          // Dùng xong thì clear để không tick lại lần sau
           localStorage.removeItem(BUY_NOW_KEY);
         }
 
-        // Đồng bộ Select All <-> từng dòng
         selectAll?.addEventListener('change', (e) => {
           const checked = e.target.checked;
           document.querySelectorAll('.item-checkbox').forEach(cb => {
@@ -478,14 +692,18 @@
       });
     })();
 </script>
-<!-- Script Pagination - Simple Show More/Collapse -->
 <script>
+    // Thay thế script pagination hiện tại bằng code này
     document.addEventListener('DOMContentLoaded', function () {
-        const loadMoreBtn = document.getElementById('load-more-btn');
+        let isLoading = false;
+        let hasMoreItems = true;
 
-        // Đảm bảo chỉ hiển thị 10 items đầu tiên
-        function resetToInitial() {
+        // Khởi tạo: Kiểm tra và setup pagination
+        function initializePagination() {
             const allItems = document.querySelectorAll('.cart-item-row');
+            console.log(`Total items found: ${allItems.length}`); // Debug log
+
+            // Đảm bảo chỉ hiển thị 10 items đầu tiên
             allItems.forEach((item, index) => {
                 if (index >= 10) {
                     item.classList.add('d-none');
@@ -493,190 +711,195 @@
                     item.classList.remove('d-none');
                 }
             });
+
+            updateCounts();
+            checkIfHasMore();
+
+            // Thêm pagination info nếu có nhiều hơn 10 items
+            if (allItems.length > 10) {
+                addPaginationInfo();
+            }
         }
 
-        function updateButtonAndCounts() {
-            const totalItems = document.querySelectorAll('.cart-item-row').length;
-            const visibleItems = document.querySelectorAll('.cart-item-row:not(.d-none)').length;
-            const hiddenItems = totalItems - visibleItems;
-
-            // Cập nhật số đếm
-            document.getElementById('showing-count').textContent = visibleItems;
-            document.getElementById('total-count').textContent = totalItems;
-
-            const remainingCountElement = document.getElementById('remaining-count');
-            if (remainingCountElement) {
-                remainingCountElement.textContent = hiddenItems;
+        // Thêm thông tin pagination
+        function addPaginationInfo() {
+            // Xóa pagination info cũ nếu có
+            const oldInfo = document.querySelector('.pagination-info');
+            if (oldInfo) {
+                oldInfo.remove();
             }
 
-            // Nếu ≤ 10 items, ẩn button
-            if (totalItems <= 10) {
-                const cardFooter = loadMoreBtn?.closest('.card-footer');
-                if (cardFooter) {
-                    cardFooter.style.display = 'none';
+            const paginationInfo = document.createElement('div');
+            paginationInfo.className = 'pagination-info';
+           
+
+            // Thêm vào cuối card body
+            const cardBody = document.querySelector('.card-body');
+            if (cardBody) {
+                cardBody.appendChild(paginationInfo);
+            }
+        }
+
+        // Cập nhật số lượng hiển thị
+        function updateCounts() {
+            const totalItems = document.querySelectorAll('.cart-item-row').length;
+            const visibleItems = document.querySelectorAll('.cart-item-row:not(.d-none)').length;
+
+            const showingElement = document.getElementById('showing-count');
+            const totalElement = document.getElementById('total-count');
+
+            if (showingElement) showingElement.textContent = visibleItems;
+            if (totalElement) totalElement.textContent = totalItems;
+
+            console.log(`Showing: ${visibleItems}/${totalItems}`); // Debug log
+        }
+
+        // Kiểm tra còn items để load không
+        function checkIfHasMore() {
+            const totalItems = document.querySelectorAll('.cart-item-row').length;
+            const visibleItems = document.querySelectorAll('.cart-item-row:not(.d-none)').length;
+            hasMoreItems = visibleItems < totalItems;
+
+            console.log(`Has more items: ${hasMoreItems}`); // Debug log
+
+            // Ẩn loading indicator nếu không còn items
+            if (!hasMoreItems) {
+                toggleLoadingIndicator(false);
+                updatePaginationComplete();
+            }
+        }
+
+        // Hiển thị loading indicator
+        function toggleLoadingIndicator(show) {
+            let loadingDiv = document.getElementById('scroll-loading');
+
+            if (show && !loadingDiv && hasMoreItems) {
+                // Tạo loading indicator nếu chưa có
+                loadingDiv = document.createElement('div');
+                loadingDiv.id = 'scroll-loading';
+                loadingDiv.className = 'text-center py-3 bg-light border-top';
+     
+
+                // Thêm vào cuối card body
+                const cardBody = document.querySelector('.card-body');
+                if (cardBody) {
+                    cardBody.appendChild(loadingDiv);
                 }
+            }
+
+            if (loadingDiv) {
+                loadingDiv.style.display = show ? 'block' : 'none';
+            }
+        }
+
+        // Load thêm items
+        function loadMoreItems() {
+            if (isLoading || !hasMoreItems) {
+                console.log(`Cannot load more. Loading: ${isLoading}, HasMore: ${hasMoreItems}`); // Debug log
                 return;
             }
 
-            // Hiển thị button
-            const cardFooter = loadMoreBtn?.closest('.card-footer');
-            if (cardFooter) {
-                cardFooter.style.display = 'block';
-            }
+            console.log('Loading more items...'); // Debug log
+            isLoading = true;
+            toggleLoadingIndicator(true);
 
-            if (hiddenItems > 0) {
-                // Còn items ẩn - hiện nút "Xem thêm"
-                loadMoreBtn.innerHTML = `
-                        <i class="bi bi-arrow-down-circle me-2"></i>
-                        Xem thêm sản phẩm
-                        <span class="badge bg-light text-dark ms-2">${hiddenItems}</span>
-                    `;
-            } else {
-                // Đã hiện hết - hiện nút "Rút gọn"
-                loadMoreBtn.innerHTML = `
-                        <i class="bi bi-arrow-up-circle me-2"></i>
-                        Rút gọn
-                    `;
-            }
-        }
-
-        if (loadMoreBtn) {
-            loadMoreBtn.addEventListener('click', function () {
-                const totalItems = document.querySelectorAll('.cart-item-row').length;
-                const visibleItems = document.querySelectorAll('.cart-item-row:not(.d-none)').length;
+            // Giả lập delay loading
+            setTimeout(() => {
                 const hiddenItems = document.querySelectorAll('.cart-item-row.d-none');
+                const itemsToShow = Math.min(10, hiddenItems.length);
 
-                if (hiddenItems.length > 0) {
-                    // Có items ẩn - hiện thêm 10 items hoặc hết items còn lại
-                    const itemsToShow = Math.min(10, hiddenItems.length);
-                    for (let i = 0; i < itemsToShow; i++) {
-                        hiddenItems[i].classList.remove('d-none');
-                        // Thêm animation fade-in
-                        hiddenItems[i].classList.add('fade-in');
-                    }
-                } else {
-                    // Không còn items ẩn - rút gọn về 10 items đầu
-                    resetToInitial();
+                console.log(`Hidden items found: ${hiddenItems.length}, showing: ${itemsToShow}`); // Debug log
+
+                for (let i = 0; i < itemsToShow; i++) {
+                    hiddenItems[i].classList.remove('d-none');
+                    // Thêm animation fade-in
+                    hiddenItems[i].classList.add('fade-in');
+
+                    // Xóa class fade-in sau animation
+                    setTimeout(() => {
+                        hiddenItems[i].classList.remove('fade-in');
+                    }, 500);
                 }
 
-                // Cập nhật button và counts sau khi thay đổi
-                updateButtonAndCounts();
-            });
+                updateCounts();
+                checkIfHasMore();
+                isLoading = false;
+                toggleLoadingIndicator(false);
+
+            }, 500); // Tăng delay để user thấy loading rõ hơn
         }
 
-        // Khởi tạo ban đầu
-        resetToInitial();
-        updateButtonAndCounts();
-    });
-</script>
+        // Xử lý infinite scroll với nhiều trigger points
+        function handleScroll() {
+            if (isLoading || !hasMoreItems) return;
 
+            // Method 1: Check distance to bottom of document
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const windowHeight = window.innerHeight;
+            const documentHeight = document.documentElement.scrollHeight;
+            const distanceToBottom = documentHeight - (scrollTop + windowHeight);
 
-<script>
-    (() => {
-        const CART_SELECTION_KEY = '__CART_SELECTIONS';
-        const BUY_NOW_KEY = '__BUY_NOW_PIDS';
+            // Method 2: Check position relative to cart card
+            const cartCard = document.querySelector('.card.border-crimson');
+            if (cartCard) {
+                const cardRect = cartCard.getBoundingClientRect();
+                const isNearCardBottom = cardRect.bottom <= windowHeight + 300; // Trigger 300px before
 
-        // Lưu trạng thái checkbox
-        function saveCheckboxState() {
-            const selections = {};
-            document.querySelectorAll('.item-checkbox').forEach(cb => {
-                const cartId = cb.dataset.cartId;
-                if (cartId) {
-                    selections[cartId] = cb.checked;
+                if (isNearCardBottom || distanceToBottom <= 200) {
+                    console.log('Scroll trigger activated'); // Debug log
+                    loadMoreItems();
                 }
-            });
-            localStorage.setItem(CART_SELECTION_KEY, JSON.stringify(selections));
-        }
-
-        // Khôi phục trạng thái checkbox
-        function restoreCheckboxState() {
-            try {
-                const savedSelections = JSON.parse(localStorage.getItem(CART_SELECTION_KEY) || '{}');
-
-                document.querySelectorAll('.item-checkbox').forEach(cb => {
-                    const cartId = cb.dataset.cartId;
-                    if (cartId && savedSelections.hasOwnProperty(cartId)) {
-                        cb.checked = savedSelections[cartId];
-                    }
-                });
-            } catch (e) {
-                console.error('Error restoring checkbox state:', e);
+            } else if (distanceToBottom <= 200) {
+                console.log('Document scroll trigger activated'); // Debug log
+                loadMoreItems();
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            // Khôi phục trạng thái đã lưu
-            restoreCheckboxState();
-
-            // Xử lý "Mua ngay" (ưu tiên cao hơn)
-            let buyNowPids = [];
-            try {
-                buyNowPids = JSON.parse(localStorage.getItem(BUY_NOW_KEY) || '[]') || [];
-            } catch { buyNowPids = []; }
-
-            if (Array.isArray(buyNowPids) && buyNowPids.length) {
-                // Clear tất cả checkbox trước
-                document.querySelectorAll('.item-checkbox').forEach(cb => cb.checked = false);
-
-                // Tick đúng các item có data-product-id trùng
-                buyNowPids.forEach(pid => {
-                    const targets = document.querySelectorAll(`.item-checkbox[data-product-id="${pid}"]`);
-                    targets.forEach(cb => {
-                        cb.checked = true;
-                        cb.dispatchEvent(new Event('change', { bubbles: true }));
-                    });
-                });
-
-                // Dùng xong thì clear
-                localStorage.removeItem(BUY_NOW_KEY);
-
-                // Lưu lại trạng thái mới
-                saveCheckboxState();
-            }
-
-            // Cập nhật Select All theo trạng thái hiện tại (chỉ tính items hiện tại được hiển thị)
-            function updateSelectAllState() {
-                const selectAll = document.getElementById('selectAllItems');
-                const visibleCheckboxes = document.querySelectorAll('.cart-item-row:not(.d-none) .item-checkbox');
-                if (selectAll && visibleCheckboxes.length > 0) {
-                    selectAll.checked = Array.from(visibleCheckboxes).every(cb => cb.checked);
+        // Throttle function để tránh call quá nhiều
+        function throttle(func, limit) {
+            let inThrottle;
+            return function () {
+                const args = arguments;
+                const context = this;
+                if (!inThrottle) {
+                    func.apply(context, args);
+                    inThrottle = true;
+                    setTimeout(() => inThrottle = false, limit);
                 }
             }
+        }
 
-            updateSelectAllState();
+        // Khởi tạo
+        initializePagination();
 
-            // Event listeners
-            const selectAll = document.getElementById('selectAllItems');
-            selectAll?.addEventListener('change', (e) => {
-                const checked = e.target.checked;
-                // Chỉ áp dụng cho items hiện tại được hiển thị
-                document.querySelectorAll('.cart-item-row:not(.d-none) .item-checkbox').forEach(cb => {
-                    cb.checked = checked;
-                    cb.dispatchEvent(new Event('change', { bubbles: true }));
-                });
-                saveCheckboxState();
-            });
+        // Gắn event scroll với throttle
+        const throttledScroll = throttle(handleScroll, 100);
+        window.addEventListener('scroll', throttledScroll);
 
-            // Delegate event cho checkbox items (bao gồm cả items sẽ load thêm)
-            document.addEventListener('change', (e) => {
-                if (e.target.classList.contains('item-checkbox')) {
-                    updateSelectAllState();
-                    saveCheckboxState();
-                }
-            });
+        // Thêm event listener cho resize để handle responsive
+        window.addEventListener('resize', throttle(handleScroll, 200));
+
+       
+
+        // Cleanup khi trang bị unload
+        window.addEventListener('beforeunload', () => {
+            window.removeEventListener('scroll', throttledScroll);
         });
 
-        // Clear selections khi checkout thành công
-        window.clearCartSelections = function () {
-            localStorage.removeItem(CART_SELECTION_KEY);
-        };
-    })();
+        // Xóa button "Load More" cũ nếu có
+        const oldLoadMoreBtn = document.getElementById('load-more-btn');
+        if (oldLoadMoreBtn) {
+            const buttonContainer = oldLoadMoreBtn.closest('.text-center');
+            if (buttonContainer) {
+                buttonContainer.remove();
+            }
+        }
+    });
 </script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
 
-        // Xử lý click buttons tăng/giảm
         document.addEventListener('click', function (e) {
             if (e.target.closest('.quantity-btn')) {
                 e.preventDefault();

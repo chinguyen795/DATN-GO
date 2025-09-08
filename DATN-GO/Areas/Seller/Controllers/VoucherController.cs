@@ -16,13 +16,73 @@ namespace DATN_GO.Areas.Seller.Controllers
             _userService = userService;
         }
 
-        // Kiểm tra vai trò trước khi vào area Seller (nếu cần dùng)
         private async Task<bool> IsUserSeller(int userId)
         {
             var user = await _userService.GetUserByIdAsync(userId);
             return user != null && user.RoleId == 2;
         }
 
+        // ---------- Helpers ----------
+        private static bool IsValidSellerVoucher(Vouchers v)
+        {
+            if (v.StartDate >= v.EndDate) return false;
+            if (v.Quantity < 1) return false;
+            if (v.MinOrder < 0) return false;
+
+            if (v.IsPercentage)
+            {
+                if (v.Reduce <= 0 || v.Reduce > 100) return false;
+                if (v.MaxDiscount is decimal md && md < 0) return false;
+            }
+            else
+            {
+                if (v.Reduce <= 0) return false;
+            }
+
+            // Ít nhất một phạm vi: all products / category / selected products
+            var hasScope =
+                v.ApplyAllProducts ||
+                v.CategoryId.HasValue ||
+                (v.SelectedProductIds != null && v.SelectedProductIds.Any());
+
+            return hasScope;
+        }
+
+        private static void NormalizeScopeFlags(Vouchers v)
+        {
+            // Nếu áp dụng tất cả sản phẩm thì clear list chọn lẻ
+            if (v.ApplyAllProducts)
+            {
+                v.SelectedProductIds = new List<int>();
+            }
+        }
+
+        private static void ForceSellerMeta(Vouchers v, int storeId, int userId, bool isCreate)
+        {
+            v.StoreId = storeId;
+            v.CreatedByRoleId = 2; // Seller
+            v.Type = VoucherType.Shop;
+            v.CreatedByUserId = userId;
+
+            if (isCreate)
+            {
+                v.Status = VoucherStatus.Valid;
+                v.UsedCount = 0;
+            }
+
+            // Đồng bộ UTC (server side validation đang dùng UtcNow)
+            v.StartDate = DateTime.SpecifyKind(v.StartDate, DateTimeKind.Utc);
+            v.EndDate = DateTime.SpecifyKind(v.EndDate, DateTimeKind.Utc);
+        }
+
+        private async Task<List<int>> SanitizeSelectedProductIdsForStoreAsync(IEnumerable<int> ids, int storeId)
+        {
+            var shopProducts = await _voucherService.GetProductsByStoreAsync(storeId);
+            var allowed = new HashSet<int>(shopProducts.Select(p => p.Id));
+            return ids.Where(allowed.Contains).Distinct().ToList();
+        }
+
+        // ---------- LIST ----------
         public async Task<IActionResult> Voucher(string search, string sort, int page = 1, int pageSize = 4)
         {
             var userIdStr = HttpContext.Session.GetString("Id");
@@ -40,20 +100,16 @@ namespace DATN_GO.Areas.Seller.Controllers
             ViewBag.StoreId = storeId;
             ViewBag.StoreName = storeInfo.StoreName;
 
-            // Lấy voucher của CHÍNH shop
+            // VOUCHERS của shop
             var vouchers = await _voucherService.GetVouchersByStoreOrAdminAsync(storeId) ?? new List<Vouchers>();
 
-            // ❶ Ẩn voucher đã hết hạn / chưa hiệu lực / hết lượt
+            // Chỉ còn hiệu lực
             var nowUtc = DateTime.UtcNow;
             vouchers = vouchers
-                .Where(v =>
-                    v.StartDate <= nowUtc &&
-                    v.EndDate >= nowUtc &&
-                    v.Status == VoucherStatus.Valid &&
-               (v.UsedCount < v.Quantity)
-
-
-                )
+                .Where(v => v.StartDate <= nowUtc &&
+                            v.EndDate >= nowUtc &&
+                            v.Status == VoucherStatus.Valid &&
+                            (v.UsedCount < v.Quantity))
                 .ToList();
 
             // Search
@@ -66,8 +122,11 @@ namespace DATN_GO.Areas.Seller.Controllers
                 ).ToList();
             }
 
+            // Master data
             ViewBag.Categories = await _voucherService.GetAllCategoriesAsync();
-            ViewBag.Stores = await _voucherService.GetAllStoresAsync();
+
+            // 🔴 CHỈ LẤY SẢN PHẨM CỦA SHOP ĐÓ
+            ViewBag.Products = await _voucherService.GetProductsByStoreIdAsync(storeId);
 
             // Sort
             if (!string.IsNullOrWhiteSpace(sort))
@@ -82,7 +141,7 @@ namespace DATN_GO.Areas.Seller.Controllers
                 };
             }
 
-            // Paging (trên danh sách đã lọc)
+            // Paging
             int totalItems = vouchers.Count;
             int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
             var paginatedVouchers = vouchers.Skip((page - 1) * pageSize).Take(pageSize).ToList();
@@ -96,6 +155,7 @@ namespace DATN_GO.Areas.Seller.Controllers
         }
 
 
+        // ---------- CREATE ----------
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddVoucher(Vouchers request)
@@ -108,35 +168,29 @@ namespace DATN_GO.Areas.Seller.Controllers
             }
             int userId = Convert.ToInt32(userIdStr);
 
-            // Lấy store của user
             var storeInfo = await _voucherService.GetStoreInfoByUserIdAsync(userId);
-            int storeId = storeInfo.StoreId; // ví dụ: 2
+            int storeId = storeInfo.StoreId;
 
-            // BẮT BUỘC phạm vi áp dụng: phải có CategoryId (nếu bạn chưa dùng ProductVouchers)
-            if (request.CategoryId == null)
+            NormalizeScopeFlags(request);
+
+            // chặn gian lận: list sản phẩm phải thuộc shop
+            if (request.SelectedProductIds != null && request.SelectedProductIds.Any())
+                request.SelectedProductIds = await SanitizeSelectedProductIdsForStoreAsync(request.SelectedProductIds, storeId);
+
+            ForceSellerMeta(request, storeId, userId, isCreate: true);
+
+            if (!IsValidSellerVoucher(request))
             {
-                TempData["Error"] = "Vui lòng chọn danh mục áp dụng.";
+                TempData["Error"] = "Phạm vi/giá trị voucher không hợp lệ. Chọn danh mục hoặc sản phẩm (hoặc áp dụng tất cả sản phẩm).";
                 return RedirectToAction("Voucher");
             }
 
-            // Force các field theo rule API dành cho SHOP
-            request.StoreId = storeId;                     // voucher của shop
-            request.CreatedByRoleId = 2;                   // SHOP = 2 (QUAN TRỌNG)
-            request.Type = VoucherType.Shop;
-            request.CreatedByUserId = userId;
-            request.Status = VoucherStatus.Valid;
-            request.UsedCount = 0;
-
-            // Chuẩn hóa timezone sang UTC (API dùng UtcNow kiểm tra)
-            request.StartDate = DateTime.SpecifyKind(request.StartDate, DateTimeKind.Utc);
-            request.EndDate = DateTime.SpecifyKind(request.EndDate, DateTimeKind.Utc);
-
-            // Gọi API
             var ok = await _voucherService.CreateVoucherAsync(request);
             TempData[ok ? "Success" : "Error"] = ok ? "Thêm voucher thành công!" : "Thêm voucher thất bại. Vui lòng kiểm tra lại thông tin!";
             return RedirectToAction("Voucher");
         }
 
+        // ---------- UPDATE ----------
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateVoucher(Vouchers request)
@@ -152,26 +206,25 @@ namespace DATN_GO.Areas.Seller.Controllers
             var storeInfo = await _voucherService.GetStoreInfoByUserIdAsync(userId);
             int storeId = storeInfo.StoreId;
 
-            if (request.CategoryId == null)
+            NormalizeScopeFlags(request);
+
+            if (request.SelectedProductIds != null && request.SelectedProductIds.Any())
+                request.SelectedProductIds = await SanitizeSelectedProductIdsForStoreAsync(request.SelectedProductIds, storeId);
+
+            ForceSellerMeta(request, storeId, userId, isCreate: false);
+
+            if (!IsValidSellerVoucher(request))
             {
-                TempData["Error"] = "Vui lòng chọn danh mục áp dụng.";
+                TempData["Error"] = "Phạm vi/giá trị voucher không hợp lệ. Chọn danh mục hoặc sản phẩm (hoặc áp dụng tất cả sản phẩm).";
                 return RedirectToAction("Voucher");
             }
-
-            // Force các field theo rule API dành cho SHOP
-            request.StoreId = storeId;
-            request.CreatedByRoleId = 2;                   // SHOP = 2
-            request.Type = VoucherType.Shop;
-            request.CreatedByUserId = userId;
-
-            request.StartDate = DateTime.SpecifyKind(request.StartDate, DateTimeKind.Utc);
-            request.EndDate = DateTime.SpecifyKind(request.EndDate, DateTimeKind.Utc);
 
             var ok = await _voucherService.UpdateVoucherAsync(request);
             TempData[ok ? "Success" : "Error"] = ok ? "Cập nhật voucher thành công!" : "Cập nhật voucher thất bại!";
             return RedirectToAction("Voucher");
         }
 
+        // ---------- DELETE ----------
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteVoucherConfirmed(int id)

@@ -1,96 +1,119 @@
 ﻿@model List<DATN_GO.Models.Vouchers>
+@using System.Globalization
 @{
     Layout = "~/Areas/Seller/Views/Shared/_LayoutSeller.cshtml";
     var currentPage = ViewBag.CurrentPage ?? 1;
     var totalPages = ViewBag.TotalPages ?? 1;
+    var vi = new CultureInfo("vi-VN");
+}
+
+@functions {
+    public string ResolveProductImage(object prod, Microsoft.AspNetCore.Mvc.IUrlHelper url)
+    {
+        if (prod == null) return url.Content("~/images/no-image.png");
+        var t = prod.GetType();
+        string[] candidates = new[] {
+            "ThumbnailUrl", "ImageUrl", "MainImage", "Avatar", "Image",
+            "PictureUrl", "ImgUrl", "Url", "PhotoUrl", "ImagePath"
+        };
+        foreach (var name in candidates)
+        {
+            var prop = t.GetProperty(name);
+            if (prop == null) continue;
+            var val = prop.GetValue(prod) as string;
+            if (string.IsNullOrWhiteSpace(val)) continue;
+            val = val.Trim();
+            if (val.StartsWith("http://", System.StringComparison.OrdinalIgnoreCase) ||
+                val.StartsWith("https://", System.StringComparison.OrdinalIgnoreCase))
+                return val;
+            if (val.StartsWith("~")) return url.Content(val);
+            return url.Content("~/" + val.TrimStart('/'));
+        }
+        return url.Content("~/images/no-image.png");
+    }
 }
 
 <style>
+    .thumb-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px
+    }
+
+    .thumb {
+        width: 44px;
+        height: 44px;
+        object-fit: cover;
+        border-radius: 6px;
+        border: 1px solid #eee
+    }
+
+    .pp-thumb {
+        width: 36px;
+        height: 36px;
+        object-fit: cover;
+        border-radius: 6px;
+        margin-right: 8px;
+        border: 1px solid #eee
+    }
+
     .card.hover-shadow-lg {
-        transition: all 0.3s ease;
+        transition: .3s
     }
 
         .card.hover-shadow-lg:hover {
             transform: translateY(-5px);
-            box-shadow: 0 1rem 3rem rgba(0,0,0,.175) !important;
+            box-shadow: 0 1rem 3rem rgba(0,0,0,.175) !important
         }
 
     .form-select, .form-control {
         border-radius: 4px;
         height: 38px;
         font-size: .9rem;
-        border: 1px solid #ced4da;
+        border: 1px solid #ced4da
     }
-
-    .search-input {
-        padding: 6px 12px;
-    }
-
-        .search-input:focus {
-            border-color: #ced4da;
-            box-shadow: none;
-            outline: none;
-        }
 
     .transition-all {
-        transition: all .3s ease;
+        transition: all .3s
     }
 
     .card .btn-outline-warning, .card .btn-outline-danger {
         width: 32px;
         height: 32px;
-        padding: 0;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: .2s;
+        transition: .2s
     }
 
     .card .btn-outline-warning {
-        margin-right: 6px;
+        margin-right: 6px
     }
 
         .card .btn-outline-warning:hover, .card .btn-outline-danger:hover {
-            transform: scale(1.1);
+            transform: scale(1.1)
         }
 
     .badge {
         padding: .5rem .75rem;
-        font-weight: 500;
+        font-weight: 500
     }
-
-        .badge i {
-            font-size: .875rem;
-        }
 
     .card-title {
-        font-weight: 600;
-        font-size: 1.25rem;
+        font-weight: 700;
+        font-size: 1.1rem;
+        line-height: 1.2
     }
 
-    .text-muted {
-        font-size: .9rem;
-    }
-
-    small {
-        font-size: .85rem;
-    }
-
-        small i {
-            font-size: .875rem;
-        }
-
-    /* Input group đẹp trong modal add/edit (theo admin) */
     #addVoucherModal .input-group, #editVoucherModal .input-group {
         width: 100%;
         flex-wrap: nowrap;
         background: #f8f9fa;
         border-radius: 15px;
         border: 1px solid #e9ecef;
-        align-items: stretch;
         margin-bottom: 0;
-        position: relative;
-        overflow: hidden;
+        overflow: hidden
     }
 
     #addVoucherModal .input-group-text, #editVoucherModal .input-group-text {
@@ -101,8 +124,7 @@
         align-items: center;
         justify-content: center;
         padding: 0 12px 0 18px;
-        border-radius: 15px 0 0 15px !important;
-        position: relative;
+        position: relative
     }
 
         #addVoucherModal .input-group-text:after, #editVoucherModal .input-group-text:after {
@@ -113,38 +135,46 @@
             height: 28px;
             width: 1.5px;
             background: #e0e3e7;
-            border-radius: 2px;
-        }
-
-        #addVoucherModal .input-group-text i, #editVoucherModal .input-group-text i {
-            font-size: 1.35rem;
-            color: #ff4d5d;
-            margin: 0;
+            border-radius: 2px
         }
 
     #addVoucherModal .form-control, #editVoucherModal .form-control {
         border: none;
-        border-radius: 0 15px 15px 0 !important;
         background: transparent;
         box-shadow: none;
         height: 48px;
         padding-left: 14px;
-        font-size: 1.05rem;
+        font-size: 1.05rem
     }
 
     #statusIcon, #editStatusIcon {
         transition: .3s;
         font-size: 1.4rem;
-        color: #ff4d5d;
+        color: #ff4d5d
     }
 
     .pagination {
-        justify-content: flex-end !important;
+        justify-content: flex-end !important
     }
 
-    .form-check.form-switch .form-check-input {
-        cursor: pointer;
+    .scope-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 14px;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        background: #fff;
+        cursor: pointer
     }
+
+        .scope-row small {
+            opacity: .7
+        }
+
+        .scope-row:hover {
+            background: #fafafa
+        }
 </style>
 
 <div class="page-wrapper">
@@ -152,7 +182,7 @@
         <nav class="navbar navbar-expand-lg navbar-light" id="navbar">
             <button id="sidebar-toggler" class="sidebar-toggle"><span class="sr-only">Toggle navigation</span></button>
             <span class="page-title">MÃ ƯU ĐÃI</span>
-            <div class="navbar-right ">
+            <div class="navbar-right">
                 <ul class="nav navbar-nav">
                     <li class="custom-dropdown">
                         <a class="notify-toggler custom-dropdown-toggler" asp-controller="Notification" asp-action="Notification">
@@ -160,19 +190,20 @@
                         </a>
                     </li>
                     <li class="dropdown user-menu">
-                        <button class="dropdown-toggle nav-link" data-toggle="dropdown">
-                            <img src="~/images/avt-user.jpg" alt="User Profile" width="32" height="32" style="object-fit: cover;" loading="lazy">
+                        <button class="dropdown-toggle nav-link" data-bs-toggle="dropdown">
+                            <img src="~/images/avt-user.jpg" alt="User Profile" width="32" height="32" style="object-fit:cover" loading="lazy">
                             <span class="d-none d-lg-inline-block">@ViewBag.StoreName</span>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-right">
+                        <ul class="dropdown-menu dropdown-menu-end">
                             <li>
-                                <a class="dropdown-link-item" asp-controller="Profile" asp-action="Index" asp-area="">
+                                <a class="dropdown-item d-flex align-items-center gap-2" asp-controller="Profile" asp-action="Index" asp-area="">
                                     <i class="mdi mdi-account-outline"></i><span class="nav-text">Hồ Sơ</span>
                                 </a>
                             </li>
+                            <li><hr class="dropdown-divider"></li>
                             <li class="dropdown-footer">
-                                <a class="dropdown-link-item" href="/Seller/Voucher/Logout">
-                                    <i class="mdi mdi-logout"></i> Đăng Xuất
+                                <a class="dropdown-item d-flex align-items-center gap-2" href="/Seller/Voucher/Logout">
+                                    <i class="mdi mdi-logout"></i> <span>Đăng Xuất</span>
                                 </a>
                             </li>
                         </ul>
@@ -182,7 +213,7 @@
         </nav>
     </header>
 
-    <!-- Toast: TempData -->
+    <!-- Toast -->
     <div style="position: fixed; top: 20px; right: 20px; z-index: 2000; width: 360px;">
         @if (TempData["Success"] != null)
         {
@@ -206,7 +237,7 @@
                 <div class="card-header d-flex align-items-center justify-content-between">
                     <h2 class="mb-0">Danh sách giảm giá</h2>
                     <div class="btn-group">
-                        <button class="btn btn-danger btn-add-voucher" data-bs-toggle="modal" data-bs-target="#addVoucherModal" style="text-transform: capitalize;">
+                        <button class="btn btn-danger btn-add-voucher" data-bs-toggle="modal" data-bs-target="#addVoucherModal">
                             <i class="mdi mdi-plus"></i> Thêm voucher
                         </button>
                     </div>
@@ -217,7 +248,7 @@
                     <div class="d-flex flex-column flex-md-row gap-3 mb-4 align-items-md-center justify-content-between">
                         <div style="width:300px;">
                             <form id="searchForm" method="get" class="d-flex" style="width:300px;">
-                                <input type="search" class="form-control" name="search" placeholder="Tìm kiếm voucher..." aria-label="Tìm kiếm"
+                                <input type="search" class="form-control" name="search" placeholder="Tìm kiếm voucher..."
                                        value="@(Context.Request.Query["search"])" oninput="submitSearch()" />
                             </form>
                         </div>
@@ -233,152 +264,147 @@
                     </div>
 
                     <!-- Voucher Items -->
-                   <div class="row g-4">
-    @{
-        var nowUtc = DateTime.UtcNow;
-        var anyShown = false;
-    }
+                    <div class="row g-4">
+                        @{
+                            var nowUtc = DateTime.UtcNow;
+                            var anyShown = false;
+                        }
+                        @foreach (var voucher in Model)
+                        {
+                            var used = voucher.UsedCount;
+                            var isValidToShow =
+                            voucher.StartDate <= nowUtc &&
+                            voucher.EndDate >= nowUtc &&
+                            voucher.Status == DATN_GO.Models.VoucherStatus.Valid &&
+                            used < voucher.Quantity;
 
-              @foreach (var voucher in Model)
-            {
-                // Ẩn nếu: chưa bắt đầu / đã hết hạn / status không còn hợp lệ / hết lượt dùng
-                var used = voucher.UsedCount;
-                var isValidToShow =
-                    voucher.StartDate <= nowUtc &&
-                    voucher.EndDate   >= nowUtc &&
-                    voucher.Status == DATN_GO.Models.VoucherStatus.Valid &&
-                    used < voucher.Quantity;
+                            if (!isValidToShow) { continue; }
+                            anyShown = true;
 
-                if (!isValidToShow)
-                {
-                    continue;
-                }
+                            <div class="col-12 col-md-4 mb-4">
+                                <div class="card shadow-sm hover-shadow-lg transition-all">
+                                    <div class="card-body p-0">
+                                        <div class="d-flex">
+                                            <div class="bg-danger text-white p-4 d-flex align-items-center justify-content-center" style="width: 120px;">
+                                                <i class="bi-ticket-perforated-fill" style="font-size: 2.5rem;"></i>
+                                            </div>
 
-        anyShown = true;
+                                            <div class="p-3 flex-grow-1">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <div>
+                                                        <h5 class="card-title mb-1">
+                                                            @(voucher.IsPercentage
+                                                                ? $"Giảm {voucher.Reduce.ToString("N0", vi)}%"
+                                                                : $"Giảm {voucher.Reduce.ToString("N0", vi)} VND")
+                                                        </h5>
+                                                        <p class="card-text text-muted mb-0">
+                                                            Đơn tối thiểu @voucher.MinOrder.ToString("N0", vi)
+                                                        </p>
+                                                    </div>
 
-        <div class="col-12 col-md-4 mb-4">
-            <div class="card shadow-sm hover-shadow-lg transition-all">
-                <div class="card-body p-0">
-                    <div class="d-flex">
-                        <div class="bg-danger text-white p-4 d-flex align-items-center justify-content-center" style="width: 120px;">
-                            <i class="bi-ticket-perforated-fill" style="font-size: 2.5rem;"></i>
-                        </div>
-                        <div class="p-3 flex-grow-1">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div>
-                                    <h5 class="card-title mb-1">
-                                        @if (voucher.IsPercentage)
-                                        {
-                                            @:Giảm @voucher.Reduce.ToString("N0")%
-                                        }
-                                        else
-                                        {
-                                            @:Giảm @voucher.Reduce.ToString("N0") VND
-                                        }
-                                    </h5>
-                                    <p class="card-text text-muted mb-0">Đơn tối thiểu @voucher.MinOrder.ToString("N0")</p>
+                                                    <div class="voucher-action d-flex gap-2">
+                                                        <button type="button"
+                                                                class="btn btn-outline-warning btn-sm rounded-circle btn-edit-voucher"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#editVoucherModal"
+                                                                data-id="@voucher.Id"
+                                                                data-discount="@voucher.Reduce.ToString("G29", CultureInfo.InvariantCulture)"
+                                                                data-minorder="@voucher.MinOrder.ToString("G29", CultureInfo.InvariantCulture)"
+                                                                data-quantity="@voucher.Quantity.ToString("G29", CultureInfo.InvariantCulture)"
+                                                                data-start="@voucher.StartDate.ToString("yyyy-MM-dd")"
+                                                                data-end="@voucher.EndDate.ToString("yyyy-MM-dd")"
+                                                                data-categoryid="@voucher.CategoryId"
+                                                                data-storeid="@voucher.StoreId"
+                                                                data-status="@((int)voucher.Status)"
+                                                                data-ispercentage="@voucher.IsPercentage.ToString().ToLower()"
+                                                                data-maxdiscount="@(voucher.MaxDiscount.HasValue ? voucher.MaxDiscount.Value.ToString("G29", CultureInfo.InvariantCulture) : "")"
+                                                                data-applyallproducts="@voucher.ApplyAllProducts.ToString().ToLower()"
+                                                                data-applyallcategories="@voucher.ApplyAllCategories.ToString().ToLower()"
+                                                                data-selectedproductids="@(voucher.SelectedProductIds != null ? string.Join(",", voucher.SelectedProductIds) : "")"
+                                                                title="Chỉnh sửa">
+                                                            <i class="bi-pencil"></i>
+                                                        </button>
+
+                                                        <button class="btn btn-outline-danger btn-sm rounded-circle btn-delete-voucher"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#deleteConfirmModal"
+                                                                data-id="@voucher.Id"
+                                                                title="Xóa">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <div class="d-flex flex-column gap-1">
+                                                    <small class="text-success">
+                                                        <i class="bi bi-calendar2-check me-1"></i>
+                                                        Bắt đầu: @voucher.StartDate.ToString("dd/MM/yyyy")
+                                                    </small>
+                                                    <small class="text-danger">
+                                                        <i class="bi bi-calendar2-x me-1"></i>
+                                                        Hết hạn: @voucher.EndDate.ToString("dd/MM/yyyy")
+                                                    </small>
+                                                </div>
+
+                                                <div class="mt-2 d-flex gap-2 flex-wrap">
+                                                    <span class="badge bg-success text-white">
+                                                        <i class="bi bi-box-seam me-1"></i>
+                                                        Còn lại: @(voucher.Quantity - used)
+                                                    </span>
+                                                    <span class="badge bg-light text-dark border">
+                                                        @(voucher.IsPercentage ? "Giảm %" : "Giảm VND")
+                                                    </span>
+                                                    @if (voucher.IsPercentage && voucher.MaxDiscount.HasValue && voucher.MaxDiscount.Value > 0)
+                                                    {
+                                                        <span class="badge bg-light text-dark border">
+                                                            Tối đa @voucher.MaxDiscount.Value.ToString("N0", vi)
+                                                        </span>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
+                            </div>
+                        }
 
-                                <div class="voucher-action d-flex gap-2">
-                                    <button type="button"
-                                            class="btn btn-outline-warning btn-sm rounded-circle btn-edit-voucher"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#editVoucherModal"
-                                            data-id="@voucher.Id"
-                                            data-discount="@voucher.Reduce"
-                                            data-minorder="@voucher.MinOrder"
-                                            data-quantity="@voucher.Quantity"
-                                            data-start="@voucher.StartDate.ToString("yyyy-MM-dd")"
-                                            data-end="@voucher.EndDate.ToString("yyyy-MM-dd")"
-                                            data-categoryid="@voucher.CategoryId"
-                                            data-storeid="@voucher.StoreId"
-                                            data-status="@((int)voucher.Status)"
-                                            data-ispercentage="@voucher.IsPercentage.ToString().ToLower()"
-                                            data-maxdiscount="@(voucher.MaxDiscount?.ToString() ?? "")"
-                                            title="Chỉnh sửa">
-                                        <i class="bi-pencil"></i>
-                                    </button>
-
-                                    <button class="btn btn-outline-danger btn-sm rounded-circle btn-delete-voucher"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#deleteConfirmModal"
-                                            data-id="@voucher.Id"
-                                            title="Xóa">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
+                        @if (!anyShown)
+                        {
+                            <div class="col-12">
+                                <div class="text-center text-muted py-5">
+                                    <i class="bi bi-card-text" style="font-size:2rem;"></i>
+                                    <div class="mt-2">Không có voucher khả dụng.</div>
                                 </div>
                             </div>
+                        }
 
-                            <div class="d-flex flex-column gap-1">
-                                <small class="text-success">
-                                    <i class="bi bi-calendar2-check me-1"></i>
-                                    Bắt đầu: @voucher.StartDate.ToString("dd/MM/yyyy")
-                                </small>
-                                <small class="text-danger">
-                                    <i class="bi bi-calendar2-x me-1"></i>
-                                    Hết hạn: @voucher.EndDate.ToString("dd/MM/yyyy")
-                                </small>
-                            </div>
+                        @if (ViewBag.TotalPages > 1)
+                        {
+                            <div class="w-100 d-flex justify-content-end mt-4">
+                                <nav aria-label="Page navigation">
+                                    <ul class="pagination mb-0">
+                                        <li class="page-item @(ViewBag.CurrentPage <= 1 ? "disabled" : "")">
+                                            <a class="page-link border-danger text-danger"
+                                               href="?page=@(ViewBag.CurrentPage - 1)&search=@ViewBag.Search&sort=@ViewBag.Sort">Previous</a>
+                                        </li>
 
-                            <div class="mt-2 d-flex gap-2 flex-wrap">
-                                <span class="badge bg-success text-white">
-                                    <i class="bi bi-box-seam me-1"></i>
-                                    Còn lại: @(voucher.Quantity - used)
-                                </span>
-                                <span class="badge bg-light text-dark border">
-                                    @(voucher.IsPercentage ? "Giảm %" : "Giảm VND")
-                                </span>
-                                @if (voucher.IsPercentage && voucher.MaxDiscount.HasValue && voucher.MaxDiscount.Value > 0)
-                                {
-                                    <span class="badge bg-light text-dark border">
-                                        Tối đa @voucher.MaxDiscount.Value.ToString("N0")
-                                    </span>
-                                }
+                                        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                                        {
+                                            <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                                <a class="page-link @(i == ViewBag.CurrentPage ? "bg-danger text-white border-danger" : "text-danger border-danger")"
+                                                   href="?page=@i&search=@ViewBag.Search&sort=@ViewBag.Sort">@i</a>
+                                            </li>
+                                        }
+
+                                        <li class="page-item @(ViewBag.CurrentPage >= ViewBag.TotalPages ? "disabled" : "")">
+                                            <a class="page-link border-danger text-danger"
+                                               href="?page=@(ViewBag.CurrentPage + 1)&search=@ViewBag.Search&sort=@ViewBag.Sort">Next</a>
+                                        </li>
+                                    </ul>
+                                </nav>
                             </div>
-                        </div>
+                        }
                     </div>
-                </div>
-            </div>
-        </div>
-    }
-
-    @if (!anyShown)
-    {
-        <div class="col-12">
-            <div class="text-center text-muted py-5">
-                <i class="bi bi-card-text" style="font-size:2rem;"></i>
-                <div class="mt-2">Không có voucher khả dụng.</div>
-            </div>
-        </div>
-    }
-
-    @if (ViewBag.TotalPages > 1)
-    {
-        <div class="w-100 d-flex justify-content-end mt-4">
-            <nav aria-label="Page navigation">
-                <ul class="pagination mb-0">
-                    <li class="page-item @(ViewBag.CurrentPage <= 1 ? "disabled" : "")">
-                        <a class="page-link border-danger text-danger"
-                           href="?page=@(ViewBag.CurrentPage - 1)&search=@ViewBag.Search&sort=@ViewBag.Sort">Previous</a>
-                    </li>
-
-                    @for (int i = 1; i <= ViewBag.TotalPages; i++)
-                    {
-                        <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
-                            <a class="page-link @(i == ViewBag.CurrentPage ? "bg-danger text-white border-danger" : "text-danger border-danger")"
-                               href="?page=@i&search=@ViewBag.Search&sort=@ViewBag.Sort">@i</a>
-                        </li>
-                    }
-
-                    <li class="page-item @(ViewBag.CurrentPage >= ViewBag.TotalPages ? "disabled" : "")">
-                        <a class="page-link border-danger text-danger"
-                           href="?page=@(ViewBag.CurrentPage + 1)&search=@ViewBag.Search&sort=@ViewBag.Sort">Next</a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
-    }
-</div>
 
                 </div>
             </div>
@@ -386,7 +412,7 @@
     </div>
 </div>
 
-<!-- Modal Thêm Voucher (seller, nhưng UI như admin) -->
+<!-- ===================== MODAL: ADD ===================== -->
 <div class="modal fade" id="addVoucherModal" tabindex="-1" aria-labelledby="addVoucherModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -394,11 +420,11 @@
                 @Html.AntiForgeryToken()
                 <div class="modal-header bg-danger">
                     <h5 class="modal-title text-white">Thêm Voucher</h5>
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
                 </div>
 
                 <div class="modal-body">
-                    <!-- Kiểu giảm giá -->
+                    <!-- Type -->
                     <div class="mb-3">
                         <label class="form-label d-block">Kiểu giảm giá</label>
                         <div class="form-check form-check-inline">
@@ -412,12 +438,17 @@
                         <div class="form-text">Nếu chọn %, có thể thiết lập “Giảm tối đa”.</div>
                     </div>
 
-                    <!-- Mức giảm -->
+                    <!-- Reduce -->
                     <div class="mb-4" id="reduceWrapper">
-                        <label class="form-label" for="discountAmount"><span id="reduceLabel">Mức Giảm Giá (VNĐ)</span></label>
+                        <label class="form-label"><span id="reduceLabel">Mức Giảm Giá (VNĐ)</span></label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-cash-coin"></i></span>
-                            <input type="number" class="form-control" id="discountAmount" name="Reduce" min="1000" required placeholder="Nhập số tiền giảm">
+                            <!-- display -->
+                            <input type="text" class="form-control" id="discountAmountDisplay"
+                                   placeholder="Nhập số tiền giảm" inputmode="numeric"
+                                   data-money-target="discountAmount" />
+                            <!-- hidden submit -->
+                            <input type="hidden" id="discountAmount" name="Reduce" />
                             <span class="input-group-text" id="reduceSuffix">VND</span>
                         </div>
                         <div class="text-danger small mt-1" id="discountAmountError"></div>
@@ -425,30 +456,37 @@
 
                     <!-- Max Discount -->
                     <div class="mb-4 d-none" id="maxDiscountGroup">
-                        <label class="form-label" for="maxDiscount">Giảm tối đa (VND) – tùy chọn</label>
+                        <label class="form-label" for="maxDiscountDisplay">Giảm tối đa (VND) – tùy chọn</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-graph-down"></i></span>
-                            <input type="number" class="form-control" id="maxDiscount" name="MaxDiscount" min="0" placeholder="Ví dụ: 50000">
+                            <input type="text" class="form-control" id="maxDiscountDisplay"
+                                   placeholder="VD: 50.000" inputmode="numeric"
+                                   data-money-target="maxDiscount" />
+                            <input type="hidden" id="maxDiscount" name="MaxDiscount" />
                             <span class="input-group-text">VND</span>
                         </div>
                     </div>
 
-                    <!-- Min Order -->
+                    <!-- Min / Qty -->
                     <div class="mb-4">
-                        <label class="form-label" for="minOrder">Đơn Hàng Tối Thiểu (VNĐ)</label>
+                        <label class="form-label" for="minOrderDisplay">Đơn Hàng Tối Thiểu (VNĐ)</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-bag-check"></i></span>
-                            <input type="number" class="form-control" id="minOrder" name="MinOrder" min="0" required placeholder="Nhập giá trị đơn tối thiểu">
+                            <input type="text" class="form-control" id="minOrderDisplay"
+                                   placeholder="Nhập giá trị đơn tối thiểu" inputmode="numeric"
+                                   data-money-target="minOrder" />
+                            <input type="hidden" id="minOrder" name="MinOrder" />
                         </div>
                         <div class="text-danger small mt-1" id="minOrderError"></div>
                     </div>
-
-                    <!-- Quantity -->
                     <div class="mb-4">
-                        <label class="form-label" for="quantity">Số Lượng</label>
+                        <label class="form-label" for="quantityDisplay">Số Lượng</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-list-ol"></i></span>
-                            <input type="number" class="form-control" id="quantity" name="Quantity" min="1" required placeholder="Nhập số lượng voucher">
+                            <input type="text" class="form-control" id="quantityDisplay"
+                                   placeholder="Nhập số lượng voucher" inputmode="numeric"
+                                   data-money-target="quantity" />
+                            <input type="hidden" id="quantity" name="Quantity" />
                         </div>
                         <div class="text-danger small mt-1" id="quantityError"></div>
                     </div>
@@ -483,20 +521,60 @@
                         </div>
                     </div>
 
-                    <!-- Category -->
-                    <div class="mb-4">
-                        <label class="form-label" for="categoryId">Danh mục</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-tags"></i></span>
-                            <select class="form-control" id="categoryId" name="CategoryId" required>
-                                <option value="">-- Chọn danh mục --</option>
-                                @foreach (var cat in ViewBag.Categories)
-                                {
-                                    <option value="@cat.Id">@cat.Name</option>
-                                }
-                            </select>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="ApplyAllProducts" name="ApplyAllProducts" value="true">
+                            <input type="hidden" name="ApplyAllProducts" value="false">
+                            <label class="form-check-label fw-bold" for="ApplyAllProducts">
+                                Áp dụng tất cả sản phẩm
+                            </label>
                         </div>
-                        <div class="text-danger small mt-1" id="categoryIdError"></div>
+                    </div>
+
+                    <!-- Selector row -->
+                    <div id="addProductGroupSummary" class="mb-3">
+                        <div class="scope-row" onclick="showProductsTab('add'); openProductPicker('add')">
+                            <div>
+                                <div><strong>Áp dụng cho nhóm sản phẩm</strong></div>
+                                <small>Nhấn để chọn sản phẩm</small>
+                            </div>
+                            <div id="addSelectedCount">0 đã chọn ▸</div>
+                        </div>
+                        <div id="addSelectedPreview" class="thumb-grid"></div>
+                    </div>
+                    <div id="addSelectedInputs"></div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="ApplyAllCategories" name="ApplyAllCategories" value="true">
+                            <input type="hidden" name="ApplyAllCategories" value="false" />
+                            <label class="form-check-label fw-bold" for="ApplyAllCategories">
+                                Áp dụng tất cả danh mục
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Tabs phạm vi -->
+                    <ul class="nav nav-tabs" id="addScopeTabs">
+                        <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#addTabCategory">Theo danh mục</a></li>
+                    </ul>
+                    <div class="tab-content border rounded-bottom p-3" id="addScopeTabsContent">
+                        <div class="tab-pane fade show active" id="addTabCategory">
+                            <div id="addCategoryBlock" class="mt-2">
+                                <label class="form-label" for="categoryId">Danh mục</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-tags"></i></span>
+                                    <select class="form-control" id="categoryId" name="CategoryId">
+                                        <option value="">-- Chọn danh mục --</option>
+                                        @foreach (var cat in ViewBag.Categories)
+                                        {
+                                            <option value="@cat.Id">@cat.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="addTabProducts"></div>
                     </div>
 
                     <input type="hidden" name="Type" value="0" />
@@ -504,15 +582,15 @@
                 </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal" style="text-transform: capitalize;">Đóng</button>
-                    <button type="submit" class="btn btn-danger btn-pill" style="text-transform: capitalize;">Thêm Voucher</button>
+                    <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-danger btn-pill">Thêm Voucher</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Modal Sửa Voucher (seller, UI như admin) -->
+<!-- ===================== MODAL: EDIT ===================== -->
 <div class="modal fade" id="editVoucherModal" tabindex="-1" aria-labelledby="editVoucherModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -522,11 +600,11 @@
 
                 <div class="modal-header bg-danger">
                     <h5 class="modal-title text-white" id="editVoucherModalLabel">Sửa Voucher</h5>
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
                 </div>
 
                 <div class="modal-body">
-                    <!-- Kiểu giảm -->
+                    <!-- Type -->
                     <div class="mb-3">
                         <label class="form-label d-block">Kiểu giảm giá</label>
                         <div class="form-check form-check-inline">
@@ -539,15 +617,18 @@
                         </div>
                     </div>
 
-                    <!-- Mức giảm -->
+                    <!-- Reduce -->
                     <div class="mb-4">
-                        <label class="form-label" for="editDiscountAmount">
+                        <label class="form-label">
                             <span id="editReduceLabel">Mức Giảm Giá (VNĐ)</span>
-                            <i class="bi bi-question-circle text-muted" data-bs-toggle="tooltip" title="Nếu %, nhập 1–100. Nếu VND, nhập số tiền giảm."></i>
+                            <i class="bi bi-question-circle text-muted" data-bs-toggle="tooltip" title="Nếu %, 1–100. Nếu VND, nhập số tiền."></i>
                         </label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-cash-coin"></i></span>
-                            <input type="number" name="Reduce" class="form-control" id="editDiscountAmount" placeholder="Nhập giá trị" required min="1">
+                            <input type="text" class="form-control" id="editDiscountAmountDisplay"
+                                   placeholder="Nhập giá trị" inputmode="numeric"
+                                   data-money-target="editDiscountAmount" />
+                            <input type="hidden" name="Reduce" id="editDiscountAmount" />
                             <span class="input-group-text" id="editReduceSuffix">VND</span>
                         </div>
                         <div class="text-danger small mt-1" id="editDiscountAmountError"></div>
@@ -555,30 +636,37 @@
 
                     <!-- Max Discount -->
                     <div class="mb-4 d-none" id="editMaxDiscountGroup">
-                        <label class="form-label" for="editMaxDiscount">Giảm tối đa (VND) – tùy chọn</label>
+                        <label class="form-label" for="editMaxDiscountDisplay">Giảm tối đa (VND) – tùy chọn</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-graph-down"></i></span>
-                            <input type="number" class="form-control" id="editMaxDiscount" name="MaxDiscount" min="0" placeholder="Ví dụ: 50000">
+                            <input type="text" class="form-control" id="editMaxDiscountDisplay"
+                                   placeholder="VD: 50.000" inputmode="numeric"
+                                   data-money-target="editMaxDiscount" />
+                            <input type="hidden" id="editMaxDiscount" name="MaxDiscount" />
                             <span class="input-group-text">VND</span>
                         </div>
                     </div>
 
-                    <!-- Min Order -->
+                    <!-- Min / Qty -->
                     <div class="mb-4">
-                        <label class="form-label" for="editMinOrder">Đơn Hàng Tối Thiểu (VNĐ)</label>
+                        <label class="form-label" for="editMinOrderDisplay">Đơn Hàng Tối Thiểu (VNĐ)</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-bag-check"></i></span>
-                            <input type="number" name="MinOrder" class="form-control" id="editMinOrder" placeholder="Nhập giá trị đơn tối thiểu" required min="0">
+                            <input type="text" class="form-control" id="editMinOrderDisplay"
+                                   placeholder="Nhập giá trị đơn tối thiểu" inputmode="numeric"
+                                   data-money-target="editMinOrder" />
+                            <input type="hidden" name="MinOrder" id="editMinOrder" />
                         </div>
                         <div class="text-danger small mt-1" id="editMinOrderError"></div>
                     </div>
-
-                    <!-- Quantity -->
                     <div class="mb-4">
-                        <label class="form-label" for="editQuantity">Số Lượng</label>
+                        <label class="form-label" for="editQuantityDisplay">Số Lượng</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-list-ol"></i></span>
-                            <input type="number" name="Quantity" class="form-control" id="editQuantity" placeholder="Nhập số lượng voucher" required min="1">
+                            <input type="text" class="form-control" id="editQuantityDisplay"
+                                   placeholder="Nhập số lượng voucher" inputmode="numeric"
+                                   data-money-target="editQuantity" />
+                            <input type="hidden" name="Quantity" id="editQuantity" />
                         </div>
                         <div class="text-danger small mt-1" id="editQuantityError"></div>
                     </div>
@@ -601,32 +689,60 @@
                         </div>
                     </div>
 
-                    <!-- Status -->
-                    <div class="mb-4">
-                        <label class="form-label" for="editStatus">Trạng Thái</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i id="editStatusIcon" class="bi bi-toggle-on"></i></span>
-                            <select class="form-control" name="Status" id="editStatus" onchange="updateEditStatusIcon()" required>
-                                <option value="0">Còn hạn</option>
-                                <option value="1">Hết hạn</option>
-                            </select>
+                    <!-- Scope (giống ADD) -->
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="editApplyAllProducts" name="ApplyAllProducts" value="true">
+                            <input type="hidden" name="ApplyAllProducts" value="false" />
+                            <label class="form-check-label fw-bold" for="editApplyAllProducts">
+                                Áp dụng tất cả sản phẩm
+                            </label>
                         </div>
                     </div>
 
-                    <!-- Category -->
-                    <div class="mb-4">
-                        <label class="form-label" for="editCategoryId">Danh mục</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-tags-fill"></i></span>
-                            <select class="form-control" name="CategoryId" id="editCategoryId">
-                                <option value="">-- Chọn danh mục --</option>
-                                @foreach (var cat in ViewBag.Categories)
-                                {
-                                    <option value="@cat.Id">@cat.Name</option>
-                                }
-                            </select>
+                    <div id="editProductGroupSummary" class="mb-3">
+                        <div class="scope-row" onclick="showProductsTab('edit'); openProductPicker('edit')">
+                            <div>
+                                <div><strong>Áp dụng cho nhóm sản phẩm</strong></div>
+                                <small>Nhấn để chọn sản phẩm</small>
+                            </div>
+                            <div id="editSelectedCount">0 đã chọn ▸</div>
                         </div>
-                        <div class="text-danger small mt-1" id="editCategoryIdError"></div>
+                        <div id="editSelectedPreview" class="thumb-grid"></div>
+                    </div>
+                    <div id="editSelectedInputs"></div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="editApplyAllCategories" name="ApplyAllCategories" value="true">
+                            <input type="hidden" name="ApplyAllCategories" value="false" />
+                            <label class="form-check-label fw-bold" for="editApplyAllCategories">
+                                Áp dụng tất cả danh mục
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Tabs phạm vi -->
+                    <ul class="nav nav-tabs" id="editScopeTabs">
+                        <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#editTabCategory">Theo danh mục</a></li>
+                    </ul>
+                    <div class="tab-content border rounded-bottom p-3" id="editScopeTabsContent">
+                        <div class="tab-pane fade show active" id="editTabCategory">
+                            <div id="editCategoryBlock" class="mt-2">
+                                <label class="form-label" for="editCategoryId">Danh mục</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-tags"></i></span>
+                                    <select class="form-control" name="CategoryId" id="editCategoryId">
+                                        <option value="">-- Chọn danh mục --</option>
+                                        @foreach (var cat in ViewBag.Categories)
+                                        {
+                                            <option value="@cat.Id">@cat.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="editTabProducts"></div>
                     </div>
 
                     <input type="hidden" name="Type" value="0" />
@@ -634,15 +750,15 @@
                 </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal" style="text-transform: capitalize;">Đóng</button>
-                    <button type="submit" class="btn btn-danger btn-pill" style="text-transform: capitalize;">Lưu Thay Đổi</button>
+                    <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-danger btn-pill">Lưu Thay Đổi</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Modal Xóa Voucher -->
+<!-- ===================== MODAL: DELETE ===================== -->
 <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -650,210 +766,452 @@
                 @Html.AntiForgeryToken()
                 <div class="modal-header bg-danger">
                     <h5 class="modal-title text-white" id="deleteConfirmModalLabel">Thông Báo Xóa</h5>
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Đóng"><span aria-hidden="true">&times;</span></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
                 </div>
                 <div class="modal-body">
                     Bạn có chắc chắn muốn xóa không? Hành động này sẽ không thể hoàn tác.
                     <input type="hidden" name="id" id="deleteVoucherFormId" />
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal" style="text-transform: capitalize;">Đóng</button>
-                    <button type="submit" class="btn btn-danger btn-pill" style="text-transform: capitalize;">Xóa</button>
+                    <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-danger btn-pill">Xóa</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
+<!-- ===================== MODAL: PRODUCT PICKER ===================== -->
+<div class="modal fade" id="productPickerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Chọn sản phẩm</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="mb-3">
+                    <input type="text" class="form-control" id="ppSearch" placeholder="Nhập từ khóa sản phẩm...">
+                </div>
+
+                <div id="ppList" class="list-group list-group-flush" style="max-height:60vh;overflow:auto;">
+                    @foreach (var p in ViewBag.Products)
+                    {
+                        var img = ResolveProductImage(p, Url);
+                        <label class="list-group-item d-flex align-items-center">
+                            <input class="form-check-input me-3 pp-item" type="checkbox"
+                                   value="@p.Id" data-name="@p.Name" data-img="@img" />
+                            <img src="@img" class="pp-thumb me-2" alt="@p.Name" loading="lazy" style="width:40px;height:40px;object-fit:cover;" />
+                            <span>@p.Name</span>
+                        </label>
+                    }
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <div class="me-auto">
+                    <span id="ppSelectedCount">0 đã chọn</span>
+                </div>
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-danger" id="ppAddBtn">Thêm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-    /* ==== Search debounce ==== */
+    /* ======= Search submit debounce ======= */
     let searchTimeout;
-    function submitSearch() {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => { document.getElementById('searchForm').submit(); }, 300);
+    function submitSearch(){ clearTimeout(searchTimeout); searchTimeout=setTimeout(()=>document.getElementById('searchForm')?.submit(),300); }
+
+    document.addEventListener("DOMContentLoaded", function(){
+      // Sort persist
+      const sortSelect=document.getElementById("sortSelect");
+      const currentSort=new URLSearchParams(window.location.search).get("sort");
+      if(currentSort) sortSelect.value=currentSort;
+      sortSelect?.addEventListener("change", function(){
+        const url=new URL(window.location.href);
+        const selectedSort=sortSelect.value;
+        if(selectedSort) url.searchParams.set("sort", selectedSort); else url.searchParams.delete("sort");
+        const searchValue=document.querySelector('input[name="search"]')?.value;
+        if(searchValue) url.searchParams.set("search", searchValue);
+        window.location.href=url.toString();
+      });
+
+      // Auto dismiss alerts
+      const autoCloseAlerts=()=>{ document.querySelectorAll('.alert').forEach(a=>{ setTimeout(()=>{ a.style.transition='opacity .5s'; a.style.opacity='0'; setTimeout(()=>a.remove(),500); },2000); }); };
+      autoCloseAlerts();
+      const alertContainer=document.querySelector('div[style*="position: fixed"]');
+      if(alertContainer){ new MutationObserver(m=>{ if(m.some(x=>x.addedNodes.length)) autoCloseAlerts(); }).observe(alertContainer,{childList:true}); }
+    });
+
+    /* ======= Number formatting (thousand '.' with hidden numeric) ======= */
+    const vnGroup = s => {
+      const digits = (s || '').replace(/\D/g, '');
+      return digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    };
+    const vnUnGroup = s => (s || '').replace(/\./g, '');
+
+    function wireMoneyInput(display) {
+      const hiddenId = display.dataset.moneyTarget;
+      const hidden = document.getElementById(hiddenId);
+      if (!hidden) return;
+
+      // init display from hidden if already has value
+      if (hidden.value) display.value = vnGroup(hidden.value);
+
+      display.addEventListener('input', () => {
+        const raw = vnUnGroup(display.value);
+        display.value = vnGroup(display.value);
+        hidden.value = raw;
+      });
+
+      display.addEventListener('keypress', (e) => {
+        if (!/[0-9]/.test(e.key)) e.preventDefault();
+      });
     }
 
-    /* ==== Sort persist ==== */
-    document.addEventListener("DOMContentLoaded", function () {
-        const sortSelect = document.getElementById("sortSelect");
-        const currentSort = new URLSearchParams(window.location.search).get("sort");
-        if (currentSort) sortSelect.value = currentSort;
-        sortSelect.addEventListener("change", function () {
-            const url = new URL(window.location.href);
-            const selectedSort = sortSelect.value;
-            if (selectedSort) url.searchParams.set("sort", selectedSort); else url.searchParams.delete("sort");
-            const searchValue = document.querySelector('input[name="search"]')?.value;
-            if (searchValue) url.searchParams.set("search", searchValue);
-            window.location.href = url.toString();
-        });
-    });
+    // configure % vs VND for Reduce field
+    function configureReduceFormatting(isPercent, prefix) {
+      const disp = document.getElementById(prefix + 'DiscountAmountDisplay');
+      const hid  = document.getElementById(prefix + 'DiscountAmount');
+      const maxGroup = document.getElementById(prefix ? 'editMaxDiscountGroup' : 'maxDiscountGroup');
+      const label = document.getElementById(prefix ? 'editReduceLabel' : 'reduceLabel');
+      const suffix = document.getElementById(prefix ? 'editReduceSuffix' : 'reduceSuffix');
 
-    /* ==== Auto-dismiss alerts ==== */
-    document.addEventListener("DOMContentLoaded", function () {
-        const autoCloseAlerts = () => {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(function (alert) {
-                setTimeout(() => {
-                    alert.style.transition = 'opacity 0.5s ease';
-                    alert.style.opacity = '0';
-                    setTimeout(() => { if (alert && alert.parentNode) alert.parentNode.removeChild(alert); }, 500);
-                }, 2000);
-            });
+      if (!disp || !hid) return;
+
+      if (isPercent) {
+        // label/suffix/max
+        if (label) label.textContent = "Mức Giảm Giá (%)";
+        if (suffix) suffix.textContent = "%";
+        maxGroup?.classList.add('d-none');
+
+        // percent input: 1..100, no thousand grouping
+        disp.placeholder = 'Nhập phần trăm (1 - 100)';
+        disp.value = hid.value || '';
+        disp.oninput = () => {
+          disp.value = disp.value.replace(/\D/g, '').slice(0, 3);
+          let v = parseInt(disp.value || '0', 10);
+          if (isNaN(v)) v = 0;
+          v = Math.max(1, Math.min(100, v));
+          hid.value = v.toString();
+          disp.value = hid.value;
         };
-        autoCloseAlerts();
-        const alertContainer = document.querySelector('div[style*="position: fixed"]');
-        if (alertContainer) {
-            const observer = new MutationObserver(m => { if (m.some(x => x.addedNodes.length)) autoCloseAlerts(); });
-            observer.observe(alertContainer, { childList: true });
-        }
-    });
+      } else {
+        if (label) label.textContent = "Mức Giảm Giá (VNĐ)";
+        if (suffix) suffix.textContent = "VND";
+        maxGroup?.classList.remove('d-none');
+        disp.placeholder = 'Nhập số tiền giảm (>= 1.000)';
 
-    /* ==== Helpers: % / VND UI toggle ==== */
-    function toggleReduceUI(isPercent, labelId, suffixId, maxGroupId, amountInputId) {
-        const label = document.getElementById(labelId);
-        const suffix = document.getElementById(suffixId);
-        const maxGroup = document.getElementById(maxGroupId);
-        const amountInput = document.getElementById(amountInputId);
-        if (isPercent) {
-            label.textContent = "Mức Giảm Giá (%)";
-            suffix.textContent = "%";
-            maxGroup.classList.remove("d-none");
-            amountInput.setAttribute("min", "1");
-            amountInput.setAttribute("max", "100");
-            amountInput.placeholder = "Nhập phần trăm (1 - 100)";
-        } else {
-            label.textContent = "Mức Giảm Giá (VNĐ)";
-            suffix.textContent = "VND";
-            maxGroup.classList.add("d-none");
-            amountInput.removeAttribute("max");
-            amountInput.setAttribute("min", "1000");
-            amountInput.placeholder = "Nhập số tiền giảm (>= 1000)";
-        }
+        disp.oninput = null;
+        wireMoneyInput(disp);
+        disp.value = vnGroup(hid.value || '');
+      }
     }
 
-    /* ==== ADD modal behavior ==== */
-    document.addEventListener('DOMContentLoaded', function () {
-        const rMoney = document.getElementById("reduceTypeMoney");
-        const rPercent = document.getElementById("reduceTypePercent");
-        const updateAddReduceUI = () => toggleReduceUI(rPercent.checked, "reduceLabel", "reduceSuffix", "maxDiscountGroup", "discountAmount");
-        if (rMoney && rPercent) {
-            rMoney.addEventListener("change", updateAddReduceUI);
-            rPercent.addEventListener("change", updateAddReduceUI);
-            updateAddReduceUI();
-        }
+    /* ======= Tabs helper ======= */
+    function setTabActive(anchorSelector){
+      const el=document.querySelector(anchorSelector);
+      if(!el) return;
+      new bootstrap.Tab(el).show();
+    }
+    function showProductsTab(mode){
+      if(mode==='add') setTabActive('#addScopeTabs a[href="#addTabProducts"]');
+      else setTabActive('#editScopeTabs a[href="#editTabProducts"]');
+    }
 
-        // min date logic
-        const today = new Date().toISOString().split("T")[0];
-        const startInput = document.getElementById("startDate");
-        const endInput = document.getElementById("endDate");
-        if (startInput) {
-            startInput.setAttribute("min", today);
-            startInput.addEventListener("change", function () {
-                if (endInput) {
-                    endInput.setAttribute("min", this.value);
-                    if (endInput.value && endInput.value < this.value) endInput.value = this.value;
-                }
-            });
-        }
-        if (endInput) endInput.setAttribute("min", today);
+    /* ======= Apply-all toggles ======= */
+    function wireAllProductsToggle(prefix){
+      const chk=document.getElementById(prefix==='edit'?'editApplyAllProducts':'ApplyAllProducts');
+      const summary=document.getElementById(prefix==='edit'?'editProductGroupSummary':'addProductGroupSummary');
+      const inputs=document.getElementById(prefix==='edit'?'editSelectedInputs':'addSelectedInputs');
+      const preview=document.getElementById(prefix==='edit'?'editSelectedPreview':'addSelectedPreview');
+      const counter=document.getElementById(`${prefix||'add'}SelectedCount`);
+      const sync=()=>{
+        const all=chk?.checked??false;
+        if(summary) summary.style.display=all?'none':'block';
+        if(all){ if(inputs) inputs.innerHTML=''; if(preview) preview.innerHTML=''; if(counter) counter.textContent='0 đã chọn ▸'; }
+      };
+      chk?.addEventListener('change', sync);
+      sync();
+    }
+    function wireAllCategoriesToggle(prefix){
+      const chk = document.getElementById(prefix==='edit' ? 'editApplyAllCategories' : 'ApplyAllCategories');
+      const block = document.getElementById(prefix==='edit' ? 'editCategoryBlock' : 'addCategoryBlock');
+      const sel   = document.getElementById(prefix==='edit' ? 'editCategoryId'    : 'categoryId');
+      const sync = ()=>{
+        const all = chk?.checked ?? false;
+        if (block) block.style.display = all ? 'none' : 'block';
+        if (all && sel) sel.value = '';
+      };
+      chk?.addEventListener('change', sync);
+      sync();
+    }
 
-        window.updateStatusIcon = function () {
-            const statusVal = document.getElementById("status").value;
-            const icon = document.getElementById("statusIcon");
-            if (statusVal === "0") { icon.classList.remove("bi-toggle-off"); icon.classList.add("bi-toggle-on"); }
-            else { icon.classList.remove("bi-toggle-on"); icon.classList.add("bi-toggle-off"); }
+    /* ======= Status icons ======= */
+    function updateStatusIcon(){
+      const v=document.getElementById("status")?.value, icon=document.getElementById("statusIcon");
+      if(!icon) return;
+      if(v==="0"){ icon.classList.remove("bi-toggle-off"); icon.classList.add("bi-toggle-on"); }
+      else { icon.classList.remove("bi-toggle-on"); icon.classList.add("bi-toggle-off"); }
+    }
+    function updateEditStatusIcon(){
+      const v=document.getElementById("editStatus")?.value, icon=document.getElementById("editStatusIcon");
+      if(!icon) return;
+      if(v==="0"){ icon.classList.remove("bi-toggle-off"); icon.classList.add("bi-toggle-on"); }
+      else { icon.classList.remove("bi-toggle-on"); icon.classList.add("bi-toggle-off"); }
+    }
+
+    /* ======= Init ADD modal ======= */
+    document.addEventListener('DOMContentLoaded', function(){
+      // percent/money configure
+      const rPercent=document.getElementById("reduceTypePercent");
+      const rMoney=document.getElementById("reduceTypeMoney");
+      const applyAddMode=()=>configureReduceFormatting(rPercent?.checked, '');
+      rPercent?.addEventListener("change", applyAddMode);
+      rMoney?.addEventListener("change", applyAddMode);
+      applyAddMode();
+
+      // Date min
+      const today=new Date().toISOString().split("T")[0];
+      const startInput=document.getElementById("startDate"), endInput=document.getElementById("endDate");
+      if(startInput){
+        startInput.setAttribute("min",today);
+        startInput.addEventListener("change",function(){ if(endInput){ endInput.setAttribute("min",this.value); if(endInput.value && endInput.value < this.value) endInput.value=this.value; } });
+      }
+      endInput?.setAttribute("min",today);
+
+      updateStatusIcon();
+      wireAllProductsToggle('');
+      wireAllCategoriesToggle('');
+
+      // wire formatting for all money-like inputs in ADD
+      document.querySelectorAll('#addVoucherModal [data-money-target]').forEach(wireMoneyInput);
+
+      // ensure hidden sync before submit (safety)
+      document.getElementById('voucherForm')?.addEventListener('submit', () => {
+        document.querySelectorAll('#addVoucherModal [data-money-target]').forEach(el => {
+          const hid=document.getElementById(el.dataset.moneyTarget);
+          if(hid) hid.value = vnUnGroup(el.value);
+        });
+      });
+    });
+
+    /* ======= Init EDIT modal ======= */
+    document.addEventListener('DOMContentLoaded', function(){
+      document.querySelectorAll('.btn-edit-voucher').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          const norm = s => (s ?? '').toString().replace(',', '.');
+
+          // ids/fields
+          document.getElementById('editVoucherId').value = btn.dataset.id || '';
+          document.getElementById('editStartDate').value = btn.dataset.start || '';
+          document.getElementById('editEndDate').value   = btn.dataset.end || '';
+
+          // hidden numeric values
+          document.getElementById('editDiscountAmount').value = norm(btn.dataset.discount);
+          document.getElementById('editMinOrder').value       = norm(btn.dataset.minorder);
+          document.getElementById('editQuantity').value       = norm(btn.dataset.quantity);
+          document.getElementById('editMaxDiscount').value    = norm(btn.dataset.maxdiscount);
+
+          // display (grouped)
+          document.getElementById('editDiscountAmountDisplay').value = vnGroup(document.getElementById('editDiscountAmount').value);
+          document.getElementById('editMinOrderDisplay').value       = vnGroup(document.getElementById('editMinOrder').value);
+          document.getElementById('editQuantityDisplay').value       = vnGroup(document.getElementById('editQuantity').value);
+          document.getElementById('editMaxDiscountDisplay').value    = vnGroup(document.getElementById('editMaxDiscount').value);
+
+          // status
+          const editStatus=document.getElementById('editStatus');
+          if(editStatus) editStatus.value=(btn.dataset.status ?? "0");
+          updateEditStatusIcon();
+
+          // % / VND configure
+          const isPercent=(btn.dataset.ispercentage==='true');
+          document.getElementById('editReduceTypePercent').checked = isPercent;
+          document.getElementById('editReduceTypeMoney').checked   = !isPercent;
+          configureReduceFormatting(isPercent, 'edit');
+
+          // category + switches
+          const catSel=document.getElementById('editCategoryId');
+          if(catSel) catSel.value = btn.dataset.categoryid || "";
+          const chkProd=document.getElementById('editApplyAllProducts');
+          const chkCat =document.getElementById('editApplyAllCategories');
+          if (chkProd) chkProd.checked = (btn.dataset.applyallproducts === 'true');
+          if (chkCat)  chkCat.checked  = (btn.dataset.applyallcategories === 'true');
+          wireAllProductsToggle('edit');
+          wireAllCategoriesToggle('edit');
+
+          // selected products → hidden inputs + preview
+          const ids=(btn.dataset.selectedproductids||'').split(',').map(s=>s.trim()).filter(Boolean);
+          const cont=document.getElementById('editSelectedInputs');
+          cont.innerHTML='';
+          ids.forEach(id=>{ const i=document.createElement('input'); i.type='hidden'; i.name='SelectedProductIds'; i.value=id; cont.appendChild(i); });
+          const cnt=document.getElementById('editSelectedCount'); if(cnt) cnt.textContent=`${ids.length} đã chọn ▸`;
+          buildPreviewFromIds('edit', ids);
+
+          // wire formatting for money-like inputs in EDIT (once)
+          ['editDiscountAmountDisplay','editMinOrderDisplay','editQuantityDisplay','editMaxDiscountDisplay'].forEach(id=>{
+            const el=document.getElementById(id);
+            if(el && !el._wired){ wireMoneyInput(el); el._wired=true; }
+          });
+        });
+      });
+
+      const today=new Date().toISOString().split("T")[0];
+      const es=document.getElementById('editStartDate'), ee=document.getElementById('editEndDate');
+      if(es){ es.setAttribute('min', today); es.addEventListener('change', function(){ if(ee){ ee.setAttribute('min', this.value); if(ee.value && ee.value < this.value) ee.value=this.value; } }); }
+      ee?.setAttribute('min', today);
+
+      // ensure hidden sync before submit (safety)
+      document.getElementById('editVoucherForm')?.addEventListener('submit', () => {
+        document.querySelectorAll('#editVoucherModal [data-money-target]').forEach(el => {
+          const hid=document.getElementById(el.dataset.moneyTarget);
+          if(hid) hid.value = vnUnGroup(el.value);
+        });
+      });
+    });
+
+    /* ======= Delete binding ======= */
+    document.addEventListener('DOMContentLoaded', function(){
+      document.querySelectorAll('.btn-delete-voucher').forEach(b=>{
+        b.addEventListener('click', ()=>{ document.getElementById("deleteVoucherFormId").value = b.getAttribute("data-id"); });
+      });
+    });
+
+    /* ======= Product Picker ======= */
+    let ppMode = 'add';
+    let parentModalEl = null;
+    let parentModalInstance = null;
+
+    function openProductPicker(mode){
+      ppMode = mode;
+      const pickerEl = document.getElementById('productPickerModal');
+      if (!pickerEl) return;
+
+      // Prefill checkbox từ hidden inputs hiện có
+      const selected = new Set(
+        [...document.querySelectorAll(`#${ppMode}SelectedInputs input[name="SelectedProductIds"]`)]
+          .map(i => i.value)
+      );
+      document.querySelectorAll('#ppList .pp-item').forEach(cb => cb.checked = selected.has(cb.value));
+      updatePPSelectedCount();
+
+      // Tìm modal cha đang mở
+      parentModalEl = document.querySelector('#addVoucherModal.show, #editVoucherModal.show');
+      parentModalInstance = parentModalEl ? bootstrap.Modal.getInstance(parentModalEl) : null;
+
+      const showPickerNow = () => {
+        const picker = bootstrap.Modal.getOrCreateInstance(pickerEl);
+        picker.show();
+        pickerEl.addEventListener('hidden.bs.modal', function handler(){
+          pickerEl.removeEventListener('hidden.bs.modal', handler);
+          if (parentModalInstance) parentModalInstance.show();
+          parentModalEl = null; parentModalInstance = null;
+        }, { once: true });
+      };
+
+      if (!parentModalInstance) showPickerNow();
+      else {
+        const onceHidden = function(){
+          parentModalEl.removeEventListener('hidden.bs.modal', onceHidden);
+          setTimeout(showPickerNow, 0);
         };
-        updateStatusIcon();
-    });
+        parentModalEl.addEventListener('hidden.bs.modal', onceHidden);
+        parentModalInstance.hide();
+      }
+    }
 
-    /* ==== EDIT modal behavior ==== */
-    document.addEventListener('DOMContentLoaded', function () {
-        window.updateEditStatusIcon = function () {
-            const statusVal = document.getElementById("editStatus").value;
-            const icon = document.getElementById("editStatusIcon");
-            if (statusVal === "0") { icon.classList.remove("bi-toggle-off"); icon.classList.add("bi-toggle-on"); }
-            else { icon.classList.remove("bi-toggle-on"); icon.classList.add("bi-toggle-off"); }
-        };
+    function updatePPSelectedCount(){
+      const n = document.querySelectorAll('#ppList .pp-item:checked').length;
+      const label = document.getElementById('ppSelectedCount');
+      if (label) label.textContent = `${n} đã chọn`;
+      buildPreviewFromPicker(ppMode);
+    }
 
-        document.querySelectorAll('.btn-edit-voucher').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                // essentials
-                document.getElementById('editVoucherId').value = btn.dataset.id || '';
-                document.getElementById('editDiscountAmount').value = btn.dataset.discount || '';
-                document.getElementById('editMinOrder').value = btn.dataset.minorder || '';
-                document.getElementById('editQuantity').value = btn.dataset.quantity || '';
-                document.getElementById('editStartDate').value = btn.dataset.start || '';
-                document.getElementById('editEndDate').value = btn.dataset.end || '';
-                document.getElementById('editStoreId').value = btn.dataset.storeid || '';
+    function buildPreviewFromPicker(prefix){
+      const container = document.getElementById(`${prefix}SelectedPreview`);
+      if (!container) return;
+      container.innerHTML = '';
+      document.querySelectorAll('#ppList .pp-item:checked').forEach(cb => {
+        const img = cb.dataset.img || '/images/no-image.png';
+        const alt = cb.dataset.name || '';
+        const el = document.createElement('img');
+        el.src = img; el.alt = alt; el.className = 'thumb';
+        el.onerror = function(){ this.src = '/images/no-image.png'; };
+        container.appendChild(el);
+      });
+    }
 
-                // status
-                document.getElementById('editStatus').value = (btn.dataset.status ?? "0");
-                updateEditStatusIcon();
+    function buildPreviewFromIds(prefix, ids){
+      const container = document.getElementById(`${prefix}SelectedPreview`);
+      if (!container) return;
+      container.innerHTML = '';
+      const map = new Map();
+      document.querySelectorAll('#ppList .pp-item').forEach(cb => {
+        map.set(cb.value, { img: cb.dataset.img, name: cb.dataset.name });
+      });
+      ids.forEach(id => {
+        const m = map.get(id) || {};
+        const el = document.createElement('img');
+        el.src = m.img || '/images/no-image.png';
+        el.alt = m.name || '';
+        el.className = 'thumb';
+        el.onerror = function(){ this.src = '/images/no-image.png'; };
+        container.appendChild(el);
+      });
+    }
 
-                // type & max
-                const isPercent = (btn.dataset.ispercentage === 'true');
-                document.getElementById('editReduceTypePercent').checked = isPercent;
-                document.getElementById('editReduceTypeMoney').checked = !isPercent;
-                toggleReduceUI(isPercent, "editReduceLabel", "editReduceSuffix", "editMaxDiscountGroup", "editDiscountAmount");
-                document.getElementById('editMaxDiscount').value = btn.dataset.maxdiscount || '';
+    /* Search + events trong picker */
+    document.addEventListener('DOMContentLoaded', function(){
+      const searchInput = document.getElementById('ppSearch');
+      if (searchInput) {
+        searchInput.addEventListener('input', function(){
+          const q = this.value.trim().toLowerCase();
+          document.querySelectorAll('#ppList .list-group-item').forEach(li => {
+            const name = li.querySelector('.pp-item')?.dataset.name?.toLowerCase() ?? '';
+            li.style.display = name.includes(q) ? '' : 'none';
+          });
+        });
+      }
 
-                // category
-                document.getElementById('editCategoryId').value = btn.dataset.categoryid || "";
+      const ppList = document.getElementById('ppList');
+      if (ppList) {
+        ppList.addEventListener('change', function(e){
+          if (e.target.classList.contains('pp-item')) updatePPSelectedCount();
+        });
+      }
+
+      const ppAddBtn = document.getElementById('ppAddBtn');
+      if (ppAddBtn) {
+        ppAddBtn.addEventListener('click', function(){
+          const ids = [...document.querySelectorAll('#ppList .pp-item:checked')].map(cb => cb.value);
+
+          // Nhét hidden inputs vào form tương ứng
+          const container = document.getElementById(`${ppMode}SelectedInputs`);
+          if (container) {
+            container.innerHTML = '';
+            ids.forEach(id => {
+              const i = document.createElement('input');
+              i.type = 'hidden';
+              i.name = 'SelectedProductIds';
+              i.value = id;
+              container.appendChild(i);
             });
+          }
+
+          // Counter + Preview
+          const cnt = document.getElementById(`${ppMode}SelectedCount`);
+          if (cnt) cnt.textContent = `${ids.length} đã chọn ▸`;
+          buildPreviewFromIds(ppMode, ids);
+
+          // Đóng picker
+          const pickerEl = document.getElementById('productPickerModal');
+          const picker = bootstrap.Modal.getInstance(pickerEl);
+          if (picker) picker.hide();
         });
-
-        // min date logic
-        const today = new Date().toISOString().split("T")[0];
-        const es = document.getElementById('editStartDate');
-        const ee = document.getElementById('editEndDate');
-        if (es) {
-            es.setAttribute('min', today);
-            es.addEventListener('change', function () {
-                if (ee) {
-                    ee.setAttribute('min', this.value);
-                    if (ee.value && ee.value < this.value) ee.value = this.value;
-                }
-            });
-        }
-        if (ee) ee.setAttribute('min', today);
-    });
-
-    /* ==== Delete modal binding ==== */
-    document.addEventListener('DOMContentLoaded', function () {
-        document.querySelectorAll('.btn-delete-voucher').forEach(button => {
-            button.addEventListener('click', () => {
-                const voucherId = button.getAttribute("data-id");
-                document.getElementById("deleteVoucherFormId").value = voucherId;
-            });
-        });
-    });
-
-    /* ==== Gọn nhẹ validations ==== */
-    document.addEventListener('DOMContentLoaded', function () {
-        const addAmount = document.getElementById('discountAmount');
-        const addMin = document.getElementById('minOrder');
-        const addQty = document.getElementById('quantity');
-
-        if (addAmount) addAmount.addEventListener('input', function(){
-            const isPercent = document.getElementById('reduceTypePercent').checked;
-            const v = Number(this.value);
-            const el = document.getElementById('discountAmountError');
-            if (!v) { el.textContent='Mức giảm giá không được để trống.'; return; }
-            if (isPercent && (v < 1 || v > 100)) el.textContent='Nếu %, giá trị phải trong 1–100.';
-            else if (!isPercent && v < 1000) el.textContent='Nếu VND, giá trị phải ≥ 1000.';
-            else el.textContent='';
-        });
-
-        if (addMin) addMin.addEventListener('input', function(){
-            const v = Number(this.value);
-            const el = document.getElementById('minOrderError');
-            el.textContent = (isNaN(v) || v < 0) ? 'Đơn hàng tối thiểu không nhỏ hơn 0.' : '';
-        });
-
-        if (addQty) addQty.addEventListener('input', function(){
-            const v = Number(this.value);
-            const el = document.getElementById('quantityError');
-            el.textContent = (isNaN(v) || v < 1) ? 'Số lượng phải từ 1 trở lên.' : '';
-        });
+      }
     });
 </script>

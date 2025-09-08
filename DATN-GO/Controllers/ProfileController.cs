@@ -112,7 +112,7 @@ namespace DATN_GO.Controllers
             currentUser.FullName = model.FullName;
             currentUser.Gender = model.Gender;
             currentUser.BirthDay = model.BirthDay;
-
+            currentUser.Phone = model.Phone;
 
             var success = await _userService.UpdateUserAsync(currentUser.Id, currentUser);
 

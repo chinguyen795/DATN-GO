@@ -64,33 +64,41 @@ namespace DATN_API.Services
             if (orderSubtotal < v.MinOrder)
                 return (0, 0, $"Đơn tối thiểu {v.MinOrder:N0}.");
 
-            // Phạm vi áp dụng: chỉ Category hoặc danh sách ProductVouchers
-            bool scopeOk =
-                (v.CategoryId != null && categoryIdInCart == v.CategoryId)
-                || (v.ProductVouchers?.Any(pv => productIdsInCart.Contains(pv.ProductId)) == true);
+            // ===== PHẠM VI =====
+            bool scopeOk = false;
 
-            if (!scopeOk)
-                return (0, 0, "Voucher không áp dụng cho sản phẩm đã chọn.");
+            // a) all categories
+            if (v.ApplyAllCategories) scopeOk = true;
 
+            // b) single category
+            if (!scopeOk && v.CategoryId != null && categoryIdInCart == v.CategoryId) scopeOk = true;
+
+            // c) all products
+            if (!scopeOk && v.ApplyAllProducts) scopeOk = true;
+
+            // d) selected products
+            if (!scopeOk && (v.ProductVouchers?.Any(pv => productIdsInCart.Contains(pv.ProductId)) == true))
+                scopeOk = true;
+
+            if (!scopeOk) return (0, 0, "Voucher không áp dụng cho sản phẩm đã chọn.");
+
+            // ===== TÍNH GIẢM =====
             decimal discountSub = 0;
-
-            // Giảm trên subtotal (chỉ % hoặc số tiền)
             if (v.IsPercentage)
             {
-                var perc = Math.Max(0, Math.Min(100, (double)v.Reduce));
-                discountSub = orderSubtotal * ((decimal)perc / 100m);
+                var perc = Math.Clamp((double)v.Reduce, 0, 100);
+                discountSub = orderSubtotal * (decimal)perc / 100m;
                 if (v.MaxDiscount is decimal cap && cap > 0 && discountSub > cap)
                     discountSub = cap;
             }
             else
             {
-                discountSub = v.Reduce;
-                if (discountSub > orderSubtotal) discountSub = orderSubtotal;
+                discountSub = Math.Min(orderSubtotal, v.Reduce);
             }
 
-            // Không còn freeship => DiscountOnShipping luôn 0
             return (discountSub, 0m, "OK");
         }
+
 
         public async Task<(bool ok, string reason)> RedeemVoucherAsync(int voucherId)
         {
@@ -101,7 +109,8 @@ namespace DATN_API.Services
             var now = DateTime.UtcNow;
             if (now < v.StartDate || now > v.EndDate) return (false, "Voucher đã hết hạn hoặc chưa bắt đầu.");
 
-            v.UsedCount += 1;
+            v.UsedCount = v.UsedCount + 1;
+
             await _context.SaveChangesAsync();
             return (true, "OK");
         }
@@ -111,6 +120,7 @@ namespace DATN_API.Services
             if (v.StartDate >= v.EndDate) return "Thời gian không hợp lệ.";
             if (v.Quantity < 1) return "Số lượng phải từ 1 trở lên.";
             if (v.MinOrder < 0) return "MinOrder không hợp lệ.";
+
             if (v.IsPercentage)
             {
                 if (v.Reduce <= 0 || v.Reduce > 100) return "Phần trăm giảm phải trong (0,100].";
@@ -120,13 +130,19 @@ namespace DATN_API.Services
                 if (v.Reduce <= 0) return "Số tiền giảm phải > 0.";
             }
 
-            // Role logic
-            if (v.StoreId == null && v.CreatedByRoleId != 3) return "Chỉ admin (roleId=3) được tạo/sửa voucher sàn.";
-            if (v.StoreId != null && v.CreatedByRoleId != 2) return "Chỉ shop (roleId=2) được tạo/sửa voucher của shop.";
+            // Shop/Sàn
+            if (v.StoreId == null && v.CreatedByRoleId != 3) return "Chỉ admin (roleId=3) tạo voucher sàn.";
+            if (v.StoreId != null && v.CreatedByRoleId != 2) return "Chỉ shop (roleId=2) tạo voucher shop.";
 
-            // Scope logic: KHÔNG còn "áp dụng tất cả sản phẩm" => bắt buộc có CategoryId hoặc ProductVouchers
-            if (v.CategoryId == null && (v.ProductVouchers == null || !v.ProductVouchers.Any()))
-                return "Voucher phải áp dụng theo Category hoặc theo danh sách sản phẩm.";
+            // PHẠM VI – cho phép 1 trong 4:
+            // 1) ApplyAllCategories; 2) ApplyAllProducts; 3) CategoryId; 4) ProductVouchers
+            var hasAnyScope =
+                v.ApplyAllCategories ||
+                v.ApplyAllProducts ||
+                v.CategoryId.HasValue ||
+                (v.ProductVouchers != null && v.ProductVouchers.Any());
+
+            if (!hasAnyScope) return "Voucher phải áp dụng: tất cả danh mục, hoặc tất cả sản phẩm, hoặc 1 danh mục, hoặc danh sách sản phẩm.";
 
             return null;
         }
@@ -135,7 +151,7 @@ namespace DATN_API.Services
             var v = await _context.Vouchers.FirstOrDefaultAsync(x => x.Id == voucherId);
             if (v != null && v.UsedCount > 0)
             {
-                v.UsedCount -= 1;
+                v.UsedCount = Math.Max(0, v.UsedCount - 1);
                 await _context.SaveChangesAsync();
             }
         }

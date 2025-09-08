@@ -15,6 +15,8 @@
         public int TotalWeight { get; set; }  
         public int TotalValue { get; set; }
         public int StoreId { get; set; }
+        public string StoreName { get; set; }
+        public string StoreAvatar { get; set; }
     }
 
     public class StoreCartGroup

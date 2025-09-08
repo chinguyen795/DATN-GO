@@ -53,8 +53,11 @@ namespace DATN_GO.Models
 
         /// <summary>Đã dùng bao nhiêu lần.</summary>
         public int? UsedCount { get; set; } = 0;
+        [Timestamp] public byte[]? RowVersion { get; set; }
+        public bool ApplyAllCategories { get; set; } = false; // NEW
+        public bool ApplyAllProducts { get; set; } = false; // NEW
+        public List<int>? SelectedProductIds { get; set; } = new();
 
-       
 
         /// <summary>Thông tin người tạo để phân quyền (admin=3, shop=2).</summary>
         public int? CreatedByUserId { get; set; }

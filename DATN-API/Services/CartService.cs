@@ -223,7 +223,8 @@ namespace DATN_API.Services
                     TotalWeight = weight * cart.Quantity,
                     TotalValue = (int)price * cart.Quantity,
                     StoreId = cart.Product?.StoreId ?? 0,
-
+                    StoreName = cart.Product?.Store?.Name ?? "Cửa hàng không tồn tại",
+                    StoreAvatar = cart.Product?.Store?.Avatar ?? ""
                 });
             }
 
@@ -355,7 +356,13 @@ namespace DATN_API.Services
                         TotalWeight = p.TotalWeight
                     }).ToList()
                 }).ToList();
-
+            if (result.Any())
+            {
+                result = result
+                    .OrderByDescending(x => x.CartId)
+                    .ThenBy(x => x.StoreName)
+                    .ToList();
+            }
             return new CartSummaryViewModel
             {
                 CartItems = result,
