@@ -9,6 +9,7 @@ namespace DATN_API.ViewModels
         public List<VariantCreateModel>? Variants { get; set; }
         public List<VariantCombinationModel>? Combinations { get; set; }
     }
+
     public class ProductCreateViewModel
     {
         public string Name { get; set; }
@@ -19,12 +20,11 @@ namespace DATN_API.ViewModels
         public decimal? CostPrice { get; set; } // optional for variants
         public decimal? Price { get; set; } // optional for variants
         public string? Description { get; set; }
-        public int? Weight { get; set; }
+        public decimal? Weight { get; set; } // ĐỔI TỪ INT THÀNH DECIMAL
         public float? Height { get; set; }
         public float? Width { get; set; }
         public float? Length { get; set; }
         public IFormFile? Image { get; set; }
-
         public List<VariantCreateModel>? Variants { get; set; }
         public List<VariantCombinationModel>? Combinations { get; set; }
     }
@@ -41,11 +41,10 @@ namespace DATN_API.ViewModels
         public decimal Price { get; set; }
         public decimal CostPrice { get; set; }
         public int Quantity { get; set; }
-        public int Weight { get; set; }
+        public decimal Weight { get; set; } // ĐỔI TỪ INT THÀNH DECIMAL
         public float? Width { get; set; }
         public float? Height { get; set; }
         public float? Length { get; set; }
         public string? ImageUrl { get; set; }
     }
-
 }

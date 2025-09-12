@@ -1,6 +1,8 @@
 ﻿using DATN_API.Interfaces;
 using DATN_API.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Globalization;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace DATN_API.Controllers
@@ -82,5 +84,56 @@ namespace DATN_API.Controllers
                 return NotFound();
             return NoContent();
         }
+
+        // Mới
+
+        [HttpGet("by-name")]
+        public async Task<IActionResult> GetByName([FromQuery] string name, [FromQuery] int districtId)
+        {
+            if (string.IsNullOrWhiteSpace(name) || districtId <= 0)
+                return BadRequest("Thiếu name/districtId");
+
+            string target = Canonical(name);
+
+            var wards = await _service.GetByDistrictIdAsync(districtId);
+            var found = wards.FirstOrDefault(w => Canonical(w.WardName) == target);
+
+            if (found == null) return NotFound();
+            return Ok(found);
+        }
+
+        // --- Helpers: copy y như ở DistrictsController ---
+        private static string RemoveDiacritics(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return string.Empty;
+            var normalized = text.Normalize(NormalizationForm.FormD);
+            var sb = new StringBuilder(normalized.Length);
+            foreach (var c in normalized)
+                if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+                    sb.Append(c);
+            return sb.ToString().Normalize(NormalizationForm.FormC);
+        }
+
+        private static string Canonical(string? s)
+        {
+            if (string.IsNullOrWhiteSpace(s)) return string.Empty;
+            s = s.Trim().ToLowerInvariant();
+            s = RemoveDiacritics(s);
+
+            var prefixes = new[]
+            { "quan ", "quận ", "huyen ", "huyện ", "thi xa ", "thị xã ",
+      "thi tran ", "thị trấn ", "xa ", "xã ", "phuong ", "phường ",
+      "p. ", "q. ", "h. ", "tt. " };
+
+            s = s.Replace(".", " ").Replace(",", " ").Replace("-", " ");
+            while (s.Contains("  ")) s = s.Replace("  ", " ");
+            foreach (var p in prefixes)
+                if (s.StartsWith(p, StringComparison.Ordinal)) { s = s[p.Length..]; break; }
+
+            s = s.Trim();
+            if (int.TryParse(s, out var num)) s = num.ToString();
+            return s;
+        }
+
     }
 }

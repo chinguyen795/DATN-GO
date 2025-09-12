@@ -110,7 +110,8 @@ namespace DATN_API.Services
                     Province = request.Province,
                     District = request.District,
                     Ward = request.Ward,
-                    PickupAddress = request.PickupAddress
+                    PickupAddress = request.PickupAddress,
+                    Phone = request.PhoneNumber
                 };
                 _context.Stores.Add(store);
             }
@@ -131,6 +132,7 @@ namespace DATN_API.Services
                 store.Province = request.Province;
                 store.District = request.District;
                 store.Ward = request.Ward;
+                store.Phone = request.PhoneNumber;
             }
 
             _context.SaveChanges();

@@ -15,7 +15,7 @@ namespace DATN_API.Models
         public virtual Products? Product { get; set; }
 
         public decimal Price { get; set; }
-        public int Weight { get; set; }
+        public decimal Weight { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public string? Image { get; set; }

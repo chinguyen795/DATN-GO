@@ -13,7 +13,7 @@ namespace DATN_GO.ViewModels
         public decimal? Price { get; set; } // optional for variants
 
         public string? Description { get; set; }
-        public int? Weight { get; set; }
+        public decimal? Weight { get; set; }
         public float? Height { get; set; }
         public float? Width { get; set; }
         public float? Length { get; set; }
@@ -35,7 +35,7 @@ namespace DATN_GO.ViewModels
         public decimal Price { get; set; }
         public decimal CostPrice { get; set; }
         public int Quantity { get; set; }
-        public int Weight { get; set; }
+        public decimal Weight { get; set; }
         public float? Width { get; set; }
         public float? Height { get; set; }
         public float? Length { get; set; }

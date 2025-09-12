@@ -104,37 +104,40 @@
             </div>
 
 
-            <div class="row">
-                <div class="col-lg-6">
-                    <div class="card card-default" style="min-height: 400px;">
+            <div class="row d-flex align-items-stretch mb-3">
+                <!-- Cột trái -->
+                <div class="col-lg-6 d-flex">
+                    <div class="card card-default flex-fill h-100">
                         <div class="card-header d-flex align-items-center">
-                            <h2>Thông tin cơ bản</h2>
-                            <button class="btn btn-danger btn-pill ml-auto" data-toggle="modal" data-target="#editBasicInfoModal">Sửa thông tin</button>
+                            <h2 class="mb-0">Thông tin cơ bản</h2>
+                            <button class="btn btn-danger btn-pill ml-auto" data-toggle="modal" data-target="#editBasicInfoModal">
+                                Sửa thông tin
+                            </button>
                         </div>
                         <div class="card-body">
-                            <p class="text-dark font-weight-bold">Người đại diện:</p>
-                            <p>@Model.FullName</p>
+                            <p class="text-dark font-weight-bold mb-1">Người đại diện:</p>
+                            <p class="mb-3">@Model.FullName</p>
 
-                            <p class="text-dark font-weight-bold">Địa chỉ Email:</p>
-                            <p>@Model.Email</p>
+                            <p class="text-dark font-weight-bold mb-1">Địa chỉ Email:</p>
+                            <p class="mb-3">@Model.Email</p>
 
-                            <p class="text-dark font-weight-bold">Số điện thoại:</p>
-                            <p>@Model.Phone</p>
+                            <p class="text-dark font-weight-bold mb-1">Số điện thoại:</p>
+                            <p class="mb-3">@Model.Phone</p>
 
-                            <p class="text-dark font-weight-bold">Địa chỉ lấy hàng:</p>
-                            <p>@Model.PickupAddress</p>
+                            <p class="text-dark font-weight-bold mb-1">Địa chỉ lấy hàng:</p>
+                            <p class="mb-3">@Model.PickupAddress</p>
 
-                            <p class="text-dark font-weight-bold">Phường/Xã:</p>
-                            <p>@Model.Ward</p>
+                            <p class="text-dark font-weight-bold mb-1">Phường/Xã:</p>
+                            <p class="mb-3">@Model.Ward</p>
 
-                            <p class="text-dark font-weight-bold">Quận/Huyện:</p>
-                            <p>@Model.District</p>
+                            <p class="text-dark font-weight-bold mb-1">Quận/Huyện:</p>
+                            <p class="mb-3">@Model.District</p>
 
-                            <p class="text-dark font-weight-bold">Tỉnh/Thành phố:</p>
-                            <p>@Model.Province</p>
+                            <p class="text-dark font-weight-bold mb-1">Tỉnh/Thành phố:</p>
+                            <p class="mb-3">@Model.Province</p>
 
-                            <p class="text-dark font-weight-bold">Ngày tạo:</p>
-                            <p>
+                            <p class="text-dark font-weight-bold mb-1">Ngày tạo:</p>
+                            <p class="mb-0">
                                 @(Model.CreateAt.HasValue
                                     ? Model.CreateAt.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss")
                                     : "Chưa có dữ liệu")
@@ -143,22 +146,27 @@
                     </div>
                 </div>
 
-                <div class="col-lg-6">
-                    <div class="card card-default" style="min-height: 400px;">
+                <!-- Cột phải -->
+                <div class="col-lg-6 d-flex">
+                    <div class="card card-default flex-fill h-100">
                         <div class="card-header d-flex align-items-center">
-                            <h2>Thông tin thanh toán</h2>
-                            <button class="btn btn-danger btn-pill ml-auto" data-toggle="modal" data-target="#editPaymentInfoModal">Sửa thông tin</button>
+                            <h2 class="mb-0">Thông tin thanh toán</h2>
+                            <!-- Giữ ml-auto nếu bạn đang dùng Bootstrap 4; nếu Bootstrap 5 thì đổi thành ms-auto -->
+                            <button class="btn btn-danger btn-pill ml-auto" data-toggle="modal" data-target="#editPaymentInfoModal">
+                                Sửa thông tin
+                            </button>
                         </div>
                         <div class="card-body">
-                            <p class="text-dark font-weight-bold">Ngân hàng:</p>
-                            <p>@Model.Bank</p>
+                            <p class="text-dark font-weight-bold mb-1">Ngân hàng:</p>
+                            <p class="mb-3">@Model.Bank</p>
 
-                            <p class="text-dark font-weight-bold">Số tài khoản:</p>
-                            <p>@Model.BankAccount</p>
+                            <p class="text-dark font-weight-bold mb-1">Số tài khoản:</p>
+                            <p class="mb-0">@Model.BankAccount</p>
                         </div>
                     </div>
                 </div>
             </div>
+
             <div class="row">
                 <div class="col-xl-4 col-sm-6">
                     <div class="card card-default card-mini" style="height: calc(100% - 1rem)">
@@ -168,7 +176,7 @@
                         </div>
 
                         <div class="card-body d-flex align-items-center justify-content-between">
-                            
+
                             <div class="flex-grow-1 me-3">
                                 <!-- Tự đẩy rộng, giữ khoảng cách -->
                                 <p class="mb-1 fs-5 d-flex justify-content-between">
@@ -409,9 +417,9 @@
 
 
 
-        
 
-        
+
+
 
 
 
@@ -518,7 +526,99 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
+<script>
+    (function () {
+        const provinceSelect = document.getElementById('provinceSelect');
+        const districtSelect = document.getElementById('districtSelect');
+        const wardSelect = document.getElementById('wardSelect');
 
+        if (!provinceSelect || !districtSelect || !wardSelect) return;
+
+        let LOCATIONS = [];
+
+        const preProvince = document.getElementById('preProvince').value;
+        const preDistrict = document.getElementById('preDistrict').value;
+        const preWard = document.getElementById('preWard').value;
+
+        function clearSelect(sel, placeholder) {
+            sel.innerHTML = '';
+            const opt = document.createElement('option');
+            opt.value = '';
+            opt.textContent = placeholder || '-- Chọn --';
+            sel.appendChild(opt);
+        }
+
+        function fillSelect(sel, items, textKey, selectedValue = '') {
+            items.forEach(item => {
+                const text = typeof item === 'string' ? item : item[textKey];
+                const opt = document.createElement('option');
+                opt.value = text;
+                opt.textContent = text;
+                if (text === selectedValue) opt.selected = true;
+                sel.appendChild(opt);
+            });
+        }
+
+        function findCityByName(name) {
+            return LOCATIONS.find(c => c.CityName === name);
+        }
+
+        function findDistrictByName(city, name) {
+            return (city?.Districts || []).find(d => d.DistrictName === name);
+        }
+
+        async function initLocations() {
+            try {
+                const res = await fetch('/data/locations.json', { cache: 'no-store' });
+                if (!res.ok) throw new Error('Failed to load locations.json');
+                LOCATIONS = await res.json();
+
+                // Province
+                clearSelect(provinceSelect, '-- Chọn Tỉnh/Thành phố --');
+                fillSelect(provinceSelect, LOCATIONS, 'CityName', preProvince);
+
+                // District
+                clearSelect(districtSelect, '-- Chọn Quận/Huyện --');
+                if (preProvince) {
+                    const city = findCityByName(preProvince);
+                    if (city) {
+                        fillSelect(districtSelect, city.Districts, 'DistrictName', preDistrict);
+                    }
+                }
+
+                // Ward
+                clearSelect(wardSelect, '-- Chọn Phường/Xã --');
+                if (preDistrict) {
+                    const city = findCityByName(preProvince);
+                    const district = findDistrictByName(city, preDistrict);
+                    if (district) {
+                        fillSelect(wardSelect, district.Wards, 'WardName', preWard);
+                    }
+                }
+            } catch (err) {
+                console.error('[locations] load error:', err);
+            }
+        }
+
+        provinceSelect.addEventListener('change', () => {
+            const city = findCityByName(provinceSelect.value);
+            clearSelect(districtSelect, '-- Chọn Quận/Huyện --');
+            clearSelect(wardSelect, '-- Chọn Phường/Xã --');
+            if (!city) return;
+            fillSelect(districtSelect, city.Districts, 'DistrictName');
+        });
+
+        districtSelect.addEventListener('change', () => {
+            const city = findCityByName(provinceSelect.value);
+            const district = findDistrictByName(city, districtSelect.value);
+            clearSelect(wardSelect, '-- Chọn Phường/Xã --');
+            if (!district) return;
+            fillSelect(wardSelect, district.Wards, 'WardName');
+        });
+
+        document.addEventListener('DOMContentLoaded', initLocations);
+    })();
+</script>
 
 <script>
     function changeProfileImage(event) {

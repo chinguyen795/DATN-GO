@@ -7,7 +7,7 @@
         public string? MainImage { get; set; }
         public string? Description { get; set; }
         public string? Brand { get; set; }
-        public int? Weight { get; set; }
+        public decimal? Weight { get; set; }
         public string? Slug { get; set; }
         public string? Status { get; set; }
         public int Quantity { get; set; }

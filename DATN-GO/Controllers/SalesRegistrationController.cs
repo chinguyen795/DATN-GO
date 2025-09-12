@@ -100,7 +100,8 @@ namespace DATN_GO.Controllers
                 BankAccount = model.BankAccount,
                 Bank = model.Bank,
                 BankAccountOwner = model.BankAccountOwner,
-                PickupAddress = model.PickupAddress
+                PickupAddress = model.PickupAddress,
+                PhoneNumber = model.PhoneNumber
             };
 
             _logger.LogInformation("Gửi request SaveInfoFromOcrAsync:");

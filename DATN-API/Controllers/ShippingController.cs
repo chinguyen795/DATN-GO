@@ -233,7 +233,7 @@ namespace DATN_API.Controllers
             var products = o.OrderDetails.Select(od => new GHTKProduct
             {
                 Name = od.Product?.Name ?? "Sản phẩm",
-                Weight = Math.Max(0.1m, ((decimal)(od.Product?.Weight ?? 0)) / 1000m),
+                Weight = Math.Max(0.1m, od.Product?.Weight ?? 0),
                 Quantity = od.Quantity
             }).ToList();
 

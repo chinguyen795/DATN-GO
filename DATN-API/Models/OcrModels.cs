@@ -26,6 +26,7 @@ namespace DATN_API.Models
         public string? District { get; set; }
         public string? Ward { get; set; }
         public string? PickupAddress { get; set; }
+        public string? PhoneNumber { get; set; }
     }
 
 }

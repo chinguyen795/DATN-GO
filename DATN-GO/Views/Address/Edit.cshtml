@@ -38,29 +38,28 @@
                         </a>
                     </div>
 
-                    <form asp-action="Edit" method="post">
+                    <form asp-action="Edit" method="post" id="editForm">
                         <input asp-for="Id" type="hidden" />
                         <input asp-for="UserId" type="hidden" />
+
                         <input asp-for="CityName" id="CityName" type="hidden" />
                         <input asp-for="DistrictName" id="DistrictName" type="hidden" />
                         <input asp-for="WardName" id="WardName" type="hidden" />
+
                         <input asp-for="CityId" id="CityId" type="hidden" />
                         <input asp-for="DistrictId" id="DistrictId" type="hidden" />
                         <input asp-for="WardId" id="WardId" type="hidden" />
-
-
-
 
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label asp-for="Name" class="form-label">Tên người dùng</label>
                                 <input asp-for="Name" class="form-control" placeholder="Nhập tên người nhận..." />
-                                <div id="nameError" class="text-danger small mt-1">Vui lòng nhập tên người nhận</div>
+                                <div id="nameError" class="text-danger small mt-1 d-none">Vui lòng nhập tên người nhận</div>
                             </div>
                             <div class="col-md-6">
                                 <label asp-for="Phone" class="form-label">Số điện thoại</label>
                                 <input asp-for="Phone" class="form-control" placeholder="Nhập sđt..." />
-                                <div id="phoneError" class="text-danger small mt-1"> Vui lòng nhập số điện thoại </div>
+                                <div id="phoneError" class="text-danger small mt-1 d-none">Vui lòng nhập số điện thoại</div>
                             </div>
                         </div>
 
@@ -79,52 +78,51 @@
                             <!-- CITY -->
                             <div class="col-md-4">
                                 <label class="form-label">Tỉnh / Thành phố</label>
-                                <select id="city" class="form-control" data-selected="1">
+                                <select id="city" class="form-control" data-selected="@Model.CityId">
                                     <option value="">-- Chọn tỉnh --</option>
                                 </select>
                                 <div id="cityError" class="text-danger small mt-1 d-none">Vui lòng chọn Tỉnh / Thành phố</div>
-                                <input type="hidden" name="city" id="cityText" />
-                                <input type="hidden" name="hiddenCity" id="hiddenCity" />
                             </div>
 
                             <!-- DISTRICT -->
                             <div class="col-md-4">
                                 <label class="form-label">Quận / Huyện</label>
-                                <select id="district" class="form-control" data-selected="2">
+                                <select id="district" class="form-control" data-selected="@Model.DistrictId">
                                     <option value="">-- Chọn huyện --</option>
                                 </select>
                                 <div id="districtError" class="text-danger small mt-1 d-none">Vui lòng chọn Quận / Huyện</div>
-                                <input type="hidden" name="district" id="districtText" />
-                                <input type="hidden" name="hiddenDistrict" id="hiddenDistrict" />
                             </div>
 
                             <!-- WARD -->
                             <div class="col-md-4">
                                 <label class="form-label">Phường / Xã</label>
-                                <select id="ward" class="form-control" data-selected="3">
+                                <select id="ward" class="form-control" data-selected="@Model.WardId">
                                     <option value="">-- Chọn xã --</option>
                                 </select>
                                 <div id="wardError" class="text-danger small mt-1 d-none">Vui lòng chọn Phường / Xã</div>
-                                <input type="hidden" name="ward" id="wardText" />
-                                <input type="hidden" name="hiddenWard" id="hiddenWard" />
                             </div>
                         </div>
 
                         <div class="mb-3">
                             <label asp-for="Description" class="form-label">Mô tả</label>
                             <input asp-for="Description" class="form-control" placeholder="Nhập mô tả..." />
-                            <div id="descriptionError" class="text-danger small mt-1"> Vui lòng nhập tên mô tả </div>
+                            <div id="descriptionError" class="text-danger small mt-1 d-none">Vui lòng nhập mô tả</div>
                         </div>
 
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <input type="hidden" asp-for="Latitude" />
+                                <input type="hidden" asp-for="Latitude" id="Latitude" />
                                 <span asp-validation-for="Latitude" class="text-danger"></span>
                             </div>
                             <div class="col-md-6">
-                                <input type="hidden" asp-for="Longitude" />
+                                <input type="hidden" asp-for="Longitude" id="Longitude" />
                                 <span asp-validation-for="Longitude" class="text-danger"></span>
                             </div>
+                        </div>
+
+                        <!-- Map hiển thị vị trí -->
+                        <div class="mb-3">
+                            <div id="map"></div>
                         </div>
 
                         <div class="d-flex justify-content-center mt-4">
@@ -137,10 +135,11 @@
                 </div>
             </div>
 
-            <!-- Bản đồ -->
-            <div id="map" class="mt-4 border border-2 rounded-3" style="height: 400px;"></div>
+            @*             <div id="map" class="mt-4 border border-2 rounded-3" style="height: 400px;"></div> *@
         </div>
     </div>
+
+
 </div>
 
 
@@ -177,276 +176,374 @@
 <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
 
 <script>
+    // ==== Mapbox token ====
     mapboxgl.accessToken = 'pk.eyJ1IjoiaG9hbmdraGFuZzE2MDIiLCJhIjoiY21hYXViNTcyMDdwODJrc2N1bmVwY3h6eiJ9.MgDmLsya34LTrqNPE7WiLw';
 
+    // ==== State ====
     let map, marker;
-    let allCities = [];
-    let isValid = true;
-    $(document).ready(async function () {
-        await loadAllLocations(); 
-        const cityId = parseInt($('#city').data('selected')) || 0;
-        const districtId = parseInt($('#district').data('selected')) || 0;
-        const wardId = parseInt($('#ward').data('selected')) || 0;
+    let locationData = [];
 
-        if (cityId) {
-            await loadCities(cityId);
-            const city = allCities.find(c => c.id === cityId);
-            if (city) {
-                await loadDistricts(city, districtId);
-                const district = city.districts.find(d => d.id === districtId);
-                if (district) {
-                    await loadWards(district, wardId);
-                    const ward = district.wards.find(w => w.id === wardId);
+    // ==== Utils ====
+    const norm = s => (s || '').trim().normalize('NFC');
+    const same = (a, b) => norm(a).toLowerCase() === norm(b).toLowerCase();
+    const val = $el => ($el && $el.length ? $el.val() : '');
 
-                    if (city && district && ward) {
-                        $('#cityText').val(city.cityName);
-                        $('#districtText').val(district.districtName);
-                        $('#wardText').val(ward.wardName);
-                    }
-                }
-            }
-        } else {
-            await loadCities(0);
-        }
+    // Tự nhận diện phần tử hiển thị & hidden (hỗ trợ cả 2 kiểu bạn dùng)
+    function pickElements() {
+        const $cityVis = $('#CityName').is('select') ? $('#CityName') : ($('#city').length ? $('#city') : null);
+        const $districtVis = $('#DistrictName').is('select') ? $('#DistrictName') : ($('#district').length ? $('#district') : null);
+        const $wardVis = $('#WardName').is('select') ? $('#WardName') : ($('#ward').length ? $('#ward') : null);
 
+        // Hidden bind inputs (nếu dùng kiểu B)
+        const $cityHidden = $('#CityName').is('input[type="hidden"]') ? $('#CityName') : null;
+        const $districtHidden = $('#DistrictName').is('input[type="hidden"]') ? $('#DistrictName') : null;
+        const $wardHidden = $('#WardName').is('input[type="hidden"]') ? $('#WardName') : null;
 
-        $('#city').on('change', function () {
-            const selectedCityId = parseInt($(this).val()) || 0;
-            const city = allCities.find(c => c.id === selectedCityId);
+        return { $cityVis, $districtVis, $wardVis, $cityHidden, $districtHidden, $wardHidden };
+    }
 
-            $('#CityId').val(selectedCityId);
-            $('#cityText').val($('#city option:selected').text());
-            $('#hiddenCity').val($('#city option:selected').text());
+    // Reset options của select
+    function resetSelect($sel, placeholder) {
+        if (!$sel) return;
+        $sel.html(`<option value="">${placeholder}</option>`);
+    }
 
-            resetDropdown('#district', '-- Chọn huyện --');
-            resetDropdown('#ward', '-- Chọn xã --');
-            $('#districtText, #wardText, #hiddenDistrict, #hiddenWard').val('');
-            $('#DistrictId, #WardId').val('');
+    // Đồng bộ hidden (nếu có) từ selects hiển thị
+    function syncHiddenFromVisible(els) {
+        const cityText = els.$cityVis && els.$cityVis.find('option:selected').text();
+        const districtText = els.$districtVis && els.$districtVis.find('option:selected').text();
+        const wardText = els.$wardVis && els.$wardVis.find('option:selected').text();
 
-            if (city) loadDistricts(city, 0);
-        });
+        if (els.$cityHidden) els.$cityHidden.val(cityText && !cityText.startsWith('--') ? cityText : '');
+        if (els.$districtHidden) els.$districtHidden.val(districtText && !districtText.startsWith('--') ? districtText : '');
+        if (els.$wardHidden) els.$wardHidden.val(wardText && !wardText.startsWith('--') ? wardText : '');
+    }
 
-        $('#district').on('change', function () {
-            const selectedCityId = parseInt($('#city').val()) || 0;
-            const selectedDistrictId = parseInt($(this).val()) || 0;
-            const city = allCities.find(c => c.id === selectedCityId);
-            const district = city?.districts.find(d => d.id === selectedDistrictId);
-
-            $('#DistrictId').val(selectedDistrictId);
-            $('#districtText').val($('#district option:selected').text());
-            $('#hiddenDistrict').val($('#district option:selected').text());
-
-            $('#wardText, #WardId, #hiddenWard').val('');
-            resetDropdown('#ward', '-- Chọn xã --');
-
-            if (district) loadWards(district, 0);
-        });
-
-        $('#ward').on('change', function () {
-            const selectedWardId = parseInt($(this).val()) || 0;
-            const wardText = $('#ward option:selected').text();
-            const districtText = $('#district option:selected').text();
-            const cityText = $('#city option:selected').text();
-
-            $('#WardId').val(selectedWardId);
-            $('#wardText').val(wardText);
-            $('#districtText').val(districtText);
-            $('#cityText').val(cityText);
-
-            $('#hiddenWard').val(wardText);
-            $('#hiddenDistrict').val(districtText);
-            $('#hiddenCity').val(cityText);
-
-            if (wardText && districtText && cityText) {
-                const full = `${wardText}, ${districtText}, ${cityText}`;
-                getCoordinatesFromAddress(full);
-            }
-        });
-
-        const defaultLat = 10.762622;
-        const defaultLon = 106.660172;
-        $('#Latitude').val(defaultLat);
-        $('#Longitude').val(defaultLon);
-        updateMap(defaultLat, defaultLon);
-
-        // 👉 Validate real-time + submit
-        $('.text-danger').hide();
-
-        const validateField = (selector, errorId, options = {}) => {
-            const $field = $(selector);
-            let val = $field.val()?.trim();
-            let error = "";
-
-            if (!val) error = options.emptyMsg || "Trường này là bắt buộc";
-
-            if (options.type === 'phone' && val) {
-                const phoneRegex = /^(0|\+84)[1-9][0-9]{8,9}$/;
-                if (!phoneRegex.test(val)) error = "Số điện thoại không hợp lệ";
-            }
-
-            if (options.type === 'description' && val) {
-                if (val.length < 6) error = "Mô tả phải có ít nhất 6 ký tự";
-                else if (/[^a-zA-Z0-9À-ỹà-ỹ\s.,!?()\-]/g.test(val)) error = "Mô tả không được chứa ký tự đặc biệt";
-            }
-
-            if (error) {
-                $(errorId).text(error).removeClass('d-none').show();
-                isValid = false;
-
-                $field.off('.realtime').on('input.realtime change.realtime', () => {
-                    validateField(selector, errorId, options);
-                });
-            } else {
-                $(errorId).hide().addClass('d-none');
-                $field.off('.realtime');
-            }
+    // Lấy text chuẩn từ 3 select (nếu cần)
+    function getCurrentTexts(els) {
+        return {
+            cityName: els.$cityVis ? els.$cityVis.find('option:selected').text() : '',
+            districtName: els.$districtVis ? els.$districtVis.find('option:selected').text() : '',
+            wardName: els.$wardVis ? els.$wardVis.find('option:selected').text() : ''
         };
-
-        $('form').on('submit', function (e) {
-            isValid = true;
-
-            validateField('input[name="Name"]', '#nameError', {
-                emptyMsg: 'Vui lòng nhập tên người nhận'
-            });
-
-            validateField('input[name="Phone"]', '#phoneError', {
-                emptyMsg: 'Vui lòng nhập số điện thoại',
-                type: 'phone'
-            });
-
-            validateField('#Description', '#descriptionError', {
-                emptyMsg: 'Vui lòng nhập mô tả',
-                type: 'description'
-            });
-
-            validateField('#city', '#cityError', {
-                emptyMsg: 'Vui lòng chọn Tỉnh / Thành phố'
-            });
-
-            validateField('#district', '#districtError', {
-                emptyMsg: 'Vui lòng chọn Quận / Huyện'
-            });
-
-            validateField('#ward', '#wardError', {
-                emptyMsg: 'Vui lòng chọn Phường / Xã'
-            });
-
-            if (!isValid) {
-                e.preventDefault();
-                return;
-            }
-
-            $('#CityName').val($('#hiddenCity').val());
-            $('#DistrictName').val($('#hiddenDistrict').val());
-            $('#WardName').val($('#hiddenWard').val());
-
-            $('#submitBtn').prop('disabled', true);
-            $('#loadingSpinner').removeClass('d-none');
-            $('#btnText').text(" Đang lưu...");
-        });
-    });
-
-    // Helpers
-    async function loadAllLocations() {
-        const res = await fetch('/data/locations.json');
-        if (!res.ok) return console.error("❌ Không thể load locations.json");
-
-        const rawData = await res.json();
-
-        allCities = rawData.map((c, i) => ({
-            id: i + 1,
-            cityName: c.CityName,
-            districts: c.Districts.map((d, j) => ({
-                id: j + 1,
-                districtName: d.DistrictName,
-                wards: d.Wards.map((w, k) => ({
-                    id: k + 1,
-                    wardName: w.WardName
-                }))
-            }))
-        }));
     }
 
-    async function loadCities(selectedId) {
-        resetDropdown('#city', '-- Chọn tỉnh --');
-        allCities.forEach(c => {
-            const selected = c.id === selectedId ? 'selected' : '';
-            $('#city').append(`<option value="${c.id}" ${selected}>${c.cityName}</option>`);
-        });
-
-        const selectedCity = allCities.find(c => c.id === selectedId);
-        if (selectedCity) {
-            $('#cityText').val(selectedCity.cityName);
-            $('#hiddenCity').val(selectedCity.cityName);
-        }
-    }
-
-    async function loadDistricts(city, selectedId) {
-        resetDropdown('#district', '-- Chọn huyện --');
-        city.districts.forEach(d => {
-            const selected = d.id === selectedId ? 'selected' : '';
-            $('#district').append(`<option value="${d.id}" ${selected}>${d.districtName}</option>`);
-        });
-
-        const selectedDistrict = city.districts.find(d => d.id === selectedId);
-        if (selectedDistrict) {
-            $('#districtText').val(selectedDistrict.districtName);
-            $('#hiddenDistrict').val(selectedDistrict.districtName);
-        }
-    }
-
-    async function loadWards(district, selectedId) {
-        resetDropdown('#ward', '-- Chọn xã --');
-        district.wards.forEach(w => {
-            const selected = w.id === selectedId ? 'selected' : '';
-            $('#ward').append(`<option value="${w.id}" ${selected}>${w.wardName}</option>`);
-        });
-
-        const selectedWard = district.wards.find(w => w.id === selectedId);
-        if (selectedWard) {
-            $('#wardText').val(selectedWard.wardName);
-            $('#hiddenWard').val(selectedWard.wardName);
-        }
-    }
-
-    function resetDropdown(selector, placeholder) {
-        $(selector).html(`<option value="">${placeholder}</option>`);
-    }
-
-    function getCoordinatesFromAddress(address) {
-        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json`;
-        fetch(url)
-            .then(res => res.json())
-            .then(data => {
-                if (data.length > 0) {
-                    const lat = parseFloat(data[0].lat);
-                    const lon = parseFloat(data[0].lon);
-                    $('#Latitude').val(lat);
-                    $('#Longitude').val(lon);
-                    updateMap(lat, lon);
-                }
-            });
-    }
-
-    function updateMap(lat, lon) {
-        lat = parseFloat(lat);
-        lon = parseFloat(lon);
-
+    // ==== Map helpers ====
+    function ensureMap(lat, lon) {
         if (!map) {
             map = new mapboxgl.Map({
                 container: 'map',
                 style: 'mapbox://styles/mapbox/streets-v12',
                 center: [lon, lat],
-                zoom: 15
+                zoom: 15,
+                pitch: 45,
+                bearing: -30,
+                antialias: true
             });
             map.addControl(new mapboxgl.NavigationControl());
+
+            map.on('click', e => {
+                const clickedLat = e.lngLat.lat;
+                const clickedLon = e.lngLat.lng;
+                $('#Latitude').val(clickedLat);
+                $('#Longitude').val(clickedLon);
+                placeMarker(clickedLat, clickedLon);
+                reverseGeocodeFromMapbox(clickedLat, clickedLon); // set lại chọn Tỉnh/Quận/Phường theo vị trí click
+            });
         } else {
             map.flyTo({ center: [lon, lat], essential: true });
         }
+    }
 
+    function placeMarker(lat, lon) {
         if (marker) marker.remove();
         marker = new mapboxgl.Marker({ color: 'red' }).setLngLat([lon, lat]).addTo(map);
     }
 
+    function updateMap(lat, lon) {
+        ensureMap(lat, lon);
+        placeMarker(lat, lon);
+    }
 
+    // Reverse geocode từ Mapbox -> fill selects theo tên
+    async function reverseGeocodeFromMapbox(lat, lon) {
+        try {
+            const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lon},${lat}.json?access_token=${mapboxgl.accessToken}`;
+            const res = await fetch(url);
+            const data = await res.json();
+            if (!data.features) return;
+
+            let cityName = '', districtName = '', wardName = '';
+            data.features.forEach(f => {
+                if (f.place_type.includes('place') && !cityName) cityName = f.text;
+                if (f.place_type.includes('district') && !districtName) districtName = f.text;
+                if ((f.place_type.includes('neighborhood') || f.place_type.includes('locality')) && !wardName) wardName = f.text;
+            });
+
+            if (!cityName && !districtName && !wardName) return;
+
+            const els = pickElements();
+            const city = locationData.find(c => same(c.CityName, cityName));
+            if (!els.$cityVis) return;
+
+            if (city) {
+                // chọn city
+                els.$cityVis.val(city.CityName).trigger('change');
+
+                // delay nhẹ để đổ quận & xã xong
+                setTimeout(() => {
+                    const district = city.Districts.find(d => same(d.DistrictName, districtName));
+                    if (district && els.$districtVis) {
+                        els.$districtVis.val(district.DistrictName).trigger('change');
+
+                        setTimeout(() => {
+                            const ward = district.Wards.find(w => same(w.WardName, wardName));
+                            if (ward && els.$wardVis) {
+                                els.$wardVis.val(ward.WardName).trigger('change');
+                            }
+                        }, 150);
+                    }
+                }, 150);
+            }
+        } catch { /* ignore */ }
+    }
+
+    // Geocode bằng Nominatim khi user chọn đủ 3 cấp
+    async function geocodeByNames(wardName, districtName, cityName) {
+        try {
+            const full = `${wardName}, ${districtName}, ${cityName}`;
+            const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(full)}&format=json`;
+            const res = await fetch(url);
+            const data = await res.json();
+            if (data && data.length > 0) {
+                const lat = parseFloat(data[0].lat);
+                const lon = parseFloat(data[0].lon);
+                $('#Latitude').val(lat);
+                $('#Longitude').val(lon);
+                updateMap(lat, lon);
+            }
+        } catch { /* ignore */ }
+    }
+
+    // ==== Page init ====
+    $(async function () {
+        // 1) Map default
+        const defaultLat = parseFloat($('#Latitude').val()) || 10.762622;
+        const defaultLon = parseFloat($('#Longitude').val()) || 106.660172;
+        updateMap(defaultLat, defaultLon);
+
+        // 2) Load location data
+        try {
+            const res = await fetch('/data/locations.json');
+            if (!res.ok) throw new Error('load locations.json failed');
+            locationData = await res.json();
+        } catch (e) {
+            console.error(e);
+            locationData = [];
+        }
+
+        const els = pickElements();
+        if (!els.$cityVis || !els.$districtVis || !els.$wardVis) {
+            console.warn('Không tìm thấy select City/District/Ward. Kiểm tra lại id phần tử.');
+            return;
+        }
+
+        // 3) Đổ TỈNH
+        resetSelect(els.$cityVis, '-- Chọn tỉnh --');
+        locationData.forEach(c => {
+            els.$cityVis.append(`<option value="${c.CityName}">${c.CityName}</option>`);
+        });
+
+        // Nếu đã có giá trị ban đầu trong hidden (kiểu B) hoặc Model -> preselect
+        const initCity = $('#CityName').is('input[type="hidden"]') ? $('#CityName').val() : els.$cityVis.val();
+        const initDistrict = $('#DistrictName').is('input[type="hidden"]') ? $('#DistrictName').val() : els.$districtVis.val();
+        const initWard = $('#WardName').is('input[type="hidden"]') ? $('#WardName').val() : els.$wardVis.val();
+
+        if (initCity) {
+            els.$cityVis.val(initCity);
+            // Đổ HUYỆN theo city
+            const city = locationData.find(c => same(c.CityName, initCity));
+            resetSelect(els.$districtVis, '-- Chọn huyện --');
+            resetSelect(els.$wardVis, '-- Chọn xã --');
+            if (city) {
+                city.Districts.forEach(d => {
+                    els.$districtVis.append(`<option value="${d.DistrictName}">${d.DistrictName}</option>`);
+                });
+                if (initDistrict) {
+                    els.$districtVis.val(initDistrict);
+                    const district = city.Districts.find(d => same(d.DistrictName, initDistrict));
+                    if (district) {
+                        resetSelect(els.$wardVis, '-- Chọn xã --');
+                        district.Wards.forEach(w => els.$wardVis.append(`<option value="${w.WardName}">${w.WardName}</option>`));
+                        if (initWard) {
+                            els.$wardVis.val(initWard);
+                            // đủ 3 cấp -> geocode để center map đúng
+                            geocodeByNames(initWard, initDistrict, initCity);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Đồng bộ hidden lần đầu
+        syncHiddenFromVisible(els);
+
+        // 4) Handlers chọn TỈNH
+        els.$cityVis.on('change', function () {
+            const selectedCity = val(els.$cityVis);
+            resetSelect(els.$districtVis, '-- Chọn huyện --');
+            resetSelect(els.$wardVis, '-- Chọn xã --');
+
+            if (selectedCity) {
+                const city = locationData.find(c => same(c.CityName, selectedCity));
+                if (city) {
+                    city.Districts.forEach(d => {
+                        els.$districtVis.append(`<option value="${d.DistrictName}">${d.DistrictName}</option>`);
+                    });
+                }
+            }
+            syncHiddenFromVisible(els);
+        });
+
+        // 5) Handlers chọn HUYỆN
+        els.$districtVis.on('change', function () {
+            const selectedCity = val(els.$cityVis);
+            const selectedDistrict = val(els.$districtVis);
+            resetSelect(els.$wardVis, '-- Chọn xã --');
+
+            const city = locationData.find(c => same(c.CityName, selectedCity));
+            const district = city?.Districts?.find(d => same(d.DistrictName, selectedDistrict));
+            if (district) {
+                district.Wards.forEach(w => {
+                    els.$wardVis.append(`<option value="${w.WardName}">${w.WardName}</option>`);
+                });
+            }
+            syncHiddenFromVisible(els);
+        });
+
+        // 6) Handlers chọn XÃ -> Geocode & pan map
+        els.$wardVis.on('change', function () {
+            const wardName = val(els.$wardVis);
+            const districtName = val(els.$districtVis);
+            const cityName = val(els.$cityVis);
+            syncHiddenFromVisible(els);
+
+            if (wardName && districtName && cityName) {
+                geocodeByNames(wardName, districtName, cityName);
+            }
+        });
+    });
 </script>
+
+<script>
+    (function () {
+        // Ẩn các span MVC mặc định
+        $(function () { $('span[data-valmsg-for]').hide(); });
+
+        // Regex định dạng
+        const nameRegex = /^[A-Za-zÀ-ỹăâêôơưđÀ-ỸĂÂÊÔƠƯĐ' -]{2,50}$/;
+        const vnPhoneRegex = /^(0|\+84)(3[2-9]|5[2689]|7[06-9]|8[1-689]|9\d)\d{7}$/;
+
+        // Helpers
+        function showErrDiv(id, msg) {
+            const $e = $('#' + id);
+            if (!$e.length) return;
+            if (msg) $e.text(msg);
+            $e.removeClass('d-none');
+        }
+        function hideErrDiv(id) { $('#' + id).addClass('d-none'); }
+        function setInvalid($el) { $el.addClass('is-invalid').removeClass('is-valid'); }
+        function setValid($el) { $el.removeClass('is-invalid').addClass('is-valid'); }
+
+        // Name
+        function validateName() {
+            const $el = $('#Name');
+            const v = ($el.val() || '').trim();
+            if (!v) {
+                showErrDiv('nameError', 'Vui lòng nhập tên người nhận');
+                setInvalid($el); return false;
+            }
+            if (!nameRegex.test(v)) {
+                showErrDiv('nameError', 'Tên không hợp lệ (2–50 ký tự, có thể chứa dấu, khoảng trắng, \' hoặc -)');
+                setInvalid($el); return false;
+            }
+            hideErrDiv('nameError'); setValid($el); return true;
+        }
+
+        // Phone
+        function validatePhone() {
+            const $el = $('#Phone');
+            const v = ($el.val() || '').replace(/\s+/g, '');
+            if (!v) {
+                showErrDiv('phoneError', 'Vui lòng nhập số điện thoại');
+                setInvalid($el); return false;
+            }
+            if (!vnPhoneRegex.test(v)) {
+                showErrDiv('phoneError', 'Số điện thoại không hợp lệ');
+                setInvalid($el); return false;
+            }
+            hideErrDiv('phoneError'); setValid($el); return true;
+        }
+
+        // Description
+        function validateDescription() {
+            const $el = $('#Description');
+            const v = ($el.val() || '').trim();
+            if (!v) {
+                showErrDiv('descriptionError', 'Vui lòng nhập mô tả');
+                setInvalid($el); return false;
+            }
+            if (v.length < 5 || v.length > 255) {
+                showErrDiv('descriptionError', 'Mô tả phải từ 5–255 ký tự');
+                setInvalid($el); return false;
+            }
+            hideErrDiv('descriptionError'); setValid($el); return true;
+        }
+
+        // Status
+        function validateStatus() {
+            const $el = $('#Status');
+            const v = ($el.val() || '').trim();
+            const $s = $('span[data-valmsg-for="Status"]');
+            if (!v) {
+                $el.addClass('is-invalid').removeClass('is-valid');
+                if ($s.length) { $s.text('Vui lòng chọn trạng thái').removeClass('d-none').show(); }
+                return false;
+            }
+            $el.removeClass('is-invalid').addClass('is-valid');
+            if ($s.length) { $s.hide(); }
+            return true;
+        }
+
+        // Bind realtime
+        $(function () {
+            $('#Name').on('input blur', validateName);
+            $('#Phone').on('input blur', validatePhone);
+            $('#Description').on('input blur', validateDescription);
+            $('#Status').on('change blur', validateStatus);
+
+            // Prefill
+            validateName();
+            validatePhone();
+            validateDescription();
+            validateStatus();
+
+            // Không bắt lỗi trống cho location
+            $('#cityError,#districtError,#wardError').addClass('d-none');
+            $('#city,#district,#ward').removeClass('is-invalid is-valid');
+        });
+
+        // Submit check
+        $('#submitBtn').on('click', function (e) {
+            const ok = validateName() & validatePhone() & validateDescription() & validateStatus();
+            if (!ok) { e.preventDefault(); }
+        });
+
+    })();
+</script>
+
+
+
+
+
+

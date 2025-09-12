@@ -43,7 +43,7 @@
     </div>
 
     <div class="table-responsive pb-5">
-        <table class="table table-hover align-middle w-100">
+        <table class="table table-hover table-bordered align-middle w-100 shadow-sm">
             <thead class="table-light">
                 <tr>
                     <th class="text-center">#</th>
@@ -68,8 +68,8 @@
                             <td>
                                 @{
                                     var fullAddress = string.Join(", ", new[] {
-                                                address.WardName, address.DistrictName, address.CityName
-                                                }.Where(s => !string.IsNullOrWhiteSpace(s)));
+                        address.WardName, address.DistrictName, address.CityName
+                        }.Where(s => !string.IsNullOrWhiteSpace(s)));
                                 }
                                 @fullAddress
                             </td>

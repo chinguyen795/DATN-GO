@@ -150,11 +150,24 @@ namespace DATN_GO.Controllers
             return View();
         }
 
-
-        public async Task<IActionResult> DetailProducts(int id)
+        [Route("Products/DetailProducts/{id:int}", Name = "ProductDetailById")]
+        [Route("Products/DetailProducts/{slug}-{id:int}", Name = "ProductDetailBySlug")]
+        public async Task<IActionResult> DetailProducts(int id, string? slug)
         {
             var product = await _productService.GetProductByIdAsync(id);
             if (product == null) return NotFound();
+            // Lấy slug từ DB
+            string expectedSlug = product.Slug ?? string.Empty;
+
+            if (string.IsNullOrEmpty(slug) || slug != expectedSlug)
+            {
+                var targetUrl = Url.RouteUrl("ProductDetailBySlug", new { slug = expectedSlug, id });
+
+                if (!string.IsNullOrEmpty(targetUrl))
+                    return RedirectPermanent(targetUrl); 
+
+                return RedirectToRoutePermanent("ProductDetailBySlug", new { slug = expectedSlug, id });
+            }
 
             ViewBag.ProductName = product.Name;
             ViewBag.ProductBrand = product.Brand;

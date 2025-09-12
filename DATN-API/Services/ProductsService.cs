@@ -5,6 +5,9 @@ using DATN_API.ViewModels;
 using DATN_GO.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Text.RegularExpressions;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace DATN_API.Services
@@ -177,6 +180,41 @@ namespace DATN_API.Services
                 .Where(p => p.StoreId == storeId)
                 .ToListAsync();
         }
+        private string GenerateSlug(string phrase)
+        {
+            string str = phrase.ToLowerInvariant();
+
+            // Bỏ dấu tiếng Việt và ký tự Unicode
+            str = RemoveDiacritics(str);
+
+            // Thay khoảng trắng bằng gạch ngang
+            str = Regex.Replace(str, @"\s+", "-");
+
+            // Loại bỏ ký tự đặc biệt
+            str = Regex.Replace(str, @"[^a-z0-9\-]", "");
+
+            // Loại bỏ gạch ngang thừa
+            str = Regex.Replace(str, @"-+", "-").Trim('-');
+
+            return str;
+        }
+
+        private string RemoveDiacritics(string text)
+        {
+            var normalized = text.Normalize(NormalizationForm.FormD);
+            var sb = new StringBuilder();
+
+            foreach (var c in normalized)
+            {
+                var unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(c);
+                if (unicodeCategory != UnicodeCategory.NonSpacingMark)
+                {
+                    sb.Append(c);
+                }
+            }
+
+            return sb.ToString().Normalize(NormalizationForm.FormC);
+        }
         public async Task<(bool Success, int? ProductId, string? ErrorMessage)> CreateFullProductAsync(ProductFullCreateViewModel model)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -185,7 +223,7 @@ namespace DATN_API.Services
                 var product = model.Product;
                 product.CreateAt = DateTime.UtcNow;
                 product.UpdateAt = DateTime.UtcNow;
-                product.Slug = product.Name.ToLower().Replace(" ", "-") + "-" + DateTime.UtcNow.Ticks;
+                product.Slug = GenerateSlug(product.Name) + "-" + DateTime.UtcNow.Ticks;
                 product.Status = ProductStatus.Pending;
                 product.Rating = 0;
                 product.Views = 0;

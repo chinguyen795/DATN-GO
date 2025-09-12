@@ -5,8 +5,8 @@
         public List<CartItemViewModel> CartItems { get; set; }
         public List<AddressViewModel> Addresses { get; set; }
         public List<UserVoucherViewModel> Vouchers { get; set; } 
-        public int TotalWeight { get; set; }
-        public int TotalValue { get; set; }
+        public decimal TotalWeight { get; set; }
+        public decimal TotalValue { get; set; }
     }
 
     public class UserVoucherViewModel

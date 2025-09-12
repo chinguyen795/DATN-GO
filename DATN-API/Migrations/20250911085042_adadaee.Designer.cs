@@ -4,6 +4,7 @@ using DATN_API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DATN_API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250911085042_adadaee")]
+    partial class adadaee
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,11 +37,7 @@ namespace DATN_API.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<int?>("DistrictId")
-                        .HasColumnType("int");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<float>("Latitude")
                         .HasColumnType("real");
@@ -53,7 +52,8 @@ namespace DATN_API.Migrations
 
                     b.Property<string>("Phone")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(13)
+                        .HasColumnType("nvarchar(13)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -64,16 +64,9 @@ namespace DATN_API.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("WardId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("DistrictId");
-
                     b.HasIndex("UserId");
-
-                    b.HasIndex("WardId");
 
                     b.ToTable("Addresses");
                 });
@@ -1415,25 +1408,13 @@ namespace DATN_API.Migrations
 
             modelBuilder.Entity("DATN_API.Models.Addresses", b =>
                 {
-                    b.HasOne("DATN_API.Models.Districts", "District")
-                        .WithMany()
-                        .HasForeignKey("DistrictId");
-
                     b.HasOne("DATN_API.Models.Users", "User")
                         .WithMany("Address")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("DATN_API.Models.Wards", "Ward")
-                        .WithMany()
-                        .HasForeignKey("WardId");
-
-                    b.Navigation("District");
-
                     b.Navigation("User");
-
-                    b.Navigation("Ward");
                 });
 
             modelBuilder.Entity("DATN_API.Models.AdminSettings", b =>

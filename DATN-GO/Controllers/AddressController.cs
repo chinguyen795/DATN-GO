@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -24,46 +26,99 @@ namespace DATN_GO.Controllers
         }
         public async Task<IActionResult> Address()
         {
-            if (string.IsNullOrEmpty(HttpContext.Session.GetString("Id")))
+            // Check login
+            var userIdStr = HttpContext.Session.GetString("Id");
+            if (string.IsNullOrEmpty(userIdStr))
             {
                 TempData["ToastMessage"] = "Vui lòng đăng nhập để tiếp tục.";
                 TempData["ToastType"] = "warning";
                 TempData["TriggerLoginModal"] = true;
                 return RedirectToAction("Index", "Home");
             }
+            int.TryParse(userIdStr, out var currentUserId);
 
-            int.TryParse(HttpContext.Session.GetString("Id"), out var currentUserId);
+            // Lấy addresses của user (lọc bớt auto create)
             var addresses = await _service.GetAddressesAsync();
-
             var userAddresses = addresses
                 .Where(a => a.UserId == currentUserId &&
                             (a.Description == null || !a.Description.StartsWith("Tự động tạo cho")))
                 .ToList();
 
-            // Gọi 3 API location
-            var wardRes = await _httpClient.GetAsync("https://localhost:7096/api/wards");
-            var districtRes = await _httpClient.GetAsync("https://localhost:7096/api/districts");
-            var cityRes = await _httpClient.GetAsync("https://localhost:7096/api/cities");
+            // Gọi 3 API song song cho nhanh
+            var wardsTask = _httpClient.GetAsync("https://localhost:7096/api/wards");
+            var districtsTask = _httpClient.GetAsync("https://localhost:7096/api/districts");
+            var citiesTask = _httpClient.GetAsync("https://localhost:7096/api/cities");
+
+            await Task.WhenAll(wardsTask, districtsTask, citiesTask);
+
+            var wardRes = wardsTask.Result;
+            var districtRes = districtsTask.Result;
+            var cityRes = citiesTask.Result;
 
             if (!wardRes.IsSuccessStatusCode || !districtRes.IsSuccessStatusCode || !cityRes.IsSuccessStatusCode)
             {
-                return View(new List<AddressViewModel>());
+                // Không có dữ liệu location ⇒ vẫn show danh sách address thô (đỡ trắng trang)
+                var fallback = userAddresses.Select(addr => new AddressViewModel
+                {
+                    Id = addr.Id,
+                    UserId = addr.UserId,
+                    Name = addr.Name ?? string.Empty,
+                    Phone = addr.Phone ?? string.Empty,
+                    Latitude = addr.Latitude,
+                    Longitude = addr.Longitude,
+                    Description = addr.Description,
+                    Status = addr.Status,
+                    CityName = null,
+                    DistrictName = null,
+                    WardName = null
+                })
+                // sắp xếp: mặc định lên đầu cho đẹp giống view
+                .OrderByDescending(a => a.Status == AddressStatus.Default)
+                .ToList();
+
+                return View(fallback);
             }
 
-            var wards = JsonConvert.DeserializeObject<List<WardViewModel>>(await wardRes.Content.ReadAsStringAsync());
-            var districts = JsonConvert.DeserializeObject<List<DistrictViewModel>>(await districtRes.Content.ReadAsStringAsync());
-            var cities = JsonConvert.DeserializeObject<List<CityViewModel>>(await cityRes.Content.ReadAsStringAsync());
+            // Parse JSON
+            var wards = JsonConvert.DeserializeObject<List<WardViewModel>>(await wardRes.Content.ReadAsStringAsync()) ?? new();
+            var districts = JsonConvert.DeserializeObject<List<DistrictViewModel>>(await districtRes.Content.ReadAsStringAsync()) ?? new();
+            var cities = JsonConvert.DeserializeObject<List<CityViewModel>>(await cityRes.Content.ReadAsStringAsync()) ?? new();
 
-            // Mapping từ entity → viewmodel
-            var addressViewModels = new List<AddressViewModel>();
+            // Dictionnaries cho lookup O(1)
+            var wardsById = wards.GroupBy(w => w.Id).ToDictionary(g => g.Key, g => g.First());
+            var districtsById = districts.GroupBy(d => d.Id).ToDictionary(g => g.Key, g => g.First());
+            var citiesById = cities.GroupBy(c => c.Id).ToDictionary(g => g.Key, g => g.First());
 
+            // Map chuẩn: WardId -> District -> City (fallback DistrictId nếu WardId null)
+            var vmList = new List<AddressViewModel>();
             foreach (var addr in userAddresses)
             {
-                var city = cities.FirstOrDefault(c => c.Id == addr.Id); // Tạm map theo addr.Id = city.Id
-                var district = districts.FirstOrDefault(d => d.CityId == city?.Id);
-                var ward = wards.FirstOrDefault(w => w.DistrictId == district?.Id);
+                WardViewModel? ward = null;
+                DistrictViewModel? district = null;
+                CityViewModel? city = null;
 
-                addressViewModels.Add(new AddressViewModel
+                // Ưu tiên WardId
+                if (addr.WardId.HasValue && wardsById.TryGetValue(addr.WardId.Value, out var w))
+                {
+                    ward = w;
+                    // Ward biết DistrictId
+                    if (districtsById.TryGetValue(ward.DistrictId, out var dFromWard))
+                        district = dFromWard;
+                }
+
+                // Fallback: nếu chưa có district mà Address có DistrictId
+                if (district == null && addr.DistrictId.HasValue)
+                {
+                    districtsById.TryGetValue(addr.DistrictId.Value, out district);
+                }
+
+                // City lấy từ district.CityId
+                if (district != null)
+                {
+                    citiesById.TryGetValue(district.CityId, out city);
+                }
+
+                vmList.Add(new AddressViewModel
                 {
                     Id = addr.Id,
                     UserId = addr.UserId,
@@ -75,12 +130,21 @@ namespace DATN_GO.Controllers
                     Status = addr.Status,
                     CityName = city?.CityName,
                     DistrictName = district?.DistrictName,
-                    WardName = ward?.WardName
+                    WardName = ward?.WardName,
+
+                    // Nếu view có xài Id thì fill luôn (optional)
+                    CityId = city?.Id ?? 0,
+                    DistrictId = district?.Id ?? addr.DistrictId ?? 0,
+                    WardId = ward?.Id ?? addr.WardId ?? 0
                 });
             }
 
-            return View(addressViewModels);
+            // Mặc định lên đầu
+            vmList = vmList.OrderByDescending(a => a.Status == AddressStatus.Default).ToList();
+
+            return View(vmList);
         }
+
 
 
         // GET: Create
@@ -116,8 +180,6 @@ namespace DATN_GO.Controllers
 
 
 
-
-
         // POST: Create
         [HttpPost]
         public async Task<IActionResult> Create(AddressCreateViewModel model)
@@ -141,6 +203,15 @@ namespace DATN_GO.Controllers
                 return await ReloadViewAsync(model);
             }
 
+            // ✅ Validate số điện thoại Việt Nam
+            var vnPhoneRegex = new System.Text.RegularExpressions.Regex(@"^(0|\+84)(3[2-9]|5[2689]|7[06-9]|8[1-689]|9\d)\d{7}$");
+            if (string.IsNullOrWhiteSpace(model.Phone) || !vnPhoneRegex.IsMatch(model.Phone))
+            {
+                TempData["ToastMessage"] = "Số điện thoại không hợp lệ. Vui lòng nhập đúng số điện thoại Việt Nam.";
+                TempData["ToastType"] = "danger";
+                return await ReloadViewAsync(model);
+            }
+
             var allAddresses = await _service.GetAddressesAsync();
             var userAddresses = allAddresses.Where(a => a.UserId == model.UserId).ToList();
 
@@ -151,7 +222,7 @@ namespace DATN_GO.Controllers
                 return RedirectToAction("Create");
             }
 
-            // ✅ Nếu thêm mặc định, thì gỡ mặc định cũ (nếu có)
+            // Nếu chọn làm mặc định, gỡ mặc định cũ
             if (model.Status == AddressStatus.Default)
             {
                 var existingDefault = userAddresses.FirstOrDefault(a => a.Status == AddressStatus.Default);
@@ -162,6 +233,7 @@ namespace DATN_GO.Controllers
                 }
             }
 
+            // 1) Tạo Address trước (chưa có DistrictId/WardId)
             var address = new Addresses
             {
                 UserId = model.UserId,
@@ -175,7 +247,6 @@ namespace DATN_GO.Controllers
             };
 
             var (success, errorMessage, newAddressId) = await _service.AddAddressAndReturnIdAsync(address);
-
             if (!success)
             {
                 TempData["ToastMessage"] = $"Lỗi khi lưu địa chỉ: {errorMessage}";
@@ -183,9 +254,10 @@ namespace DATN_GO.Controllers
                 return await ReloadViewAsync(model);
             }
 
-            // ✅ Save city → district → ward
+            // 2) Tạo/đồng bộ City → District → Ward
             try
             {
+                // City dùng shared PK = Address.Id
                 var cityModel = new CityViewModel
                 {
                     Id = newAddressId,
@@ -195,11 +267,10 @@ namespace DATN_GO.Controllers
 
                 var districtModel = new DistrictViewModel
                 {
-                    CityId = cityModel.Id,
+                    CityId = cityModel.Id, // = newAddressId
                     DistrictName = model.DistrictName?.Trim() ?? string.Empty
                 };
                 var createdDistrict = await SaveDistrictAsync(districtModel);
-
                 if (createdDistrict.Id == 0)
                     throw new Exception("DistrictId is 0! Không thể tạo Ward nếu không có DistrictId hợp lệ!");
 
@@ -208,7 +279,13 @@ namespace DATN_GO.Controllers
                     WardName = model.WardName?.Trim() ?? string.Empty,
                     DistrictId = createdDistrict.Id
                 };
-                await SaveWardAsync(wardModel);
+                var createdWard = await SaveWardAsync(wardModel);
+
+                // 3) ✅ Cập nhật lại Address với DistrictId/WardId
+                address.Id = newAddressId;
+                address.DistrictId = createdDistrict.Id;
+                address.WardId = createdWard.Id;
+                await _service.UpdateAddressAsync(address);
             }
             catch (Exception ex)
             {
@@ -221,8 +298,6 @@ namespace DATN_GO.Controllers
             TempData["ToastType"] = "success";
             return RedirectToAction("Address");
         }
-
-
 
 
 
@@ -291,11 +366,6 @@ namespace DATN_GO.Controllers
 
 
 
-
-
-
-
-
         private async Task<WardViewModel> SaveWardAsync(WardViewModel ward)
         {
             var checkUrl = $"https://localhost:7096/api/wards/by-name?name={Uri.EscapeDataString(ward.WardName)}&districtId={ward.DistrictId}";
@@ -350,7 +420,7 @@ namespace DATN_GO.Controllers
         }
 
 
-        // XÓA ĐỊA CHỈ
+        // XOÁ ĐỊA CHỈ
         [HttpGet]
         public async Task<IActionResult> Delete(int id)
         {
@@ -383,39 +453,53 @@ namespace DATN_GO.Controllers
 
             try
             {
-                // 🚨 Lấy danh sách Districts kèm Wards từ cityId (address.Id == City.Id)
-                // TEMP FIX (dùng nếu /by-city fail)
-                var response = await _httpClient.GetAsync("https://localhost:7096/api/districts");
-                var json = await response.Content.ReadAsStringAsync();
-
-                if (!response.IsSuccessStatusCode)
-                    throw new Exception("Không thể lấy tất cả Districts: " + json);
-
-                var allDistricts = JsonConvert.DeserializeObject<List<Districts>>(json);
-                var districts = allDistricts.Where(d => d.CityId == id).ToList();
-
-
-                // 🧹 Xoá từng Ward rồi đến District
-                foreach (var district in districts)
+                // ✅ 1) XÓA ADDRESS TRƯỚC (cắt FK tới Ward)
+                var deleted = await _service.DeleteAddressAsync(id);
+                if (!deleted)
                 {
-                    foreach (var ward in district.Wards ?? new List<Wards>())
-                    {
-                        await DeleteWardByIdAsync(ward.Id);
-                    }
-
-                    await DeleteDistrictByIdAsync(district.Id);
+                    TempData["ToastMessage"] = "Xoá địa chỉ thất bại!";
+                    TempData["ToastType"] = "danger";
+                    return RedirectToAction("Address");
                 }
 
-                // 🧨 Xoá City sau cùng
-                await DeleteCityAsync(address.Id);
+                // ✅ 2) LẤY DISTRICTS THEO CITY (City.Id = Address.Id theo shared PK)
+                var districtsRes = await _httpClient.GetAsync("https://localhost:7096/api/districts");
+                if (!districtsRes.IsSuccessStatusCode)
+                {
+                    var msg = await districtsRes.Content.ReadAsStringAsync();
+                    throw new Exception("Không thể lấy Districts: " + msg);
+                }
+                var allDistricts = JsonConvert.DeserializeObject<List<Districts>>(await districtsRes.Content.ReadAsStringAsync()) ?? new();
+                var districts = allDistricts.Where(d => d.CityId == id).ToList();
+                var districtIds = districts.Select(d => d.Id).ToList();
 
+                // ✅ 3) LẤY TẤT CẢ WARDS RỒI FILTER THEO DISTRICTID
+                var wardsRes = await _httpClient.GetAsync("https://localhost:7096/api/wards");
+                if (!wardsRes.IsSuccessStatusCode)
+                {
+                    var msg = await wardsRes.Content.ReadAsStringAsync();
+                    throw new Exception("Không thể lấy Wards: " + msg);
+                }
+                var allWards = JsonConvert.DeserializeObject<List<Wards>>(await wardsRes.Content.ReadAsStringAsync()) ?? new();
+                var wardsToDelete = allWards.Where(w => districtIds.Contains(w.DistrictId)).ToList();
 
-                // ✅ Xoá địa chỉ chính
-                var success = await _service.DeleteAddressAsync(id);
-                TempData["ToastMessage"] = success
-                    ? "Xoá địa chỉ thành công!"
-                    : "Xoá địa chỉ thất bại!";
-                TempData["ToastType"] = success ? "success" : "danger";
+                // ✅ 4) XOÁ WARD TRƯỚC
+                foreach (var w in wardsToDelete)
+                {
+                    await DeleteWardByIdAsync(w.Id);
+                }
+
+                // ✅ 5) XOÁ DISTRICT
+                foreach (var d in districts)
+                {
+                    await DeleteDistrictByIdAsync(d.Id);
+                }
+
+                // ✅ 6) XOÁ CITY SAU CÙNG
+                await DeleteCityAsync(id);
+
+                TempData["ToastMessage"] = "Xoá địa chỉ thành công!";
+                TempData["ToastType"] = "success";
             }
             catch (Exception ex)
             {
@@ -428,13 +512,23 @@ namespace DATN_GO.Controllers
 
         private async Task DeleteCityAsync(int id)
         {
-            var response = await _httpClient.DeleteAsync($"https://localhost:7096/api/cities/{id}");
+            var response = await _httpClient.GetAsync($"https://localhost:7096/api/cities/{id}");
+            if (response.StatusCode == HttpStatusCode.NotFound) return; // City đã bị xoá
             if (!response.IsSuccessStatusCode)
             {
                 var msg = await response.Content.ReadAsStringAsync();
                 throw new Exception("Xoá City thất bại: " + msg);
             }
+
+            // City còn tồn tại → xoá
+            var delRes = await _httpClient.DeleteAsync($"https://localhost:7096/api/cities/{id}");
+            if (!delRes.IsSuccessStatusCode)
+            {
+                var msg = await delRes.Content.ReadAsStringAsync();
+                throw new Exception("Xoá City thất bại: " + msg);
+            }
         }
+
 
         private async Task DeleteDistrictByIdAsync(int districtId)
         {
@@ -457,6 +551,7 @@ namespace DATN_GO.Controllers
         }
 
 
+
         // EDIT ADDRESS
 
         [HttpGet]
@@ -469,43 +564,47 @@ namespace DATN_GO.Controllers
                 return RedirectToAction("Address");
             }
 
-            var parts = address.Description?.Split(',').Select(p => p.Trim()).ToArray();
-            string wardName = parts?.ElementAtOrDefault(0) ?? "";
-            string districtName = parts?.ElementAtOrDefault(1) ?? "";
-            string cityName = parts?.ElementAtOrDefault(2) ?? "";
+            // gọi 3 API location một lượt
+            var wardTask = _httpClient.GetAsync("https://localhost:7096/api/wards");
+            var districtTask = _httpClient.GetAsync("https://localhost:7096/api/districts");
+            var cityTask = _httpClient.GetAsync("https://localhost:7096/api/cities");
 
-            var cities = await _httpClient.GetFromJsonAsync<List<CityViewModel>>("https://localhost:7096/api/cities") ?? new();
-            var matchedCity = cities.FirstOrDefault(c => c.CityName.Trim().Equals(cityName, StringComparison.OrdinalIgnoreCase));
+            await Task.WhenAll(wardTask, districtTask, cityTask);
 
-            var districts = new List<DistrictViewModel>();
-            var wards = new List<WardViewModel>();
-            int cityId = 0, districtId = 0, wardId = 0;
-
-            if (matchedCity != null)
+            if (!wardTask.Result.IsSuccessStatusCode ||
+                !districtTask.Result.IsSuccessStatusCode ||
+                !cityTask.Result.IsSuccessStatusCode)
             {
-                cityId = matchedCity.Id;
-                var distRes = await _httpClient.GetAsync($"https://localhost:7096/api/districts/city/{cityId}");
-                if (distRes.IsSuccessStatusCode)
-                {
-                    districts = JsonConvert.DeserializeObject<List<DistrictViewModel>>(await distRes.Content.ReadAsStringAsync()) ?? new();
-                    var matchedDistrict = districts.FirstOrDefault(d => d.DistrictName.Trim().Equals(districtName, StringComparison.OrdinalIgnoreCase));
-                    if (matchedDistrict != null)
-                    {
-                        districtId = matchedDistrict.Id;
-                        var wardRes = await _httpClient.GetAsync($"https://localhost:7096/api/wards/district/{districtId}");
-                        if (wardRes.IsSuccessStatusCode)
-                        {
-                            wards = JsonConvert.DeserializeObject<List<WardViewModel>>(await wardRes.Content.ReadAsStringAsync()) ?? new();
-                            var matchedWard = wards.FirstOrDefault(w => w.WardName.Trim().Equals(wardName, StringComparison.OrdinalIgnoreCase));
-                            if (matchedWard != null)
-                            {
-                                wardId = matchedWard.Id;
-                            }
-                        }
-                    }
-                }
+                TempData["Error"] = "Không tải được dữ liệu khu vực.";
+                return RedirectToAction("Address");
             }
 
+            var wards = JsonConvert.DeserializeObject<List<WardViewModel>>(await wardTask.Result.Content.ReadAsStringAsync()) ?? new();
+            var districts = JsonConvert.DeserializeObject<List<DistrictViewModel>>(await districtTask.Result.Content.ReadAsStringAsync()) ?? new();
+            var cities = JsonConvert.DeserializeObject<List<CityViewModel>>(await cityTask.Result.Content.ReadAsStringAsync()) ?? new();
+
+            // Lấy theo ID thật:
+            // City: shared PK = Address.Id
+            var city = cities.FirstOrDefault(c => c.Id == address.Id);
+            var cityName = city?.CityName?.Trim() ?? string.Empty;
+
+            // District/Ward: theo Address.DistrictId / WardId lưu trong Address
+            var district = (address.DistrictId.HasValue && address.DistrictId > 0)
+                ? districts.FirstOrDefault(d => d.Id == address.DistrictId.Value)
+                : null;
+            var districtName = district?.DistrictName?.Trim() ?? string.Empty;
+
+            var ward = (address.WardId.HasValue && address.WardId > 0)
+                ? wards.FirstOrDefault(w => w.Id == address.WardId.Value)
+                : null;
+            var wardName = ward?.WardName?.Trim() ?? string.Empty;
+
+            // Truyền qua ViewBag để JS set selected theo TÊN (nhớ serialize JSON ở view như mình hướng dẫn)
+            ViewBag.SelectedCityName = cityName;
+            ViewBag.SelectedDistrictName = districtName;
+            ViewBag.SelectedWardName = wardName;
+
+            // ViewModel cho form
             var vm = new AddressEditViewModel
             {
                 Id = address.Id,
@@ -516,19 +615,16 @@ namespace DATN_GO.Controllers
                 Longitude = address.Longitude,
                 Description = address.Description,
                 Status = address.Status,
+
                 CityName = cityName,
                 DistrictName = districtName,
                 WardName = wardName,
-                CityId = cityId,
-                DistrictId = districtId,
-                WardId = wardId,
-                Cities = cities,
-                Districts = districts,
-                Wards = wards
+
+                // bind lại ID thật (nếu cần submit)
+                CityId = address.Id,                         // shared PK
+                DistrictId = address.DistrictId ?? 0,
+                WardId = address.WardId ?? 0
             };
-            ViewBag.CityId = cityId;
-            ViewBag.DistrictId = districtId;
-            ViewBag.WardId = wardId;
 
             return View(vm);
         }
@@ -537,52 +633,72 @@ namespace DATN_GO.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(AddressEditViewModel model)
         {
-            if (!ModelState.IsValid)
-            {
-                TempData["ToastMessage"] = "Dữ liệu không hợp lệ!";
-                TempData["ToastType"] = "danger";
-                return View(model);
-            }
+            if (!ModelState.IsValid) return View(model);
 
             try
             {
+                // 0) Clean input
                 model.Name = model.Name?.Trim();
                 model.Phone = model.Phone?.Trim();
                 model.Description = model.Description?.Trim();
+                model.CityName = (model.CityName ?? "").Trim();
+                model.DistrictName = (model.DistrictName ?? "").Trim();
+                model.WardName = (model.WardName ?? "").Trim();
 
-                // 📦 1. Load dữ liệu từ locations.json
-                var cityModel = await SaveCityForUpdateAsync(model.CityName);
-                var districtModel = await SaveDistrictForUpdateAsync(model.DistrictName, model.CityName);
-                var wardModel = await SaveWardForUpdateAsync(model.WardName, model.DistrictName, model.CityName);
+                if (string.IsNullOrWhiteSpace(model.CityName) ||
+                    string.IsNullOrWhiteSpace(model.DistrictName) ||
+                    string.IsNullOrWhiteSpace(model.WardName))
+                {
+                    TempData["ToastMessage"] = "Thiếu Tỉnh/Quận/Phường.";
+                    TempData["ToastType"] = "danger";
+                    return View(model);
+                }
 
-                // ✅ 2. CITY: Shared PK với Address → phải dùng model.Id
-                var createdCity = new CityViewModel
+                // ✅ Validate số điện thoại Việt Nam
+                var vnPhoneRegex = new System.Text.RegularExpressions.Regex(
+                    @"^(0|\+84)(3[2-9]|5[2689]|7[06-9]|8[1-689]|9\d)\d{7}$"
+                );
+                if (string.IsNullOrWhiteSpace(model.Phone) || !vnPhoneRegex.IsMatch(model.Phone))
+                {
+                    TempData["ToastMessage"] = "Số điện thoại không hợp lệ. Vui lòng nhập đúng số điện thoại Việt Nam.";
+                    TempData["ToastType"] = "danger";
+                    return View(model);
+                }
+
+                // 1) CITY: shared PK = Address.Id (PUT nếu có, POST nếu chưa có)
+                await SaveCityAsync(new CityViewModel
                 {
                     Id = model.Id,
-                    CityName = cityModel.CityName
+                    CityName = model.CityName
+                });
+
+                // 2) DISTRICT: theo (CityId = Address.Id, DistrictName) → LẤY/CREATE → Id thật
+                var districtVm = new DistrictViewModel
+                {
+                    CityId = model.Id, // City shared PK = Address.Id
+                    DistrictName = model.DistrictName
                 };
-                await SaveCityAsync(createdCity); // POST nếu chưa có, PUT nếu đã tồn tại
+                var savedDistrict = await SaveDistrictForUpdateAsync(districtVm);
+                if (savedDistrict == null || savedDistrict.Id <= 0)
+                    throw new Exception("Không lấy được DistrictId hợp lệ.");
 
-                // ✅ 3. DISTRICT: Dùng tên + cityId để lấy Id (GET hoặc POST → trả về Id thật)
-                var savedDistrict = await SaveDistrictAsync(new DistrictViewModel
+                // 3) WARD: theo (DistrictId, WardName) → LẤY/CREATE → Id thật
+                var wardVm = new WardViewModel
                 {
-                    DistrictName = districtModel.DistrictName,
-                    CityId = createdCity.Id
-                });
+                    DistrictId = savedDistrict.Id,
+                    WardName = model.WardName
+                };
+                var savedWard = await SaveWardForUpdateAsync(wardVm);
+                if (savedWard == null || savedWard.Id <= 0)
+                    throw new Exception("Không lấy được WardId hợp lệ.");
 
-                // ✅ 4. WARD: Dùng tên + districtId để lấy Id (GET hoặc POST → trả về Id thật)
-                var savedWard = await SaveWardAsync(new WardViewModel
-                {
-                    WardName = wardModel.WardName,
-                    DistrictId = savedDistrict.Id
-                });
-
-                // ✅ 5. Gán lại Id để cập nhật vào Address
-                model.CityId = createdCity.Id;
+                // 4) Gán lại Id để binding
+                model.CityId = model.Id;
                 model.DistrictId = savedDistrict.Id;
                 model.WardId = savedWard.Id;
 
-                var addressPayload = new
+                // 5) PUT Address — API server đã lưu DistrictId/WardId
+                var payload = new
                 {
                     model.Id,
                     model.UserId,
@@ -592,29 +708,26 @@ namespace DATN_GO.Controllers
                     model.Longitude,
                     model.Description,
                     model.Status,
-                    model.CityId,
                     model.DistrictId,
                     model.WardId
                 };
 
-                var response = await _httpClient.PutAsJsonAsync(
-                    $"https://localhost:7096/api/addresses/{model.Id}",
-                    addressPayload);
-
-                if (!response.IsSuccessStatusCode)
+                var res = await _httpClient.PutAsJsonAsync($"https://localhost:7096/api/addresses/{model.Id}", payload);
+                if (!res.IsSuccessStatusCode)
                 {
-                    TempData["ToastMessage"] = $"Lỗi cập nhật địa chỉ: {await response.Content.ReadAsStringAsync()}";
+                    var body = await res.Content.ReadAsStringAsync();
+                    TempData["ToastMessage"] = $"Lỗi cập nhật địa chỉ: {body}";
                     TempData["ToastType"] = "danger";
                     return View(model);
                 }
 
-                TempData["ToastMessage"] = "Cập nhật thông tin thành công!";
+                TempData["ToastMessage"] = "Cập nhật địa chỉ thành công!";
                 TempData["ToastType"] = "success";
                 return RedirectToAction("Address");
             }
             catch (Exception ex)
             {
-                TempData["ToastMessage"] = $"Lỗi hệ thống: {ex.Message}";
+                TempData["ToastMessage"] = $"💥 Lỗi hệ thống: {ex.Message}";
                 TempData["ToastType"] = "danger";
                 return View(model);
             }
@@ -622,86 +735,67 @@ namespace DATN_GO.Controllers
 
 
 
-        private async Task<CityViewModel> SaveCityForUpdateAsync(string cityName)
+        private async Task<DistrictViewModel?> SaveDistrictForUpdateAsync(DistrictViewModel district)
         {
-            var jsonPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "data", "locations.json");
-            var jsonContent = await System.IO.File.ReadAllTextAsync(jsonPath);
-            var cities = JsonConvert.DeserializeObject<List<CityViewModel>>(jsonContent) ?? new();
+            var checkUrl = $"https://localhost:7096/api/districts/by-name?name={Uri.EscapeDataString(district.DistrictName)}&cityId={district.CityId}";
+            var check = await _httpClient.GetAsync(checkUrl);
 
-            // So sánh nguyên gốc, không normalize
-            var existing = cities.FirstOrDefault(c => c.CityName == cityName);
-
-            if (existing == null)
-                throw new Exception($"❌ Không tìm thấy tỉnh/thành '{cityName}' trong file locations.json!");
-
-            return existing;
-        }
-
-
-        private async Task<DistrictViewModel> SaveDistrictForUpdateAsync(string districtName, string cityName)
-        {
-            var jsonPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "data", "locations.json");
-            var jsonContent = await System.IO.File.ReadAllTextAsync(jsonPath);
-            var cities = JsonConvert.DeserializeObject<List<CityViewModel>>(jsonContent) ?? new();
-
-            var city = cities.FirstOrDefault(c => c.CityName == cityName);
-            if (city == null)
-                throw new Exception($"❌ Không tìm thấy tỉnh/thành '{cityName}' trong file locations.json!");
-
-            var index = 0;
-            foreach (var d in city.Districts)
+            if (check.IsSuccessStatusCode)
             {
-                if (d.DistrictName == districtName)
+                var json = await check.Content.ReadAsStringAsync();
+                var existing = JsonConvert.DeserializeObject<DistrictViewModel>(json);
+                if (existing != null && existing.Id > 0)
                 {
-                    return new DistrictViewModel
-                    {
-                        Id = index + 1, // 👈 gán Id theo index
-                        DistrictName = d.DistrictName,
-                        CityId = city.Id
-                    };
+                    district.Id = existing.Id;
+                    return existing;
                 }
-                index++;
             }
 
-            throw new Exception($"❌ Không tìm thấy quận/huyện '{districtName}' trong tỉnh '{cityName}'!");
+            var payload = new { district.DistrictName, district.CityId };
+            var response = await _httpClient.PostAsJsonAsync("https://localhost:7096/api/districts", payload);
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception($"❌ District Create Error: {content}");
+
+            var created = JsonConvert.DeserializeObject<DistrictViewModel>(content);
+            if (created == null || created.Id <= 0)
+                throw new Exception("❌ District Create Error: invalid response Id");
+
+            district.Id = created.Id;
+            return created;
         }
 
-
-
-
-        private async Task<WardViewModel> SaveWardForUpdateAsync(string wardName, string districtName, string cityName)
+        private async Task<WardViewModel?> SaveWardForUpdateAsync(WardViewModel ward)
         {
-            var jsonPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "data", "locations.json");
-            var jsonContent = await System.IO.File.ReadAllTextAsync(jsonPath);
-            var cities = JsonConvert.DeserializeObject<List<CityViewModel>>(jsonContent) ?? new();
+            var checkUrl = $"https://localhost:7096/api/wards/by-name?name={Uri.EscapeDataString(ward.WardName)}&districtId={ward.DistrictId}";
+            var check = await _httpClient.GetAsync(checkUrl);
 
-            var city = cities.FirstOrDefault(c => c.CityName == cityName);
-            if (city == null)
-                throw new Exception($"❌ Không tìm thấy tỉnh/thành '{cityName}' trong file locations.json!");
-
-            var district = city.Districts.FirstOrDefault(d => d.DistrictName == districtName);
-            if (district == null)
-                throw new Exception($"❌ Không tìm thấy quận/huyện '{districtName}' trong tỉnh '{cityName}'!");
-
-            var index = 0;
-            foreach (var w in district.Wards)
+            if (check.IsSuccessStatusCode)
             {
-                if (w.WardName == wardName)
+                var json = await check.Content.ReadAsStringAsync();
+                var existing = JsonConvert.DeserializeObject<WardViewModel>(json);
+                if (existing != null && existing.Id > 0)
                 {
-                    return new WardViewModel
-                    {
-                        Id = index + 1, // 👈 gán Id theo index
-                        WardName = w.WardName,
-                        DistrictId = district.Id
-                    };
+                    ward.Id = existing.Id;
+                    return existing;
                 }
-                index++;
             }
 
-            throw new Exception($"❌ Không tìm thấy phường/xã '{wardName}' trong huyện '{districtName}'!");
+            var payload = new { ward.WardName, ward.DistrictId };
+            var response = await _httpClient.PostAsJsonAsync("https://localhost:7096/api/wards", payload);
+            var content = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception($"❌ Ward Create Error: {content}");
+
+            var created = JsonConvert.DeserializeObject<WardViewModel>(content);
+            if (created == null || created.Id <= 0)
+                throw new Exception("❌ Ward Create Error: invalid response Id");
+
+            ward.Id = created.Id;
+            return created;
         }
-
-
 
 
 

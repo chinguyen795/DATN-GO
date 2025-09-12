@@ -149,6 +149,7 @@ namespace DATN_API.Controllers
                 Phone = isPhone ? identifier : "",
                 Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
                 RoleId = 1,
+                Balance = 0m,
                 FullName = "Người dùng",
                 Status = UserStatus.Active,
                 Gender = GenderType.Other,

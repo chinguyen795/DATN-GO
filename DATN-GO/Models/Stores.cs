@@ -41,7 +41,7 @@ namespace DATN_GO.Models
         public string? Province { get; set; }
         public float Longitude { get; set; }
         public float Latitude { get; set; }
-
+        public string? Phone { get; set; }
         [MaxLength]
         public string? Avatar { get; set; }
         public decimal? MoneyAmout { get; set; }
@@ -73,5 +73,7 @@ namespace DATN_GO.Models
         public ICollection<Products>? Products { get; set; }
         [JsonIgnore]
         public ICollection<ShippingMethods>? ShippingMethods { get; set; }
+        [JsonIgnore]
+        public ICollection<TradingPayment>? TradingPayments { get; set; }
     }
 }

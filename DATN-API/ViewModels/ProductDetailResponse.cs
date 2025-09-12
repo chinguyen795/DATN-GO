@@ -7,7 +7,7 @@
         public int StoreId { get; set; }
         public string Name { get; set; }
         public string? Brand { get; set; }
-        public int? Weight { get; set; }
+        public decimal? Weight { get; set; }
         public string? Slug { get; set; }
         public string? Description { get; set; }
         public string? MainImage { get; set; }
@@ -54,7 +54,7 @@
         public decimal Price { get; set; }
         public decimal CostPrice { get; set; }
         public int Quantity { get; set; }
-        public int Weight { get; set; }
+        public decimal Weight { get; set; }
         public float? Height { get; set; }
         public float? Width { get; set; }
         public float? Length { get; set; }

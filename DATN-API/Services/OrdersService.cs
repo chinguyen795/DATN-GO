@@ -497,7 +497,7 @@ namespace DATN_API.Services
             var products = o.OrderDetails.Select(od => new DATN_API.ViewModels.GHTK.GHTKProduct
             {
                 Name = od.Product?.Name ?? "Sản phẩm",
-                Weight = Math.Max(0.1m, ((decimal)(od.Product?.Weight ?? 0)) / 1000m),
+                Weight = Math.Max(0.1m, od.Product?.Weight ?? 0.5m),
                 Quantity = od.Quantity
             }).ToList();
 
@@ -528,9 +528,7 @@ namespace DATN_API.Services
                     Hamlet = "Khác",
                     DeliverOption = "none",
                     Transport = "road",
-
-                    // VNPay đã thanh toán => KHÔNG thu hộ
-                    // 🔥 KHÁC BIỆT: COD => thu hộ tiền đơn
+                    IsFreeShip = "1",                    // VNPay đã thanh toán => KHÔNG thu hộ
                     PickMoney = o.TotalPrice,
                     Value = o.TotalPrice,
                     Note = "Thanh toán khi nhận hàng (COD)"
@@ -618,7 +616,7 @@ namespace DATN_API.Services
             var products = o.OrderDetails.Select(od => new ViewModels.GHTK.GHTKProduct
             {
                 Name = od.Product?.Name ?? "Sản phẩm",
-                Weight = Math.Max(0.1m, ((decimal)(od.Product?.Weight ?? 0)) / 1000m),
+                Weight = Math.Max(0.1m, od.Product?.Weight ?? 0.5m),
                 Quantity = od.Quantity
             }).ToList();
 

@@ -31,7 +31,7 @@ namespace DATN_GO.Models
         [MaxLength(50)]
         public string? Brand { get; set; }
 
-        public int? Weight { get; set; }
+        public decimal? Weight { get; set; }
 
         public string? Slug { get; set; }
 

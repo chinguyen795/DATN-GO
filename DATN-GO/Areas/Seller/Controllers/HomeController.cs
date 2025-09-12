@@ -62,7 +62,7 @@ namespace DATN_GO.Areas.Seller.Controllers
             {
                 FullName = user.FullName,
                 Email = user.Email,
-                Phone = user.Phone,
+                Phone = store.Phone ?? user.Phone,
                 UserAvatar = user.Avatar,
 
                 StoreName = store.Name,
@@ -114,66 +114,82 @@ namespace DATN_GO.Areas.Seller.Controllers
             return View(vm);
         }
         [HttpPost]
-        public async Task<IActionResult> UpdateBasicInfo(string FullName, string Email, string Phone, string Address, string StoreName)
+        public async Task<IActionResult> UpdateBasicInfo(
+                string FullName,
+                string Email,
+                string Phone,
+                string StoreName,
+                string Ward,
+                string District,
+                string Province,
+                string PickupAddress)
         {
+            // Validate Users
             if (string.IsNullOrWhiteSpace(FullName))
             {
-                TempData["ToastMessage"] = "Họ tên không được để trống.";
-                TempData["ToastType"] = "danger";
+                TempData["Error"] = "Họ tên không được để trống.";
                 return RedirectToAction("Index");
             }
 
             if (string.IsNullOrWhiteSpace(Email))
             {
-                TempData["ToastMessage"] = "Email không được để trống.";
-                TempData["ToastType"] = "danger";
+                TempData["Error"] = "Email không được để trống.";
                 return RedirectToAction("Index");
             }
 
             if (string.IsNullOrWhiteSpace(Phone))
             {
-                TempData["ToastMessage"] = "Số điện thoại không được để trống.";
-                TempData["ToastType"] = "danger";
+                TempData["Error"] = "Số điện thoại không được để trống.";
                 return RedirectToAction("Index");
             }
             else if (!Phone.All(char.IsDigit))
             {
-                TempData["ToastMessage"] = "Số điện thoại chỉ được chứa số.";
-                TempData["ToastType"] = "danger";
+                TempData["Error"] = "Số điện thoại chỉ được chứa số.";
                 return RedirectToAction("Index");
             }
 
-            if (string.IsNullOrWhiteSpace(Address))
+            // Validate Stores
+            if (string.IsNullOrWhiteSpace(PickupAddress))
             {
-                TempData["ToastMessage"] = "Địa chỉ không được để trống.";
-                TempData["ToastType"] = "danger";
+                TempData["Error"] = "Địa chỉ lấy hàng không được để trống.";
+                return RedirectToAction("Index");
+            }
+            if (string.IsNullOrWhiteSpace(Ward) ||
+                string.IsNullOrWhiteSpace(District) ||
+                string.IsNullOrWhiteSpace(Province))
+            {
+                TempData["Error"] = "Phường/Xã, Quận/Huyện, Tỉnh/Thành phố không được để trống.";
                 return RedirectToAction("Index");
             }
 
             var userId = HttpContext.Session.GetString("Id");
             if (string.IsNullOrEmpty(userId)) return RedirectToAction("Login", "Account");
 
-            var user = await _userService.GetUserByIdAsync(int.Parse(userId));
-            var store = await _storeService.GetStoreByUserIdAsync(int.Parse(userId));
+            var uid = int.Parse(userId);
+            var user = await _userService.GetUserByIdAsync(uid);
+            var store = await _storeService.GetStoreByUserIdAsync(uid);
 
             if (user == null || store == null)
             {
-                TempData["ToastMessage"] = "Không tìm thấy tài khoản hoặc cửa hàng.";
-                TempData["ToastType"] = "danger";
+                TempData["Error"] = "Không tìm thấy tài khoản hoặc cửa hàng.";
                 return RedirectToAction("Index");
             }
 
+            // Update Users
             user.FullName = FullName;
             user.Email = Email;
             user.Phone = Phone;
             await _userService.UpdateUserAsync(user.Id, user);
 
+            // Update Stores
             store.Name = StoreName;
-            store.Address = Address;
+            store.Ward = Ward;
+            store.District = District;
+            store.Province = Province;
+            store.PickupAddress = PickupAddress;
             await _storeService.UpdateStoreAsync(store.Id, store);
 
-            TempData["ToastMessage"] = "Cập nhật thông tin thành công!";
-            TempData["ToastType"] = "success";
+            TempData["Success"] = "Cập nhật thông tin cá nhân thành công!";
             return RedirectToAction("Index");
         }
 
@@ -182,19 +198,19 @@ namespace DATN_GO.Areas.Seller.Controllers
         {
             if (string.IsNullOrWhiteSpace(Bank))
             {
-                TempData["ToastMessage"] = "Ngân hàng không được để trống.";
-                TempData["ToastType"] = "danger";
+                TempData["Error"] = "Ngân hàng không được để trống.";
+                return RedirectToAction("Index");
             }
 
             if (string.IsNullOrWhiteSpace(BankAccount))
             {
-                TempData["ToastMessage"] = "Số tài khoản không được để trống.";
-                TempData["ToastType"] = "danger";
+                TempData["Error"] = "Số tài khoản không được để trống.";
+                return RedirectToAction("Index");
             }
             else if (!BankAccount.All(char.IsDigit))
             {
-                TempData["ToastMessage"] = "Số tài khoản chỉ được chứa số.";
-                TempData["ToastType"] = "danger";
+                TempData["Error"] = "Số tài khoản chỉ được chứa số.";
+                return RedirectToAction("Index");
             }
 
             var userId = HttpContext.Session.GetString("Id");
@@ -203,8 +219,7 @@ namespace DATN_GO.Areas.Seller.Controllers
             var store = await _storeService.GetStoreByUserIdAsync(int.Parse(userId));
             if (store == null)
             {
-                TempData["ToastMessage"] = "Không tìm thấy cửa hàng.";
-                TempData["ToastType"] = "danger";
+                TempData["Error"] = "Không tìm thấy cửa hàng.";
                 return RedirectToAction("Index");
             }
 
@@ -212,10 +227,11 @@ namespace DATN_GO.Areas.Seller.Controllers
             store.BankAccount = BankAccount;
             await _storeService.UpdateStoreAsync(store.Id, store);
 
-            TempData["ToastMessage"] = "Cập nhật thông tin thanh toán thành công!";
-            TempData["ToastType"] = "success";
+            TempData["Success"] = "Cập nhật thông tin thanh toán thành công!";
             return RedirectToAction("Index");
         }
+
+
         [HttpPost]
         public async Task<IActionResult> UpdateImages(IFormFile avatarFile, IFormFile coverFile)
         {
