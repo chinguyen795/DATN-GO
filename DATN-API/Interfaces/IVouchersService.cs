@@ -1,6 +1,5 @@
-﻿using DATN_API.Models;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿// Interfaces/IVouchersService.cs
+using DATN_API.Models;
 
 namespace DATN_API.Interfaces
 {
@@ -11,21 +10,17 @@ namespace DATN_API.Interfaces
         Task<Vouchers> CreateVoucherAsync(Vouchers voucher);
         Task<Vouchers?> UpdateVoucherAsync(int id, Vouchers voucher);
         Task<bool> DeleteVoucherAsync(int id);
-      
-            Task<IEnumerable<Vouchers>> GetVouchersByStoreOrAdminAsync(int? storeId);
+        Task<IEnumerable<Vouchers>> GetVouchersByStoreOrAdminAsync(int? storeId);
 
+        // CHÍNH: nhiều category trong giỏ
         (decimal discountOnSubtotal, decimal discountOnShipping, string reason) ApplyVoucher(
-             Vouchers v,
-             decimal orderSubtotal,
-             IEnumerable<int> productIdsInCart,
-             int? categoryIdInCart);
+            Vouchers v,
+            decimal orderSubtotal,
+            IEnumerable<int> productIdsInCart,
+            IEnumerable<int>? categoryIdsInCart);
 
         Task<(bool ok, string reason)> RedeemVoucherAsync(int voucherId);
-            string? ValidateForCreateOrUpdate(Vouchers v, bool isCreate);
-        // NEW: hoàn lại 1 lượt đã dùng (nếu > 0)
+        string? ValidateForCreateOrUpdate(Vouchers v, bool isCreate);
         Task RevertRedeemAsync(int voucherId);
     }
-
-
-    
 }

@@ -1,6 +1,9 @@
-﻿namespace DATN_API.ViewModels
+﻿// ViewModels/CreateVoucherDto.cs
+using System.ComponentModel.DataAnnotations;
+using DATN_API.Models;
+
+namespace DATN_API.ViewModels
 {
-    // ViewModels/CreateVoucherDto.cs
     public class CreateVoucherDto
     {
         public bool IsPercentage { get; set; }
@@ -12,10 +15,12 @@
         public int Quantity { get; set; }
 
         // phạm vi
-        public bool ApplyAllCategories { get; set; } // NEW
-        public bool ApplyAllProducts { get; set; }   // NEW
-        public int? CategoryId { get; set; }
-        public List<int>? SelectedProductIds { get; set; } // NEW
+        public bool ApplyAllCategories { get; set; }
+        public bool ApplyAllProducts { get; set; }
+
+        // ⬇⬇⬇ CHÍNH: nhiều category + nhiều product
+        public List<int>? CategoryIds { get; set; }          // NEW (thay cho CategoryId đơn)
+        public List<int>? SelectedProductIds { get; set; }   // Giữ nguyên ý nhưng cho phép nhiều id
 
         // shop/sàn + audit
         public int? StoreId { get; set; }
@@ -23,26 +28,28 @@
         public int? CreatedByRoleId { get; set; }
     }
 
-    // ViewModels/UpdateVoucherDto.cs
     public class UpdateVoucherDto : CreateVoucherDto
     {
         public int Id { get; set; }
     }
 
-
     public class ApplyVoucherRequestDto
     {
         public int VoucherId { get; set; }
-        public int UserId { get; set; } // NEW – để check đã dùng
+        public int UserId { get; set; }
         public decimal OrderSubtotal { get; set; }
+
+        // Cart có thể chứa nhiều product (=> thuộc nhiều category)
         public IEnumerable<int> ProductIdsInCart { get; set; } = Enumerable.Empty<int>();
-        public int? CategoryIdInCart { get; set; }
+
+        // ⬇⬇⬇ CHÍNH: nhiều category trong giỏ (suy ra từ product hoặc client gửi)
+        public IEnumerable<int>? CategoryIdsInCart { get; set; }
     }
+
     public class ApplyVoucherResponseDto
     {
         public decimal DiscountOnSubtotal { get; set; }
         public decimal DiscountOnShipping { get; set; }
         public string Reason { get; set; } = "";
     }
-
 }

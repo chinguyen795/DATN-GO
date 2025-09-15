@@ -26,6 +26,234 @@ namespace DATN_API.Services
             _logger = logger;
         }
 
+        public async Task<CartSummaryViewModel> GetCartByUserIdAsync(int userId)
+        {
+            var carts = await _context.Carts
+                .Where(c => c.UserId == userId)
+                .Include(c => c.Product)
+                .ThenInclude(p => p.Store)
+                .ToListAsync();
+
+            var result = new List<CartItemViewModel>();
+
+            foreach (var cart in carts)
+            {
+                var variants = await _context.Set<CartItemVariants>()
+                    .Where(cv => cv.CartId == cart.Id)
+                    .Include(cv => cv.VariantValue)
+                        .ThenInclude(vv => vv.Variant)
+                    .ToListAsync();
+
+                var variantValueIds = variants.Select(v => v.VariantValueId).OrderBy(id => id).ToList();
+                decimal price = 0;
+                int maxQuantity = 0;
+                decimal weight = 0;
+
+                if (variantValueIds.Any())
+                {
+                    var productVariants = await _context.ProductVariants
+                        .Where(pv => pv.ProductId == cart.ProductId)
+                        .ToListAsync();
+
+                    foreach (var pv in productVariants)
+                    {
+                        var compositionIds = await _context.VariantCompositions
+                            .Where(vc => vc.ProductVariantId == pv.Id)
+                            .Select(vc => vc.VariantValueId)
+                            .Where(id => id.HasValue)
+                            .Select(id => id.Value)
+                            .OrderBy(id => id)
+                            .ToListAsync();
+
+                        if (compositionIds.SequenceEqual(variantValueIds))
+                        {
+                            price = pv.Price;
+                            maxQuantity = pv.Quantity;
+                            weight = (decimal)pv.Weight; break;
+                        }
+                    }
+                }
+                else
+                {
+                    var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == cart.ProductId);
+                    price = await _context.Prices
+                        .Where(p => p.ProductId == cart.ProductId)
+                        .Select(p => (decimal?)p.Price)
+                        .FirstOrDefaultAsync() ?? 0;
+                    maxQuantity = product?.Quantity ?? 0;
+                    weight = (decimal)(product?.Weight ?? 500);
+                }
+
+                var variantTexts = variants
+                    .Select(v => $"{v.VariantValue?.Variant?.VariantName}: {v.VariantValue?.ValueName}")
+                    .ToList();
+
+                result.Add(new CartItemViewModel
+                {
+                    CartId = cart.Id,
+                    ProductId = cart.ProductId,
+                    ProductName = cart.Product?.Name ?? "Sản phẩm không tồn tại",
+                    Image = cart.Product?.MainImage ?? "",
+                    Quantity = cart.Quantity,
+                    Price = price,
+                    MaxQuantity = maxQuantity,
+                    Variants = variantTexts,
+                    IsSelected = cart.IsSelected,
+                    TotalWeight = weight * cart.Quantity,
+                    TotalValue = price * cart.Quantity,
+                    StoreId = cart.Product?.StoreId ?? 0,
+                    StoreName = cart.Product?.Store?.Name ?? "Cửa hàng không tồn tại",
+                    StoreAvatar = cart.Product?.Store?.Avatar ?? ""
+                });
+            }
+
+            var addresses = await _context.Addresses
+                .Include(a => a.City)
+                .Where(a => a.UserId == userId)
+                .OrderByDescending(a => a.UpdateAt)
+                .ToListAsync();
+
+            var addressViewModels = new List<AddressViewModel>();
+            foreach (var address in addresses)
+            {
+                var district = await _context.Districts.FirstOrDefaultAsync(d => d.CityId == address.City.Id);
+                var ward = district != null
+                    ? await _context.Wards.FirstOrDefaultAsync(w => w.DistrictId == district.Id)
+                    : null;
+
+                var full = string.Join(", ", new[]
+                {
+            $"{address.Name} - {address.Phone}",
+            address.Description,
+            ward?.WardName,
+            district?.DistrictName,
+            address.City?.CityName
+        }.Where(s => !string.IsNullOrWhiteSpace(s)));
+
+                addressViewModels.Add(new AddressViewModel
+                {
+                    Id = address.Id,
+                    FullAddress = full
+                });
+            }
+
+            var now = DateTime.UtcNow;
+            var selectedCartItems = result.Where(c => c.IsSelected).ToList();
+            var selectedProductIds = selectedCartItems.Select(c => c.ProductId).ToList();
+
+            var selectedProducts = await _context.Products
+                .Where(p => selectedProductIds.Contains(p.Id))
+                .Select(p => new { p.Id, p.CategoryId, p.StoreId })
+                .ToListAsync();
+
+            var selectedCategoryIds = selectedProducts.Select(p => p.CategoryId).Distinct().ToList();
+            var selectedStoreIds = selectedProducts.Select(p => p.StoreId).Distinct().ToList();
+
+            var productAmountDict = selectedCartItems
+                .Join(selectedProducts,
+                      cart => cart.ProductId,
+                      prod => prod.Id,
+                      (cart, prod) => new
+                      {
+                          cart.ProductId,
+                          cart.Quantity,
+                          prod.CategoryId,
+                          prod.StoreId,
+                          Amount = cart.Quantity * cart.Price
+                      }).ToList();
+
+            var userVouchers = await _context.UserVouchers
+                .Where(uv =>
+                    uv.UserId == userId &&
+                    !uv.IsUsed &&
+                    uv.Voucher.EndDate.Date >= now.Date &&
+                    (
+                        (uv.Voucher.StoreId == null || selectedStoreIds.Contains(uv.Voucher.StoreId.Value)) &&
+                        (uv.Voucher.CategoryId == null || selectedCategoryIds.Contains(uv.Voucher.CategoryId.Value))
+                    ))
+                .Include(uv => uv.Voucher)
+                .ThenInclude(v => v.Store)
+                .ToListAsync();
+
+            var validVouchers = userVouchers
+                .Where(uv =>
+                {
+                    var total = productAmountDict
+                        .Where(p =>
+                            (uv.Voucher.CategoryId == null || p.CategoryId == uv.Voucher.CategoryId) &&
+                            (uv.Voucher.StoreId == null || p.StoreId == uv.Voucher.StoreId))
+                        .Sum(p => p.Amount);
+
+                    return total >= uv.Voucher.MinOrder;
+                })
+                .Select(uv => new UserVoucherViewModel
+                {
+                    Id = uv.Id,
+                    VoucherId = uv.VoucherId,
+                    Reduce = uv.Voucher.Reduce,
+                    MinOrder = uv.Voucher.MinOrder,
+                    EndDate = uv.Voucher.EndDate,
+                    StoreName = uv.Voucher.Store?.Name ?? "Sàn TMĐT"
+                })
+
+      .GroupBy(v => v.VoucherId)
+      .Select(g => g.First())
+      .ToList();
+
+            var totalWeight = result.Where(c => c.IsSelected).Sum(c => c.TotalWeight);
+            var totalValue = result.Where(c => c.IsSelected).Sum(c => c.TotalValue);
+
+            // Nhóm sản phẩm đã chọn theo cửa hàng
+            var selectedItems = result.Where(c => c.IsSelected).ToList();
+
+            var selectedWithStore = await _context.Products
+                .Where(p => selectedProductIds.Contains(p.Id))
+                .Select(p => new { p.Id, p.StoreId })
+                .ToListAsync();
+
+            var groupedByStore = selectedItems
+                .Join(selectedWithStore,
+                      cart => cart.ProductId,
+                      prod => prod.Id,
+                      (cart, prod) => new
+                      {
+                          StoreId = prod.StoreId,
+                          cart.ProductId,
+                          cart.Quantity,
+                          cart.Price,
+                          cart.TotalWeight
+                      })
+                .GroupBy(x => x.StoreId)
+                .Select(g => new StoreCartGroup
+                {
+                    StoreId = g.Key,
+                    Products = g.Select(p => new StoreCartItem
+                    {
+                        ProductId = p.ProductId,
+                        Quantity = p.Quantity,
+                        Price = p.Price,
+                        TotalWeight = p.TotalWeight
+                    }).ToList()
+                }).ToList();
+            if (result.Any())
+            {
+                result = result
+                    .OrderByDescending(x => x.CartId)
+                    .ThenBy(x => x.StoreName)
+                    .ToList();
+            }
+            return new CartSummaryViewModel
+            {
+                CartItems = result,
+                Addresses = addressViewModels,
+                Vouchers = validVouchers,
+                TotalWeight = totalWeight,
+                TotalValue = totalValue
+            };
+
+
+        }
+
 
         public async Task<List<ShippingGroupViewModel>> GetShippingGroupsByUserIdAsync(int userId, int addressId)
         {
@@ -568,233 +796,6 @@ namespace DATN_API.Services
             return true;
         }
 
-        public async Task<CartSummaryViewModel> GetCartByUserIdAsync(int userId)
-        {
-            var carts = await _context.Carts
-                .Where(c => c.UserId == userId)
-                .Include(c => c.Product)
-                .ThenInclude(p => p.Store)
-                .ToListAsync();
-
-            var result = new List<CartItemViewModel>();
-
-            foreach (var cart in carts)
-            {
-                var variants = await _context.Set<CartItemVariants>()
-                    .Where(cv => cv.CartId == cart.Id)
-                    .Include(cv => cv.VariantValue)
-                        .ThenInclude(vv => vv.Variant)
-                    .ToListAsync();
-
-                var variantValueIds = variants.Select(v => v.VariantValueId).OrderBy(id => id).ToList();
-                decimal price = 0;
-                int maxQuantity = 0;
-                decimal weight = 0;
-
-                if (variantValueIds.Any())
-                {
-                    var productVariants = await _context.ProductVariants
-                        .Where(pv => pv.ProductId == cart.ProductId)
-                        .ToListAsync();
-
-                    foreach (var pv in productVariants)
-                    {
-                        var compositionIds = await _context.VariantCompositions
-                            .Where(vc => vc.ProductVariantId == pv.Id)
-                            .Select(vc => vc.VariantValueId)
-                            .Where(id => id.HasValue)
-                            .Select(id => id.Value)
-                            .OrderBy(id => id)
-                            .ToListAsync();
-
-                        if (compositionIds.SequenceEqual(variantValueIds))
-                        {
-                            price = pv.Price;
-                            maxQuantity = pv.Quantity;
-                            weight = (decimal)pv.Weight; break;
-                        }
-                    }
-                }
-                else
-                {
-                    var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == cart.ProductId);
-                    price = await _context.Prices
-                        .Where(p => p.ProductId == cart.ProductId)
-                        .Select(p => (decimal?)p.Price)
-                        .FirstOrDefaultAsync() ?? 0;
-                    maxQuantity = product?.Quantity ?? 0;
-                    weight = (decimal)(product?.Weight ?? 500);
-                }
-
-                var variantTexts = variants
-                    .Select(v => $"{v.VariantValue?.Variant?.VariantName}: {v.VariantValue?.ValueName}")
-                    .ToList();
-
-                result.Add(new CartItemViewModel
-                {
-                    CartId = cart.Id,
-                    ProductId = cart.ProductId,
-                    ProductName = cart.Product?.Name ?? "Sản phẩm không tồn tại",
-                    Image = cart.Product?.MainImage ?? "",
-                    Quantity = cart.Quantity,
-                    Price = price,
-                    MaxQuantity = maxQuantity,
-                    Variants = variantTexts,
-                    IsSelected = cart.IsSelected,
-                    TotalWeight = weight * cart.Quantity,
-                    TotalValue = price * cart.Quantity,
-                    StoreId = cart.Product?.StoreId ?? 0,
-                    StoreName = cart.Product?.Store?.Name ?? "Cửa hàng không tồn tại",
-                    StoreAvatar = cart.Product?.Store?.Avatar ?? ""
-                });
-            }
-
-            var addresses = await _context.Addresses
-                .Include(a => a.City)
-                .Where(a => a.UserId == userId)
-                .OrderByDescending(a => a.UpdateAt)
-                .ToListAsync();
-
-            var addressViewModels = new List<AddressViewModel>();
-            foreach (var address in addresses)
-            {
-                var district = await _context.Districts.FirstOrDefaultAsync(d => d.CityId == address.City.Id);
-                var ward = district != null
-                    ? await _context.Wards.FirstOrDefaultAsync(w => w.DistrictId == district.Id)
-                    : null;
-
-                var full = string.Join(", ", new[]
-                {
-            $"{address.Name} - {address.Phone}",
-            address.Description,
-            ward?.WardName,
-            district?.DistrictName,
-            address.City?.CityName
-        }.Where(s => !string.IsNullOrWhiteSpace(s)));
-
-                addressViewModels.Add(new AddressViewModel
-                {
-                    Id = address.Id,
-                    FullAddress = full
-                });
-            }
-
-            var now = DateTime.UtcNow;
-            var selectedCartItems = result.Where(c => c.IsSelected).ToList();
-            var selectedProductIds = selectedCartItems.Select(c => c.ProductId).ToList();
-
-            var selectedProducts = await _context.Products
-                .Where(p => selectedProductIds.Contains(p.Id))
-                .Select(p => new { p.Id, p.CategoryId, p.StoreId })
-                .ToListAsync();
-
-            var selectedCategoryIds = selectedProducts.Select(p => p.CategoryId).Distinct().ToList();
-            var selectedStoreIds = selectedProducts.Select(p => p.StoreId).Distinct().ToList();
-
-            var productAmountDict = selectedCartItems
-                .Join(selectedProducts,
-                      cart => cart.ProductId,
-                      prod => prod.Id,
-                      (cart, prod) => new
-                      {
-                          cart.ProductId,
-                          cart.Quantity,
-                          prod.CategoryId,
-                          prod.StoreId,
-                          Amount = cart.Quantity * cart.Price
-                      }).ToList();
-
-            var userVouchers = await _context.UserVouchers
-                .Where(uv =>
-                    uv.UserId == userId &&
-                    !uv.IsUsed &&
-                    uv.Voucher.EndDate.Date >= now.Date &&
-                    (
-                        (uv.Voucher.StoreId == null || selectedStoreIds.Contains(uv.Voucher.StoreId.Value)) &&
-                        (uv.Voucher.CategoryId == null || selectedCategoryIds.Contains(uv.Voucher.CategoryId.Value))
-                    ))
-                .Include(uv => uv.Voucher)
-                .ThenInclude(v => v.Store)
-                .ToListAsync();
-
-            var validVouchers = userVouchers
-                .Where(uv =>
-                {
-                    var total = productAmountDict
-                        .Where(p =>
-                            (uv.Voucher.CategoryId == null || p.CategoryId == uv.Voucher.CategoryId) &&
-                            (uv.Voucher.StoreId == null || p.StoreId == uv.Voucher.StoreId))
-                        .Sum(p => p.Amount);
-
-                    return total >= uv.Voucher.MinOrder;
-                })
-                .Select(uv => new UserVoucherViewModel
-                {
-                    Id = uv.Id,
-                    VoucherId = uv.VoucherId,
-                    Reduce = uv.Voucher.Reduce,
-                    MinOrder = uv.Voucher.MinOrder,
-                    EndDate = uv.Voucher.EndDate,
-                    StoreName = uv.Voucher.Store?.Name ?? "Sàn TMĐT"
-                })
-
-      .GroupBy(v => v.VoucherId)
-      .Select(g => g.First())
-      .ToList();
-
-            var totalWeight = result.Where(c => c.IsSelected).Sum(c => c.TotalWeight);
-            var totalValue = result.Where(c => c.IsSelected).Sum(c => c.TotalValue);
-
-            // Nhóm sản phẩm đã chọn theo cửa hàng
-            var selectedItems = result.Where(c => c.IsSelected).ToList();
-
-            var selectedWithStore = await _context.Products
-                .Where(p => selectedProductIds.Contains(p.Id))
-                .Select(p => new { p.Id, p.StoreId })
-                .ToListAsync();
-
-            var groupedByStore = selectedItems
-                .Join(selectedWithStore,
-                      cart => cart.ProductId,
-                      prod => prod.Id,
-                      (cart, prod) => new
-                      {
-                          StoreId = prod.StoreId,
-                          cart.ProductId,
-                          cart.Quantity,
-                          cart.Price,
-                          cart.TotalWeight
-                      })
-                .GroupBy(x => x.StoreId)
-                .Select(g => new StoreCartGroup
-                {
-                    StoreId = g.Key,
-                    Products = g.Select(p => new StoreCartItem
-                    {
-                        ProductId = p.ProductId,
-                        Quantity = p.Quantity,
-                        Price = p.Price,
-                        TotalWeight = p.TotalWeight
-                    }).ToList()
-                }).ToList();
-            if (result.Any())
-            {
-                result = result
-                    .OrderByDescending(x => x.CartId)
-                    .ThenBy(x => x.StoreName)
-                    .ToList();
-            }
-            return new CartSummaryViewModel
-            {
-                CartItems = result,
-                Addresses = addressViewModels,
-                Vouchers = validVouchers,
-                TotalWeight = totalWeight,
-                TotalValue = totalValue
-            };
-
-
-        }
 
         public async Task<bool> CancelGHTKOrderAsync(string orderCode, int userId)
         {

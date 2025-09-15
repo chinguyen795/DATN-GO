@@ -1,5 +1,5 @@
-﻿using DATN_API.Models;
-using DATN_API.Interfaces;
+﻿using DATN_API.Interfaces;
+using DATN_API.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace DATN_API.Services
@@ -10,10 +10,16 @@ namespace DATN_API.Services
         public VouchersService(Data.ApplicationDbContext context) => _context = context;
 
         public async Task<IEnumerable<Vouchers>> GetAllVouchersAsync()
-            => await _context.Vouchers.ToListAsync();
+            => await _context.Vouchers
+                .Include(v => v.Categories)
+                .Include(v => v.ProductVouchers)
+                .ToListAsync();
 
         public async Task<Vouchers?> GetVoucherByIdAsync(int id)
-            => await _context.Vouchers.FindAsync(id);
+            => await _context.Vouchers
+                .Include(v => v.Categories)
+                .Include(v => v.ProductVouchers)
+                .FirstOrDefaultAsync(v => v.Id == id);
 
         public async Task<Vouchers> CreateVoucherAsync(Vouchers voucher)
         {
@@ -24,9 +30,24 @@ namespace DATN_API.Services
 
         public async Task<Vouchers?> UpdateVoucherAsync(int id, Vouchers voucher)
         {
-            var existing = await _context.Vouchers.FindAsync(id);
+            var existing = await _context.Vouchers
+                .Include(v => v.Categories)
+                .Include(v => v.ProductVouchers)
+                .FirstOrDefaultAsync(v => v.Id == id);
             if (existing == null) return null;
+
             _context.Entry(existing).CurrentValues.SetValues(voucher);
+
+            // categories
+            existing.Categories ??= new List<Categories>();
+            existing.Categories.Clear();
+            foreach (var c in voucher.Categories ?? Enumerable.Empty<Categories>())
+                existing.Categories.Add(c);
+
+            // products
+            _context.ProductVouchers.RemoveRange(existing.ProductVouchers ?? Enumerable.Empty<ProductVouchers>());
+            existing.ProductVouchers = voucher.ProductVouchers ?? new List<ProductVouchers>();
+
             await _context.SaveChangesAsync();
             return existing;
         }
@@ -42,9 +63,14 @@ namespace DATN_API.Services
 
         public async Task<IEnumerable<Vouchers>> GetVouchersByStoreOrAdminAsync(int? storeId)
         {
-            var query = _context.Vouchers.AsQueryable();
+            var query = _context.Vouchers
+                .Include(v => v.Categories)
+                .Include(v => v.ProductVouchers)
+                .AsQueryable();
+
             if (storeId.HasValue) query = query.Where(v => v.StoreId == storeId.Value);
             else query = query.Where(v => v.StoreId == null);
+
             return await query.ToListAsync();
         }
 
@@ -52,7 +78,7 @@ namespace DATN_API.Services
             Vouchers v,
             decimal orderSubtotal,
             IEnumerable<int> productIdsInCart,
-            int? categoryIdInCart)
+            IEnumerable<int>? categoryIdsInCart)
         {
             var now = DateTime.UtcNow;
             if (now < v.StartDate || now > v.EndDate)
@@ -67,23 +93,30 @@ namespace DATN_API.Services
             // ===== PHẠM VI =====
             bool scopeOk = false;
 
-            // a) all categories
+            // a) All categories
             if (v.ApplyAllCategories) scopeOk = true;
 
-            // b) single category
-            if (!scopeOk && v.CategoryId != null && categoryIdInCart == v.CategoryId) scopeOk = true;
+            // b) any selected categories
+            if (!scopeOk && v.Categories?.Any() == true && categoryIdsInCart != null)
+            {
+                var catSet = categoryIdsInCart.ToHashSet();
+                if (v.Categories.Any(c => catSet.Contains(c.Id))) scopeOk = true;
+            }
 
-            // c) all products
+            // c) All products
             if (!scopeOk && v.ApplyAllProducts) scopeOk = true;
 
             // d) selected products
-            if (!scopeOk && (v.ProductVouchers?.Any(pv => productIdsInCart.Contains(pv.ProductId)) == true))
-                scopeOk = true;
+            if (!scopeOk && v.ProductVouchers?.Any() == true)
+            {
+                var pidSet = productIdsInCart.ToHashSet();
+                if (v.ProductVouchers.Any(pv => pidSet.Contains(pv.ProductId))) scopeOk = true;
+            }
 
-            if (!scopeOk) return (0, 0, "Voucher không áp dụng cho sản phẩm đã chọn.");
+            if (!scopeOk) return (0, 0, "Voucher không áp dụng cho sản phẩm/danh mục đã chọn.");
 
             // ===== TÍNH GIẢM =====
-            decimal discountSub = 0;
+            decimal discountSub;
             if (v.IsPercentage)
             {
                 var perc = Math.Clamp((double)v.Reduce, 0, 100);
@@ -99,7 +132,6 @@ namespace DATN_API.Services
             return (discountSub, 0m, "OK");
         }
 
-
         public async Task<(bool ok, string reason)> RedeemVoucherAsync(int voucherId)
         {
             var v = await _context.Vouchers.FirstOrDefaultAsync(x => x.Id == voucherId);
@@ -109,8 +141,7 @@ namespace DATN_API.Services
             var now = DateTime.UtcNow;
             if (now < v.StartDate || now > v.EndDate) return (false, "Voucher đã hết hạn hoặc chưa bắt đầu.");
 
-            v.UsedCount = v.UsedCount + 1;
-
+            v.UsedCount += 1;
             await _context.SaveChangesAsync();
             return (true, "OK");
         }
@@ -128,6 +159,7 @@ namespace DATN_API.Services
             else
             {
                 if (v.Reduce <= 0) return "Số tiền giảm phải > 0.";
+                if (v.MaxDiscount.HasValue) return "MaxDiscount chỉ dùng cho phần trăm. Hãy để trống.";
             }
 
             // Shop/Sàn
@@ -135,17 +167,17 @@ namespace DATN_API.Services
             if (v.StoreId != null && v.CreatedByRoleId != 2) return "Chỉ shop (roleId=2) tạo voucher shop.";
 
             // PHẠM VI – cho phép 1 trong 4:
-            // 1) ApplyAllCategories; 2) ApplyAllProducts; 3) CategoryId; 4) ProductVouchers
             var hasAnyScope =
                 v.ApplyAllCategories ||
                 v.ApplyAllProducts ||
-                v.CategoryId.HasValue ||
-                (v.ProductVouchers != null && v.ProductVouchers.Any());
+                (v.Categories?.Any() == true) ||
+                (v.ProductVouchers?.Any() == true);
 
-            if (!hasAnyScope) return "Voucher phải áp dụng: tất cả danh mục, hoặc tất cả sản phẩm, hoặc 1 danh mục, hoặc danh sách sản phẩm.";
+            if (!hasAnyScope) return "Voucher phải áp dụng: tất cả danh mục, hoặc tất cả sản phẩm, hoặc danh sách danh mục, hoặc danh sách sản phẩm.";
 
             return null;
         }
+
         public async Task RevertRedeemAsync(int voucherId)
         {
             var v = await _context.Vouchers.FirstOrDefaultAsync(x => x.Id == voucherId);
@@ -155,6 +187,5 @@ namespace DATN_API.Services
                 await _context.SaveChangesAsync();
             }
         }
-
     }
 }

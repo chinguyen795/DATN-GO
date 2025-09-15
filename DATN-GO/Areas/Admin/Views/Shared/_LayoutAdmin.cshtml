@@ -1,54 +1,58 @@
-﻿﻿
+﻿﻿@* Areas/Admin/Views/Shared/_LayoutAdmin.cshtml *@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="vi" dir="ltr">
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Seller Dashboard</title>
+    <title>Admin Dashboard</title>
 
+    <!-- ========== CSS ========== -->
     <link href="~/plugins/material/css/materialdesignicons.min.css" rel="stylesheet" />
     <link href="~/plugins/simplebar/simplebar.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="~/plugins/nprogress/nprogress.css" rel="stylesheet" />
     <link href="~/plugins/DataTables/DataTables-1.10.18/css/jquery.dataTables.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="~/css/style.css" />
+    <link href="~/css/style.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css" />
 
-    <script src="plugins/nprogress/nprogress.js"></script>
+    <!-- ========== JS (head) ========== -->
+    <!-- NProgress: load đúng & chỉ 1 lần -->
+    <script src="https://unpkg.com/nprogress@0.2.0/nprogress.js"></script>
+
     <style>
         .sidenav-item-link.active {
             background-color: #DC143C !important;
-            color: white !important;
-            border-radius: 0.375rem;
+            color: #fff !important;
+            border-radius: .375rem;
         }
 
-            .sidenav-item-link.active i,
-            .sidenav-item-link.active .nav-text {
-                color: white !important;
+            .sidenav-item-link.active i, .sidenav-item-link.active .nav-text {
+                color: #fff !important;
             }
 
         .sidenav-item-link {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1rem;
+            gap: .75rem;
+            padding: .75rem 1rem;
             text-decoration: none;
             color: #adb5bd;
-            transition: all 0.2s ease;
+            transition: all .2s;
         }
 
             .sidenav-item-link:hover {
-                background-color: #D22F32;
+                background: #D22F32;
                 color: #000;
-                border-radius: 0.375rem;
+                border-radius: .375rem;
             }
     </style>
 </head>
 
 <body class="navbar-fixed sidebar-fixed" id="body">
     <script>
-        NProgress.configure({ showSpinner: false });
-        NProgress.start();
+        // Khởi động progress sớm (an toàn nếu lib đã load)
+        if (window.NProgress) { NProgress.configure({ showSpinner: false }); NProgress.start(); }
     </script>
 
     <div class="wrapper">
@@ -57,87 +61,64 @@
             <div id="sidebar" class="sidebar sidebar-with-footer">
                 <div class="app-brand">
                     <a asp-controller="Home" asp-action="Index" class="d-flex p-2">
-                        <div class="rounded-circle bg-light shadow-sm d-flex align-items-center justify-content-center"
-                             style="width: 64px; height: 64px;">
-                            <img src="~/images/logo.png" alt="Logo" class="img-fluid" style="max-width: 70%; max-height: 70%;">
+                        <div class="rounded-circle bg-light shadow-sm d-flex align-items-center justify-content-center" style="width:64px;height:64px;">
+                            <img src="~/images/logo.png" alt="Logo" class="img-fluid" style="max-width:70%;max-height:70%;">
                         </div>
                     </a>
                 </div>
-                <div class="sidebar-left" data-simplebar style="height: 100%">
+
+                <div class="sidebar-left" data-simplebar style="height:100%">
                     <ul class="nav sidebar-inner" id="sidebar-menu">
                         <li class="nav-item">
                             <a asp-area="Admin" asp-controller="Home" asp-action="Index"
                                class="sidenav-item-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")">
-                                <i class="bi bi-speedometer2"></i>
-                                <span class="nav-text">Trang chủ</span>
+                                <i class="bi bi-speedometer2"></i><span class="nav-text">Trang chủ</span>
                             </a>
                         </li>
 
                         <li class="nav-item">
                             <a asp-area="Admin" asp-controller="Category" asp-action="Index"
                                class="sidenav-item-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Category" ? "active" : "")">
-                                <i class="bi bi-list-task"></i>
-                                <span class="nav-text">Danh mục</span>
+                                <i class="bi bi-list-task"></i><span class="nav-text">Danh mục</span>
                             </a>
                         </li>
 
                         <li class="nav-item">
                             <a asp-area="Admin" asp-controller="Store" asp-action="Index"
                                class="sidenav-item-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Store" ? "active" : "")">
-                                <i class="bi bi-shop"></i>
-                                <span class="nav-text">Cửa hàng</span>
+                                <i class="bi bi-shop"></i><span class="nav-text">Cửa hàng</span>
                             </a>
                         </li>
 
                         <li class="nav-item">
                             <a asp-area="Admin" asp-controller="Decorates" asp-action="Decorates"
                                class="sidenav-item-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Decorates" ? "active" : "")">
-                                <i class="bi bi-brush"></i>
-                                <span class="nav-text">Trang Trí</span>
+                                <i class="bi bi-brush"></i><span class="nav-text">Trang Trí</span>
                             </a>
                         </li>
-
-                        @*   <li class="nav-item">
-                        <a asp-area="Admin" asp-controller="Post" asp-action="Index"
-                        class="sidenav-item-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Post" ? "active" : "")">
-                        <i class="bi bi-check-circle"></i>
-                        <span class="nav-text">Duyệt bài viết</span>
-                        </a>
-                        </li> *@
-
-                        @*                         <li class="nav-item">
-                        <a asp-area="Admin" asp-controller="Notification" asp-action="Index"
-                        class="sidenav-item-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Notification" ? "active" : "")">
-                        <i class="bi bi-bell"></i>
-                        <span class="nav-text">Thông báo</span>
-                        </a>
-                        </li> *@
 
                         <li class="nav-item">
                             <a asp-area="Admin" asp-controller="Product" asp-action="Index"
                                class="sidenav-item-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Product" ? "active" : "")">
-                                <i class="bi bi-box-seam"></i>
-                                <span class="nav-text">Sản phẩm</span>
+                                <i class="bi bi-box-seam"></i><span class="nav-text">Sản phẩm</span>
                             </a>
                         </li>
 
                         <li class="nav-item">
                             <a asp-area="Admin" asp-controller="UserManager" asp-action="UserManager"
                                class="sidenav-item-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "UserManager" ? "active" : "")">
-                                <i class="bi bi-people"></i>
-                                <span class="nav-text">Người dùng</span>
+                                <i class="bi bi-people"></i><span class="nav-text">Người dùng</span>
                             </a>
                         </li>
+
                         <li class="nav-item">
                             <a asp-area="Admin" asp-controller="Voucher" asp-action="Voucher"
                                class="sidenav-item-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Voucher" ? "active" : "")">
-                                <i class="bi bi-tag"></i>
-                                <span class="nav-text">Ưu đãi</span>
+                                <i class="bi bi-tag"></i><span class="nav-text">Ưu đãi</span>
                             </a>
                         </li>
                     </ul>
                 </div>
-
             </div>
         </aside>
 
@@ -145,55 +126,58 @@
         @RenderBody()
     </div>
 
-    <!-- Scripts -->
-    <!-- ✅ Chỉ dùng bootstrap.bundle.min.js để có Popper -->
+    <!-- ========== JS (footer) ========== -->
+    <!-- Bootstrap 5 bundle (có Popper) -->
+    <!-- jQuery: load TRƯỚC các plugin phụ thuộc (DataTables, bootstrap-select) -->
+    <script src="~/plugins/jquery/jquery.min.js"></script>
+
+    <!-- Bootstrap 5 bundle (không phụ thuộc jQuery) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-    <script src="~/plugins/jquery/jquery.min.js"></script>
+    <!-- Bootstrap-Select JS (phụ thuộc jQuery) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
+
+    <!-- Các plugin khác dùng jQuery -->
     <script src="~/plugins/apexcharts/apexcharts.js"></script>
     <script src="~/plugins/toaster/toastr.min.js"></script>
     <script src="~/plugins/simplebar/simplebar.min.js"></script>
-    <script src="~/plugins/nprogress/nprogress.js"></script>
     <script src="~/plugins/prism/prism.js"></script>
     <script src="~/plugins/DataTables/DataTables-1.10.18/js/jquery.dataTables.min.js"></script>
+
+    <!-- App scripts -->
     <script src="~/js/mono.js"></script>
     <script src="~/js/custom.js"></script>
     <script src="~/js/chart.js"></script>
     <script src="~/js/Toast.js"></script>
-    <script src="~/js/variants.js"></script>
     <script src="~/js/map.js"></script>
 
     <script>
+        // Tự động show Toast TempData nếu có
         document.addEventListener("DOMContentLoaded", function () {
             var toastEl = document.getElementById('autoToast');
-            if (toastEl) {
-                var bsToast = new bootstrap.Toast(toastEl);
-                bsToast.show();
-            }
+            if (toastEl) new bootstrap.Toast(toastEl).show();
+            // Kết thúc progress khi trang sẵn sàng
+            if (window.NProgress) setTimeout(() => NProgress.done(), 0);
         });
     </script>
 
     @RenderSection("Scripts", required: false)
     @RenderSection("Scripts2", required: false)
 
-
-    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1056;">
+    <!-- Toast UI (TempData) -->
+    <div class="position-fixed top-0 end-0 p-3" style="z-index:1056;">
         @if (TempData["ToastMessage"] != null && TempData["ToastType"] != null)
         {
-            var toastType = TempData["ToastType"].ToString();
+            var toastType = TempData["ToastType"]!.ToString();
             var isSuccess = toastType == "success";
-            <div class="toast fade @(isSuccess ? "" : "mt-3")" role="alert" aria-live="assertive" aria-atomic="true"
-                 id="autoToast">
+            <div class="toast fade @(isSuccess ? "" : "mt-3")" role="alert" aria-live="assertive" aria-atomic="true" id="autoToast">
                 <div class="toast-header @(isSuccess ? "bg-success" : "bg-danger") text-white">
-                    <img src="@(isSuccess ? "/icons/happy.gif" : "/icons/sad.gif")" class="rounded me-2" alt="@(isSuccess ? "Success" : "Error")" width="20" height="20" />
+                    <img src="@(isSuccess ? "/icons/happy.gif" : "/icons/sad.gif")" class="rounded me-2" alt="" width="20" height="20" />
                     <strong class="me-auto">@((isSuccess) ? "Thành công" : "Lỗi")</strong>
                     <small>Vừa xong</small>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"
-                            aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
                 </div>
-                <div class="toast-body">
-                    @TempData["ToastMessage"]
-                </div>
+                <div class="toast-body">@TempData["ToastMessage"]</div>
             </div>
         }
     </div>

@@ -106,15 +106,7 @@
         line-height: 1.2
     }
 
-    #addVoucherModal .input-group, #editVoucherModal .input-group {
-        width: 100%;
-        flex-wrap: nowrap;
-        background: #f8f9fa;
-        border-radius: 15px;
-        border: 1px solid #e9ecef;
-        margin-bottom: 0;
-        overflow: hidden
-    }
+
 
     #addVoucherModal .input-group-text, #editVoucherModal .input-group-text {
         border: none;
@@ -153,6 +145,11 @@
         color: #ff4d5d
     }
 
+    #addVoucherModal .input-group-text i, #editVoucherModal .input-group-text i {
+        font-size: 1.35rem;
+        color: #ff4d5d;
+        margin: 0;
+    }
     .pagination {
         justify-content: flex-end !important
     }
@@ -175,6 +172,32 @@
         .scope-row:hover {
             background: #fafafa
         }
+
+    .result-box {
+        background: #fff;
+        border: 2px dashed #dc143c;
+        border-radius: 8px;
+        padding: 12px;
+        min-height: 46px;
+    }
+
+    .crimson {
+        color: #dc143c;
+    }
+
+    .bootstrap-select .dropdown-toggle:focus {
+        border-color: #dc143c;
+        box-shadow: 0 0 0 .2rem rgba(220,20,60,.25);
+    }
+
+    .bootstrap-select .dropdown-menu {
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,.15);
+    }
+
+    .bootstrap-select .dropdown-item.active {
+        background-color: #dc143c;
+    }
 </style>
 
 <div class="page-wrapper">
@@ -313,7 +336,6 @@
                                                                 data-quantity="@voucher.Quantity.ToString("G29", CultureInfo.InvariantCulture)"
                                                                 data-start="@voucher.StartDate.ToString("yyyy-MM-dd")"
                                                                 data-end="@voucher.EndDate.ToString("yyyy-MM-dd")"
-                                                                data-categoryid="@voucher.CategoryId"
                                                                 data-storeid="@voucher.StoreId"
                                                                 data-status="@((int)voucher.Status)"
                                                                 data-ispercentage="@voucher.IsPercentage.ToString().ToLower()"
@@ -321,9 +343,16 @@
                                                                 data-applyallproducts="@voucher.ApplyAllProducts.ToString().ToLower()"
                                                                 data-applyallcategories="@voucher.ApplyAllCategories.ToString().ToLower()"
                                                                 data-selectedproductids="@(voucher.SelectedProductIds != null ? string.Join(",", voucher.SelectedProductIds) : "")"
+                                                                data-categoryid="@voucher.CategoryId"
+                                                                data-categoryids="@((voucher.CategoryIds != null && voucher.CategoryIds.Any())
+                               ? string.Join(",", voucher.CategoryIds)
+                               : (voucher.CategoryId.HasValue ? voucher.CategoryId.Value.ToString() : ""))"
                                                                 title="Chỉnh sửa">
                                                             <i class="bi-pencil"></i>
                                                         </button>
+
+
+
 
                                                         <button class="btn btn-outline-danger btn-sm rounded-circle btn-delete-voucher"
                                                                 data-bs-toggle="modal"
@@ -412,17 +441,21 @@
     </div>
 </div>
 
-<!-- ===================== MODAL: ADD ===================== -->
+<!-- ===================== MODALS ===================== -->
+<!-- Modal Thêm Voucher -->
 <div class="modal fade" id="addVoucherModal" tabindex="-1" aria-labelledby="addVoucherModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form id="voucherForm" asp-area="Seller" asp-controller="Voucher" asp-action="AddVoucher" method="post">
+            <form id="voucherForm" asp-area="Seller" asp-controller="Voucher" asp-action="Create" method="post">
                 @Html.AntiForgeryToken()
+
+                <!-- Header -->
                 <div class="modal-header bg-danger">
-                    <h5 class="modal-title text-white">Thêm Voucher</h5>
+                    <h5 class="modal-title text-white" id="addVoucherModalLabel">Thêm Voucher</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
                 </div>
 
+                <!-- Body -->
                 <div class="modal-body">
                     <!-- Type -->
                     <div class="mb-3">
@@ -439,54 +472,63 @@
                     </div>
 
                     <!-- Reduce -->
-                    <div class="mb-4" id="reduceWrapper">
-                        <label class="form-label"><span id="reduceLabel">Mức Giảm Giá (VNĐ)</span></label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-cash-coin"></i></span>
-                            <!-- display -->
-                            <input type="text" class="form-control" id="discountAmountDisplay"
-                                   placeholder="Nhập số tiền giảm" inputmode="numeric"
-                                   data-money-target="discountAmount" />
-                            <!-- hidden submit -->
-                            <input type="hidden" id="discountAmount" name="Reduce" />
-                            <span class="input-group-text" id="reduceSuffix">VND</span>
-                        </div>
-                        <div class="text-danger small mt-1" id="discountAmountError"></div>
-                    </div>
+              <div class="mb-4" id="reduceWrapper">
+                  <label class="form-label"><span id="reduceLabel">Mức Giảm Giá (VNĐ)</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-cash-coin"></i></span>
+                    <!-- Ô hiển thị -->
+                    <input type="text" class="form-control" id="DiscountAmountDisplay"
+                           inputmode="numeric" required
+                           placeholder="Nhập số tiền giảm"
+                           data-money-target="DiscountAmount" />
+                    <!-- Ô ẩn (gửi về server) -->
+                    <input type="hidden" id="DiscountAmount" name="Reduce" />
+                    <span class="input-group-text" id="reduceSuffix">VND</span>
+                  </div>
+                  <div class="text-danger small mt-1" id="discountAmountError"></div>
+                </div>
 
-                    <!-- Max Discount -->
+
                     <div class="mb-4 d-none" id="maxDiscountGroup">
-                        <label class="form-label" for="maxDiscountDisplay">Giảm tối đa (VND) – tùy chọn</label>
+                        <label class="form-label" for="MaxDiscountDisplay">Giảm tối đa (VND) – tùy chọn</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-graph-down"></i></span>
-                            <input type="text" class="form-control" id="maxDiscountDisplay"
-                                   placeholder="VD: 50.000" inputmode="numeric"
-                                   data-money-target="maxDiscount" />
-                            <input type="hidden" id="maxDiscount" name="MaxDiscount" />
+                            <!-- Ô hiển thị -->
+                            <input type="text" class="form-control" id="MaxDiscountDisplay"
+                                   inputmode="numeric" placeholder="VD: 50.000"
+                                   data-money-target="MaxDiscount" />
+                            <!-- Ô ẩn -->
+                            <input type="hidden" id="MaxDiscount" name="MaxDiscount" />
                             <span class="input-group-text">VND</span>
                         </div>
                     </div>
 
+
                     <!-- Min / Qty -->
                     <div class="mb-4">
-                        <label class="form-label" for="minOrderDisplay">Đơn Hàng Tối Thiểu (VNĐ)</label>
+                        <label class="form-label" for="MinOrderDisplay">Đơn Hàng Tối Thiểu (VNĐ)</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-bag-check"></i></span>
-                            <input type="text" class="form-control" id="minOrderDisplay"
-                                   placeholder="Nhập giá trị đơn tối thiểu" inputmode="numeric"
-                                   data-money-target="minOrder" />
-                            <input type="hidden" id="minOrder" name="MinOrder" />
+                            <!-- Ô hiển thị -->
+                            <input type="text" class="form-control" id="MinOrderDisplay"
+                                   inputmode="numeric" required placeholder="Nhập giá trị đơn tối thiểu"
+                                   data-money-target="MinOrder" />
+                            <!-- Ô ẩn -->
+                            <input type="hidden" id="MinOrder" name="MinOrder" />
                         </div>
                         <div class="text-danger small mt-1" id="minOrderError"></div>
                     </div>
+
                     <div class="mb-4">
-                        <label class="form-label" for="quantityDisplay">Số Lượng</label>
+                        <label class="form-label" for="QuantityDisplay">Số Lượng</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-list-ol"></i></span>
-                            <input type="text" class="form-control" id="quantityDisplay"
-                                   placeholder="Nhập số lượng voucher" inputmode="numeric"
-                                   data-money-target="quantity" />
-                            <input type="hidden" id="quantity" name="Quantity" />
+                            <!-- Ô hiển thị -->
+                            <input type="text" class="form-control" id="QuantityDisplay"
+                                   inputmode="numeric" required placeholder="Nhập số lượng voucher"
+                                   data-money-target="Quantity" />
+                            <!-- Ô ẩn -->
+                            <input type="hidden" id="Quantity" name="Quantity" />
                         </div>
                         <div class="text-danger small mt-1" id="quantityError"></div>
                     </div>
@@ -509,7 +551,6 @@
                         </div>
                     </div>
 
-                    <!-- Status -->
                     <div class="mb-4">
                         <label class="form-label" for="status">Trạng Thái</label>
                         <div class="input-group status-toggle">
@@ -521,6 +562,8 @@
                         </div>
                     </div>
 
+
+                    <!-- Apply all -->
                     <div class="mb-3">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" id="ApplyAllProducts" name="ApplyAllProducts" value="true">
@@ -542,6 +585,8 @@
                         </div>
                         <div id="addSelectedPreview" class="thumb-grid"></div>
                     </div>
+
+                    <!-- Hidden inputs -->
                     <div id="addSelectedInputs"></div>
 
                     <div class="mb-3">
@@ -561,26 +606,41 @@
                     <div class="tab-content border rounded-bottom p-3" id="addScopeTabsContent">
                         <div class="tab-pane fade show active" id="addTabCategory">
                             <div id="addCategoryBlock" class="mt-2">
-                                <label class="form-label" for="categoryId">Danh mục</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-tags"></i></span>
-                                    <select class="form-control" id="categoryId" name="CategoryId">
-                                        <option value="">-- Chọn danh mục --</option>
+                                <div class="demo-section">
+                                    <label class="form-label fw-bold">Chọn nhiều danh mục sản phẩm:</label>
+
+                                    <!-- MULTIPLE SELECT -->
+                                    <select class="selectpicker form-control custom-select p-0"
+                                            id="addCategoryIds"
+                                            name="CategoryIds"
+                                            multiple
+                                            data-live-search="true"
+                                            data-width="100%"
                                         @foreach (var cat in ViewBag.Categories)
                                         {
-                                            <option value="@cat.Id">@cat.Name</option>
+                                            <option value="@cat.Id" data-tokens="@cat.Name">@cat.Name</option>
                                         }
                                     </select>
+
+                                    <!-- HỘP KẾT QUẢ -->
+                                    <div class="result-box mt-2" id="addCategoryResult">
+                                        <small class="text-muted">Kết quả sẽ hiển thị ở đây...</small>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="tab-pane fade" id="addTabProducts"></div>
+
+                        <div class="tab-pane fade" id="addTabProducts">
+                            <!-- KHÔNG tạo addSelectedInputs lần 2 -->
+                        </div>
                     </div>
+
 
                     <input type="hidden" name="Type" value="0" />
                     <input type="hidden" name="StoreId" value="@ViewBag.StoreId" />
                 </div>
 
+                <!-- Footer -->
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal">Đóng</button>
                     <button type="submit" class="btn btn-danger btn-pill">Thêm Voucher</button>
@@ -594,7 +654,7 @@
 <div class="modal fade" id="editVoucherModal" tabindex="-1" aria-labelledby="editVoucherModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form id="editVoucherForm" asp-area="Seller" asp-controller="Voucher" asp-action="UpdateVoucher" method="post">
+            <form id="editVoucherForm" asp-area="Seller" asp-controller="Voucher" asp-action="Edit" method="post">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="Id" id="editVoucherId" />
 
@@ -729,17 +789,29 @@
                     <div class="tab-content border rounded-bottom p-3" id="editScopeTabsContent">
                         <div class="tab-pane fade show active" id="editTabCategory">
                             <div id="editCategoryBlock" class="mt-2">
-                                <label class="form-label" for="editCategoryId">Danh mục</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-tags"></i></span>
-                                    <select class="form-control" name="CategoryId" id="editCategoryId">
-                                        <option value="">-- Chọn danh mục --</option>
-                                        @foreach (var cat in ViewBag.Categories)
-                                        {
-                                            <option value="@cat.Id">@cat.Name</option>
-                                        }
-                                    </select>
+                                <div id="editCategoryBlock" class="mt-2">
+                                    <div class="demo-section">
+                                        <label class="form-label fw-bold">Chọn nhiều danh mục sản phẩm:</label>
+
+                                        <select class="selectpicker form-control custom-select p-0"
+                                                id="editCategoryIds"
+                                                name="CategoryIds"
+                                                multiple
+                                                data-live-search="true"
+                                                data-width="100%"
+                                            @foreach (var cat in ViewBag.Categories)
+                                            {
+                                                <option value="@cat.Id" data-tokens="@cat.Name">@cat.Name</option>
+                                            }
+                                        </select>
+
+                                        <div class="result-box mt-2" id="editCategoryResult">
+                                            <small class="text-muted">Chưa chọn gì...</small>
+                                        </div>
+                                    </div>
                                 </div>
+
+
                             </div>
                         </div>
                         <div class="tab-pane fade" id="editTabProducts"></div>
@@ -822,44 +894,23 @@
 </div>
 
 <script>
-    /* ======= Search submit debounce ======= */
+    /* ====================== Tiện ích ====================== */
+    const $id = (s) => document.getElementById(s);
+
+    /* Debounce search */
     let searchTimeout;
     function submitSearch(){ clearTimeout(searchTimeout); searchTimeout=setTimeout(()=>document.getElementById('searchForm')?.submit(),300); }
 
-    document.addEventListener("DOMContentLoaded", function(){
-      // Sort persist
-      const sortSelect=document.getElementById("sortSelect");
-      const currentSort=new URLSearchParams(window.location.search).get("sort");
-      if(currentSort) sortSelect.value=currentSort;
-      sortSelect?.addEventListener("change", function(){
-        const url=new URL(window.location.href);
-        const selectedSort=sortSelect.value;
-        if(selectedSort) url.searchParams.set("sort", selectedSort); else url.searchParams.delete("sort");
-        const searchValue=document.querySelector('input[name="search"]')?.value;
-        if(searchValue) url.searchParams.set("search", searchValue);
-        window.location.href=url.toString();
-      });
-
-      // Auto dismiss alerts
-      const autoCloseAlerts=()=>{ document.querySelectorAll('.alert').forEach(a=>{ setTimeout(()=>{ a.style.transition='opacity .5s'; a.style.opacity='0'; setTimeout(()=>a.remove(),500); },2000); }); };
-      autoCloseAlerts();
-      const alertContainer=document.querySelector('div[style*="position: fixed"]');
-      if(alertContainer){ new MutationObserver(m=>{ if(m.some(x=>x.addedNodes.length)) autoCloseAlerts(); }).observe(alertContainer,{childList:true}); }
-    });
-
-    /* ======= Number formatting (thousand '.' with hidden numeric) ======= */
-    const vnGroup = s => {
-      const digits = (s || '').replace(/\D/g, '');
-      return digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    };
+    /* Định dạng số VN (cho input hiển thị) */
+    const vnGroup   = s => (s || '').replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     const vnUnGroup = s => (s || '').replace(/\./g, '');
 
+    /* Gán formatter và đồng bộ hidden */
     function wireMoneyInput(display) {
       const hiddenId = display.dataset.moneyTarget;
-      const hidden = document.getElementById(hiddenId);
+      const hidden = $id(hiddenId);
       if (!hidden) return;
 
-      // init display from hidden if already has value
       if (hidden.value) display.value = vnGroup(hidden.value);
 
       display.addEventListener('input', () => {
@@ -873,23 +924,20 @@
       });
     }
 
-    // configure % vs VND for Reduce field
+    /* Cấu hình Reduce: % hoặc VND (ADD: prefix '', EDIT: prefix 'edit') */
     function configureReduceFormatting(isPercent, prefix) {
-      const disp = document.getElementById(prefix + 'DiscountAmountDisplay');
-      const hid  = document.getElementById(prefix + 'DiscountAmount');
-      const maxGroup = document.getElementById(prefix ? 'editMaxDiscountGroup' : 'maxDiscountGroup');
-      const label = document.getElementById(prefix ? 'editReduceLabel' : 'reduceLabel');
-      const suffix = document.getElementById(prefix ? 'editReduceSuffix' : 'reduceSuffix');
-
+      const disp    = $id(prefix + 'DiscountAmountDisplay');
+      const hid     = $id(prefix + 'DiscountAmount');
+      const maxWrap = $id(prefix ? 'editMaxDiscountGroup' : 'maxDiscountGroup');
+      const label   = $id(prefix ? 'editReduceLabel'     : 'reduceLabel');
+      const suffix  = $id(prefix ? 'editReduceSuffix'    : 'reduceSuffix');
       if (!disp || !hid) return;
 
       if (isPercent) {
-        // label/suffix/max
-        if (label) label.textContent = "Mức Giảm Giá (%)";
+        if (label)  label.textContent  = "Mức Giảm Giá (%)";
         if (suffix) suffix.textContent = "%";
-        maxGroup?.classList.add('d-none');
+        maxWrap?.classList.add('d-none');
 
-        // percent input: 1..100, no thousand grouping
         disp.placeholder = 'Nhập phần trăm (1 - 100)';
         disp.value = hid.value || '';
         disp.oninput = () => {
@@ -901,18 +949,18 @@
           disp.value = hid.value;
         };
       } else {
-        if (label) label.textContent = "Mức Giảm Giá (VNĐ)";
+        if (label)  label.textContent  = "Mức Giảm Giá (VNĐ)";
         if (suffix) suffix.textContent = "VND";
-        maxGroup?.classList.remove('d-none');
-        disp.placeholder = 'Nhập số tiền giảm (>= 1.000)';
+        maxWrap?.classList.remove('d-none');
 
+        disp.placeholder = 'Nhập số tiền giảm (>= 1.000)';
         disp.oninput = null;
         wireMoneyInput(disp);
         disp.value = vnGroup(hid.value || '');
       }
     }
 
-    /* ======= Tabs helper ======= */
+    /* Tabs helper */
     function setTabActive(anchorSelector){
       const el=document.querySelector(anchorSelector);
       if(!el) return;
@@ -923,13 +971,13 @@
       else setTabActive('#editScopeTabs a[href="#editTabProducts"]');
     }
 
-    /* ======= Apply-all toggles ======= */
+    /* Toggle "Áp dụng tất cả sản phẩm" */
     function wireAllProductsToggle(prefix){
-      const chk=document.getElementById(prefix==='edit'?'editApplyAllProducts':'ApplyAllProducts');
-      const summary=document.getElementById(prefix==='edit'?'editProductGroupSummary':'addProductGroupSummary');
-      const inputs=document.getElementById(prefix==='edit'?'editSelectedInputs':'addSelectedInputs');
-      const preview=document.getElementById(prefix==='edit'?'editSelectedPreview':'addSelectedPreview');
-      const counter=document.getElementById(`${prefix||'add'}SelectedCount`);
+      const chk     = $id(prefix==='edit'?'editApplyAllProducts':'ApplyAllProducts');
+      const summary = $id(prefix==='edit'?'editProductGroupSummary':'addProductGroupSummary');
+      const inputs  = $id(prefix==='edit'?'editSelectedInputs':'addSelectedInputs');
+      const preview = $id(prefix==='edit'?'editSelectedPreview':'addSelectedPreview');
+      const counter = $id(`${prefix||'add'}SelectedCount`);
       const sync=()=>{
         const all=chk?.checked??false;
         if(summary) summary.style.display=all?'none':'block';
@@ -938,157 +986,45 @@
       chk?.addEventListener('change', sync);
       sync();
     }
+
+    /* Toggle "Áp dụng tất cả danh mục" */
     function wireAllCategoriesToggle(prefix){
-      const chk = document.getElementById(prefix==='edit' ? 'editApplyAllCategories' : 'ApplyAllCategories');
-      const block = document.getElementById(prefix==='edit' ? 'editCategoryBlock' : 'addCategoryBlock');
-      const sel   = document.getElementById(prefix==='edit' ? 'editCategoryId'    : 'categoryId');
-      const sync = ()=>{
+      const chk  = $id(prefix==='edit' ? 'editApplyAllCategories' : 'ApplyAllCategories');
+      const block= $id(prefix==='edit' ? 'editCategoryBlock'     : 'addCategoryBlock');
+      const selId= prefix==='edit' ? '#editCategoryIds' : '#addCategoryIds';
+      const resId= prefix==='edit' ? '#editCategoryResult' : '#addCategoryResult';
+
+      const sync = () => {
         const all = chk?.checked ?? false;
         if (block) block.style.display = all ? 'none' : 'block';
-        if (all && sel) sel.value = '';
+        if (all && window.jQuery) {
+          $(selId).selectpicker('deselectAll').selectpicker('refresh');
+          $(resId).html('<small class="text-muted">Chưa chọn gì...</small>');
+        }
       };
       chk?.addEventListener('change', sync);
       sync();
     }
 
-    /* ======= Status icons ======= */
+    /* Status icons (an toàn nếu không có phần tử) */
     function updateStatusIcon(){
-      const v=document.getElementById("status")?.value, icon=document.getElementById("statusIcon");
+      const v=$id("status")?.value, icon=$id("statusIcon");
       if(!icon) return;
       if(v==="0"){ icon.classList.remove("bi-toggle-off"); icon.classList.add("bi-toggle-on"); }
       else { icon.classList.remove("bi-toggle-on"); icon.classList.add("bi-toggle-off"); }
     }
     function updateEditStatusIcon(){
-      const v=document.getElementById("editStatus")?.value, icon=document.getElementById("editStatusIcon");
+      const v=$id("editStatus")?.value, icon=$id("editStatusIcon");
       if(!icon) return;
       if(v==="0"){ icon.classList.remove("bi-toggle-off"); icon.classList.add("bi-toggle-on"); }
       else { icon.classList.remove("bi-toggle-on"); icon.classList.add("bi-toggle-off"); }
     }
 
-    /* ======= Init ADD modal ======= */
-    document.addEventListener('DOMContentLoaded', function(){
-      // percent/money configure
-      const rPercent=document.getElementById("reduceTypePercent");
-      const rMoney=document.getElementById("reduceTypeMoney");
-      const applyAddMode=()=>configureReduceFormatting(rPercent?.checked, '');
-      rPercent?.addEventListener("change", applyAddMode);
-      rMoney?.addEventListener("change", applyAddMode);
-      applyAddMode();
-
-      // Date min
-      const today=new Date().toISOString().split("T")[0];
-      const startInput=document.getElementById("startDate"), endInput=document.getElementById("endDate");
-      if(startInput){
-        startInput.setAttribute("min",today);
-        startInput.addEventListener("change",function(){ if(endInput){ endInput.setAttribute("min",this.value); if(endInput.value && endInput.value < this.value) endInput.value=this.value; } });
-      }
-      endInput?.setAttribute("min",today);
-
-      updateStatusIcon();
-      wireAllProductsToggle('');
-      wireAllCategoriesToggle('');
-
-      // wire formatting for all money-like inputs in ADD
-      document.querySelectorAll('#addVoucherModal [data-money-target]').forEach(wireMoneyInput);
-
-      // ensure hidden sync before submit (safety)
-      document.getElementById('voucherForm')?.addEventListener('submit', () => {
-        document.querySelectorAll('#addVoucherModal [data-money-target]').forEach(el => {
-          const hid=document.getElementById(el.dataset.moneyTarget);
-          if(hid) hid.value = vnUnGroup(el.value);
-        });
-      });
-    });
-
-    /* ======= Init EDIT modal ======= */
-    document.addEventListener('DOMContentLoaded', function(){
-      document.querySelectorAll('.btn-edit-voucher').forEach(function(btn){
-        btn.addEventListener('click', function(){
-          const norm = s => (s ?? '').toString().replace(',', '.');
-
-          // ids/fields
-          document.getElementById('editVoucherId').value = btn.dataset.id || '';
-          document.getElementById('editStartDate').value = btn.dataset.start || '';
-          document.getElementById('editEndDate').value   = btn.dataset.end || '';
-
-          // hidden numeric values
-          document.getElementById('editDiscountAmount').value = norm(btn.dataset.discount);
-          document.getElementById('editMinOrder').value       = norm(btn.dataset.minorder);
-          document.getElementById('editQuantity').value       = norm(btn.dataset.quantity);
-          document.getElementById('editMaxDiscount').value    = norm(btn.dataset.maxdiscount);
-
-          // display (grouped)
-          document.getElementById('editDiscountAmountDisplay').value = vnGroup(document.getElementById('editDiscountAmount').value);
-          document.getElementById('editMinOrderDisplay').value       = vnGroup(document.getElementById('editMinOrder').value);
-          document.getElementById('editQuantityDisplay').value       = vnGroup(document.getElementById('editQuantity').value);
-          document.getElementById('editMaxDiscountDisplay').value    = vnGroup(document.getElementById('editMaxDiscount').value);
-
-          // status
-          const editStatus=document.getElementById('editStatus');
-          if(editStatus) editStatus.value=(btn.dataset.status ?? "0");
-          updateEditStatusIcon();
-
-          // % / VND configure
-          const isPercent=(btn.dataset.ispercentage==='true');
-          document.getElementById('editReduceTypePercent').checked = isPercent;
-          document.getElementById('editReduceTypeMoney').checked   = !isPercent;
-          configureReduceFormatting(isPercent, 'edit');
-
-          // category + switches
-          const catSel=document.getElementById('editCategoryId');
-          if(catSel) catSel.value = btn.dataset.categoryid || "";
-          const chkProd=document.getElementById('editApplyAllProducts');
-          const chkCat =document.getElementById('editApplyAllCategories');
-          if (chkProd) chkProd.checked = (btn.dataset.applyallproducts === 'true');
-          if (chkCat)  chkCat.checked  = (btn.dataset.applyallcategories === 'true');
-          wireAllProductsToggle('edit');
-          wireAllCategoriesToggle('edit');
-
-          // selected products → hidden inputs + preview
-          const ids=(btn.dataset.selectedproductids||'').split(',').map(s=>s.trim()).filter(Boolean);
-          const cont=document.getElementById('editSelectedInputs');
-          cont.innerHTML='';
-          ids.forEach(id=>{ const i=document.createElement('input'); i.type='hidden'; i.name='SelectedProductIds'; i.value=id; cont.appendChild(i); });
-          const cnt=document.getElementById('editSelectedCount'); if(cnt) cnt.textContent=`${ids.length} đã chọn ▸`;
-          buildPreviewFromIds('edit', ids);
-
-          // wire formatting for money-like inputs in EDIT (once)
-          ['editDiscountAmountDisplay','editMinOrderDisplay','editQuantityDisplay','editMaxDiscountDisplay'].forEach(id=>{
-            const el=document.getElementById(id);
-            if(el && !el._wired){ wireMoneyInput(el); el._wired=true; }
-          });
-        });
-      });
-
-      const today=new Date().toISOString().split("T")[0];
-      const es=document.getElementById('editStartDate'), ee=document.getElementById('editEndDate');
-      if(es){ es.setAttribute('min', today); es.addEventListener('change', function(){ if(ee){ ee.setAttribute('min', this.value); if(ee.value && ee.value < this.value) ee.value=this.value; } }); }
-      ee?.setAttribute('min', today);
-
-      // ensure hidden sync before submit (safety)
-      document.getElementById('editVoucherForm')?.addEventListener('submit', () => {
-        document.querySelectorAll('#editVoucherModal [data-money-target]').forEach(el => {
-          const hid=document.getElementById(el.dataset.moneyTarget);
-          if(hid) hid.value = vnUnGroup(el.value);
-        });
-      });
-    });
-
-    /* ======= Delete binding ======= */
-    document.addEventListener('DOMContentLoaded', function(){
-      document.querySelectorAll('.btn-delete-voucher').forEach(b=>{
-        b.addEventListener('click', ()=>{ document.getElementById("deleteVoucherFormId").value = b.getAttribute("data-id"); });
-      });
-    });
-
     /* ======= Product Picker ======= */
-    let ppMode = 'add';
-    let parentModalEl = null;
-    let parentModalInstance = null;
-
+    let ppMode='add';
     function openProductPicker(mode){
       ppMode = mode;
-      const pickerEl = document.getElementById('productPickerModal');
+      const pickerEl = $id('productPickerModal');
       if (!pickerEl) return;
 
       // Prefill checkbox từ hidden inputs hiện có
@@ -1099,17 +1035,16 @@
       document.querySelectorAll('#ppList .pp-item').forEach(cb => cb.checked = selected.has(cb.value));
       updatePPSelectedCount();
 
-      // Tìm modal cha đang mở
-      parentModalEl = document.querySelector('#addVoucherModal.show, #editVoucherModal.show');
-      parentModalInstance = parentModalEl ? bootstrap.Modal.getInstance(parentModalEl) : null;
+      // Modal lồng
+      const parentModalEl = document.querySelector('#addVoucherModal.show, #editVoucherModal.show');
+      const parentModalInstance = parentModalEl ? bootstrap.Modal.getInstance(parentModalEl) : null;
 
       const showPickerNow = () => {
         const picker = bootstrap.Modal.getOrCreateInstance(pickerEl);
         picker.show();
         pickerEl.addEventListener('hidden.bs.modal', function handler(){
           pickerEl.removeEventListener('hidden.bs.modal', handler);
-          if (parentModalInstance) parentModalInstance.show();
-          parentModalEl = null; parentModalInstance = null;
+          parentModalInstance?.show();
         }, { once: true });
       };
 
@@ -1126,13 +1061,13 @@
 
     function updatePPSelectedCount(){
       const n = document.querySelectorAll('#ppList .pp-item:checked').length;
-      const label = document.getElementById('ppSelectedCount');
+      const label = $id('ppSelectedCount');
       if (label) label.textContent = `${n} đã chọn`;
       buildPreviewFromPicker(ppMode);
     }
 
     function buildPreviewFromPicker(prefix){
-      const container = document.getElementById(`${prefix}SelectedPreview`);
+      const container = $id(`${prefix}SelectedPreview`);
       if (!container) return;
       container.innerHTML = '';
       document.querySelectorAll('#ppList .pp-item:checked').forEach(cb => {
@@ -1146,7 +1081,7 @@
     }
 
     function buildPreviewFromIds(prefix, ids){
-      const container = document.getElementById(`${prefix}SelectedPreview`);
+      const container = $id(`${prefix}SelectedPreview`);
       if (!container) return;
       container.innerHTML = '';
       const map = new Map();
@@ -1164,54 +1099,237 @@
       });
     }
 
-    /* Search + events trong picker */
-    document.addEventListener('DOMContentLoaded', function(){
-      const searchInput = document.getElementById('ppSearch');
-      if (searchInput) {
-        searchInput.addEventListener('input', function(){
-          const q = this.value.trim().toLowerCase();
-          document.querySelectorAll('#ppList .list-group-item').forEach(li => {
-            const name = li.querySelector('.pp-item')?.dataset.name?.toLowerCase() ?? '';
-            li.style.display = name.includes(q) ? '' : 'none';
+    /* ====================== INIT ====================== */
+    document.addEventListener("DOMContentLoaded", function(){
+      /* selectpicker */
+      if (window.jQuery) { $('.selectpicker').selectpicker(); }
+
+      /* Sort persist */
+      const sortSelect=$id("sortSelect");
+      const currentSort=new URLSearchParams(window.location.search).get("sort");
+      if(currentSort) sortSelect.value=currentSort;
+      sortSelect?.addEventListener("change", function(){
+        const url=new URL(window.location.href);
+        const selectedSort=sortSelect.value;
+        if(selectedSort) url.searchParams.set("sort", selectedSort); else url.searchParams.delete("sort");
+        const searchValue=document.querySelector('input[name="search"]')?.value;
+        if(searchValue) url.searchParams.set("search", searchValue);
+        window.location.href=url.toString();
+      });
+
+      /* Auto-dismiss alerts */
+      const autoCloseAlerts=()=>{ document.querySelectorAll('.alert').forEach(a=>{ setTimeout(()=>{ a.style.transition='opacity .5s'; a.style.opacity='0'; setTimeout(()=>a.remove(),500); },2000); }); };
+      autoCloseAlerts();
+      const alertContainer=document.querySelector('div[style*="position: fixed"]');
+      if(alertContainer){ new MutationObserver(m=>{ if(m.some(x=>x.addedNodes.length)) autoCloseAlerts(); }).observe(alertContainer,{childList:true}); }
+
+      /* ========== ADD modal ========== */
+      (function initAdd(){
+        const rPercent=$id("reduceTypePercent");
+        const rMoney  =$id("reduceTypeMoney");
+        const applyAddMode=()=>configureReduceFormatting(rPercent?.checked, '');
+        rPercent?.addEventListener("change", applyAddMode);
+        rMoney  ?.addEventListener("change", applyAddMode);
+        applyAddMode();
+
+        const today=new Date().toISOString().split("T")[0];
+        const startInput=$id("startDate"), endInput=$id("endDate");
+        if(startInput){
+          startInput.setAttribute("min",today);
+          startInput.addEventListener("change",function(){
+            if(endInput){
+              endInput.setAttribute("min",this.value);
+              if(endInput.value && endInput.value < this.value) endInput.value=this.value;
+            }
+          });
+        }
+        endInput?.setAttribute("min",today);
+
+        updateStatusIcon();
+
+        wireAllProductsToggle('');
+        wireAllCategoriesToggle('');
+
+        document.querySelectorAll('#addVoucherModal [data-money-target]').forEach(wireMoneyInput);
+
+        $id('voucherForm')?.addEventListener('submit', () => {
+          document.querySelectorAll('#addVoucherModal [data-money-target]').forEach(el => {
+            const hid=$id(el.dataset.moneyTarget);
+            if(hid) hid.value = vnUnGroup(el.value);
           });
         });
-      }
 
-      const ppList = document.getElementById('ppList');
-      if (ppList) {
-        ppList.addEventListener('change', function(e){
-          if (e.target.classList.contains('pp-item')) updatePPSelectedCount();
-        });
-      }
+        if (window.jQuery) {
+          $('#addCategoryIds').on('changed.bs.select', function () {
+            const selectedTexts = $(this).find('option:selected').map(function () { return $(this).text(); }).get();
+            $('#addCategoryResult').html(
+              selectedTexts.length
+                ? `<strong>Đã chọn:</strong> ${selectedTexts.join(', ')}`
+                : '<small class="text-muted">Chưa chọn gì...</small>'
+            );
+          });
 
-      const ppAddBtn = document.getElementById('ppAddBtn');
-      if (ppAddBtn) {
-        ppAddBtn.addEventListener('click', function(){
-          const ids = [...document.querySelectorAll('#ppList .pp-item:checked')].map(cb => cb.value);
+          $id('addVoucherModal')?.addEventListener('shown.bs.modal', function () {
+            $('#addCategoryIds').selectpicker('render').selectpicker('refresh');
+          });
+        }
+      })();
 
-          // Nhét hidden inputs vào form tương ứng
-          const container = document.getElementById(`${ppMode}SelectedInputs`);
-          if (container) {
-            container.innerHTML = '';
-            ids.forEach(id => {
-              const i = document.createElement('input');
-              i.type = 'hidden';
-              i.name = 'SelectedProductIds';
-              i.value = id;
-              container.appendChild(i);
+      /* ========== EDIT modal ========== */
+      (function initEdit(){
+        document.querySelectorAll('.btn-edit-voucher').forEach(function(btn){
+          btn.addEventListener('click', function(){
+            const norm = s => (s ?? '').toString().replace(',', '.');
+
+            // id & date
+            $id('editVoucherId').value = btn.dataset.id || '';
+            $id('editStartDate').value = btn.dataset.start || '';
+            $id('editEndDate').value   = btn.dataset.end || '';
+
+            // numbers
+            $id('editDiscountAmount').value = norm(btn.dataset.discount);
+            $id('editMinOrder').value       = norm(btn.dataset.minorder);
+            $id('editQuantity').value       = norm(btn.dataset.quantity);
+            $id('editMaxDiscount').value    = norm(btn.dataset.maxdiscount);
+
+            $id('editDiscountAmountDisplay').value = vnGroup($id('editDiscountAmount').value);
+            $id('editMinOrderDisplay').value       = vnGroup($id('editMinOrder').value);
+            $id('editQuantityDisplay').value       = vnGroup($id('editQuantity').value);
+            $id('editMaxDiscountDisplay').value    = vnGroup($id('editMaxDiscount').value);
+
+            // % / VND
+            const isPercent = (btn.dataset.ispercentage === 'true');
+            $id('editReduceTypePercent').checked = isPercent;
+            $id('editReduceTypeMoney').checked   = !isPercent;
+            configureReduceFormatting(isPercent, 'edit');
+
+            // set flags (chưa toggle)
+            const chkProd = $id('editApplyAllProducts');
+            const chkCat  = $id('editApplyAllCategories');
+            if (chkProd) chkProd.checked = (btn.dataset.applyallproducts === 'true');
+            if (chkCat)  chkCat.checked  = (btn.dataset.applyallcategories === 'true');
+
+            // === PREFILL CATEGORY (fallback CategoryId) ===
+            const rawCats = (
+              (btn.dataset.categoryids && btn.dataset.categoryids.trim().length)
+                ? btn.dataset.categoryids
+                : (btn.dataset.categoryid || '')
+            ).trim();
+            const catIds  = rawCats ? rawCats.split(',').map(s => s.trim()).filter(Boolean) : [];
+            if (window.jQuery) {
+              const $sel = $('#editCategoryIds');
+              $sel.find('option').prop('selected', false);
+              if (catIds.length) {
+                // cách set nhanh
+                $sel.selectpicker('val', catIds);
+              } else {
+                $sel.selectpicker('val', []);
+              }
+              // render trước rồi refresh
+              $sel.selectpicker('render').selectpicker('refresh');
+
+              const texts = $sel.find('option:selected').map(function(){ return $(this).text(); }).get();
+              $('#editCategoryResult').html(
+                texts.length ? `<strong>Đã chọn:</strong> ${texts.join(', ')}` : '<small class="text-muted">Chưa chọn gì...</small>'
+              );
+            }
+
+            // === PREFILL PRODUCTS ===
+            const ids=(btn.dataset.selectedproductids||'').split(',').map(s=>s.trim()).filter(Boolean);
+            const cont=$id('editSelectedInputs');
+            cont.innerHTML='';
+            ids.forEach(id=>{
+              const i=document.createElement('input');
+              i.type='hidden'; i.name='SelectedProductIds'; i.value=id;
+              cont.appendChild(i);
             });
-          }
+            const cnt=$id('editSelectedCount');
+            if(cnt) cnt.textContent=`${ids.length} đã chọn ▸`;
+            buildPreviewFromIds('edit', ids);
 
-          // Counter + Preview
-          const cnt = document.getElementById(`${ppMode}SelectedCount`);
-          if (cnt) cnt.textContent = `${ids.length} đã chọn ▸`;
-          buildPreviewFromIds(ppMode, ids);
+            // SAU CÙNG mới toggle (ẩn/hiện theo flag)
+            wireAllProductsToggle('edit');
+            wireAllCategoriesToggle('edit');
 
-          // Đóng picker
-          const pickerEl = document.getElementById('productPickerModal');
-          const picker = bootstrap.Modal.getInstance(pickerEl);
-          if (picker) picker.hide();
+            // formatter (chỉ gắn 1 lần)
+            ['editDiscountAmountDisplay','editMinOrderDisplay','editQuantityDisplay','editMaxDiscountDisplay'].forEach(id=>{
+              const el=$id(id);
+              if(el && !el._wired){ wireMoneyInput(el); el._wired=true; }
+            });
+          });
         });
-      }
+
+        // ensure selectpicker refresh khi modal show
+        $id('editVoucherModal')?.addEventListener('shown.bs.modal', function () {
+          if (window.jQuery) $('#editCategoryIds').selectpicker('render').selectpicker('refresh');
+        });
+
+        // Date min cho EDIT
+        const today=new Date().toISOString().split("T")[0];
+        const es=$id('editStartDate'), ee=$id('editEndDate');
+        if(es){ es.setAttribute('min', today); es.addEventListener('change', function(){ if(ee){ ee.setAttribute('min', this.value); if(ee.value && ee.value < this.value) ee.value=this.value; } }); }
+        ee?.setAttribute('min', today);
+
+        // Hộp kết quả khi đổi chọn
+        if (window.jQuery) {
+          const renderEditCategoryResult = () => {
+            const $sel = $('#editCategoryIds');
+            const texts = $sel.find('option:selected').map(function(){ return $(this).text(); }).get();
+            $('#editCategoryResult').html(
+              texts.length ? `<strong>Đã chọn:</strong> ${texts.join(', ')}` : '<small class="text-muted">Chưa chọn gì...</small>'
+            );
+          };
+          $('#editCategoryIds').on('changed.bs.select', renderEditCategoryResult);
+          window.renderEditCategoryResult = renderEditCategoryResult;
+        }
+
+        // Đồng bộ hidden trước submit
+        $id('editVoucherForm')?.addEventListener('submit', () => {
+          document.querySelectorAll('#editVoucherModal [data-money-target]').forEach(el => {
+            const hid=$id(el.dataset.moneyTarget);
+            if(hid) hid.value = vnUnGroup(el.value);
+          });
+        });
+      })();
+
+      /* ====================== Picker Events ====================== */
+      $id('ppSearch')?.addEventListener('input', function(){
+        const q = this.value.trim().toLowerCase();
+        document.querySelectorAll('#ppList .list-group-item').forEach(li => {
+          const name = li.querySelector('.pp-item')?.dataset.name?.toLowerCase() ?? '';
+          li.style.display = name.includes(q) ? '' : 'none';
+        });
+      });
+
+      $id('ppList')?.addEventListener('change', e => {
+        if (e.target.classList.contains('pp-item')) updatePPSelectedCount();
+      });
+
+      $id('ppAddBtn')?.addEventListener('click', function(){
+        const ids = [...document.querySelectorAll('#ppList .pp-item:checked')].map(cb => cb.value);
+
+        // Gắn hidden inputs vào form
+        const container = $id(`${ppMode}SelectedInputs`);
+        if (container) {
+          container.innerHTML = '';
+          ids.forEach(id => {
+            const i = document.createElement('input');
+            i.type = 'hidden';
+            i.name = 'SelectedProductIds';
+            i.value = id;
+            container.appendChild(i);
+          });
+        }
+
+        // Counter + Preview
+        const cnt = $id(`${ppMode}SelectedCount`);
+        if (cnt) cnt.textContent = `${ids.length} đã chọn ▸`;
+        buildPreviewFromIds(ppMode, ids);
+
+        // Đóng picker
+        const pickerEl = $id('productPickerModal');
+        const picker = bootstrap.Modal.getInstance(pickerEl);
+        if (picker) picker.hide();
+      });
     });
 </script>

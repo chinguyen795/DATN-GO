@@ -1,5 +1,6 @@
 ﻿using DATN_GO.Models;
 using DATN_GO.Service;
+using DATN_GO.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -11,17 +12,15 @@ namespace DATN_GO.Areas.Admin.Controllers
         private readonly VoucherService _voucherService;
         public VoucherController(VoucherService voucherService) => _voucherService = voucherService;
 
+        // ================== LIST ==================
         public async Task<IActionResult> Voucher(string? search, string? sort, int page = 1, int pageSize = 4)
         {
-            // Chuẩn hoá paging
             page = page < 1 ? 1 : page;
             pageSize = Math.Clamp(pageSize, 1, 200);
 
-            // Lấy danh sách voucher admin (StoreId == null)
-            var vouchers = await _voucherService.GetVouchersByStoreOrAdminAsync(null)
-                           ?? new List<Vouchers>();
+            var vouchers = await _voucherService.GetVouchersByStoreOrAdminAsync(null) ?? new List<Vouchers>();
 
-            // Search đơn giản theo 3 trường số (không lỗi null)
+            // search
             if (!string.IsNullOrWhiteSpace(search))
             {
                 var q = search.Trim();
@@ -32,16 +31,12 @@ namespace DATN_GO.Areas.Admin.Controllers
                     .ToList();
             }
 
-            // Nạp dữ liệu phụ cho View (đảm bảo không null để tránh NullReference ở view)
-            var categories = await _voucherService.GetAllCategoriesAsync() ?? new List<Categories>();
-            var stores = await _voucherService.GetAllStoresAsync() ?? new List<Stores>();
-            var products = await _voucherService.GetAllProductsAsync() ?? new List<Products>();
+            // master data cho view
+            ViewBag.Categories = await _voucherService.GetAllCategoriesAsync() ?? new List<Categories>();
+            ViewBag.Stores = await _voucherService.GetAllStoresAsync() ?? new List<Stores>();
+            ViewBag.Products = await _voucherService.GetAllProductsAsync() ?? new List<Products>();
 
-            ViewBag.Categories = categories;
-            ViewBag.Stores = stores;
-            ViewBag.Products = products;
-
-            // Sort
+            // sort
             if (!string.IsNullOrWhiteSpace(sort))
             {
                 vouchers = sort switch
@@ -54,18 +49,14 @@ namespace DATN_GO.Areas.Admin.Controllers
                 };
             }
 
-            // Paging (sau sort)
+            // phân trang
             var totalItems = vouchers.Count;
             var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
             if (totalPages == 0) totalPages = 1;
             if (page > totalPages) page = totalPages;
 
-            var paginated = vouchers
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
+            var paginated = vouchers.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
-            // ViewBag cho UI
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = totalPages;
             ViewBag.Search = search;
@@ -75,61 +66,54 @@ namespace DATN_GO.Areas.Admin.Controllers
             return View(paginated);
         }
 
-
+        // ================== CREATE ==================
         [HttpPost, ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Vouchers request)
+        public async Task<IActionResult> Create(CreateVoucherDto dto)
         {
-            // Admin cố định
-            request.StoreId = null;
-            request.CreatedByRoleId = 3;
-            request.Type = VoucherType.Platform;
-            request.CreatedByUserId = GetUserIdOrDefault();
+            dto.CreatedByUserId = GetUserIdOrDefault();
+            dto.CreatedByRoleId = 3; // admin
+            dto.StoreId = null;      // sàn
 
-            // Chuẩn hoá theo flag
-            if (request.ApplyAllCategories) request.CategoryId = null;
-            if (request.ApplyAllProducts) request.SelectedProductIds = new List<int>();
-
-            if (!IsValidVoucher(request))
+            if (!IsValidVoucher(dto))
             {
                 TempData["Error"] = "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.";
                 return RedirectToAction("Voucher");
             }
 
-            var ok = await _voucherService.CreateVoucherAsync(request);
-            TempData[ok ? "Success" : "Error"] = ok ? "Thêm voucher thành công." : "Thêm voucher thất bại.";
+            var result = await _voucherService.CreateVoucherAsync(dto);
+            TempData[result.Ok ? "Success" : "Error"] = result.Message;
             return RedirectToAction("Voucher");
         }
 
+        // ================== EDIT ==================
         [HttpPost, ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Vouchers request)
+        public async Task<IActionResult> Edit(UpdateVoucherDto dto)
         {
-            request.StoreId = null;
-            request.CreatedByRoleId = 3;
-            request.Type = VoucherType.Platform;
-            request.CreatedByUserId = GetUserIdOrDefault();
+            dto.CreatedByUserId = GetUserIdOrDefault();
+            dto.CreatedByRoleId = 3;
+            dto.StoreId = null;
 
-            if (request.ApplyAllCategories) request.CategoryId = null;
-            if (request.ApplyAllProducts) request.SelectedProductIds = new List<int>();
-
-            if (!IsValidVoucher(request))
+            if (!IsValidVoucher(dto))
             {
                 TempData["Error"] = "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.";
                 return RedirectToAction("Voucher");
             }
 
-            var ok = await _voucherService.UpdateVoucherAsync(request);
-            TempData[ok ? "Success" : "Error"] = ok ? "Cập nhật voucher thành công." : "Cập nhật thất bại.";
+            var result = await _voucherService.UpdateVoucherAsync(dto);
+            TempData[result.Ok ? "Success" : "Error"] = result.Message;
             return RedirectToAction("Voucher");
         }
 
+        // ================== DELETE ==================
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            var ok = await _voucherService.DeleteVoucherAsync(id);
-            TempData[ok ? "Success" : "Error"] = ok ? "Xóa voucher thành công." : "Xóa thất bại.";
+            var result = await _voucherService.DeleteVoucherAsync(id);
+            TempData[result.Ok ? "Success" : "Error"] = result.Message;
             return RedirectToAction("Voucher");
         }
 
+        // ================== HELPERS ==================
         private int GetUserIdOrDefault()
         {
             if (User?.Identity?.IsAuthenticated == true)
@@ -137,10 +121,10 @@ namespace DATN_GO.Areas.Admin.Controllers
                 var idStr = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
                 if (int.TryParse(idStr, out var uid)) return uid;
             }
-            return 1;
+            return 1; // fallback
         }
 
-        private bool IsValidVoucher(Vouchers v)
+        private bool IsValidVoucher(CreateVoucherDto v)
         {
             if (v.StartDate >= v.EndDate) return false;
             if (v.Quantity < 1) return false;
@@ -156,18 +140,13 @@ namespace DATN_GO.Areas.Admin.Controllers
                 if (v.Reduce <= 0) return false;
             }
 
-            // PHẠM VI: ít nhất một trong bốn
             var hasAnyScope =
                 v.ApplyAllCategories ||
                 v.ApplyAllProducts ||
-                v.CategoryId.HasValue ||
+                (v.CategoryIds != null && v.CategoryIds.Any()) ||
                 (v.SelectedProductIds != null && v.SelectedProductIds.Any());
+
             if (!hasAnyScope) return false;
-
-            // Admin
-            if (v.StoreId != null) return false;
-            if (v.CreatedByRoleId != 3) return false;
-
             return true;
         }
     }
