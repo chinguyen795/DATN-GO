@@ -65,7 +65,7 @@
                         </a>
                     </li>
                     <li class="nav-item mb-2">
-                        <a asp-action="Index" asp-controller="Wallet" class="nav-link text-crimson">
+                        <a asp-action="Index" asp-controller="Wallet" class="nav-link text-dark">
                             <i class="bi bi-wallet2 me-2"></i>
                             Ví của tôi
                         </a>
@@ -150,38 +150,38 @@
                         : Model.Where(o => o.Status == tab.Id);
 
                         <div class="tab-pane fade @isActive" id="@tab.Id" role="tabpanel" aria-labelledby="@($"{tab.Id}-tab")">
-                            <div class="orders-list">
+                            <div class="orders-list" id="orders-list-@tab.Id">
                                 @if (!ordersToShow.Any())
                                 {
                                     <p class="text-muted">Không có đơn hàng nào.</p>
                                 }
                                 else
                                 {
+                                    var orderIndex = 0;
                                     foreach (var order in ordersToShow)
                                     {
-                                        <div class="order-item border rounded p-3 mb-3" data-order-id="@order.Id" data-date="@order.CreatedAt.ToString("yyyy-MM-dd")">
+                                        var hiddenClass = orderIndex >= 5 ? "d-none more-order" : "";
+                                        <div class="order-item border rounded p-3 mb-3 @hiddenClass" data-order-id="@order.Id" data-date="@order.CreatedAt.ToString("yyyy-MM-dd")">
                                             <div class="d-flex justify-content-between align-items-center mb-3">
                                                 <div>
                                                     <h6 class="mb-0">Mã đơn hàng: #@order.Id</h6>
                                                     <small class="text-muted d-block">
                                                         Mã vận đơn: <span class="fw-bold">@(!string.IsNullOrEmpty(order.LabelId) ? order.LabelId : "Chưa có")</span>
                                                     </small>
-
                                                     <small class="text-muted">@order.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
                                                 </div>
 
                                                 <span class="badge @GetBadgeClass(order.Status)">
                                                     @GetStatusDisplayName(order.Status)
                                                 </span>
-
                                             </div>
+
                                             <div class="row mb-3">
                                                 <div class="col-md-2">
                                                     <img src="@(order.OrderDetails != null && order.OrderDetails.Any()
-                                                            ? order.OrderDetails.First().ProductImage
-                                                            : "https://via.placeholder.com/80")"
+                                            ? order.OrderDetails.First().ProductImage
+                                            : "https://via.placeholder.com/80")"
                                                          alt="Product" class="img-fluid rounded" />
-
                                                 </div>
                                                 <div class="col-md-7">
                                                     <h6>
@@ -190,7 +190,6 @@
                                                             ? order.OrderDetails[0].ProductName
                                                             : $"{order.OrderDetails[0].ProductName} + {order.TotalQuantity - 1} sản phẩm khác")
                                                             : "Không có sản phẩm")
-
                                                     </h6>
                                                     <p class="text-muted mb-0">Số lượng: @order.TotalQuantity</p>
                                                 </div>
@@ -198,6 +197,7 @@
                                                     <h6 class="text-danger">@order.GrandTotal.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))</h6>
                                                 </div>
                                             </div>
+
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <p class="mb-0">
                                                     Tổng tiền: <span class="text-danger fw-bold">@order.GrandTotal.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))</span>
@@ -210,13 +210,17 @@
                                                            class="btn btn-outline-danger btn-sm ms-2">
                                                             Hủy đơn
                                                         </a>
-
                                                     }
-
-
                                                 </div>
-
                                             </div>
+                                        </div>
+                                        orderIndex++;
+                                    }
+
+                                    if (ordersToShow.Count() > 5)
+                                    {
+                                        <div class="text-center mt-3">
+                                            <button class="btn btn-outline-danger btn-sm load-more" data-tab="@tab.Id">Xem thêm</button>
                                         </div>
                                     }
                                 }
@@ -224,6 +228,7 @@
                         </div>
                     }
                 </div>
+
             </div>
         </div>
     </div>
@@ -237,6 +242,33 @@
     });
 
 </script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.load-more').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var tabId = btn.getAttribute('data-tab');
+                var list = document.querySelector('#orders-list-' + tabId);
+                var hiddenOrders = list.querySelectorAll('.more-order.d-none');
+
+                // Hiện thêm 5 order
+                for (let i = 0; i < 5 && i < hiddenOrders.length; i++) {
+                    hiddenOrders[i].classList.remove('d-none');
+                }
+
+                // Nếu không còn đơn nào thì ẩn nút
+                if (list.querySelectorAll('.more-order.d-none').length === 0) {
+                    btn.style.display = 'none';
+                }
+
+                // Cuộn xuống để thấy order mới hiện
+                if (hiddenOrders.length > 0) {
+                    hiddenOrders[0].scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    });
+</script>
+
 @functions {
     // Chuyển tab Id sang trạng thái order tương ứng của bạn
     private string GetStatusDisplayName(string status)

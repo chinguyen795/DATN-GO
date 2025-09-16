@@ -22,7 +22,7 @@ namespace DATN_API.Services
         {
             _context = context;
             _ghtk = ghtk;
-            _emailService = emailService;   
+            _emailService = emailService;
         }
 
         public async Task<IEnumerable<Orders>> GetAllAsync()
@@ -58,7 +58,7 @@ namespace DATN_API.Services
             order.ShippingMethodId = model.ShippingMethodId;
             order.DeliveryFee = model.DeliveryFee;
             order.PaymentDate = model.PaymentDate;
-            order.OrderDate = model.OrderDate; 
+            order.OrderDate = model.OrderDate;
 
             await _context.SaveChangesAsync();
             return true;
@@ -497,7 +497,7 @@ namespace DATN_API.Services
             var products = o.OrderDetails.Select(od => new DATN_API.ViewModels.GHTK.GHTKProduct
             {
                 Name = od.Product?.Name ?? "Sản phẩm",
-                Weight = Math.Max(0.1m, od.Product?.Weight ?? 0.5m),
+                Weight = Math.Max(0.1m, ((decimal)(od.Product?.Weight ?? 0)) / 1000m),
                 Quantity = od.Quantity
             }).ToList();
 
@@ -528,7 +528,9 @@ namespace DATN_API.Services
                     Hamlet = "Khác",
                     DeliverOption = "none",
                     Transport = "road",
-                    IsFreeShip = "1",                    // VNPay đã thanh toán => KHÔNG thu hộ
+
+                    // VNPay đã thanh toán => KHÔNG thu hộ
+                    // 🔥 KHÁC BIỆT: COD => thu hộ tiền đơn
                     PickMoney = o.TotalPrice,
                     Value = o.TotalPrice,
                     Note = "Thanh toán khi nhận hàng (COD)"
@@ -616,7 +618,7 @@ namespace DATN_API.Services
             var products = o.OrderDetails.Select(od => new ViewModels.GHTK.GHTKProduct
             {
                 Name = od.Product?.Name ?? "Sản phẩm",
-                Weight = Math.Max(0.1m, od.Product?.Weight ?? 0.5m),
+                Weight = Math.Max(0.1m, ((decimal)(od.Product?.Weight ?? 0)) / 1000m),
                 Quantity = od.Quantity
             }).ToList();
 
@@ -757,38 +759,33 @@ namespace DATN_API.Services
             // Cập nhật trạng thái
             order.Status = OrderStatus.DaHuy;
 
-            // ✅ HOÀN KHO nếu đơn đã từng trừ kho (idempotent nhờ IsStockDeducted)
+            // ✅ HOÀN KHO nếu đơn đã từng trừ kho
             if (order.IsStockDeducted)
             {
-                // Lấy chi tiết đơn
                 var details = await _context.OrderDetails
                     .Where(d => d.OrderId == order.Id)
                     .ToListAsync();
 
-                if (details.Count > 0)
+                foreach (var d in details)
                 {
-                    var pids = details.Select(d => d.ProductId).Distinct().ToList();
-
-                    // Lấy sản phẩm cần hoàn kho
-                    var products = await _context.Products
-                        .Where(p => pids.Contains(p.Id))
-                        .ToDictionaryAsync(p => p.Id);
-
-                    // Cộng trả hàng
-                    foreach (var d in details)
+                    if (d.ProductVariantId.HasValue)
                     {
-                        if (products.TryGetValue(d.ProductId, out var p))
-                        {
-                            p.Quantity += d.Quantity;
-                        }
+                        // hoàn kho cho variant
+                        var variant = await _context.ProductVariants.FindAsync(d.ProductVariantId.Value);
+                        if (variant != null) variant.Quantity += d.Quantity;
+                    }
+                    else
+                    {
+                        // hoàn kho cho product chính
+                        var product = await _context.Products.FindAsync(d.ProductId);
+                        if (product != null) product.Quantity += d.Quantity;
                     }
                 }
 
-                // Bỏ cờ để tránh hoàn kho lặp lại
                 order.IsStockDeducted = false;
             }
 
-            // ✅ Chỉ hoàn tiền nếu ShippingMethodId == 1 (theo logic hiện tại)
+            // ✅ Hoàn tiền nếu là đơn online (ShippingMethodId == 1)
             decimal total = order.TotalPrice;
             bool didRefund = false;
 
@@ -804,7 +801,125 @@ namespace DATN_API.Services
                     }
                 }
 
-                order.User.Balance += total; // cộng vào ví hiện có
+                order.User.Balance += total;
+                didRefund = true;
+            }
+
+            await _context.SaveChangesAsync();
+            await tx.CommitAsync();
+
+            // ✅ Message trả về
+            string msg = "Hủy đơn hàng thành công" + ghtkMessage;
+            if (didRefund) msg += $" (+{total:N0} vào ví do thanh toán online)";
+            else msg += " (đơn không đủ điều kiện hoàn ví)";
+
+            // ✅ Hoàn voucher nếu có
+            if (order.VoucherId.HasValue)
+            {
+                var v = await _context.Vouchers.FirstOrDefaultAsync(x => x.Id == order.VoucherId.Value);
+                if (v != null && v.UsedCount > 0) v.UsedCount -= 1;
+            }
+
+            await _context.SaveChangesAsync();
+            await tx.CommitAsync();
+
+            return (true, msg);
+        }
+
+
+        public async Task<(bool Success, string Message)> CancelOrderBySellerAsync(int orderId, int sellerUserId)
+        {
+            await using var tx = await _context.Database.BeginTransactionAsync();
+
+            var order = await _context.Orders
+                .Include(o => o.ShippingMethod)
+                .ThenInclude(sm => sm.store)
+                .Include(o => o.User)
+                .FirstOrDefaultAsync(o => o.Id == orderId);
+
+            if (order == null)
+                return (false, "Không tìm thấy đơn hàng");
+
+            if (order.ShippingMethod?.store == null)
+                return (false, "Đơn hàng không gắn với cửa hàng nào");
+
+            if (order.ShippingMethod.store.UserId != sellerUserId)
+                return (false, "Bạn không có quyền hủy đơn hàng này");
+
+            if (order.Status == OrderStatus.DaHoanThanh)
+                return (false, "Đơn hàng đã hoàn thành, không thể hủy");
+
+            if (order.Status == OrderStatus.DaHuy)
+                return (false, "Đơn hàng đã được hủy trước đó");
+
+            string ghtkMessage = string.Empty;
+
+            // Nếu đơn đã đẩy sang GHTK thì hủy trên GHTK trước
+            if (!string.IsNullOrWhiteSpace(order.LabelId))
+            {
+                var ghtkResult = await _ghtk.CancelOrderAsync(order.LabelId);
+                if (!ghtkResult)
+                {
+                    await tx.RollbackAsync();
+                    return (false, "Hủy đơn trên GHTK thất bại");
+                }
+                ghtkMessage = $" (Đã hủy thành công trên GHTK - LabelId: {order.LabelId})";
+            }
+
+            // Cập nhật trạng thái
+            order.Status = OrderStatus.DaHuy;
+
+            // ✅ HOÀN KHO nếu đơn đã từng trừ kho
+            if (order.IsStockDeducted)
+            {
+                var details = await _context.OrderDetails
+                    .Where(d => d.OrderId == order.Id)
+                    .ToListAsync();
+
+                foreach (var d in details)
+                {
+                    if (d.ProductVariantId.HasValue)
+                    {
+                        // Trả lại kho cho Variant
+                        var variant = await _context.ProductVariants
+                            .FirstOrDefaultAsync(v => v.Id == d.ProductVariantId.Value);
+                        if (variant != null)
+                        {
+                            variant.Quantity += d.Quantity;
+                        }
+                    }
+                    else
+                    {
+                        // Trả lại kho cho Product gốc
+                        var product = await _context.Products
+                            .FirstOrDefaultAsync(p => p.Id == d.ProductId);
+                        if (product != null)
+                        {
+                            product.Quantity += d.Quantity;
+                        }
+                    }
+                }
+
+                order.IsStockDeducted = false;
+            }
+
+            // ✅ Hoàn tiền nếu cần
+            decimal total = order.TotalPrice;
+            bool didRefund = false;
+
+            if (order.ShippingMethodId == 1 && total > 0)
+            {
+                if (order.User == null)
+                {
+                    order.User = await _context.Users.FirstOrDefaultAsync(u => u.Id == order.UserId);
+                    if (order.User == null)
+                    {
+                        await tx.RollbackAsync();
+                        return (false, "Không tìm thấy người dùng để hoàn tiền");
+                    }
+                }
+
+                order.User.Balance += total;
                 didRefund = true;
             }
 
@@ -815,11 +930,12 @@ namespace DATN_API.Services
             string msg = "Hủy đơn hàng thành công" + ghtkMessage;
             if (didRefund) msg += $" (+{total:N0} vào ví do phương thức vận chuyển #1)";
             else msg += " (đơn không đủ điều kiện hoàn ví)";
-            // ✅ Hoàn 1 lượt voucher (nếu đơn có voucher)
+
+            // ✅ Hoàn voucher (nếu có)
             if (order.VoucherId.HasValue)
             {
                 var v = await _context.Vouchers.FirstOrDefaultAsync(x => x.Id == order.VoucherId.Value);
-                if (v != null && v.UsedCount > 0) v.UsedCount -= 1;   // hoặc gọi _vouchers.RevertRedeemAsync
+                if (v != null && v.UsedCount > 0) v.UsedCount -= 1;
             }
 
             await _context.SaveChangesAsync();
@@ -982,7 +1098,7 @@ namespace DATN_API.Services
 
             var pids = details.Select(d => d.ProductId).Distinct().ToList();
             var products = await _context.Products
-                .Where(p => pids.Contains(p.Id))
+                .Where(p => pids.Contains(p.Id))    
                 .ToDictionaryAsync(p => p.Id);
 
             foreach (var d in details)

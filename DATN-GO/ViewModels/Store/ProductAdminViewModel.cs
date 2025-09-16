@@ -10,7 +10,7 @@
     ? Math.Round(CostPrice.Value * 1.3m)
     : 0;
         public string? Brand { get; set; }
-        public int? Weight { get; set; }
+        public decimal? Weight { get; set; }
         public string? Slug { get; set; }
         public string? Status { get; set; }
         public int Quantity { get; set; }

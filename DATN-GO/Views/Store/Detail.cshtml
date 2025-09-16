@@ -3,6 +3,7 @@
 
 @{
     ViewData["Title"] = "Detail Diner Page";
+    var priceDict = ViewBag.MinMaxPriceDict as System.Collections.IDictionary;
 }
 <style>
     .text-truncate-1 {
@@ -183,23 +184,48 @@
     <div class="row g-4">
         @foreach (var product in Model.Products)
         {
-            // Lấy info giá/variant từ ViewBag
-            var minMaxDict = ViewBag.MinMaxPriceDict as Dictionary<int, object>;
-            bool hasVariant = false;
-            decimal? displayPrice = product.CostPrice ?? 0;
+            // ==== Bắt variant giống code #2 ====
+            var minMaxDict = ViewBag.MinMaxPriceDict as IDictionary<int, object>;
+            dynamic priceInfo = (minMaxDict != null && minMaxDict.ContainsKey(product.Id))
+            ? minMaxDict[product.Id]
+            : null;
 
-            if (minMaxDict != null && minMaxDict.ContainsKey(product.Id))
+            bool hasVariant = false;
+            decimal? displayPrice = product.CostPrice ?? 0m;
+
+            // 👉 KHAI BÁO Ở OUTER SCOPE để dùng cho data-attrs bên dưới
+            decimal? minPrice = null, maxPrice = null, priceVal = null;
+
+            if (priceInfo != null)
             {
-                dynamic priceInfo = minMaxDict[product.Id];
-                hasVariant = priceInfo.IsVariant;
-                displayPrice = priceInfo.Price ?? product.CostPrice ?? 0;
+                // IsVariant (try-catch vì dynamic có thể quăng format)
+                bool isVar = false;
+                try { isVar = (bool)priceInfo.IsVariant; } catch { /* ignore */ }
+
+                // Min/Max/Price (nullable)
+                try { minPrice = (decimal?)priceInfo.MinPrice; } catch { }
+                try { maxPrice = (decimal?)priceInfo.MaxPrice; } catch { }
+                try { priceVal = (decimal?)priceInfo.Price; } catch { }
+
+                // Luật: có variant nếu server báo IsVariant = true, hoặc min != max
+                hasVariant = isVar || (minPrice.HasValue && maxPrice.HasValue && minPrice != maxPrice);
+
+                // Giá hiển thị ưu tiên Price, rồi Min, rớt về product.CostPrice
+                displayPrice = priceVal ?? minPrice ?? product.CostPrice ?? 0m;
+            }
+            else
+            {
+                // Không có info giá → cho là có variant để ép sang chi tiết (an toàn)
+                hasVariant = true;
+                displayPrice = product.CostPrice ?? 0m;
             }
 
+            // ==== Giá gốc/discount demo (giữ nguyên logic cũ) ====
             var prodCost = ViewBag.DebugPrice ?? 0m;
             var prodOriginal = product.OriginalPrice > 0 ? product.OriginalPrice : prodCost * 1.3m;
             var prodDiscount = prodOriginal > prodCost ? Math.Round((prodOriginal - prodCost) / prodOriginal * 100) : 0;
 
-            // ⭐ average rating từ Reviews
+            // ⭐ average rating
             double ratingAvg = product.Rating.HasValue ? (double)product.Rating.Value : 0.0;
             if (ratingAvg < 0) ratingAvg = 0;
             else if (ratingAvg > 5) ratingAvg = 5;
@@ -235,7 +261,7 @@
                                 @product.CategoryName
                             </span>
 
-                            <!-- Rating (tooltip cả 2 case) -->
+                            <!-- Rating -->
                             <div class="rating d-flex align-items-center text-warning"
                                  data-bs-toggle="tooltip" data-bs-container="body"
                                  title="@(ratingAvg <= 0 ? "Chưa có đánh giá" : $"Đánh giá: {ratingAvg:0.0} sao")">
@@ -272,11 +298,11 @@
                             <!-- Giá -->
                             <div class="mb-2"
                                  data-bs-toggle="tooltip" data-bs-container="body"
-                                 title="@(prodCost > 0 ? string.Format("{0:N0} ₫", prodCost) : "Chưa có giá")">
+                                 title="@(displayPrice.HasValue && displayPrice > 0 ? string.Format("{0:N0} ₫", displayPrice) : "Chưa có giá")">
                                 <span class="text-danger fw-bold">
-                                    @string.Format("{0:N0} ₫", prodCost)
+                                    @string.Format("{0:N0} ₫", displayPrice ?? 0m)
                                 </span>
-                                @* Nếu muốn show giảm giá:
+                                @* nếu muốn show discount:
                             @if (prodDiscount > 0) {
                             <span class="ms-2 text-muted small">(-@prodDiscount%)</span>
                             } *@
@@ -287,23 +313,26 @@
                                 <button class="btn btn-crimson btn-sm rounded-pill add-to-cart-btn"
                                         type="button"
                                         data-product-id="@product.Id"
-                                        data-has-variant="@(hasVariant.ToString().ToLower())"
+                                        data-has-variant="@(hasVariant ? "true" : "false")"
+                                        data-min-price="@(minPrice?.ToString() ?? "")"
+                                        data-max-price="@(maxPrice?.ToString() ?? "")"
                                         data-bs-toggle="tooltip" data-bs-container="body"
-                                        title="Thêm sản phẩm @product.Name vào giỏ"
-                                        onclick="event.stopPropagation();">
+                                        title="Thêm sản phẩm @product.Name vào giỏ">
                                     <i class="bi bi-cart-plus icon-sm"></i> Thêm
                                 </button>
 
                                 <button class="btn btn-outline-crimson btn-sm rounded-pill buy-now-btn"
                                         type="button"
                                         data-product-id="@product.Id"
-                                        data-has-variant="@(hasVariant.ToString().ToLower())"
+                                        data-has-variant="@(hasVariant ? "true" : "false")"
+                                        data-min-price="@(minPrice?.ToString() ?? "")"
+                                        data-max-price="@(maxPrice?.ToString() ?? "")"
                                         data-bs-toggle="tooltip" data-bs-container="body"
-                                        title="Mua ngay sản phẩm @product.Name"
-                                        onclick="event.stopPropagation();">
+                                        title="Mua ngay sản phẩm @product.Name">
                                     Mua ngay
                                 </button>
                             </div>
+
                         </div>
 
                     </div>
@@ -312,6 +341,7 @@
         }
     </div>
 </section>
+
 
 <!-- Anti-forgery token -->
 <form id="__quickAddToken" method="post">
@@ -394,7 +424,7 @@
                     const checkResponse = await fetch(checkUrl);
 
                     if (checkResponse.ok) {
-                        const checkResult = await checkResponse.json(); 
+                        const checkResult = await checkResponse.json();
                         isSaved = checkResult.isSaved === true;
 
                     } else {
@@ -409,21 +439,21 @@
                 const buttonDisabled = isSaved ? "disabled" : "";
 
                 const html = `
-                            <div class="voucher-item">
-                                <div class="border rounded p-3 d-flex align-items-center justify-content-between bg-light" style="min-width: 320px;">
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div class="text-danger" style="font-size: 2rem;">
-                                            <i class="bi bi-ticket-perforated-fill"></i>
+                                <div class="voucher-item">
+                                    <div class="border rounded p-3 d-flex align-items-center justify-content-between bg-light" style="min-width: 320px;">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="text-danger" style="font-size: 2rem;">
+                                                <i class="bi bi-ticket-perforated-fill"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-1">${reduceText}</h6>
+                                                <p class="text-muted small mb-0">Đơn tối thiểu: ${minOrder}₫</p>
+                                                <small class="text-danger">HSD: ${endDate}</small>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h6 class="mb-1">${reduceText}</h6>
-                                            <p class="text-muted small mb-0">Đơn tối thiểu: ${minOrder}₫</p>
-                                            <small class="text-danger">HSD: ${endDate}</small>
-                                        </div>
+                                        <button class="${buttonClass}" ${buttonDisabled} onclick="saveVoucher(${voucher.id}, this)">${buttonText}</button>
                                     </div>
-                                    <button class="${buttonClass}" ${buttonDisabled} onclick="saveVoucher(${voucher.id}, this)">${buttonText}</button>
-                                </div>
-                            </div>`;
+                                </div>`;
 
                 container.insertAdjacentHTML("beforeend", html);
             }
@@ -475,11 +505,11 @@
         toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
         toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
         toast.innerHTML = `
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span>${message}</span>
-                        <button type="button" class="btn-close" onclick="this.parentElement.parentElement.remove()"></button>
-                    </div>
-                `;
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>${message}</span>
+                            <button type="button" class="btn-close" onclick="this.parentElement.parentElement.remove()"></button>
+                        </div>
+                    `;
 
         document.body.appendChild(toast);
 
@@ -492,14 +522,36 @@
     }
 </script>
 
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const tokenEl = document.querySelector('#__quickAddToken input[name="__RequestVerificationToken"]');
-        const ANTIFORGERY = tokenEl ? tokenEl.value : null;
-        const BUY_NOW_KEY = '__BUY_NOW_PIDS'; // fallback tick cho Mua ngay
 
-        const toastOk  = (m) => window.showToast ? showToast(m, true)  : alert(m);
-        const toastErr = (m) => window.showToast ? showToast(m, false) : alert(m);
+
+<script>
+    (() => {
+        if (window.__QuickAddBound2) return;
+        window.__QuickAddBound2 = true;
+
+        const BUY_NOW_KEY = '__BUY_NOW_PIDS';
+        const getToken = () =>
+            document.querySelector('#__quickAddToken input[name="__RequestVerificationToken"]')?.value
+            || document.querySelector('input[name="__RequestVerificationToken"]')?.value
+            || null;
+
+        const toastOk = (m) => window.showToast ? showToast(m, true) : alert(m);
+        const toBool = (v) => String(v).trim().toLowerCase() === 'true';
+
+        // Quyết định có cần sang trang chi tiết để chọn biến thể
+        function needsVariant(btn) {
+            const flagRaw = btn.dataset.hasVariant;
+            if (flagRaw != null && flagRaw !== '') {
+                const v = flagRaw.trim().toLowerCase();
+                if (v === 'true') return true;
+                if (v === 'false') return false;
+            }
+            const minStr = btn.dataset.minPrice ?? '';
+            const maxStr = btn.dataset.maxPrice ?? '';
+            const min = Number(minStr), max = Number(maxStr);
+            if (!Number.isNaN(min) && !Number.isNaN(max)) return min !== max;
+            return false; // thiếu dữ liệu → coi như không variant
+        }
 
         async function quickAdd(pid) {
             const fd = new FormData();
@@ -507,67 +559,23 @@
             fd.append('quantity', '1');
 
             const headers = { 'X-Requested-With': 'XMLHttpRequest' };
-            if (ANTIFORGERY) headers['RequestVerificationToken'] = ANTIFORGERY;
+            const token = getToken();
+            if (token) headers['RequestVerificationToken'] = token;
 
-            const res = await fetch('/Cart/QuickAdd', {
-                method: 'POST',
-                body: fd,
-                headers,
-                credentials: 'same-origin'
-            });
+            let res;
+            try {
+                res = await fetch('/Cart/QuickAdd', {
+                    method: 'POST', body: fd, headers, credentials: 'same-origin'
+                });
+            } catch {
+                return { ok: false, status: 0, data: { message: 'Không thể kết nối máy chủ.' } };
+            }
+
             const data = await res.json().catch(() => ({}));
-            return { ok: res.ok && data?.success, data, status: res.status };
+            return { ok: res.ok && !!data?.success, data, status: res.status };
         }
 
-        // ====== (Giữ NGUYÊN) Thêm vào giỏ ======
-        document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-
-                const pid = btn.dataset.productId;
-                const hasVariant = (btn.dataset.hasVariant === 'true');
-
-                if (hasVariant) {
-                    window.location.href = `/Products/DetailProducts/${pid}`;
-                    return;
-                }
-
-                try {
-                    const { ok, data, status } = await quickAdd(pid);
-                    const msg = String(data?.message || '').toLowerCase();
-
-                    if (ok) {
-                        if (typeof window.__CartBadge?.set === 'function' && typeof data.cartCount === 'number') {
-                            window.__CartBadge.set(data.cartCount);
-                        } else if (typeof window.__CartBadge?.add === 'function') {
-                            window.__CartBadge.add(1);
-                        }
-                        toastOk(data.message || 'Đã thêm vào giỏ hàng!');
-                        try {
-                            const cartIcon = document.querySelector('.bi-cart-fill, .header-icon');
-                            if (cartIcon) {
-                                cartIcon.classList.add('shake');
-                                setTimeout(() => cartIcon.classList.remove('shake'), 600);
-                            }
-                        } catch {}
-                        return;
-                    }
-
-                    if (res.status === 401 || msg.includes('đăng nhập')) {
-                        window.location.href = '/Login';
-                        return;
-                    }
-
-                    window.location.href = `/Products/DetailProducts/${pid}`;
-                } catch (err) {
-                    console.error(err);
-                    window.location.href = `/Products/DetailProducts/${pid}`;
-                }
-            });
-        });
-
-        // ====== NEW: Tick server (endpoint /Cart/Select) ======
+        // Tick chọn trên server cho "Mua ngay"
         async function selectServer(pid, selected = true) {
             try {
                 const fd = new FormData();
@@ -575,80 +583,108 @@
                 fd.append('selected', String(selected));
 
                 const headers = { 'X-Requested-With': 'XMLHttpRequest' };
-                if (ANTIFORGERY) headers['RequestVerificationToken'] = ANTIFORGERY;
+                const token = getToken();
+                if (token) headers['RequestVerificationToken'] = token;
 
                 const res = await fetch('/Cart/Select', {
                     method: 'POST', body: fd, headers, credentials: 'same-origin'
                 });
                 return res.ok;
-            } catch { return false; }
+            } catch {
+                return false;
+            }
         }
 
-        // ====== NEW: Fallback tick localStorage để trang Cart tự tick ======
+        // Fallback: ghi localStorage để trang Cart tự tick
         function selectLocalBuyNow(pid) {
             try {
                 const arr = JSON.parse(localStorage.getItem(BUY_NOW_KEY) || '[]');
                 if (!arr.includes(pid)) arr.push(pid);
                 localStorage.setItem(BUY_NOW_KEY, JSON.stringify(arr));
-            } catch {}
+            } catch { }
         }
 
-        // ====== NEW: Mua ngay (QuickAdd + tick + tới /Cart) ======
-        document.querySelectorAll('.buy-now-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
+        function updateCartBadge(count, deltaIfNoCount = 0) {
+            if (typeof window.__CartBadge?.set === 'function' && typeof count === 'number') {
+                window.__CartBadge.set(count);
+            } else if (typeof window.__CartBadge?.add === 'function') {
+                window.__CartBadge.add(deltaIfNoCount);
+            }
+        }
 
-                const pid = btn.dataset.productId;
-                const hasVariant = (btn.dataset.hasVariant === 'true');
+        document.addEventListener('click', async (e) => {
+            const addBtn = e.target.closest('.add-to-cart-btn');
+            const buyBtn = e.target.closest('.buy-now-btn');
+            if (!addBtn && !buyBtn) return;
 
-                if (hasVariant) {
+            e.preventDefault();
+
+            const btn = addBtn || buyBtn;
+            const pid = btn.dataset.productId;
+            if (!pid) return;
+
+            const prevHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = 'Đang xử lý...';
+
+            try {
+                // Có variant → vào chi tiết
+                if (needsVariant(btn)) {
                     window.location.href = `/Products/DetailProducts/${pid}`;
                     return;
                 }
 
-                const prevHTML = btn.innerHTML;
-                btn.disabled = true;
-                btn.innerHTML = 'Đang xử lý...';
+                // Không variant → QuickAdd
+                const { ok, data, status } = await quickAdd(pid);
+                const msg = String(data?.message || '').toLowerCase();
 
-                try {
-                    const { ok, data, status } = await quickAdd(pid);
-                    if (ok) {
-                        // ✅ tick server; nếu fail → ghi LS để Cart tự tick
+                if (ok) {
+                    updateCartBadge(data.cartCount, 1);
+                    toastOk(data.message || 'Đã thêm vào giỏ hàng!');
+
+                    if (buyBtn) {
+                        // ✅ "Mua ngay": tick server, nếu fail thì LS fallback, rồi vào /Cart
                         const ticked = await selectServer(pid, true);
                         if (!ticked) selectLocalBuyNow(pid);
-
-                        if (typeof window.__CartBadge?.set === 'function' && typeof data.cartCount === 'number') {
-                            window.__CartBadge.set(data.cartCount);
-                        }
-                        toastOk(data.message || 'Đã thêm vào giỏ hàng!');
                         window.location.href = '/Cart';
-                        return;
                     }
-
-                    if (status === 401 || String(data?.message || '').toLowerCase().includes('đăng nhập')) {
-                        window.location.href = '/Login';
-                        return;
-                    }
-
-                    // lỗi khác → cho user chọn biến thể/option
-                    window.location.href = `/Products/DetailProducts/${pid}`;
-                } catch (err) {
-                    console.error(err);
-                    window.location.href = `/Products/DetailProducts/${pid}`;
-                } finally {
-                    btn.disabled = false;
-                    btn.innerHTML = prevHTML;
+                    // "Thêm": ở lại trang, done
+                    return;
                 }
-            });
-        });
-    });
+
+                if (status === 401 || msg.includes('đăng nhập')) {
+                    window.location.href = '/Login';
+                    return;
+                }
+
+                // Server báo cần chọn biến thể → vào chi tiết
+                if (status >= 400 && status < 500 && (msg.includes('variant') || msg.includes('biến thể') || msg.includes('option'))) {
+                    window.location.href = `/Products/DetailProducts/${pid}`;
+                    return;
+                }
+
+                // Fallback
+                window.location.href = `/Products/DetailProducts/${pid}`;
+            } catch (err) {
+                console.error(err);
+                window.location.href = `/Products/DetailProducts/${pid}`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = prevHTML;
+            }
+        }, false);
+    })();
 </script>
+
+
+
+
+
 
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-      var els = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-      els.forEach(function (el) { new bootstrap.Tooltip(el); });
+        var els = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        els.forEach(function (el) { new bootstrap.Tooltip(el); });
     });
 </script>

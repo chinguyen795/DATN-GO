@@ -30,31 +30,28 @@ namespace DATN_API.Controllers
             public int AddressId { get; set; }
             public int? UserVoucherId { get; set; }
         }
+
         // Giờ Việt Nam (UTC+7), chạy được cả Windows/Linux/Docker
         private static DateTime NowVn()
         {
             try
             {
-                // Linux / Docker
-                var tz = TimeZoneInfo.FindSystemTimeZoneById("Asia/Ho_Chi_Minh");
+                var tz = TimeZoneInfo.FindSystemTimeZoneById("Asia/Ho_Chi_Minh");   // Linux/Docker
                 return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz);
             }
             catch
             {
                 try
                 {
-                    // Windows
-                    var tz = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+                    var tz = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"); // Windows
                     return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz);
                 }
                 catch
                 {
-                    // Fallback
-                    return DateTime.UtcNow.AddHours(7);
+                    return DateTime.UtcNow.AddHours(7); // fallback
                 }
             }
         }
-
 
         // =============== TRỪ KHO 1 LẦN (idempotent) ===============
         private async Task DeductStockIfNeededAsync(int orderId)
@@ -62,7 +59,11 @@ namespace DATN_API.Controllers
             var order = await _db.Orders.FirstOrDefaultAsync(o => o.Id == orderId);
             if (order == null || order.IsStockDeducted) return;
 
-            var details = await _db.OrderDetails.Where(d => d.OrderId == orderId).ToListAsync();
+            var details = await _db.OrderDetails
+                .Where(d => d.OrderId == orderId)
+                .Select(d => new { d.ProductId, d.ProductVariantId, d.Quantity })
+                .ToListAsync();
+
             if (details.Count == 0)
             {
                 order.IsStockDeducted = true;
@@ -70,14 +71,46 @@ namespace DATN_API.Controllers
                 return;
             }
 
-            var pids = details.Select(d => d.ProductId).Distinct().ToList();
-            var products = await _db.Products.Where(p => pids.Contains(p.Id)).ToDictionaryAsync(p => p.Id);
+            // 1) Trừ kho theo Variant trước
+            var byVariant = details
+                .Where(x => x.ProductVariantId.HasValue)
+                .GroupBy(x => x.ProductVariantId!.Value)
+                .ToDictionary(g => g.Key, g => g.Sum(x => x.Quantity));
 
-            foreach (var d in details)
+            if (byVariant.Count > 0)
             {
-                if (!products.TryGetValue(d.ProductId, out var p)) continue;
-                var after = p.Quantity - d.Quantity;
-                p.Quantity = after < 0 ? 0 : after;
+                var vIds = byVariant.Keys.ToList();
+                var variants = await _db.ProductVariants
+                    .Where(v => vIds.Contains(v.Id))
+                    .ToDictionaryAsync(v => v.Id);
+
+                foreach (var (vid, qty) in byVariant)
+                {
+                    if (!variants.TryGetValue(vid, out var v)) continue;
+                    var after = v.Quantity - qty;
+                    v.Quantity = after < 0 ? 0 : after;
+                }
+            }
+
+            // 2) Dòng không có variant -> trừ kho Product
+            var byProduct = details
+                .Where(x => !x.ProductVariantId.HasValue)
+                .GroupBy(x => x.ProductId)
+                .ToDictionary(g => g.Key, g => g.Sum(x => x.Quantity));
+
+            if (byProduct.Count > 0)
+            {
+                var pIds = byProduct.Keys.ToList();
+                var products = await _db.Products
+                    .Where(p => pIds.Contains(p.Id))
+                    .ToDictionaryAsync(p => p.Id);
+
+                foreach (var (pid, qty) in byProduct)
+                {
+                    if (!products.TryGetValue(pid, out var p)) continue;
+                    var after = p.Quantity - qty;
+                    p.Quantity = after < 0 ? 0 : after;
+                }
             }
 
             order.IsStockDeducted = true;
@@ -88,13 +121,10 @@ namespace DATN_API.Controllers
         [HttpPost("vnpay-create")]
         public async Task<IActionResult> CreateVnpay([FromBody] CreateVnpOrderRequest req)
         {
-            // 1) Lấy giỏ đã chọn + tính ship theo nhóm store
             var cart = await _cartService.GetCartByUserIdAsync(req.UserId);
             if (cart == null) return BadRequest("Cart not found");
 
             var shippingGroups = await _cartService.GetShippingGroupsByUserIdAsync(req.UserId, req.AddressId);
-            var totalShippingFee = shippingGroups.Sum(g => g.ShippingFee);
-
             var selected = cart.CartItems.Where(x => x.IsSelected).ToList();
             if (!selected.Any()) return BadRequest("Không có sản phẩm nào được chọn.");
 
@@ -111,7 +141,6 @@ namespace DATN_API.Controllers
             var createdOrders = new List<Orders>();
             long totalForAllOrders = 0;
 
-            // 2) Tạo order cho TỪNG store
             foreach (var group in groups)
             {
                 var storeId = group.Key;
@@ -124,17 +153,15 @@ namespace DATN_API.Controllers
 
                 var storeGrandTotal = (long)Math.Max(0, storeSubTotal + storeShipFee - storeVoucherReduce);
                 totalForAllOrders += storeGrandTotal;
-
-                // ShippingMethod riêng từng store
                 var shipMethod = await _db.ShippingMethods
-                    .FirstOrDefaultAsync(sm => sm.StoreId == storeId && sm.MethodName == "GHTK_AUTO");
+                    .FirstOrDefaultAsync(sm => sm.MethodName == "GHTK_AUTO");
+
                 if (shipMethod == null)
                 {
                     shipMethod = new ShippingMethods
                     {
-                        StoreId = storeId,
                         MethodName = "GHTK_AUTO",
-                        Price = 0 // phí thật nằm ở Order.DeliveryFee
+                        Price = 0
                     };
                     _db.ShippingMethods.Add(shipMethod);
                     await _db.SaveChangesAsync();
@@ -148,19 +175,22 @@ namespace DATN_API.Controllers
                     PaymentStatus = "Unpaid",
                     Status = OrderStatus.ChoXuLy,
                     TotalPrice = storeGrandTotal,
-                    DeliveryFee = storeShipFee,        // ✅ phí ship của store
+                    DeliveryFee = storeShipFee,
                     VoucherId = null,
                     ShippingMethodId = shipMethod.Id
                 };
                 _db.Orders.Add(order);
                 await _db.SaveChangesAsync();
 
+                // Ghi OrderDetails (có ProductVariantId)
                 foreach (var item in group)
                 {
+                    int? pvId = await ResolveProductVariantIdAsync(item.ProductId, item.CartId);
                     _db.OrderDetails.Add(new OrderDetails
                     {
                         OrderId = order.Id,
                         ProductId = item.ProductId,
+                        ProductVariantId = pvId,   // <-- thêm
                         Quantity = item.Quantity,
                         Price = item.Price
                     });
@@ -170,13 +200,12 @@ namespace DATN_API.Controllers
                 createdOrders.Add(order);
             }
 
-            // 3) Gọi service tạo paymentUrl (dùng order đầu tiên, amount = tổng batch)
             var mainOrder = createdOrders.First();
             var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
             var paymentUrl = _vnp.CreatePaymentUrl(new VnpCreatePaymentRequest
             {
-                OrderId = mainOrder.Id.ToString(),  // vnp_TxnRef
-                Amount = totalForAllOrders,         // ✅ tổng tiền tất cả order
+                OrderId = mainOrder.Id.ToString(),
+                Amount = totalForAllOrders,
                 OrderInfo = $"Thanh toan don hang #{mainOrder.Id}",
                 IpAddress = clientIp,
                 Locale = "vn"
@@ -201,7 +230,6 @@ namespace DATN_API.Controllers
 
             if (isValid && rspCode == "00")
             {
-                // Lấy toàn bộ order chưa thanh toán của user (giữ nguyên logic bạn đang dùng)
                 var unpaidOrders = await _db.Orders
                     .Where(o => o.UserId == mainOrder.UserId && o.PaymentStatus == "Unpaid")
                     .ToListAsync();
@@ -212,24 +240,20 @@ namespace DATN_API.Controllers
                     order.Status = OrderStatus.ChoLayHang;
                     order.PaymentDate = NowVn();
 
-                    // ✅ trừ kho 1 lần
                     await DeductStockIfNeededAsync(order.Id);
 
-                    // 🔗 Push sang GHTK
                     try
                     {
                         if (string.IsNullOrEmpty(order.LabelId))
                         {
                             var label = await _orders.PushOrderToGhtkAndSaveLabelAsync(order.Id);
-                            order.LabelId = label; // lưu mã vận đơn
+                            order.LabelId = label;
                         }
                     }
-                    catch { /* log nếu cần */ }
+                    catch { }
                 }
 
                 await _db.SaveChangesAsync();
-
-                // 💥 clear giỏ hàng
                 try { await _cartService.ClearSelectedAsync(mainOrder.UserId); } catch { }
 
                 return Redirect($"https://localhost:7180/Checkout/Success?orderId={mainOrder.Id}");
@@ -266,17 +290,13 @@ namespace DATN_API.Controllers
                 {
                     order.PaymentStatus = "Paid";
                     order.Status = OrderStatus.DaHoanThanh;
-                    order.PaymentDate = DateTime.UtcNow;
+                    order.PaymentDate = NowVn();            // <-- dùng giờ VN
 
-                    // 💥 idempotent: xóa giỏ đã chọn
                     try { await _cartService.ClearSelectedAsync(order.UserId); } catch { }
 
-                    // ✅ trừ kho
                     await DeductStockIfNeededAsync(order.Id);
-
                     await _db.SaveChangesAsync();
 
-                    // 🔗 Tạo đơn GHTK nếu cần
                     try
                     {
                         if (string.IsNullOrEmpty(order.LabelId))
@@ -285,7 +305,7 @@ namespace DATN_API.Controllers
                             if (!string.IsNullOrWhiteSpace(label)) order.LabelId = label;
                         }
                     }
-                    catch { /* log nếu cần */ }
+                    catch { }
                 }
                 return new JsonResult(new { RspCode = "00", Message = "Success" });
             }
@@ -317,7 +337,6 @@ namespace DATN_API.Controllers
             if (string.IsNullOrEmpty(label))
                 return BadRequest(new { message = "Không tạo được đơn COD bên GHTK." });
 
-            // Cập nhật trạng thái và trừ kho
             var order = await _db.Orders.FirstOrDefaultAsync(o => o.Id == orderId);
             if (order != null)
             {
@@ -325,15 +344,10 @@ namespace DATN_API.Controllers
                 order.LabelId = label;
                 await _db.SaveChangesAsync();
 
-                // ✅ trừ kho
                 await DeductStockIfNeededAsync(order.Id);
             }
 
-            return Ok(new
-            {
-                message = "Đặt hàng COD thành công.",
-                labelId = label
-            });
+            return Ok(new { message = "Đặt hàng COD thành công.", labelId = label });
         }
 
         // ================= COD: CREATE (đa-store) =================
@@ -346,7 +360,6 @@ namespace DATN_API.Controllers
             await using var tx = await _db.Database.BeginTransactionAsync();
             try
             {
-                // 1) Giỏ hàng & phí ship
                 var cart = await _cartService.GetCartByUserIdAsync(req.UserId);
                 if (cart == null) return BadRequest(new { message = "Cart not found" });
 
@@ -365,7 +378,6 @@ namespace DATN_API.Controllers
                     if (voucher != null) voucherReduce = voucher.Reduce;
                 }
 
-                // 2) Gom theo store
                 var groups = selected.GroupBy(x => x.StoreId).ToList();
                 var createdOrders = new List<Orders>();
 
@@ -375,30 +387,22 @@ namespace DATN_API.Controllers
                     var storeSubTotal = group.Sum(i => i.TotalValue);
                     var storeShippingFee = shippingGroups.FirstOrDefault(g => g.StoreId == storeId)?.ShippingFee ?? 0m;
 
-                    // chia voucher theo tỉ lệ
                     decimal storeVoucherReduce = 0;
                     if (voucherReduce > 0 && subTotal > 0)
                         storeVoucherReduce = voucherReduce * (storeSubTotal / subTotal);
 
                     var storeGrandTotal = (long)Math.Max(0, storeSubTotal + storeShippingFee - storeVoucherReduce);
 
-                    // Shipping method riêng từng store
                     var shipMethod = await _db.ShippingMethods
                         .FirstOrDefaultAsync(sm => sm.StoreId == storeId && sm.MethodName == "GHTK_AUTO");
 
                     if (shipMethod == null)
                     {
-                        shipMethod = new ShippingMethods
-                        {
-                            StoreId = storeId,
-                            MethodName = "GHTK_AUTO",
-                            Price = 0
-                        };
+                        shipMethod = new ShippingMethods { StoreId = storeId, MethodName = "GHTK_AUTO", Price = 0 };
                         _db.ShippingMethods.Add(shipMethod);
                         await _db.SaveChangesAsync();
                     }
 
-                    // 3) Tạo order COD cho store
                     var order = new Orders
                     {
                         UserId = req.UserId,
@@ -416,17 +420,18 @@ namespace DATN_API.Controllers
 
                     foreach (var item in group)
                     {
+                        int? pvId = await ResolveProductVariantIdAsync(item.ProductId, item.CartId);
                         _db.OrderDetails.Add(new OrderDetails
                         {
                             OrderId = order.Id,
                             ProductId = item.ProductId,
+                            ProductVariantId = pvId,   // <-- thêm
                             Quantity = item.Quantity,
                             Price = item.Price
                         });
                     }
                     await _db.SaveChangesAsync();
 
-                    // 4) Push GHTK ngay sau khi tạo đơn
                     string? label;
                     try
                     {
@@ -448,13 +453,11 @@ namespace DATN_API.Controllers
                     order.LabelId = label;
                     await _db.SaveChangesAsync();
 
-                    // ✅ trừ kho 1 lần
                     await DeductStockIfNeededAsync(order.Id);
 
                     createdOrders.Add(order);
                 }
 
-                // 5) Dọn giỏ hàng sau khi tạo xong tất cả đơn
                 try { await _cartService.ClearSelectedAsync(req.UserId); } catch { }
 
                 await tx.CommitAsync();
@@ -471,17 +474,14 @@ namespace DATN_API.Controllers
             }
         }
 
-        // ================= MoMo: CREATE (đa-store, giữ flow bạn) =================
+        // ================= MoMo: CREATE (đa-store) =================
         [HttpPost("momo-create")]
         public async Task<IActionResult> CreateMomo([FromBody] CreateVnpOrderRequest req)
         {
-            // 1) Lấy giỏ hàng + shipping
             var cart = await _cartService.GetCartByUserIdAsync(req.UserId);
             if (cart == null) return BadRequest("Cart not found");
 
             var shippingGroups = await _cartService.GetShippingGroupsByUserIdAsync(req.UserId, req.AddressId);
-            var totalShippingFee = shippingGroups.Sum(g => g.ShippingFee);
-
             var selected = cart.CartItems.Where(x => x.IsSelected).ToList();
             if (!selected.Any()) return BadRequest("Không có sản phẩm nào được chọn.");
 
@@ -498,7 +498,6 @@ namespace DATN_API.Controllers
             var createdOrders = new List<Orders>();
             long totalForAllOrders = 0;
 
-            // 2) Tạo nhiều orders (Unpaid) — mỗi store một order
             foreach (var group in groups)
             {
                 var storeId = group.Key;
@@ -512,17 +511,11 @@ namespace DATN_API.Controllers
                 var storeGrandTotal = (long)Math.Max(0, storeSubTotal + storeShipFee - storeVoucherReduce);
                 totalForAllOrders += storeGrandTotal;
 
-                // ShippingMethod theo từng store
                 var shipMethod = await _db.ShippingMethods
                     .FirstOrDefaultAsync(sm => sm.StoreId == storeId && sm.MethodName == "GHTK_AUTO");
                 if (shipMethod == null)
                 {
-                    shipMethod = new ShippingMethods
-                    {
-                        StoreId = storeId,
-                        MethodName = "GHTK_AUTO",
-                        Price = 0
-                    };
+                    shipMethod = new ShippingMethods { StoreId = storeId, MethodName = "GHTK_AUTO", Price = 0 };
                     _db.ShippingMethods.Add(shipMethod);
                     await _db.SaveChangesAsync();
                 }
@@ -531,7 +524,7 @@ namespace DATN_API.Controllers
                 {
                     UserId = req.UserId,
                     OrderDate = NowVn(),
-                    PaymentMethod = "MoMo",
+                    PaymentMethod = "GO",          // <-- đổi tên nhà cung cấp
                     PaymentStatus = "Unpaid",
                     Status = OrderStatus.ChoXuLy,
                     TotalPrice = storeGrandTotal,
@@ -543,10 +536,12 @@ namespace DATN_API.Controllers
 
                 foreach (var item in group)
                 {
+                    int? pvId = await ResolveProductVariantIdAsync(item.ProductId, item.CartId);
                     _db.OrderDetails.Add(new OrderDetails
                     {
                         OrderId = order.Id,
                         ProductId = item.ProductId,
+                        ProductVariantId = pvId,   // <-- thêm
                         Quantity = item.Quantity,
                         Price = item.Price
                     });
@@ -556,7 +551,6 @@ namespace DATN_API.Controllers
                 createdOrders.Add(order);
             }
 
-            // 3) Tạo thanh toán MoMo cho tổng tất cả orders
             var mainOrder = createdOrders.First();
             var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
             var info = $"Thanh toán MoMo cho đơn #{mainOrder.Id}";
@@ -591,7 +585,6 @@ namespace DATN_API.Controllers
 
             if (valid && errorCode == "0")
             {
-                // Lấy toàn bộ order unpaid của user (giữ flow cũ)
                 var unpaidOrders = await _db.Orders
                     .Where(o => o.UserId == mainOrder.UserId && o.PaymentStatus == "Unpaid")
                     .ToListAsync();
@@ -602,10 +595,8 @@ namespace DATN_API.Controllers
                     order.Status = OrderStatus.ChoLayHang;
                     order.PaymentDate = NowVn();
 
-                    // ✅ trừ kho 1 lần
                     await DeductStockIfNeededAsync(order.Id);
 
-                    // Push GHTK
                     try
                     {
                         if (string.IsNullOrEmpty(order.LabelId))
@@ -618,8 +609,6 @@ namespace DATN_API.Controllers
                 }
 
                 await _db.SaveChangesAsync();
-
-                // clear giỏ
                 try { await _cartService.ClearSelectedAsync(mainOrder.UserId); } catch { }
 
                 return Redirect($"https://localhost:7180/Checkout/Success?orderId={mainOrder.Id}");
@@ -665,11 +654,35 @@ namespace DATN_API.Controllers
 
                 await _db.SaveChangesAsync();
 
-                // ✅ trừ kho
                 await DeductStockIfNeededAsync(order.Id);
             }
 
             return Ok(new { Result = 1 });
+        }
+
+        // ======= Resolve ProductVariantId từ CartItemVariants (giữ nguyên) =======
+        private async Task<int?> ResolveProductVariantIdAsync(int productId, int cartId)
+        {
+            var chosen = await _db.CartItemVariants
+                .Where(x => x.CartId == cartId)
+                .Select(x => x.VariantValueId)
+                .OrderBy(x => x)
+                .ToListAsync();
+
+            if (chosen.Count == 0) return null;
+
+            var candidates = await _db.VariantCompositions
+                .Where(vc => vc.ProductId == productId && vc.ProductVariantId != null && vc.VariantValueId != null)
+                .GroupBy(vc => vc.ProductVariantId!.Value)
+                .Select(g => new
+                {
+                    PvId = g.Key,
+                    Values = g.Select(x => x.VariantValueId!.Value).OrderBy(v => v).ToList()
+                })
+                .ToListAsync();
+
+            var hit = candidates.FirstOrDefault(c => c.Values.SequenceEqual(chosen));
+            return hit?.PvId;
         }
     }
 }

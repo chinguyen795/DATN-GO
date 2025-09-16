@@ -14,6 +14,7 @@ namespace DATN_API.Models
 
         [ForeignKey("Product")]
         public int ProductId { get; set; }
+        public int? ProductVariantId { get; set; }   // <-- cần có
 
         public int Quantity { get; set; }
 

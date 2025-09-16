@@ -236,12 +236,16 @@
                                         data-bs-dismiss="modal">
                                     Đóng
                                 </button>
-                                <button type="button" class="btn btn-success rounded-pill px-4"
-                                        id="btnUpdateStatus">
-                                    Cập nhật
-                                    trạng
-                                    thái
-                                </button>
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-danger rounded-pill px-4"
+                                            id="btnCancelOrder">
+                                        Hủy đơn
+                                    </button>
+                                    <button type="button" class="btn btn-success rounded-pill px-4"
+                                            id="btnUpdateStatus">
+                                        Cập nhật trạng thái
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -933,6 +937,53 @@
                 showCustomToast("❌ Lỗi: " + error.message, false);
             }
         });
+            // --- Nút Hủy đơn trong Modal chi tiết ---
+    document.getElementById("btnCancelOrder").addEventListener("click", async function () {
+        const orderIdText = document.getElementById("modalOrderId").textContent;
+        const orderId = orderIdText.replace("#", "").trim();
+        if (!orderId) {
+            showCustomToast("Không tìm thấy mã đơn", false);
+            return;
+        }
+
+        if (!confirm("Bạn có chắc chắn muốn hủy đơn hàng này?")) return;
+
+        try {
+            // ⚡ Gọi API cancel by seller
+            const resp = await fetch(`${API_BASE_URL}/orders/${orderId}/cancel/seller/${userId}`, {
+                method: "POST"
+            });
+
+            if (!resp.ok) {
+                const err = await resp.json().catch(() => ({}));
+                throw new Error(err.message || "Hủy đơn thất bại");
+            }
+
+            const data = await resp.json();
+            showCustomToast(data.message || "Đã hủy đơn hàng!", true);
+
+            // 🔄 Cập nhật badge trạng thái trong modal
+            const [statusText, statusClass] = mapStatus("DaHuy");
+            const modalStatus = document.getElementById("modalStatus");
+            modalStatus.textContent = statusText;
+            modalStatus.className = "";
+            modalStatus.classList.add("badge", ...statusClass.split(" "), "rounded-pill", "px-3", "py-2");
+
+            // 🔄 Cập nhật badge trạng thái ngoài bảng
+            const row = document.querySelector(`tr[data-order-id="${orderId}"]`);
+            if (row) {
+                const statusCell = row.querySelector(".order-status");
+                if (statusCell) {
+                    statusCell.textContent = statusText;
+                    statusCell.className = "";
+                    statusCell.classList.add("badge", ...statusClass.split(" "), "rounded-pill", "px-3", "py-2");
+                }
+            }
+        } catch (error) {
+            showCustomToast("❌ Lỗi: " + error.message, false);
+        }
+    });
+
         // --- PHẦN QUẢN LÝ THỐNG KÊ ---
         const userId = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(userIdStr));
         const startDateInput = document.getElementById('startDate');
@@ -1088,6 +1139,5 @@
             toastEl.remove();
         });
     }
-
+        
 </script>
-

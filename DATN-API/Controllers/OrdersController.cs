@@ -287,6 +287,17 @@ namespace DATN_API.Controllers
             return Ok(new { message, status = status.ToString() });
         }
 
+        // Seller hủy đơn
+        [HttpPost("{id:int}/cancel/seller/{sellerUserId:int}")]
+        public async Task<IActionResult> CancelOrderBySeller(int id, int sellerUserId)
+        {
+            var result = await _service.CancelOrderBySellerAsync(id, sellerUserId);
+
+            if (!result.Success)
+                return BadRequest(new { message = result.Message });
+
+            return Ok(new { message = result.Message });
+        }
 
     }
 }

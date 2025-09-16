@@ -34,5 +34,8 @@ namespace DATN_API.Services.Interfaces
         Task<(bool Success, string Message)> CancelOrderAsync(int orderId, int userId);
 
         Task<(bool Success, string Message, OrderStatus? Status)> UpdateToNextStatusAsync(int orderId);
+
+
+        Task<(bool Success, string Message)> CancelOrderBySellerAsync(int orderId, int sellerUserId);
     }
 }
