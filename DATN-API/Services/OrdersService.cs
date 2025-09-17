@@ -1098,7 +1098,7 @@ namespace DATN_API.Services
 
             var pids = details.Select(d => d.ProductId).Distinct().ToList();
             var products = await _context.Products
-                .Where(p => pids.Contains(p.Id))    
+                .Where(p => pids.Contains(p.Id))
                 .ToDictionaryAsync(p => p.Id);
 
             foreach (var d in details)

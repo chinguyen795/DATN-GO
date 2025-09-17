@@ -215,9 +215,15 @@
             const minOrderValue = Number(v.minOrder) || 0;
 
             // ✅ Format giảm giá theo kiểu mã
-            let reduceText = isShop
-                ? `Giảm ${reduceValue}%`
-                : `Giảm ${reduceValue.toLocaleString('vi-VN')}₫`;
+            let reduceText;
+            if (reduceValue <= 100) {
+                reduceText = `Giảm ${reduceValue}%`;
+            } else if (reduceValue >= 1000) {
+                reduceText = `Giảm ${reduceValue.toLocaleString('vi-VN')}₫`;
+            } else {
+                // fallback cho các giá trị "lưng chừng" kiểu 100-999
+                reduceText = `Giảm ${reduceValue} đ`;
+            }
 
             const minOrder = minOrderValue.toLocaleString('vi-VN');
 
