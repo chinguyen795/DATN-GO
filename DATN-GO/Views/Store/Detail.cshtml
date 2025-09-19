@@ -34,7 +34,7 @@
                                 <h2 class="mb-1 text-danger">@Model.Name</h2>
                                 <p class="text-muted mb-0">
                                     <i class="bi bi-geo-alt-fill"></i>
-                                    @Model.Address
+                                    @Model.Province
                                 </p>
                             </div>
                         </div>
@@ -191,7 +191,7 @@
             : null;
 
             bool hasVariant = false;
-            decimal? displayPrice = product.CostPrice ?? 0m;
+            decimal? displayPrice = product.Price ?? 0m;
 
             // 👉 KHAI BÁO Ở OUTER SCOPE để dùng cho data-attrs bên dưới
             decimal? minPrice = null, maxPrice = null, priceVal = null;
@@ -211,18 +211,18 @@
                 hasVariant = isVar || (minPrice.HasValue && maxPrice.HasValue && minPrice != maxPrice);
 
                 // Giá hiển thị ưu tiên Price, rồi Min, rớt về product.CostPrice
-                displayPrice = priceVal ?? minPrice ?? product.CostPrice ?? 0m;
+                displayPrice = priceVal ?? minPrice ?? product.Price ?? 0m;
             }
             else
             {
                 // Không có info giá → cho là có variant để ép sang chi tiết (an toàn)
                 hasVariant = true;
-                displayPrice = product.CostPrice ?? 0m;
+                displayPrice = product.Price ?? 0m;
             }
 
             // ==== Giá gốc/discount demo (giữ nguyên logic cũ) ====
             var prodCost = ViewBag.DebugPrice ?? 0m;
-            var prodOriginal = product.OriginalPrice > 0 ? product.OriginalPrice : prodCost * 1.3m;
+            var prodOriginal = product.Price > 0 ? product.Price : prodCost * 1.3m;
             var prodDiscount = prodOriginal > prodCost ? Math.Round((prodOriginal - prodCost) / prodOriginal * 100) : 0;
 
             // ⭐ average rating
@@ -391,77 +391,102 @@
 </script>
 
 <script>
-    async function loadVouchers(storeId) {
-        try {
-            const res = await fetch(`/Store/Voucher/${storeId}`);
-            if (!res.ok) throw new Error("Không thể tải voucher");
+      async function loadVouchers(storeId) {
+      try {
+        const res = await fetch(`/Store/Voucher/${storeId}`);
+        if (!res.ok) throw new Error("Không thể tải voucher");
 
-            var resJson = await res.json();
-            const vouchers = JSON.parse(resJson);
-            const container = document.getElementById("voucherList");
+        // Trường hợp API trả JSON string bọc JSON => vẫn giữ nguyên như bạn làm
+        const resJson = await res.json();
+        const vouchers = JSON.parse(resJson);
 
-            if (!vouchers || vouchers.length === 0) {
-                container.innerHTML = `<p class="text-muted">Hiện chưa có voucher nào từ cửa hàng này.</p>`;
-                return;
-            }
-
-            container.innerHTML = "";
-
-            // Xử lý tuần tự để tránh vấn đề với async trong forEach
-            for (const voucher of vouchers) {
-                // Xử lý hiển thị giảm giá dựa trên type
-                const reduceText = (voucher.type === "percentage" || voucher.type === "Shop")
-                    ? `Giảm ${voucher.reduce}%`
-                    : `Giảm ${Number(voucher.reduce).toLocaleString()}₫`;
-
-                const minOrder = Number(voucher.minOrder).toLocaleString();
-                const endDate = new Date(voucher.endDate).toLocaleDateString("vi-VN");
-
-                // Kiểm tra voucher đã được lưu chưa
-                let isSaved = false;
-                try {
-                    const checkUrl = `/Voucher/CheckSaved?voucherId=${voucher.id}`;
-                    const checkResponse = await fetch(checkUrl);
-
-                    if (checkResponse.ok) {
-                        const checkResult = await checkResponse.json();
-                        isSaved = checkResult.isSaved === true;
-
-                    } else {
-                        console.error(`Failed to check voucher ${voucher.id}:`, checkResponse.status);
-                    }
-                } catch (error) {
-                    console.error(`Error checking voucher ${voucher.id}:`, error);
-                }
-
-                const buttonText = isSaved ? "Đã lưu" : "Lưu";
-                const buttonClass = isSaved ? "btn btn-secondary" : "btn btn-outline-danger";
-                const buttonDisabled = isSaved ? "disabled" : "";
-
-                const html = `
-                                <div class="voucher-item">
-                                    <div class="border rounded p-3 d-flex align-items-center justify-content-between bg-light" style="min-width: 320px;">
-                                        <div class="d-flex align-items-center gap-3">
-                                            <div class="text-danger" style="font-size: 2rem;">
-                                                <i class="bi bi-ticket-perforated-fill"></i>
-                                            </div>
-                                            <div>
-                                                <h6 class="mb-1">${reduceText}</h6>
-                                                <p class="text-muted small mb-0">Đơn tối thiểu: ${minOrder}₫</p>
-                                                <small class="text-danger">HSD: ${endDate}</small>
-                                            </div>
-                                        </div>
-                                        <button class="${buttonClass}" ${buttonDisabled} onclick="saveVoucher(${voucher.id}, this)">${buttonText}</button>
-                                    </div>
-                                </div>`;
-
-                container.insertAdjacentHTML("beforeend", html);
-            }
-        } catch (error) {
-            console.error(error);
-            document.getElementById("voucherList").innerHTML = `<p class="text-danger">Lỗi khi tải voucher.</p>`;
+        const container = document.getElementById("voucherList");
+        if (!vouchers || vouchers.length === 0) {
+          container.innerHTML = `<p class="text-muted">Hiện chưa có voucher nào từ cửa hàng này.</p>`;
+          return;
         }
+
+        // ===== Helpers (thêm mới) =====
+        const truthy = (v) => {
+          if (typeof v === 'boolean') return v;
+          if (typeof v === 'number') return v === 1;
+          if (typeof v === 'string') {
+            const s = v.trim().toLowerCase();
+            // các cách mô tả % hay gặp
+            return ['percent', 'percentage', '%', 'true', '1'].includes(s);
+          }
+          return false;
+        };
+        const getIsPercent = (v) => {
+          // Ưu tiên các tên field chuẩn; fallback nếu backend đổi casing
+          const raw = v.isPercentage ?? v.IsPercentage ?? v.discountType ?? v.DiscountType ?? v.type ?? v.Type;
+          // LƯU Ý: 'Shop' KHÔNG phải % — đừng đưa vào truthy
+          return truthy(raw);
+        };
+        const toVN = (n) => Number(n || 0).toLocaleString("vi-VN");
+
+        container.innerHTML = "";
+
+        for (const voucher of vouchers) {
+          const isPercent = getIsPercent(voucher);
+
+          // Giá trị giảm
+          let reduceVal = Number(voucher.reduce ?? voucher.Reduce ?? 0);
+          if (isPercent) {
+            // clamp 1–100 cho đẹp dữ liệu (nếu backend lỡ bắn lố)
+            reduceVal = Math.max(1, Math.min(100, Math.round(reduceVal)));
+          }
+
+          const reduceText = isPercent
+            ? `Giảm ${reduceVal}%`
+            : `Giảm ${toVN(reduceVal)}₫`;
+
+          const minOrder = toVN(voucher.minOrder ?? voucher.MinOrder ?? 0);
+          const endDate = new Date(voucher.endDate ?? voucher.EndDate).toLocaleDateString("vi-VN");
+
+          // ===== Giữ nguyên logic check “Đã lưu” của bạn =====
+          let isSaved = false;
+          try {
+            const checkUrl = `/Voucher/CheckSaved?voucherId=${voucher.id ?? voucher.Id}`;
+            const checkResponse = await fetch(checkUrl);
+            if (checkResponse.ok) {
+              const checkResult = await checkResponse.json();
+              isSaved = checkResult.isSaved === true;
+            }
+          } catch (error) {
+            console.error(`Error checking voucher ${voucher.id ?? voucher.Id}:`, error);
+          }
+
+          const buttonText = isSaved ? "Đã lưu" : "Lưu";
+          const buttonClass = isSaved ? "btn btn-secondary" : "btn btn-outline-danger";
+          const buttonDisabled = isSaved ? "disabled" : "";
+
+          const id = voucher.id ?? voucher.Id;
+
+          const html = `
+            <div class="voucher-item">
+              <div class="border rounded p-3 d-flex align-items-center justify-content-between bg-light" style="min-width: 320px;">
+                <div class="d-flex align-items-center gap-3">
+                  <div class="text-danger" style="font-size: 2rem;">
+                    <i class="bi bi-ticket-perforated-fill"></i>
+                  </div>
+                  <div>
+                    <h6 class="mb-1">${reduceText}</h6>
+                    <p class="text-muted small mb-0">Đơn tối thiểu: ${minOrder}₫</p>
+                    <small class="text-danger">HSD: ${endDate}</small>
+                  </div>
+                </div>
+                <button class="${buttonClass}" ${buttonDisabled} onclick="saveVoucher(${id}, this)">${buttonText}</button>
+              </div>
+            </div>`;
+          container.insertAdjacentHTML("beforeend", html);
+        }
+      } catch (error) {
+        console.error(error);
+        document.getElementById("voucherList").innerHTML = `<p class="text-danger">Lỗi khi tải voucher.</p>`;
+      }
     }
+
 
     document.addEventListener("DOMContentLoaded", function () {
         const storeId = @Model.Id
@@ -521,6 +546,7 @@
         }, 3000);
     }
 </script>
+
 
 
 

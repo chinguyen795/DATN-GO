@@ -1,7 +1,4 @@
 ﻿@model List<DATN_GO.Models.Vouchers>
-
-
-
 @using System.Globalization
 @{
     Layout = "~/Areas/Seller/Views/Shared/_LayoutSeller.cshtml";
@@ -910,55 +907,80 @@
 
     /* Gán formatter và đồng bộ hidden */
     function wireMoneyInput(display) {
+      if (!display || display._wiredMoney) return;  // tránh gắn trùng
+      display._wiredMoney = true;
+
       const hiddenId = display.dataset.moneyTarget;
-      const hidden = $id(hiddenId);
+      const hidden = document.getElementById(hiddenId);
       if (!hidden) return;
 
       if (hidden.value) display.value = vnGroup(hidden.value);
 
-      display.addEventListener('input', () => {
+      const onInput = () => {
         const raw = vnUnGroup(display.value);
         display.value = vnGroup(display.value);
         hidden.value = raw;
-      });
+      };
+      const onKey = (e) => { if (!/[0-9]/.test(e.key)) e.preventDefault(); };
 
-      display.addEventListener('keypress', (e) => {
-        if (!/[0-9]/.test(e.key)) e.preventDefault();
-      });
+      display.addEventListener('input', onInput);
+      display.addEventListener('keypress', onKey);
+
+      // store để tháo ra khi đổi mode
+      display._moneyHandlers = { onInput, onKey };
     }
 
-    /* Cấu hình Reduce: % hoặc VND (ADD: prefix '', EDIT: prefix 'edit') */
+    // ===== NEW: tháo toàn bộ listener tiền khi đổi mode =====
+    function unwireMoneyInput(display) {
+      if (!display || !display._wiredMoney) return display;
+      const { onInput, onKey } = display._moneyHandlers || {};
+      if (onInput)  display.removeEventListener('input', onInput);
+      if (onKey)    display.removeEventListener('keypress', onKey);
+      display._wiredMoney = false;
+      display._moneyHandlers = null;
+      return display;
+    }
+
+    // ===== PATCHED: hiển thị/ẩn đúng "Giảm tối đa" & quản lý listener đúng cách =====
     function configureReduceFormatting(isPercent, prefix) {
-      const disp    = $id(prefix + 'DiscountAmountDisplay');
-      const hid     = $id(prefix + 'DiscountAmount');
-      const maxWrap = $id(prefix ? 'editMaxDiscountGroup' : 'maxDiscountGroup');
-      const label   = $id(prefix ? 'editReduceLabel'     : 'reduceLabel');
-      const suffix  = $id(prefix ? 'editReduceSuffix'    : 'reduceSuffix');
+      let disp    = document.getElementById((prefix || '') + 'DiscountAmountDisplay');
+      const hid   = document.getElementById((prefix || '') + 'DiscountAmount');
+      const maxWrap = document.getElementById(prefix ? 'editMaxDiscountGroup' : 'maxDiscountGroup');
+      const label = document.getElementById(prefix ? 'editReduceLabel' : 'reduceLabel');
+      const suffix= document.getElementById(prefix ? 'editReduceSuffix' : 'reduceSuffix');
       if (!disp || !hid) return;
 
+      // gỡ listener tiền trước khi chuyển mode để tránh double-format
+      unwireMoneyInput(disp);
+
       if (isPercent) {
-        if (label)  label.textContent  = "Mức Giảm Giá (%)";
-        if (suffix) suffix.textContent = "%";
-        maxWrap?.classList.add('d-none');
+        // ===== % MODE =====
+        if (label)  label.textContent  = 'Mức Giảm Giá (%)';
+        if (suffix) suffix.textContent = '%';
+        maxWrap?.classList.remove('d-none');   // <-- SHOW khi %
 
         disp.placeholder = 'Nhập phần trăm (1 - 100)';
-        disp.value = hid.value || '';
+        // Ở %: hiển thị số thô, không chấm ngàn
+        disp.value = (hid.value || '').replace(/\D/g, '');
         disp.oninput = () => {
           disp.value = disp.value.replace(/\D/g, '').slice(0, 3);
           let v = parseInt(disp.value || '0', 10);
           if (isNaN(v)) v = 0;
           v = Math.max(1, Math.min(100, v));
           hid.value = v.toString();
-          disp.value = hid.value;
+          disp.value = hid.value; // đồng bộ lại UI
         };
       } else {
-        if (label)  label.textContent  = "Mức Giảm Giá (VNĐ)";
-        if (suffix) suffix.textContent = "VND";
-        maxWrap?.classList.remove('d-none');
+        // ===== VND MODE =====
+        if (label)  label.textContent  = 'Mức Giảm Giá (VNĐ)';
+        if (suffix) suffix.textContent = 'VND';
+        maxWrap?.classList.add('d-none');      // <-- HIDE khi tiền mặt
 
         disp.placeholder = 'Nhập số tiền giảm (>= 1.000)';
-        disp.oninput = null;
+        disp.oninput = null; // bỏ handler % nếu có
+        // gắn formatter tiền (một lần)
         wireMoneyInput(disp);
+        // hiển thị lại theo định dạng tiền
         disp.value = vnGroup(hid.value || '');
       }
     }

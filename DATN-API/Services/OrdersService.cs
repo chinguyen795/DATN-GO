@@ -789,7 +789,7 @@ namespace DATN_API.Services
             decimal total = order.TotalPrice;
             bool didRefund = false;
 
-            if (order.ShippingMethodId == 1 && total > 0)
+            if (order.PaymentStatus == "Paid" && total > 0)
             {
                 if (order.User == null)
                 {
@@ -907,7 +907,7 @@ namespace DATN_API.Services
             decimal total = order.TotalPrice;
             bool didRefund = false;
 
-            if (order.ShippingMethodId == 1 && total > 0)
+            if (order.PaymentStatus == "Paid" && total > 0)
             {
                 if (order.User == null)
                 {

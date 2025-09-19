@@ -80,6 +80,7 @@ namespace DATN_GO.Controllers
                     Bank = store.Bank,
                     BankAccount = store.BankAccount,
                     BankAccountOwner = store.BankAccountOwner,
+                    Province = store.Province,
 
                     AverageRating = Math.Round(avg, 1),
                     ReviewCount = cnt,
@@ -137,8 +138,17 @@ namespace DATN_GO.Controllers
                         .ToList();
                 }
 
+                // Lấy giá theo productId — cách đơn giản, tuần tự (có thể chậm nếu list dài)
+                foreach (var p in products)
+                {
+                    var price = await _priceService.GetPriceByProductIdAsync(p.Id);
+                    // Tùy model của bạn: nếu Price là decimal?:
+                    p.Price = price; 
+                }
+
                 store.Products = products;
             }
+
 
             // 3) Vouchers
             var voucherResponse = await _http.GetAsync($"/api/vouchers/shop/{id}");
@@ -218,7 +228,7 @@ namespace DATN_GO.Controllers
                     var prices2 = await _priceService.GetPriceByProductIdAsync(p.Id);
                     ViewBag.DebugPrice = prices2;
                     // ❌ Không có variant → single price fallback
-                    var single = p.CostPrice ?? 0m;
+                    var single = p.Price ?? 0m;
                     minMaxPriceDict[p.Id] = new
                     {
                         IsVariant = false,
@@ -231,7 +241,7 @@ namespace DATN_GO.Controllers
                 catch
                 {
                     // Nếu lỗi thì fallback luôn về single price
-                    var single = p.CostPrice ?? 0m;
+                    var single = p.Price ?? 0m;
                     minMaxPriceDict[p.Id] = new
                     {
                         IsVariant = false,

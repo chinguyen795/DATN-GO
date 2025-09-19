@@ -156,19 +156,17 @@ namespace DATN_GO.Controllers
         {
             var product = await _productService.GetProductByIdAsync(id);
             if (product == null) return NotFound();
-            // Lấy slug từ DB
-            string expectedSlug = product.Slug ?? string.Empty;
 
+            // Redirect đúng slug
+            string expectedSlug = product.Slug ?? string.Empty;
             if (string.IsNullOrEmpty(slug) || slug != expectedSlug)
             {
                 var targetUrl = Url.RouteUrl("ProductDetailBySlug", new { slug = expectedSlug, id });
-
-                if (!string.IsNullOrEmpty(targetUrl))
-                    return RedirectPermanent(targetUrl); 
-
+                if (!string.IsNullOrEmpty(targetUrl)) return RedirectPermanent(targetUrl);
                 return RedirectToRoutePermanent("ProductDetailBySlug", new { slug = expectedSlug, id });
             }
 
+            // ==== Product basics ====
             ViewBag.ProductName = product.Name;
             ViewBag.ProductBrand = product.Brand;
             ViewBag.ProductPlaceOfOrigin = product.PlaceOfOrigin;
@@ -179,9 +177,10 @@ namespace DATN_GO.Controllers
             ViewBag.CategoryName = categoryResult.Success ? categoryResult.Data.Name : "Không có danh mục";
             ViewBag.Category = categoryResult.Data;
 
-            // Images
+            // Variants + combinations + images (LUÔN load trước check session)
             var productVariants = await _productVariantService.GetByProductIdAsync(id);
             var variantCombinations = await _productVariantService.GetVariantCombinationsByProductIdAsync(id);
+
             var allImages = new List<string>();
             if (!string.IsNullOrEmpty(product.MainImage)) allImages.Add(product.MainImage);
             if (productVariants != null)
@@ -191,73 +190,7 @@ namespace DATN_GO.Controllers
             }
             ViewBag.Images = allImages;
 
-            // Store info
-            var store = await _storeService.GetStoreByIdAsync(product.StoreId);
-            if (store != null)
-            {
-                ViewBag.StoreName = store.Name;
-                ViewBag.StoreLogo = store.Avatar ?? "/image/default-logo.png";
-                ViewBag.StoreAddress = store.Province ?? "Chưa cập nhật địa chỉ";
-            }
-
-            ViewBag.MinMaxPrice = await _priceService.GetMinMaxPriceByProductIdAsync(id);
-
-            // Reviews
-            ViewBag.Reviews = await _reviewService.GetReviewsByProductIdAsync(id) ?? new List<ReviewViewModel>();
-            var reviews = await _reviewService.GetReviewsByProductIdAsync(id) ?? new List<ReviewViewModel>();
-            ViewBag.PurchaseCount = reviews.FirstOrDefault()?.PurchaseCount ?? 0;
-
-       
-            var sameStore = await _productService.GetProductsByStoreIdAsync(product.StoreId)
-                            ?? new List<Products>();
-
-            // Nếu bạn có enum ProductStatus.Approved trong client model:
-            var suggested = sameStore
-                .Where(p => p.Id != product.Id && p.Quantity > 0 /* ... */)
-                .OrderBy(_ => Guid.NewGuid())
-                .Take(4) // 👈 chỉ lấy 4
-                .Select(p => new { p.Id, p.Name, Image = p.MainImage, Price = p.CostPrice ?? 0m })
-                .ToList();
-            ViewBag.SuggestedByStore = suggested;
-
-
-            // =========================
-
-            // ===== Lấy UserId từ Session =====
-            if (!HttpContext.Session.TryGetValue("Id", out byte[] idBytes) ||
-                !int.TryParse(Encoding.UTF8.GetString(idBytes), out int userId))
-            {
-                ViewBag.CanReview = false;
-                ViewBag.VariantOptions = new List<VariantWithValuesViewModel>();
-                ViewBag.VariantCombinations = variantCombinations;
-                return View(product);
-            }
-
-            var completedOrders = await _reviewService.GetCompletedOrdersByUserAsync(userId);
-
-            var productOrders = completedOrders
-                .Where(o => o.Products.Any(p => p.ProductId == id))
-                .Select(o => o.OrderId)
-                .ToList();
-
-            if (!productOrders.Any())
-            {
-                ViewBag.CanReview = false;
-                ViewBag.OrderId = null;
-            }
-            else
-            {
-                var reviewedOrderIds = (await _reviewService.GetReviewsByProductIdAsync(id))
-                    .Where(r => r.UserId == userId)
-                    .Select(r => r.OrderId)
-                    .ToList();
-
-                var orderNotReviewed = productOrders.FirstOrDefault(o => !reviewedOrderIds.Contains(o));
-                ViewBag.OrderId = orderNotReviewed;
-                ViewBag.CanReview = orderNotReviewed != 0;
-            }
-
-            // Variants
+            // Build VariantOptions cho MỌI người (kể cả chưa login)
             var variants = await _variantService.GetByProductIdAsync(id);
             var variantViewModels = new List<VariantWithValuesViewModel>();
             foreach (var variant in variants)
@@ -278,8 +211,71 @@ namespace DATN_GO.Controllers
             ViewBag.VariantOptions = variantViewModels;
             ViewBag.VariantCombinations = variantCombinations;
 
+            // Store info
+            var store = await _storeService.GetStoreByIdAsync(product.StoreId);
+            if (store != null)
+            {
+                ViewBag.StoreName = store.Name;
+                ViewBag.StoreLogo = store.Avatar ?? "/image/default-logo.png";
+                ViewBag.StoreAddress = store.Province ?? "Chưa cập nhật địa chỉ";
+            }
+
+            // Giá min/max
+            ViewBag.MinMaxPrice = await _priceService.GetMinMaxPriceByProductIdAsync(id);
+
+            // Reviews (đừng gọi 2 lần)
+            var reviews = await _reviewService.GetReviewsByProductIdAsync(id) ?? new List<ReviewViewModel>();
+            ViewBag.Reviews = reviews;
+            ViewBag.PurchaseCount = reviews.FirstOrDefault()?.PurchaseCount ?? 0;
+
+            // Gợi ý cùng cửa hàng
+            var sameStore = await _productService.GetProductsByStoreIdAsync(product.StoreId) ?? new List<Products>();
+            var suggested = sameStore
+                .Where(p => p.Id != product.Id && p.Quantity > 0)
+                .OrderBy(_ => Guid.NewGuid())
+                .Take(4)
+                .Select(p => new { p.Id, p.Name, Image = p.MainImage, Price = p.CostPrice ?? 0m })
+                .ToList();
+            ViewBag.SuggestedByStore = suggested;
+
+            // ===== Check session chỉ để quyết định quyền review, KHÔNG ảnh hưởng Variant =====
+            if (!HttpContext.Session.TryGetValue("Id", out byte[] idBytes) ||
+                !int.TryParse(Encoding.UTF8.GetString(idBytes), out int userId))
+            {
+                // Chưa đăng nhập => Không review được, NHƯNG vẫn thấy Variant
+                ViewBag.CanReview = false;
+                ViewBag.OrderId = null;
+
+                return View(product);
+            }
+
+            // Đã đăng nhập => check đơn hoàn tất để mở review
+            var completedOrders = await _reviewService.GetCompletedOrdersByUserAsync(userId);
+            var productOrders = completedOrders
+                .Where(o => o.Products.Any(p => p.ProductId == id))
+                .Select(o => o.OrderId)
+                .ToList();
+
+            if (!productOrders.Any())
+            {
+                ViewBag.CanReview = false;
+                ViewBag.OrderId = null;
+            }
+            else
+            {
+                var reviewedOrderIds = reviews
+                    .Where(r => r.UserId == userId)
+                    .Select(r => r.OrderId)
+                    .ToList();
+
+                var orderNotReviewed = productOrders.FirstOrDefault(o => !reviewedOrderIds.Contains(o));
+                ViewBag.OrderId = orderNotReviewed;
+                ViewBag.CanReview = orderNotReviewed != 0;
+            }
+
             return View(product);
         }
+
 
 
     }

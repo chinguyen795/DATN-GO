@@ -6,9 +6,10 @@
         public string Name { get; set; }
         public string? MainImage { get; set; }
         public string? Description { get; set; }
-        public decimal OriginalPrice => CostPrice.HasValue
-    ? Math.Round(CostPrice.Value * 1.3m)
+        public decimal OriginalPrice => Price.HasValue
+    ? Math.Round(Price.Value * 1.3m)
     : 0;
+        public decimal? Price { get; set; }
         public string? Brand { get; set; }
         public decimal? Weight { get; set; }
         public string? Slug { get; set; }

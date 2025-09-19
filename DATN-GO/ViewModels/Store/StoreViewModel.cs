@@ -12,9 +12,11 @@ namespace DATN_GO.ViewModels.Store
         public string? Address { get; set; }
         public float Longitude { get; set; }
         public float Latitude { get; set; }
+
         public string? Avatar { get; set; }
         public StoreStatus Status { get; set; }
         public string? Slug { get; set; }
+        public string? Province { get; set; }
         public string? CoverPhoto { get; set; }
         public string? BankAccount { get; set; }
         public string? Bank { get; set; }

@@ -360,12 +360,13 @@
                                                                 <td class="fw-semibold">@FormatCurrency(order.TotalPrice)</td>
                                                                 <td>@order.CreatedAt.ToString("dd/MM/yyyy")</td>
                                                                 <td>
-                                                                    <button class="btn btn-sm btn-success rounded-pill me-2" type="button">
+                                                                    <button class="btn btn-sm btn-success rounded-pill me-2 js-accept-order" type="button">
                                                                         Xác nhận
                                                                     </button>
-                                                                    <button class="btn btn-sm btn-danger rounded-pill" type="button" data-bs-toggle="modal" data-bs-target="#rejectOrderModal">
+                                                                    <button class="btn btn-sm btn-danger rounded-pill js-reject-order" type="button" data-bs-toggle="modal" data-bs-target="#rejectOrderModal">
                                                                         Từ chối
                                                                     </button>
+
                                                                 </td>
                                                             </tr>
                                                         }
@@ -712,6 +713,25 @@
         </main>
     </div>
 </div>
+<!-- Modal Xác nhận hủy đơn (ở CHI TIẾT) -->
+<div class="modal fade" id="cancelOrderConfirmModal" tabindex="-1" aria-labelledby="cancelOrderConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger">
+                <h5 class="modal-title text-white" id="cancelOrderConfirmModalLabel">Xác nhận hủy đơn</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                Bạn có chắc chắn muốn hủy đơn hàng này không?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" id="btnConfirmCancelInDetails" class="btn btn-danger btn-pill">Xác nhận hủy</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Modal Xác nhận đơn hàng -->
 <div class="modal fade" id="confirmOrderModal" tabindex="-1" role="dialog" aria-labelledby="confirmOrderModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -878,18 +898,32 @@
             updateOrderStatus(orderId, 'ChoLayHang'); // Gọi hàm cập nhật trạng thái
             confirmOrderModal.hide(); // Đóng modal
         });
-        // Gán sự kiện mở modal từ chối khi bấm nút từ chối (btn-danger) trên bảng
-        document.querySelectorAll('.btn-danger').forEach(button => {
-            button.addEventListener('click', function (e) {
-                e.stopPropagation();
-                const tr = this.closest('tr');
-                if (!tr) return;
-                const orderId = tr.getAttribute('data-order-id');
-                if (!orderId) return;
-                rejectOrderModalEl.dataset.orderId = orderId; // Lưu orderId vào dataset của modal
-                rejectOrderModal.show();
-            });
-        });
+           // Chỉ bind cho nút "Xác nhận" trong bảng Chờ xử lý
+    document.querySelectorAll('.js-accept-order').forEach(button => {
+      button.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const tr = this.closest('tr');
+        if (!tr) return;
+        const orderId = tr.getAttribute('data-order-id');
+        if (!orderId) return;
+        confirmOrderModalEl.dataset.orderId = orderId;
+        confirmOrderModal.show();
+      });
+    });
+
+    // Chỉ bind cho nút "Từ chối" trong bảng Chờ xử lý
+    document.querySelectorAll('.js-reject-order').forEach(button => {
+      button.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const tr = this.closest('tr');
+        if (!tr) return;
+        const orderId = tr.getAttribute('data-order-id');
+        if (!orderId) return;
+        rejectOrderModalEl.dataset.orderId = orderId;
+        rejectOrderModal.show();
+      });
+    });
+
         document.getElementById('btnConfirmReject').addEventListener('click', function () {
             const orderId = rejectOrderModalEl.dataset.orderId;
             if (!orderId) {
@@ -938,51 +972,94 @@
             }
         });
             // --- Nút Hủy đơn trong Modal chi tiết ---
-    document.getElementById("btnCancelOrder").addEventListener("click", async function () {
-        const orderIdText = document.getElementById("modalOrderId").textContent;
-        const orderId = orderIdText.replace("#", "").trim();
-        if (!orderId) {
-            showCustomToast("Không tìm thấy mã đơn", false);
-            return;
-        }
+        // --- Nút Hủy đơn trong Modal chi tiết ---
+    const cancelOrderConfirmModalEl = document.getElementById('cancelOrderConfirmModal');
+    const cancelOrderConfirmModal = new bootstrap.Modal(cancelOrderConfirmModalEl);
 
-        if (!confirm("Bạn có chắc chắn muốn hủy đơn hàng này?")) return;
-
-        try {
-            // ⚡ Gọi API cancel by seller
-            const resp = await fetch(`${API_BASE_URL}/orders/${orderId}/cancel/seller/${userId}`, {
-                method: "POST"
-            });
-
-            if (!resp.ok) {
-                const err = await resp.json().catch(() => ({}));
-                throw new Error(err.message || "Hủy đơn thất bại");
-            }
-
-            const data = await resp.json();
-            showCustomToast(data.message || "Đã hủy đơn hàng!", true);
-
-            // 🔄 Cập nhật badge trạng thái trong modal
-            const [statusText, statusClass] = mapStatus("DaHuy");
-            const modalStatus = document.getElementById("modalStatus");
-            modalStatus.textContent = statusText;
-            modalStatus.className = "";
-            modalStatus.classList.add("badge", ...statusClass.split(" "), "rounded-pill", "px-3", "py-2");
-
-            // 🔄 Cập nhật badge trạng thái ngoài bảng
-            const row = document.querySelector(`tr[data-order-id="${orderId}"]`);
-            if (row) {
-                const statusCell = row.querySelector(".order-status");
-                if (statusCell) {
-                    statusCell.textContent = statusText;
-                    statusCell.className = "";
-                    statusCell.classList.add("badge", ...statusClass.split(" "), "rounded-pill", "px-3", "py-2");
-                }
-            }
-        } catch (error) {
-            showCustomToast("❌ Lỗi: " + error.message, false);
-        }
+    document.getElementById("btnCancelOrder").addEventListener("click", function () {
+      cancelOrderConfirmModal.show();
     });
+
+    document.getElementById("btnConfirmCancelInDetails").addEventListener("click", async function () {
+      const orderIdText = document.getElementById("modalOrderId").textContent;
+      const orderId = orderIdText.replace("#", "").trim();
+      if (!orderId) {
+        showCustomToast("Không tìm thấy mã đơn", false);
+        return;
+      }
+
+      // chống double click + feedback UX
+      const btn = this;
+      const oldHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang hủy...';
+
+      try {
+        const resp = await fetch(`${API_BASE_URL}/orders/${orderId}/cancel/seller/${userId}`, {
+          method: "POST"
+        });
+
+        // Nếu fail -> lấy message (có thể là text, có thể là json)
+        if (!resp.ok) {
+          let message = "Hủy đơn thất bại";
+          const ct = resp.headers.get('content-type') || '';
+          if (ct.includes('application/json')) {
+            const j = await resp.json().catch(() => ({}));
+            if (j && j.message) message = j.message;
+          } else {
+            const t = await resp.text().catch(() => '');
+            if (t) message = t;
+          }
+          throw new Error(message);
+        }
+
+        // Nếu success: có thể 200(JSON) hoặc 204(No Content)
+        let data = { message: "Đã hủy đơn hàng!", status: "DaHuy" };
+        const ct = resp.headers.get('content-type') || '';
+        if (ct.includes('application/json')) {
+          const j = await resp.json().catch(() => null);
+          if (j) data = { ...data, ...j };
+        }
+        location.reload();
+        showCustomToast(data.message || "Đã hủy đơn hàng!", true);
+
+        // Cập nhật trạng thái trong modal chi tiết
+        const [statusText, statusClass] = mapStatus("DaHuy");
+        const modalStatus = document.getElementById("modalStatus");
+        modalStatus.textContent = statusText;
+        modalStatus.className = "";
+        modalStatus.classList.add("badge", ...statusClass.split(" "), "rounded-pill", "px-3", "py-2");
+
+        // Cập nhật badge ở hàng tương ứng trong bảng
+        const row = document.querySelector(`tr[data-order-id="${orderId}"]`);
+        if (row) {
+          // Ưu tiên phần tử có class .order-status; nếu chưa có thì tìm .badge trong cột trạng thái
+          const statusBadge =
+            row.querySelector(".order-status") ||
+            row.querySelector("td:last-child .badge") ||
+            row.querySelector(".badge");
+
+          if (statusBadge) {
+            statusBadge.textContent = statusText;
+            statusBadge.className = "";
+            statusBadge.classList.add("badge", ...statusClass.split(" "), "rounded-pill", "px-3", "py-2");
+          }
+        }
+
+        // đóng modal confirm
+         
+        // (tùy chọn) đóng luôn modal chi tiết:
+        // bootstrap.Modal.getInstance(document.getElementById('orderDetailsModal'))?.hide();
+        location.reload();
+      } catch (error) {
+        showCustomToast("❌ Lỗi: " + error.message, false);
+           location.reload();
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = oldHtml;
+      }
+    });
+
 
         // --- PHẦN QUẢN LÝ THỐNG KÊ ---
         const userId = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(userIdStr));

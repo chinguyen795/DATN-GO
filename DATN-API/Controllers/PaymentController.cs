@@ -154,12 +154,12 @@ namespace DATN_API.Controllers
                 var storeGrandTotal = (long)Math.Max(0, storeSubTotal + storeShipFee - storeVoucherReduce);
                 totalForAllOrders += storeGrandTotal;
                 var shipMethod = await _db.ShippingMethods
-                    .FirstOrDefaultAsync(sm => sm.MethodName == "GHTK_AUTO");
-
+.FirstOrDefaultAsync(sm => sm.StoreId == storeId && sm.MethodName == "GHTK_AUTO");
                 if (shipMethod == null)
                 {
                     shipMethod = new ShippingMethods
                     {
+                        StoreId = storeId,
                         MethodName = "GHTK_AUTO",
                         Price = 0
                     };
@@ -394,15 +394,13 @@ namespace DATN_API.Controllers
                     var storeGrandTotal = (long)Math.Max(0, storeSubTotal + storeShippingFee - storeVoucherReduce);
 
                     var shipMethod = await _db.ShippingMethods
-                        .FirstOrDefaultAsync(sm => sm.StoreId == storeId && sm.MethodName == "GHTK_AUTO");
-
+                   .FirstOrDefaultAsync(sm => sm.StoreId == storeId && sm.MethodName == "GHTK_AUTO");
                     if (shipMethod == null)
                     {
                         shipMethod = new ShippingMethods { StoreId = storeId, MethodName = "GHTK_AUTO", Price = 0 };
                         _db.ShippingMethods.Add(shipMethod);
                         await _db.SaveChangesAsync();
                     }
-
                     var order = new Orders
                     {
                         UserId = req.UserId,

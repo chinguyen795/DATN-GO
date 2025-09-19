@@ -17,6 +17,9 @@ namespace DATN_GO.ViewModels.Store
         public float Rating { get; set; }
         public string? District { get; set; }
 
+        public string? Province { get; set; }
+
+
         public StoreStatus Status { get; set; }
         public string? StatusText => Status.GetDisplayName();
         public string? Bank { get; set; }
