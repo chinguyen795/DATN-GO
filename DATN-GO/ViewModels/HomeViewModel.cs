@@ -28,7 +28,9 @@ namespace DATN_GO.ViewModels
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
-        public string? Address { get; set; }
+        public string? Ward { get; set; }
+        public string? District { get; set; }
+        public string? Province { get; set; }
         public string? Avatar { get; set; }
         public float Rating { get; set; }
         public string? Status { get; set; }
@@ -43,6 +45,7 @@ namespace DATN_GO.ViewModels
         public decimal Price { get; set; }
         public decimal? OldPrice { get; set; }
         public double Rating { get; set; }
+        public MinMaxPriceResponse PriceInfo { get; set; } = new();
     }
     public class SearchViewModel
     {
@@ -50,4 +53,5 @@ namespace DATN_GO.ViewModels
         public List<ProductHomeViewModel> Products { get; set; } = new();
         public List<StoreHomeViewModel> Stores { get; set; } = new();
     }
+
 }

@@ -46,7 +46,9 @@
                                  style="width:120px;height:120px;object-fit:cover;" />
                             <div class="card-body">
                                 <h5 class="card-title text-truncate">@s.Name</h5>
-                                <p class="small text-muted mb-2">@s.Address</p>
+                                <p class="small text-muted mb-2">@s.Ward</p>
+                                <p class="small text-muted mb-2">@s.District</p>
+                                <p class="small text-muted mb-2">@s.Province</p>
                                 <p class="mb-3">Đánh giá: @s.Rating.ToString("0.0")</p>
                                 <a asp-controller="Store" asp-action="DetailProducts" asp-route-id="@s.Id"
                                    class="btn btn-outline-primary w-100">Xem chi tiết</a>

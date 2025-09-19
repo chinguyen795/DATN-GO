@@ -2004,11 +2004,13 @@
             {
                 "DistrictName": "TP Vị Thanh",
                 "Wards": [
-                    { "WardName": "Phường I" },
-                    { "WardName": "Phường III" },
-                    { "WardName": "Phường IV" },
-                    { "WardName": "Phường V" },
-                    { "WardName": "Phường VII" },
+                    { "WardName": "Phường 1" },
+                    { "WardName": "Phường 2" },
+                    { "WardName": "Phường 3" },
+                    { "WardName": "Phường 4" },
+                    { "WardName": "Phường 5" },
+                    { "WardName": "Phường 6" },
+                    { "WardName": "Phường 7" },
                     { "WardName": "Xã Hỏa Lựu" },
                     { "WardName": "Xã Hỏa Tiến" },
                     { "WardName": "Xã Tân Tiến" },

@@ -3,7 +3,6 @@
 
 @{
     ViewData["Title"] = "Home Page";
-    var priceDict = ViewBag.MinMaxPriceDict as System.Collections.IDictionary;
 }
 <style>
     .text-truncate-1 {
@@ -217,9 +216,11 @@
                                     <p class="card-text text-muted small mb-2 text-truncate-1"
                                        data-bs-toggle="tooltip"
                                        data-bs-container="body"
-                                       title="@store.Address">
-                                        <i class="bi bi-geo-alt-fill icon-sm"></i> @store.Address
+                                       title="@($"{store.Ward}, {store.District}, {store.Province}")">
+                                        <i class="bi bi-geo-alt-fill icon-sm"></i>
+                                        @store.Ward, @store.District, @store.Province
                                     </p>
+
 
                                     <!-- Đánh giá -->
                                     <div class="d-flex align-items-center mb-2"
@@ -278,28 +279,29 @@
         <div class="row g-4">
             @foreach (var product in Model.SuggestedProducts.Take(4))
             {
-                // Lấy priceInfo dạng dynamic từ ViewBag.MinMaxPriceDict
-                dynamic priceInfo = (priceDict != null && priceDict.Contains(product.Id))
-                ? priceDict[product.Id]
-                : null;
+                var info = product.PriceInfo;
 
-                bool hasVariant = false;
-                if (priceInfo != null)
-                {
-                    bool isVar = false;
-                    try { isVar = (bool)priceInfo.IsVariant; } catch { }
+                // ⭐ Lấy giá min/max từ PriceInfo
+                decimal? min = info?.MinPrice ?? info?.Price ?? product.Price;
+                decimal? max = info?.MaxPrice ?? info?.Price ?? product.Price;
 
-                    decimal? min = null, max = null;
-                    try { min = (decimal?)priceInfo.MinPrice; } catch { }
-                    try { max = (decimal?)priceInfo.MaxPrice; } catch { }
+                bool hasVariant = info?.IsVariant == true || (min.HasValue && max.HasValue && min.Value != max.Value);
 
-                    hasVariant = isVar || (min.HasValue && max.HasValue && min != max);
-                }
-                else
-                {
-                    // Không có thông tin giá → để an toàn cho sang chi tiết
-                    hasVariant = true;
-                }
+                // Tooltip: nếu có variant nhiều giá → hiển thị range
+                var tooltipText = (min.HasValue && min > 0)
+                ? (hasVariant && max.HasValue && max.Value > min.Value
+                ? $"{min.Value:N0} - {max.Value:N0} đ"
+                : $"{min.Value:N0} đ")
+                : "Chưa có giá";
+
+                // ⭐ Hiển thị chính:
+                // - Nếu có nhiều variant giá khác nhau → hiện giá min
+                // - Nếu chỉ 1 giá → hiện đúng giá đó
+                var displayText = (min.HasValue && min > 0)
+                ? (hasVariant && max.HasValue && max.Value > min.Value
+                ? $"{min.Value:N0} đ"
+                : $"{min.Value:N0} đ")
+                : "Chưa có giá";
 
                 <div class="col-xl-3 col-lg-4 col-md-6">
                     <div class="product-card card h-100 border-0 shadow-sm hover-scale">
@@ -310,24 +312,19 @@
                                      style="height: 200px; object-fit: cover;"
                                      alt="@product.Name"
                                      data-bs-toggle="tooltip"
-                                     data-bs-container="body"
                                      title="@product.Name" />
                             </a>
                         </div>
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <!-- Category -->
                                 <span class="badge bg-light text-danger"
                                       data-bs-toggle="tooltip"
-                                      data-bs-container="body"
                                       title="@product.CategoryName">
                                     @product.CategoryName
                                 </span>
 
-                                <!-- Rating -->
                                 <div class="rating text-warning d-flex align-items-center"
                                      data-bs-toggle="tooltip"
-                                     data-bs-container="body"
                                      title="@(product.Rating <= 0 ? "Chưa có đánh giá" : $"Đánh giá: {product.Rating:0.0} sao")">
                                     @if (product.Rating <= 0)
                                     {
@@ -341,23 +338,19 @@
                                 </div>
                             </div>
 
-                            <!-- Tên sản phẩm -->
                             <h5 class="card-title fw-bold mb-1 text-truncate-1">
                                 <a asp-controller="Products"
                                    asp-action="DetailProducts"
                                    asp-route-id="@product.Id"
                                    class="text-dark text-decoration-none"
                                    data-bs-toggle="tooltip"
-                                   data-bs-container="body"
                                    title="@product.Name">
                                     @product.Name
                                 </a>
                             </h5>
 
-                            <!-- Tên cửa hàng -->
                             <p class="card-text text-muted small mb-2 text-truncate-1"
                                data-bs-toggle="tooltip"
-                               data-bs-container="body"
                                title="@product.StoreName">
                                 @product.StoreName
                             </p>
@@ -366,21 +359,22 @@
                             <div>
                                 <div class="d-flex justify-content-between align-items-center mb-2"
                                      data-bs-toggle="tooltip"
-                                     data-bs-container="body"
-                                     title="@(product.Price > 0 ? product.Price.ToString("N0") + " đ" : "Chưa có giá")">
-                                    <span class="text-danger fw-bold">
-                                        @product.Price.ToString("N0")đ
-                                    </span>
+                                     title="@tooltipText">
+                                    @if (min.HasValue && min > 0)
+                                    {
+                                        <span class="text-danger fw-bold">@displayText</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Chưa có giá</span>
+                                    }
                                 </div>
 
-                                <!-- Nút theo cột -->
                                 <div class="d-grid gap-2">
                                     <button class="btn btn-crimson btn-sm rounded-pill add-to-cart-btn"
                                             type="button"
                                             data-product-id="@product.Id"
                                             data-has-variant="@(hasVariant.ToString().ToLower())"
-                                            data-bs-toggle="tooltip"
-                                            data-bs-container="body"
                                             title="Thêm sản phẩm @product.Name vào giỏ">
                                         <i class="bi bi-cart-plus icon-sm"></i> Thêm
                                     </button>
@@ -389,8 +383,6 @@
                                             type="button"
                                             data-product-id="@product.Id"
                                             data-has-variant="@(hasVariant.ToString().ToLower())"
-                                            data-bs-toggle="tooltip"
-                                            data-bs-container="body"
                                             title="Mua ngay sản phẩm @product.Name">
                                         Mua ngay
                                     </button>
@@ -407,6 +399,10 @@
         <p class="text-muted">Chưa có sản phẩm gợi ý.</p>
     }
 </section>
+
+
+
+
 
 
 <!-- Thịnh hành -->
@@ -467,28 +463,29 @@
         <div class="row g-4">
             @foreach (var product in Model.SuggestedProducts.Take(4))
             {
-                // Lấy priceInfo dạng dynamic từ ViewBag.MinMaxPriceDict
-                dynamic priceInfo = (priceDict != null && priceDict.Contains(product.Id))
-                ? priceDict[product.Id]
-                : null;
+                var info = product.PriceInfo;
 
-                bool hasVariant = false;
-                if (priceInfo != null)
-                {
-                    bool isVar = false;
-                    try { isVar = (bool)priceInfo.IsVariant; } catch { }
+                // ⭐ Lấy giá min/max từ PriceInfo
+                decimal? min = info?.MinPrice ?? info?.Price ?? product.Price;
+                decimal? max = info?.MaxPrice ?? info?.Price ?? product.Price;
 
-                    decimal? min = null, max = null;
-                    try { min = (decimal?)priceInfo.MinPrice; } catch { }
-                    try { max = (decimal?)priceInfo.MaxPrice; } catch { }
+                bool hasVariant = info?.IsVariant == true || (min.HasValue && max.HasValue && min.Value != max.Value);
 
-                    hasVariant = isVar || (min.HasValue && max.HasValue && min != max);
-                }
-                else
-                {
-                    // Không có thông tin giá → để an toàn cho sang chi tiết
-                    hasVariant = true;
-                }
+                // Tooltip: nếu có variant nhiều giá → hiển thị range
+                var tooltipText = (min.HasValue && min > 0)
+                ? (hasVariant && max.HasValue && max.Value > min.Value
+                ? $"{min.Value:N0} - {max.Value:N0} đ"
+                : $"{min.Value:N0} đ")
+                : "Chưa có giá";
+
+                // ⭐ Hiển thị chính:
+                // - Nếu có nhiều variant giá khác nhau → hiện giá min
+                // - Nếu chỉ 1 giá → hiện đúng giá đó
+                var displayText = (min.HasValue && min > 0)
+                ? (hasVariant && max.HasValue && max.Value > min.Value
+                ? $"{min.Value:N0} đ"
+                : $"{min.Value:N0} đ")
+                : "Chưa có giá";
 
                 <div class="col-xl-3 col-lg-4 col-md-6">
                     <div class="product-card card h-100 border-0 shadow-sm hover-scale">
@@ -499,24 +496,19 @@
                                      style="height: 200px; object-fit: cover;"
                                      alt="@product.Name"
                                      data-bs-toggle="tooltip"
-                                     data-bs-container="body"
                                      title="@product.Name" />
                             </a>
                         </div>
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <!-- Category -->
                                 <span class="badge bg-light text-danger"
                                       data-bs-toggle="tooltip"
-                                      data-bs-container="body"
                                       title="@product.CategoryName">
                                     @product.CategoryName
                                 </span>
 
-                                <!-- Rating -->
                                 <div class="rating text-warning d-flex align-items-center"
                                      data-bs-toggle="tooltip"
-                                     data-bs-container="body"
                                      title="@(product.Rating <= 0 ? "Chưa có đánh giá" : $"Đánh giá: {product.Rating:0.0} sao")">
                                     @if (product.Rating <= 0)
                                     {
@@ -530,23 +522,19 @@
                                 </div>
                             </div>
 
-                            <!-- Tên sản phẩm -->
                             <h5 class="card-title fw-bold mb-1 text-truncate-1">
                                 <a asp-controller="Products"
                                    asp-action="DetailProducts"
                                    asp-route-id="@product.Id"
                                    class="text-dark text-decoration-none"
                                    data-bs-toggle="tooltip"
-                                   data-bs-container="body"
                                    title="@product.Name">
                                     @product.Name
                                 </a>
                             </h5>
 
-                            <!-- Tên cửa hàng -->
                             <p class="card-text text-muted small mb-2 text-truncate-1"
                                data-bs-toggle="tooltip"
-                               data-bs-container="body"
                                title="@product.StoreName">
                                 @product.StoreName
                             </p>
@@ -555,21 +543,22 @@
                             <div>
                                 <div class="d-flex justify-content-between align-items-center mb-2"
                                      data-bs-toggle="tooltip"
-                                     data-bs-container="body"
-                                     title="@(product.Price > 0 ? product.Price.ToString("N0") + " đ" : "Chưa có giá")">
-                                    <span class="text-danger fw-bold">
-                                        @product.Price.ToString("N0")đ
-                                    </span>
+                                     title="@tooltipText">
+                                    @if (min.HasValue && min > 0)
+                                    {
+                                        <span class="text-danger fw-bold">@displayText</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Chưa có giá</span>
+                                    }
                                 </div>
 
-                                <!-- Nút theo cột -->
                                 <div class="d-grid gap-2">
                                     <button class="btn btn-crimson btn-sm rounded-pill add-to-cart-btn"
                                             type="button"
                                             data-product-id="@product.Id"
                                             data-has-variant="@(hasVariant.ToString().ToLower())"
-                                            data-bs-toggle="tooltip"
-                                            data-bs-container="body"
                                             title="Thêm sản phẩm @product.Name vào giỏ">
                                         <i class="bi bi-cart-plus icon-sm"></i> Thêm
                                     </button>
@@ -578,8 +567,6 @@
                                             type="button"
                                             data-product-id="@product.Id"
                                             data-has-variant="@(hasVariant.ToString().ToLower())"
-                                            data-bs-toggle="tooltip"
-                                            data-bs-container="body"
                                             title="Mua ngay sản phẩm @product.Name">
                                         Mua ngay
                                     </button>
@@ -610,33 +597,21 @@
             var productIndex = 0;
             foreach (var product in Model.FeaturedProducts)
             {
-                // ==== Tính hasVariant / salePrice an toàn không cần DTO riêng ====
-                dynamic priceInfo = (priceDict != null && priceDict.Contains(product.Id))
-                ? priceDict[product.Id]
-                : null;
+                var info = product.PriceInfo;
 
-                bool hasVariant = false;
-                decimal? salePrice = null;
+                // Lấy min/max chuẩn từ PriceInfo
+                decimal? min = info.MinPrice ?? info.Price ?? product.Price;
+                decimal? max = info.MaxPrice ?? info.Price ?? product.Price;
 
-                if (priceInfo != null)
-                {
-                    bool isVar = false;
-                    try { isVar = (bool)priceInfo.IsVariant; } catch { }
+                // Có variant khi range giá hoặc IsVariant flag
+                bool hasVariant = (info.IsVariant == true) || (min.HasValue && max.HasValue && min.Value != max.Value);
 
-                    decimal? min = null, max = null, single = null;
-                    try { min = (decimal?)priceInfo.MinPrice; } catch { }
-                    try { max = (decimal?)priceInfo.MaxPrice; } catch { }
-                    try { single = (decimal?)priceInfo.Price; } catch { }
-
-                    salePrice = isVar ? (min ?? max) : (single ?? 0m);
-                }
-                else
-                {
-                    // Thiếu info → xem như có biến thể để chuyển qua chi tiết cho chắc ăn
-                    hasVariant = true;
-                    salePrice = product.Price > 0 ? product.Price : null;
-                }
-                // ===============================================================
+                // Text hiển thị giá
+                string displayPriceText = (min.HasValue && min > 0)
+                ? (hasVariant && max.HasValue && max.Value > min.Value
+                ? $"{min.Value:N0} đ"
+                : $"{min.Value:N0} đ")
+                : "Chưa có giá";
 
                 <div class="col-lg-3 col-md-4 col-sm-6 product-card @(productIndex >= 4 ? "d-none" : "")" data-aos="fade-up">
                     <div class="product-card card h-100 border-0 shadow-sm hover-scale">
@@ -653,7 +628,6 @@
                         </div>
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <!-- Category -->
                                 <span class="badge bg-light text-danger"
                                       data-bs-toggle="tooltip"
                                       data-bs-container="body"
@@ -661,7 +635,6 @@
                                     @product.CategoryName
                                 </span>
 
-                                <!-- Rating -->
                                 <div class="rating text-warning d-flex align-items-center"
                                      data-bs-toggle="tooltip"
                                      data-bs-container="body"
@@ -678,7 +651,6 @@
                                 </div>
                             </div>
 
-                            <!-- Tên sản phẩm -->
                             <h5 class="card-title fw-bold mb-1 text-truncate-1">
                                 <a asp-controller="Products"
                                    asp-action="DetailProducts"
@@ -691,7 +663,6 @@
                                 </a>
                             </h5>
 
-                            <!-- Cửa hàng -->
                             <p class="card-text text-muted small mb-2 text-truncate-1"
                                data-bs-toggle="tooltip"
                                data-bs-container="body"
@@ -704,10 +675,10 @@
                                 <div class="d-flex justify-content-between align-items-center mb-2"
                                      data-bs-toggle="tooltip"
                                      data-bs-container="body"
-                                     title="@(salePrice.HasValue && salePrice > 0 ? salePrice.Value.ToString("N0") + " đ" : "Chưa có giá")">
-                                    @if (salePrice.HasValue && salePrice > 0)
+                                     title="@displayPriceText">
+                                    @if (min.HasValue && min > 0)
                                     {
-                                        <span class="text-danger fw-bold">@salePrice.Value.ToString("N0")đ</span>
+                                        <span class="text-danger fw-bold">@displayPriceText</span>
                                     }
                                     else
                                     {
@@ -715,32 +686,24 @@
                                     }
                                 </div>
 
-                                <!-- Nút theo cột -->
                                 <div class="d-grid gap-2">
-                                    <!-- Thêm vào giỏ -->
                                     <button class="btn btn-crimson btn-sm rounded-pill add-to-cart-btn"
                                             type="button"
                                             data-product-id="@product.Id"
                                             data-has-variant="@(hasVariant.ToString().ToLower())"
-                                            data-bs-toggle="tooltip"
-                                            data-bs-container="body"
                                             title="Thêm sản phẩm @product.Name vào giỏ">
                                         <i class="bi bi-cart-plus icon-sm"></i> Thêm
                                     </button>
 
-                                    <!-- Mua ngay -->
                                     <button class="btn btn-outline-danger btn-sm rounded-pill buy-now-btn"
                                             type="button"
                                             data-product-id="@product.Id"
                                             data-has-variant="@(hasVariant.ToString().ToLower())"
-                                            data-bs-toggle="tooltip"
-                                            data-bs-container="body"
                                             title="Mua ngay sản phẩm @product.Name">
                                         Mua ngay
                                     </button>
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 </div>
@@ -753,6 +716,8 @@
         }
     </div>
 </section>
+
+
 
 
 

@@ -19,19 +19,21 @@ namespace DATN_GO.Controllers
         private readonly CategoryService _categoryService;
         private readonly DecoratesService _decorationService;
         private readonly PriceService _priceService;
+        private readonly ProductVariantService _productVariantService;
 
-        public HomeController(StoreService storeService, ProductService productService, CategoryService categoryService, DecoratesService decorationService, PriceService priceService)
+        public HomeController(StoreService storeService, ProductService productService, CategoryService categoryService, DecoratesService decorationService, PriceService priceService, ProductVariantService productVariantService)
         {
             _storeService = storeService;
             _productService = productService;
             _categoryService = categoryService;
             _decorationService = decorationService;
             _priceService = priceService;
+            _productVariantService = productVariantService;
         }
 
         public async Task<IActionResult> Index()
         {
-            // 1) Danh mục (chỉ Visible)
+            // 1) Danh mục (Visible)
             var (_, categories, _) = await _categoryService.GetAllCategoriesAsync();
             categories ??= new List<Categories>();
             var visibleCategories = categories.Where(c => c.Status == CategoryStatus.Visible).ToList();
@@ -41,16 +43,10 @@ namespace DATN_GO.Controllers
             var stores = await _storeService.GetAllStoresAsync() ?? new();
             var storeDict = stores.ToDictionary(s => s.Id, s => s.Name);
 
-            // ⭐ Lấy rating theo Reviews, group theo UserId (chủ shop)
+            // 3) Rating
             var storeRatingMap = await _storeService.GetRatingsByStoreUserAsync();
-            // storeRatingMap: Dictionary<int UserId, (double AvgRating, int ReviewCount)>
-
-            // 3) Sản phẩm
-            var products = await _productService.GetAllProductsAsync() ?? new();
-
-            // ⭐ Lấy rating sản phẩm từ Reviews theo ProductId
+            var products = await _productService.GetAllProductsAsync() ?? new(); // có thể chưa include ProductVariants
             var prodRatingMap = await _storeService.GetProductRatingsAsync();
-            // prodRatingMap: Dictionary<int ProductId, (double Avg, int Count)>
 
             // 4) Đếm sản phẩm theo danh mục
             var categoryProductCounts = products
@@ -71,7 +67,7 @@ namespace DATN_GO.Controllers
                 })
                 .ToList();
 
-            // 6) Pre-fetch prices for featured and suggested products
+            // 6) Lấy giá đơn (fallback khi không có variant)
             var featuredProductIds = products.OrderByDescending(p => p.Views).Take(8).Select(p => p.Id).ToList();
             var suggestedProductIds = products.OrderBy(_ => Guid.NewGuid()).Take(8).Select(p => p.Id).ToList();
             var allNeededProductIds = featuredProductIds.Concat(suggestedProductIds).Distinct().ToList();
@@ -83,7 +79,7 @@ namespace DATN_GO.Controllers
                 priceDict[productId] = price ?? 0m;
             }
 
-            // 7) Lấy decorate GLOBAL từ API
+            // 7) Decor
             var decorate = await _decorationService.GetGlobalDecorateAsync();
             var decorateVm = decorate == null
                 ? new DecoratesViewModel()
@@ -115,97 +111,159 @@ namespace DATN_GO.Controllers
                 };
 
             // 8) Build ViewModel
+
+            // Stores
+            var storeCards = stores.Take(4).Select(s =>
+            {
+                float rating = -1f;
+                if (s.UserId > 0 &&
+                    storeRatingMap.TryGetValue(s.UserId, out var stat) &&
+                    stat.ReviewCount > 0)
+                {
+                    rating = (float)Math.Round(stat.AvgRating, 1);
+                }
+
+                return new StoreHomeViewModel
+                {
+                    Id = s.Id,
+                    Name = s.Name,
+                    Ward = s.Ward,
+                    District = s.District,
+                    Province = s.Province,
+                    Avatar = string.IsNullOrEmpty(s.Avatar) ? "/images/no-store.png" : s.Avatar,
+                    Rating = rating,
+                    Status = "Mở cửa"
+                };
+            }).ToList();
+
+            // FeaturedProducts (dùng service variant giống trang Products)
+            var featuredSource = products.OrderByDescending(p => p.Views).Take(8).ToList();
+            var featuredCards = new List<ProductHomeViewModel>();
+            foreach (var p in featuredSource)
+            {
+                // lấy rating
+                float prodAvg = 0f;
+                if (prodRatingMap.TryGetValue(p.Id, out var pr))
+                    prodAvg = (float)Math.Round(pr.Avg, 1);
+
+                // lấy variants giống trang Products()
+                var productVariants = await _productVariantService.GetByProductIdAsync(p.Id);
+
+                MinMaxPriceResponse info;
+                if (productVariants != null && productVariants.Any())
+                {
+                    decimal min = productVariants.Min(v => v.Price);
+                    decimal max = productVariants.Max(v => v.Price);
+
+                    info = new MinMaxPriceResponse
+                    {
+                        IsVariant = true,
+                        MinPrice = min,
+                        MaxPrice = max,
+                        Price = min,            // hiển thị min
+                        OriginalPrice = max
+                    };
+                }
+                else
+                {
+                    var fallback = priceDict.TryGetValue(p.Id, out var v) ? v : (p.CostPrice ?? 0m);
+                    info = new MinMaxPriceResponse
+                    {
+                        IsVariant = false,
+                        Price = fallback,
+                        OriginalPrice = null
+                    };
+                }
+
+                var displayPrice = info.MinPrice ?? info.Price ?? 0m;
+
+                featuredCards.Add(new ProductHomeViewModel
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    MainImage = string.IsNullOrEmpty(p.MainImage) ? "/images/no-image.png" : p.MainImage,
+                    CategoryName = categoryDict.TryGetValue(p.CategoryId, out var cname) ? cname : "Chưa phân loại",
+                    StoreName = storeDict.TryGetValue(p.StoreId, out var sname) ? sname : "Đang cập nhật",
+                    Price = displayPrice,
+                    Rating = prodAvg,
+                    PriceInfo = info
+                });
+            }
+
+            // SuggestedProducts (y hệt)
+            var suggestedSource = products.OrderBy(_ => Guid.NewGuid()).Take(8).ToList();
+            var suggestedCards = new List<ProductHomeViewModel>();
+            foreach (var p in suggestedSource)
+            {
+                float prodAvg = 0f;
+                if (prodRatingMap.TryGetValue(p.Id, out var pr))
+                    prodAvg = (float)Math.Round(pr.Avg, 1);
+
+                var productVariants = await _productVariantService.GetByProductIdAsync(p.Id);
+
+                MinMaxPriceResponse info;
+                if (productVariants != null && productVariants.Any())
+                {
+                    decimal min = productVariants.Min(v => v.Price);
+                    decimal max = productVariants.Max(v => v.Price);
+
+                    info = new MinMaxPriceResponse
+                    {
+                        IsVariant = true,
+                        MinPrice = min,
+                        MaxPrice = max,
+                        Price = min,
+                        OriginalPrice = max
+                    };
+                }
+                else
+                {
+                    var fallback = priceDict.TryGetValue(p.Id, out var v) ? v : (p.CostPrice ?? 0m);
+                    info = new MinMaxPriceResponse
+                    {
+                        IsVariant = false,
+                        Price = fallback,
+                        OriginalPrice = null
+                    };
+                }
+
+                var displayPrice = info.MinPrice ?? info.Price ?? 0m;
+
+                suggestedCards.Add(new ProductHomeViewModel
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    MainImage = string.IsNullOrEmpty(p.MainImage) ? "/images/no-image.png" : p.MainImage,
+                    CategoryName = categoryDict.TryGetValue(p.CategoryId, out var cname) ? cname : "Chưa phân loại",
+                    StoreName = storeDict.TryGetValue(p.StoreId, out var sname) ? sname : "Đang cập nhật",
+                    Price = displayPrice,
+                    Rating = prodAvg,
+                    PriceInfo = info
+                });
+            }
+
             var vm = new HomeViewModel
             {
-                // ⭐ Rating của store lấy từ Reviews theo UserId; nếu không có review → -1
-                Stores = stores.Take(4).Select(s =>
-                {
-                    float rating = -1f;
-                    if (s.UserId > 0 &&
-                        storeRatingMap.TryGetValue(s.UserId, out var stat) &&
-                        stat.ReviewCount > 0)
-                    {
-                        rating = (float)Math.Round(stat.AvgRating, 1);
-                    }
-
-                    return new StoreHomeViewModel
-                    {
-                        Id = s.Id,
-                        Name = s.Name,
-                        Address = s.Address,
-                        Avatar = string.IsNullOrEmpty(s.Avatar) ? "/images/no-store.png" : s.Avatar,
-                        Rating = rating, // View sẽ kiểm tra < 0 để hiện "Chưa có đánh giá"
-                        Status = "Mở cửa"
-                    };
-                }).ToList(),
-
-                FeaturedProducts = products
-                    .OrderByDescending(p => p.Views).Take(8)
-                    .Select(p =>
-                    {
-                        float prodAvg = 0f;
-                        if (prodRatingMap.TryGetValue(p.Id, out var pr))
-                            prodAvg = (float)Math.Round(pr.Avg, 1);
-
-                        return new ProductHomeViewModel
-                        {
-                            Id = p.Id,
-                            Name = p.Name,
-                            MainImage = string.IsNullOrEmpty(p.MainImage) ? "/images/no-image.png" : p.MainImage,
-                            CategoryName = categoryDict.TryGetValue(p.CategoryId, out var cname) ? cname : "Chưa phân loại",
-                            StoreName = storeDict.TryGetValue(p.StoreId, out var sname) ? sname : "Đang cập nhật",
-                            Price = priceDict.TryGetValue(p.Id, out var price) ? price : p.CostPrice ?? 0m,
-                            Rating = prodAvg // ⭐ đổ sao từ Reviews
-                        };
-                    }).ToList(),
-                SuggestedProducts = products
-                    .OrderBy(_ => Guid.NewGuid()).Take(8)
-                    .Select(p =>
-                    {
-                        float prodAvg = 0f;
-                        if (prodRatingMap.TryGetValue(p.Id, out var pr))
-                            prodAvg = (float)Math.Round(pr.Avg, 1);
-
-                        return new ProductHomeViewModel
-                        {
-                            Id = p.Id,
-                            Name = p.Name,
-                            MainImage = string.IsNullOrEmpty(p.MainImage) ? "/images/no-image.png" : p.MainImage,
-                            CategoryName = categoryDict.TryGetValue(p.CategoryId, out var cname) ? cname : "Chưa phân loại",
-                            StoreName = storeDict.TryGetValue(p.StoreId, out var sname) ? sname : "Đang cập nhật",
-                            Price = priceDict.TryGetValue(p.Id, out var price) ? price : p.CostPrice ?? 0m,
-                            Rating = prodAvg // ⭐ đổ sao từ Reviews
-                        };
-                    }).ToList(),
-
+                Stores = storeCards,
+                FeaturedProducts = featuredCards,
+                SuggestedProducts = suggestedCards,
                 Categories = visibleCategories.Select(c => new CategoryHomeViewModel
                 {
                     Id = c.Id,
                     Name = c.Name,
                     Image = string.IsNullOrEmpty(c.Image) ? "/images/no-image.png" : c.Image
                 }).ToList(),
-
                 TrendCategories = trendCategories,
                 Decorate = decorateVm
             };
 
-            // 9) Dict giá (non-variant) cho các block cần quick add
-            var minMaxPriceDict = new System.Collections.Hashtable();
-            foreach (var p in products)
-            {
-                decimal price = p.CostPrice ?? 0m;
-                minMaxPriceDict[p.Id] = new
-                {
-                    IsVariant = false,
-                    MinPrice = (decimal?)null,
-                    MaxPrice = (decimal?)null,
-                    Price = price
-                };
-            }
-            ViewBag.MinMaxPriceDict = minMaxPriceDict;
-
             return View(vm);
         }
+
+
+
+
+
 
 
 
@@ -246,7 +304,7 @@ namespace DATN_GO.Controllers
                 {
                     Id = s.Id,
                     Name = s.Name,
-                    Address = s.Address,
+                    Ward = s.Ward,
                     Avatar = string.IsNullOrEmpty(s.Avatar) ? "/images/no-store.png" : s.Avatar,
                     Rating = s.Rating,
                     Status = "Mở cửa"
@@ -261,5 +319,7 @@ namespace DATN_GO.Controllers
 
             return View(vm);
         }
+
+
     }
 }
