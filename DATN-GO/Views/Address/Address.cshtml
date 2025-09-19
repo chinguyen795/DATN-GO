@@ -41,85 +41,94 @@
             </a>
         </div>
     </div>
+<div class="table-responsive pb-5">
+    <table class="table table-hover table-bordered align-middle w-100 shadow-sm">
+        <thead class="table-light">
+            <tr>
+                <th class="text-center">#</th>
+                <th>Tên người nhận</th>
+                <th>Số điện thoại</th>
+                <th>Địa chỉ</th>
+                <th>Mô tả</th>
+                <th>Trạng thái</th>
+                <th class="text-center">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+@{
+    // Lọc: chỉ lấy địa chỉ có WardId và DistrictId (khác null và > 0)
+    var addresses = (Model ?? new List<DATN_GO.ViewModels.Address.AddressViewModel>())
+        .Where(a => (a.WardId ?? 0) > 0 && (a.DistrictId ?? 0) > 0)
+        .OrderByDescending(a => a.Status == AddressStatus.Default)
+        .ToList();
 
-    <div class="table-responsive pb-5">
-        <table class="table table-hover table-bordered align-middle w-100 shadow-sm">
-            <thead class="table-light">
-                <tr>
-                    <th class="text-center">#</th>
-                    <th>Tên người nhận</th>
-                    <th>Số điện thoại</th>
-                    <th>Địa chỉ</th>
-                    <th>Mô tả</th>
-                    <th>Trạng thái</th>
-                    <th class="text-center">Thao tác</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (Model != null && Model.Any())
-                {
-                    int index = 1;
-                    foreach (var address in Model.OrderByDescending(a => a.Status == AddressStatus.Default))
-                    {
-                        <tr class="address-row">
-                            <td class="text-center">@index</td>
-                            <td><strong>@address.Name</strong></td>
-                            <td><strong>@address.Phone</strong></td>
-                            <td>
-                                @{
-                                    var fullAddress = string.Join(", ", new[] {
-                        address.WardName, address.DistrictName, address.CityName
+    if (addresses.Any())
+    {
+        int index = 1;
+        foreach (var address in addresses)
+        {
+            <tr class="address-row">
+                <td class="text-center">@index</td>
+                <td><strong>@address.Name</strong></td>
+                <td><strong>@address.Phone</strong></td>
+                <td>
+                    @{
+                        var fullAddress = string.Join(", ", new[] {
+                            address.WardName, address.DistrictName, address.CityName
                         }.Where(s => !string.IsNullOrWhiteSpace(s)));
-                                }
-                                @fullAddress
-                            </td>
-                            <td>@address.Description</td>
-                            <td>
-                                @if (address.Status == AddressStatus.Default)
-                                {
-                                    <span class="badge bg-success">Mặc định</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-secondary">Không mặc định</span>
-                                }
-                            </td>
-                            <td class="text-center">
-                                <div class="d-flex flex-column align-items-center gap-1">
-                                    <a asp-action="Edit" asp-route-id="@address.Id" class="btn btn-sm btn-outline-warning w-100" style="text-transform: capitalize;">
-                                        <i class="bi bi-pencil-square"></i> Sửa
-                                    </a>
-                                    <button type="button" class="btn btn-sm btn-outline-crimson w-100"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#deleteConfirmModal"
-                                            data-id="@address.Id" style="text-transform: capitalize;">
-                                        <i class="bi bi-trash3"></i> Xoá
-                                    </button>
-
-                                    @if (address.Status != AddressStatus.Default)
-                                    {
-                                        <button type="button" class="btn btn-sm btn-outline-success w-100"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#confirmSetDefaultModal"
-                                                data-id="@address.Id" style="text-transform: capitalize;">
-                                            <i class="bi bi-bookmark-heart"></i> Mặc định
-                                        </button>
-                                    }
-                                </div>
-                            </td>
-                        </tr>
-                        index++;
                     }
-                }
-                else
-                {
-                    <tr>
-                        <td colspan="7" class="text-center">Không có địa chỉ nào được tìm thấy.</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+                    @fullAddress
+                </td>
+                <td>@address.Description</td>
+                <td>
+                    @if (address.Status == AddressStatus.Default)
+                    {
+                        <span class="badge bg-success">Mặc định</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Không mặc định</span>
+                    }
+                </td>
+                <td class="text-center">
+                    <div class="d-flex flex-column align-items-center gap-1">
+                        <a asp-action="Edit" asp-route-id="@address.Id" class="btn btn-sm btn-outline-warning w-100" style="text-transform: capitalize;">
+                            <i class="bi bi-pencil-square"></i> Sửa
+                        </a>
+                        <button type="button" class="btn btn-sm btn-outline-crimson w-100"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteConfirmModal"
+                                data-id="@address.Id" style="text-transform: capitalize;">
+                            <i class="bi bi-trash3"></i> Xoá
+                        </button>
+
+                        @if (address.Status != AddressStatus.Default)
+                        {
+                            <button type="button" class="btn btn-sm btn-outline-success w-100"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#confirmSetDefaultModal"
+                                    data-id="@address.Id" style="text-transform: capitalize;">
+                                <i class="bi bi-bookmark-heart"></i> Mặc định
+                            </button>
+                        }
+                    </div>
+                </td>
+            </tr>
+            index++;
+        }
+    }
+    else
+    {
+        <tr>
+            <td colspan="7" class="text-center">Không có địa chỉ hợp lệ được tìm thấy.</td>
+        </tr>
+    }
+}
+        </tbody>
+    </table>
+</div>
+
+
 
     <!-- Modal xác nhận xoá -->
     <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">

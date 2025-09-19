@@ -316,27 +316,29 @@
                             </a>
                         </div>
                         <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="mb-2">
                                 <span class="badge bg-light text-danger"
                                       data-bs-toggle="tooltip"
                                       title="@product.CategoryName">
                                     @product.CategoryName
                                 </span>
-
-                                <div class="rating text-warning d-flex align-items-center"
-                                     data-bs-toggle="tooltip"
-                                     title="@(product.Rating <= 0 ? "Chưa có đánh giá" : $"Đánh giá: {product.Rating:0.0} sao")">
-                                    @if (product.Rating <= 0)
-                                    {
-                                        <span class="text-muted small fst-italic">Chưa có đánh giá</span>
-                                    }
-                                    else
-                                    {
-                                        <i class="bi bi-star-fill icon-sm"></i>
-                                        <span class="ms-1 text-dark">@product.Rating.ToString("0.0")</span>
-                                    }
-                                </div>
                             </div>
+
+                            <div class="rating text-warning d-flex align-items-center"
+                                 data-bs-toggle="tooltip"
+                                 title="@(product.Rating <= 0 ? "Chưa có đánh giá" : $"Đánh giá: {product.Rating:0.0} sao")">
+
+                                @if (product.Rating <= 0)
+                                {
+                                    <span class="text-muted small fst-italic">Chưa có đánh giá</span>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-star-fill icon-sm"></i>
+                                    <span class="ms-1 text-dark">@product.Rating.ToString("0.0")</span>
+                                }
+                            </div>
+
 
                             <h5 class="card-title fw-bold mb-1 text-truncate-1">
                                 <a asp-controller="Products"
@@ -500,26 +502,27 @@
                             </a>
                         </div>
                         <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="mb-2">
                                 <span class="badge bg-light text-danger"
                                       data-bs-toggle="tooltip"
                                       title="@product.CategoryName">
                                     @product.CategoryName
                                 </span>
+                            </div>
 
-                                <div class="rating text-warning d-flex align-items-center"
-                                     data-bs-toggle="tooltip"
-                                     title="@(product.Rating <= 0 ? "Chưa có đánh giá" : $"Đánh giá: {product.Rating:0.0} sao")">
-                                    @if (product.Rating <= 0)
-                                    {
-                                        <span class="text-muted small fst-italic">Chưa có đánh giá</span>
-                                    }
-                                    else
-                                    {
-                                        <i class="bi bi-star-fill icon-sm"></i>
-                                        <span class="ms-1 text-dark">@product.Rating.ToString("0.0")</span>
-                                    }
-                                </div>
+                            <div class="rating text-warning d-flex align-items-center"
+                                 data-bs-toggle="tooltip"
+                                 title="@(product.Rating <= 0 ? "Chưa có đánh giá" : $"Đánh giá: {product.Rating:0.0} sao")">
+
+                                @if (product.Rating <= 0)
+                                {
+                                    <span class="text-muted small fst-italic">Chưa có đánh giá</span>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-star-fill icon-sm"></i>
+                                    <span class="ms-1 text-dark">@product.Rating.ToString("0.0")</span>
+                                }
                             </div>
 
                             <h5 class="card-title fw-bold mb-1 text-truncate-1">
@@ -627,28 +630,27 @@
                             </a>
                         </div>
                         <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="mb-2">
                                 <span class="badge bg-light text-danger"
                                       data-bs-toggle="tooltip"
-                                      data-bs-container="body"
                                       title="@product.CategoryName">
                                     @product.CategoryName
                                 </span>
+                            </div>
 
-                                <div class="rating text-warning d-flex align-items-center"
-                                     data-bs-toggle="tooltip"
-                                     data-bs-container="body"
-                                     title="@(product.Rating <= 0 ? "Chưa có đánh giá" : $"Đánh giá: {product.Rating:0.0} sao")">
-                                    @if (product.Rating <= 0)
-                                    {
-                                        <span class="text-muted small fst-italic">Chưa có đánh giá</span>
-                                    }
-                                    else
-                                    {
-                                        <i class="bi bi-star-fill icon-sm"></i>
-                                        <span class="ms-1 text-dark">@product.Rating.ToString("0.0")</span>
-                                    }
-                                </div>
+                            <div class="rating text-warning d-flex align-items-center"
+                                 data-bs-toggle="tooltip"
+                                 title="@(product.Rating <= 0 ? "Chưa có đánh giá" : $"Đánh giá: {product.Rating:0.0} sao")">
+
+                                @if (product.Rating <= 0)
+                                {
+                                    <span class="text-muted small fst-italic">Chưa có đánh giá</span>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-star-fill icon-sm"></i>
+                                    <span class="ms-1 text-dark">@product.Rating.ToString("0.0")</span>
+                                }
                             </div>
 
                             <h5 class="card-title fw-bold mb-1 text-truncate-1">

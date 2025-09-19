@@ -435,7 +435,11 @@
 							 data-rating="@review.Rating"
 							 data-date="@review.CreatedDate.ToString("yyyy-MM-ddTHH:mm:ss")">
 							<div class="d-flex mb-3">
-								<img src="@review.AvatarUrl" class="rounded-circle me-2" alt="User Avatar" style="width:40px;height:40px;">
+								<img src="@(review.AvatarUrl ?? "https://i.pinimg.com/736x/bc/43/98/bc439871417621836a0eeea768d60944.jpg")" 
+    class="rounded-circle me-2" 
+    alt="User Avatar" 
+    style="width:40px;height:40px;">
+
 								<div>
 									<h6 class="mb-1">@review.UserName</h6>
 									<div class="text-warning mb-1">

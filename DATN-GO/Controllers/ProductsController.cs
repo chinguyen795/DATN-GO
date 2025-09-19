@@ -85,29 +85,17 @@ namespace DATN_GO.Controllers
                     allStores[product.Id] = store;
 
                 // ✅ giá
-                if (productVariants != null && productVariants.Any())
-                {
-                    decimal min = productVariants.Min(v => v.Price);
-                    decimal max = productVariants.Max(v => v.Price);
+                var price = await _priceService.GetPriceByProductIdAsync(product.Id);
 
-                    allMinMaxPrices[product.Id] = new MinMaxPriceResponse
-                    {
-                        IsVariant = true,
-                        MinPrice = min,
-                        MaxPrice = max,
-                        Price = min,
-                        OriginalPrice = max
-                    };
-                }
-                else
+                allMinMaxPrices[product.Id] = new MinMaxPriceResponse
                 {
-                    allMinMaxPrices[product.Id] = new MinMaxPriceResponse
-                    {
-                        IsVariant = false,
-                        Price = product.CostPrice,
-                        OriginalPrice = null
-                    };
-                }
+                    IsVariant = false, // vì giờ không phân biệt variant
+                    Price = price,
+                    OriginalPrice = null,
+                    MinPrice = price,
+                    MaxPrice = price
+                };
+
 
                 // ✅ variants & values
                 var variants = await _variantService.GetByProductIdAsync(product.Id);
