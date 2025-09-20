@@ -185,18 +185,9 @@
         color: #dc143c;
     }
 
-    .bootstrap-select .dropdown-toggle:focus {
-        border-color: #dc143c;
-        box-shadow: 0 0 0 .2rem rgba(220,20,60,.25);
-    }
 
-    .bootstrap-select .dropdown-menu {
-        border-radius: 8px;
-        box-shadow: 0 4px 20px rgba(0,0,0,.15);
-    }
-
-    .bootstrap-select .dropdown-item.active {
-        background-color: #dc143c;
+    .btn, h2 {
+        text-transform: none !important;
     }
 </style>
 
@@ -207,11 +198,12 @@
             <span class="page-title">MÃ ƯU ĐÃI</span>
             <div class="navbar-right">
                 <ul class="nav navbar-nav">
-                    <li class="custom-dropdown">
+@*                     <li class="custom-dropdown">
                         <a class="notify-toggler custom-dropdown-toggler" asp-controller="Notification" asp-action="Notification">
                             <i class="mdi mdi-bell-outline icon"></i>
                         </a>
-                    </li>
+                    </li> *@
+                    <!-- User Account -->
                     <li class="dropdown user-menu">
                         <button class="dropdown-toggle nav-link" data-bs-toggle="dropdown">
                             <img src="~/images/avt-user.jpg" alt="User Profile" width="32" height="32" style="object-fit:cover" loading="lazy">
@@ -219,14 +211,13 @@
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li>
-                                <a class="dropdown-item d-flex align-items-center gap-2" asp-controller="Profile" asp-action="Index" asp-area="">
-                                    <i class="mdi mdi-account-outline"></i><span class="nav-text">Hồ Sơ</span>
+                                <a class="dropdown-item d-flex align-items-center" asp-controller="Profile" asp-action="Index" asp-area="">
+                                    <i class="mdi mdi-account-outline"></i><span>Hồ sơ</span>
                                 </a>
                             </li>
-                            <li><hr class="dropdown-divider"></li>
                             <li class="dropdown-footer">
-                                <a class="dropdown-item d-flex align-items-center gap-2" href="/Seller/Voucher/Logout">
-                                    <i class="mdi mdi-logout"></i> <span>Đăng Xuất</span>
+                                <a class="dropdown-item d-flex align-items-center" href="/Seller/Voucher/Logout">
+                                    <i class="mdi mdi-logout"></i><span>Đăng xuất</span>
                                 </a>
                             </li>
                         </ul>
@@ -643,7 +634,7 @@
                 <!-- Footer -->
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal">Đóng</button>
-                    <button type="submit" class="btn btn-danger btn-pill">Thêm Voucher</button>
+                    <button type="submit" class="btn btn-danger btn-pill">Thêm voucher</button>
                 </div>
             </form>
         </div>
@@ -823,7 +814,7 @@
 
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light btn-pill" data-bs-dismiss="modal">Đóng</button>
-                    <button type="submit" class="btn btn-danger btn-pill">Lưu Thay Đổi</button>
+                    <button type="submit" class="btn btn-danger btn-pill">Lưu thay đổi</button>
                 </div>
             </form>
         </div>

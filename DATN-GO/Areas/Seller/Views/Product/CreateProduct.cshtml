@@ -29,6 +29,10 @@
         right: 2px;
         z-index: 10;
     }
+
+    .btn {
+        text-transform: none !important;
+    }
 </style>
 <div class="page-wrapper">
 
@@ -40,43 +44,39 @@
                 <span class="sr-only">Toggle navigation</span>
             </button>
 
-            <span class="page-title">THÊM SẢN PHẨM</span>
+            <span class="page-title">SẢN PHẨM</span>
 
             <div class="navbar-right ">
 
                 <ul class="nav navbar-nav">
-                    <li class="custom-dropdown">
-                        <a asp-area="Seller" asp-controller="Notification" asp-action="Notification" class="notify-toggler custom-dropdown-toggler">
+@*                     <li class="custom-dropdown">
+                        <a class="notify-toggler custom-dropdown-toggler" asp-controller="Notification" asp-action="Notification">
                             <i class="mdi mdi-bell-outline icon"></i>
                         </a>
-                    </li>
+                    </li> *@
                     <!-- User Account -->
                     <li class="dropdown user-menu">
-                        <button class="dropdown-toggle nav-link" data-toggle="dropdown">
-                            <img src="@ViewBag.UserAvatar" alt="User Profile" width="32" height="32"
-                                 style="object-fit: cover;" loading="lazy">
-                            <span class="d-none d-lg-inline-block">@ViewBag.UserName</span>
-
+                        <button class="dropdown-toggle nav-link" data-bs-toggle="dropdown">
+                            <img src="~/images/avt-user.jpg" alt="User Profile" width="32" height="32" style="object-fit:cover" loading="lazy">
+                            <span class="d-none d-lg-inline-block">@ViewBag.StoreName</span>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-right">
+                        <ul class="dropdown-menu dropdown-menu-end">
                             <li>
-                                <a class="dropdown-link-item" href="user-profile.html">
-                                    <i class="mdi mdi-account-outline"></i>
-                                    <span class="nav-text">Hồ Sơ</span>
+                                <a class="dropdown-item d-flex align-items-center" asp-controller="Profile" asp-action="Index" asp-area="">
+                                    <i class="mdi mdi-account-outline"></i><span>Hồ sơ</span>
                                 </a>
                             </li>
                             <li class="dropdown-footer">
-                                <a class="dropdown-link-item" href="sign-in.html">
-                                    <i class="mdi mdi-logout"></i> Đăng Xuất
+                                <a class="dropdown-item d-flex align-items-center" href="/Seller/Product/Logout">
+                                    <i class="mdi mdi-logout"></i><span>Đăng xuất</span>
                                 </a>
                             </li>
                         </ul>
                     </li>
                 </ul>
+
             </div>
         </nav>
-
-
     </header>
 
     <!-- ====================================

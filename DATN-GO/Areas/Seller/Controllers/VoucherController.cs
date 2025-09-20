@@ -160,5 +160,16 @@ namespace DATN_GO.Areas.Seller.Controllers
 
             return hasAnyScope;
         }
+        // Logout
+        [HttpGet]
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+
+            TempData["ToastMessage"] = "Bạn đã đăng xuất thành công!";
+            TempData["ToastType"] = "success";
+
+            return RedirectToAction("Index", "Home", new { area = "" });
+        }
     }
 }

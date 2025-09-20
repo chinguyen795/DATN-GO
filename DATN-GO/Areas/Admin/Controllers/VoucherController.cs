@@ -10,11 +10,33 @@ namespace DATN_GO.Areas.Admin.Controllers
     public class VoucherController : Controller
     {
         private readonly VoucherService _voucherService;
-        public VoucherController(VoucherService voucherService) => _voucherService = voucherService;
+        private readonly DecoratesService _decoratesService;
+        public VoucherController(VoucherService voucherService, DecoratesService decoratesService)
+        {
+            _voucherService = voucherService;
+            _decoratesService = decoratesService;
+        }
 
         // ================== LIST ==================
         public async Task<IActionResult> Voucher(string? search, string? sort, int page = 1, int pageSize = 4)
         {
+            // vẫn yêu cầu đăng nhập
+            var userIdStr = HttpContext.Session.GetString("Id");
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
+            {
+                TempData["ToastMessage"] = "Vui lòng đăng nhập để tiếp tục!";
+                TempData["ToastType"] = "error";
+                return RedirectToAction("Index", "Home", new { area = "" });
+            }
+
+            // vẫn khóa admin
+            var user = await _decoratesService.GetUserByIdAsync(userId);
+            if (user == null || user.RoleId != 3)
+            {
+                TempData["ToastMessage"] = "Bạn không có quyền truy cập vào trang này!";
+                TempData["ToastType"] = "error";
+                return RedirectToAction("Index", "Home", new { area = "" });
+            }
             page = page < 1 ? 1 : page;
             pageSize = Math.Clamp(pageSize, 1, 200);
 
@@ -62,6 +84,7 @@ namespace DATN_GO.Areas.Admin.Controllers
             ViewBag.Search = search;
             ViewBag.Sort = sort;
             ViewBag.PageSize = pageSize;
+            ViewBag.UserInfo = user;
 
             return View(paginated);
         }
@@ -148,6 +171,17 @@ namespace DATN_GO.Areas.Admin.Controllers
 
             if (!hasAnyScope) return false;
             return true;
+        }
+        // Logout
+        [HttpGet]
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+
+            TempData["ToastMessage"] = "Bạn đã đăng xuất thành công!";
+            TempData["ToastType"] = "success";
+
+            return RedirectToAction("Index", "Home", new { area = "" });
         }
     }
 }

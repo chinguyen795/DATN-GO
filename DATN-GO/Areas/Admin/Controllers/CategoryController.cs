@@ -140,5 +140,16 @@ namespace DATN_GO.Areas.Admin.Controllers
             if (string.IsNullOrEmpty(hashtag)) return true;
             return Regex.IsMatch(hashtag, @"^#[a-zA-Z0-9_]+$", RegexOptions.Compiled);
         }
+        // Logout
+        [HttpGet]
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+
+            TempData["ToastMessage"] = "Bạn đã đăng xuất thành công!";
+            TempData["ToastType"] = "success";
+
+            return RedirectToAction("Index", "Home", new { area = "" });
+        }
     }
 }

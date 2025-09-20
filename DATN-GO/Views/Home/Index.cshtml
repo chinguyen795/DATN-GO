@@ -13,6 +13,9 @@
         text-overflow: ellipsis;
     }
 
+    .btn {
+        text-transform: none !important;
+    }
 </style>
 <section class="slideshow mb-3">
     <div class="row">
@@ -152,7 +155,7 @@
 
 <!-- Categories Section with Circular Scrolling -->
 <section class="categories-section mb-3">
-    <h2 class="fw-bold mb-4">Danh Mục</h2>
+    <h2 class="fw-bold mb-4">Danh mục</h2>
     <div class="categories-slider position-relative" data-aos="fade-up">
         <div class="owl-carousel category-carousel">
             @foreach (var category in Model.Categories)
@@ -174,7 +177,7 @@
 <!-- Nổi bật -->
 <section class="popular-restaurants mb-3">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold mb-0">Cửa Hàng Nổi Bật</h2>
+        <h2 class="fw-bold mb-0">Cửa hàng nổi bật</h2>
         <button id="toggleStoresBtn" class="btn btn-outline-danger rounded-pill">Xem tất cả</button>
     </div>
     <div class="row g-4" id="storeList">
@@ -590,7 +593,7 @@
 <!-- Nổi bật -->
 <section class="featured-products mb-3">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold mb-0">Sản Phẩm Nổi Bật</h2>
+        <h2 class="fw-bold mb-0">Sản phẩm nổi bật</h2>
         <button id="toggleProductsBtn" class="btn btn-outline-danger rounded-pill">Xem tất cả</button>
     </div>
 

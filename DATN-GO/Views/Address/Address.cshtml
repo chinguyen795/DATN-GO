@@ -2,7 +2,11 @@
 @{
     ViewData["Title"] = "Địa chỉ Page";
 }
-
+<style>
+    .btn {
+        text-transform: none !important;
+    }
+</style>
 
 <div class="container py-5">
 
@@ -36,7 +40,7 @@
         </div>
 
         <div class="col-md-6 d-flex justify-content-md-end mt-3 mt-md-0">
-            <a asp-action="Create" class="btn btn-crimson" style="text-transform: capitalize;">
+            <a asp-action="Create" class="btn btn-crimson">
                 <i class="bi bi-plus-lg me-1"></i>Thêm địa chỉ mới
             </a>
         </div>

@@ -2,6 +2,11 @@
 @{
     ViewData["Title"] = "SỬA ĐỊA CHỈ";
 }
+<style>
+    .btn {
+        text-transform: none !important;
+    }
+</style>
 
 <!-- Mapbox CSS -->
 <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
@@ -33,7 +38,7 @@
 
                     <!-- ✅ Nút quay về bên trái -->
                     <div class="mb-4">
-                        <a asp-action="Address" class="btn btn-light" style="text-transform: capitalize;">
+                        <a asp-action="Address" class="btn btn-light">
                             <i class="bi bi-arrow-left"></i> Quay về danh sách
                         </a>
                     </div>

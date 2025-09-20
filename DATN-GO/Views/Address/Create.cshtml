@@ -2,6 +2,11 @@
 @{
     ViewData["Title"] = "THÊM ĐỊA CHỈ MỚI";
 }
+<style>
+    .btn {
+        text-transform: none !important;
+    }
+</style>
 <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
 
 <div class="container">
@@ -30,7 +35,7 @@
                     <h3 class="text-center mb-3">@ViewData["Title"]</h3>
 
                     <div class="mb-4">
-                        <a asp-action="Address" class="btn btn-light" style="text-transform: capitalize;">
+                        <a asp-action="Address" class="btn btn-light">
                             <i class="bi bi-arrow-left"></i> Quay về danh sách
                         </a>
                     </div>
