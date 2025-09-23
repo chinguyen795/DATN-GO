@@ -1,20 +1,22 @@
 ﻿using DATN_GO.Models;
+using DATN_GO.Service;
 using DATN_GO.Services;
-using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
-using static DATN_GO.Services.OcrService;
-using System.Threading.Tasks;
 using DATN_GO.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using System.Text.Json;
+using System.Threading.Tasks;
+using static DATN_GO.Services.OcrService;
 
 namespace DATN_GO.Controllers
 {
     public class SalesRegistrationController : Controller
     {
         private readonly BankService _bankService;
+        private readonly StoreService _storeService;
         private readonly OcrService _ocrService;
         private readonly GoogleCloudStorageService _gcsService;
         private readonly ILogger<SalesRegistrationController> _logger;
@@ -23,23 +25,39 @@ namespace DATN_GO.Controllers
             OcrService ocrService,
             GoogleCloudStorageService gcsService,
             BankService bankService,
-            ILogger<SalesRegistrationController> logger)
+            ILogger<SalesRegistrationController> logger
+            , StoreService storeService)
         {
             _ocrService = ocrService;
             _gcsService = gcsService;
             _bankService = bankService;
             _logger = logger;
+            _storeService = storeService;
         }
 
         [HttpGet]
         public IActionResult Pendingapproval()
         {
+            if (HttpContext.Session.TryGetValue("Id", out var idBytes)
+    && int.TryParse(System.Text.Encoding.UTF8.GetString(idBytes), out var userId))
+            {
+                var store = _storeService.GetStoreByUserIdAsync(userId);
+                ViewData["StoreStatus"] = store?.Status; // enum StoreStatus
+            }
+
             return View();
         }
 
         [HttpGet]
         public async Task<IActionResult> SalesRegistration()
         {
+            if (HttpContext.Session.TryGetValue("Id", out var idBytes)
+    && int.TryParse(System.Text.Encoding.UTF8.GetString(idBytes), out var userId))
+            {
+                var store = await _storeService.GetStoreByUserIdAsync(userId);
+                ViewData["StoreStatus"] = store?.Status; // enum StoreStatus
+            }
+
             var model = new SalesRegistrationViewModel();
             ViewBag.Banks = await _bankService.GetBankListAsync();
             return View(model);

@@ -161,9 +161,9 @@ namespace DATN_API.Controllers
 
             // (Optional) nếu có đơn hàng trỏ tới Address thì nên chặn xoá
             // nếu FK Orders.AddressId là NOT NULL, xoá sẽ fail
-            var hasOrders = await _context.Orders.AnyAsync(o => o.Id == id);
-            if (hasOrders)
-                return Conflict("Địa chỉ đang được dùng trong đơn hàng, không thể xoá.");
+            //var hasOrders = await _context.Orders.AnyAsync(o => o.Id == id);
+            //if (hasOrders)
+            //    return Conflict("Địa chỉ đang được dùng trong đơn hàng, không thể xoá.");
 
             // 1) Cắt FK từ Address tới Ward/District trước
             address.WardId = null;

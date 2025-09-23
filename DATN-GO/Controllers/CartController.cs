@@ -13,13 +13,16 @@ namespace DATN_GO.Controllers
     public class CartController : Controller
     {
         private readonly CartService _cartService;
+        private readonly StoreService _storeService;
+        private readonly UserService _userService;
         private readonly IConfiguration _configuration;
 
-        public CartController(CartService cartService, IConfiguration configuration)
+        public CartController(CartService cartService, IConfiguration configuration, UserService userService, StoreService storeService)
         {
             _cartService = cartService;
             _configuration = configuration;
-
+            _userService = userService;
+            _storeService = storeService;
         }
 
         public async Task<IActionResult> Index()
@@ -27,12 +30,16 @@ namespace DATN_GO.Controllers
             if (!HttpContext.Session.TryGetValue("Id", out byte[] idBytes) ||
                 !int.TryParse(Encoding.UTF8.GetString(idBytes), out int userId))
             {
+
                 TempData["ToastMessage"] = "Bạn cần đăng nhập để xem giỏ hàng.";
                 TempData["ToastType"] = "danger";
                 return RedirectToAction("Login", "UserAuthentication");
             }
+            var store = await _storeService.GetStoreByUserIdAsync(userId);
+            ViewData["StoreStatus"] = store?.Status; // enum StoreStatus
             ViewBag.ApiBaseUrl = _configuration["ApiSettings:BaseUrl"];
-
+            var user = await _userService.GetUserByIdAsync(userId);
+            ViewBag.Balance = user.Balance;
             var cartSummary = await _cartService.GetCartByUserIdAsync(userId);
             ViewBag.UserId = userId;
             return View(cartSummary);

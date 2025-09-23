@@ -53,5 +53,10 @@ namespace DATN_GO.ViewModels
         public List<ProductHomeViewModel> Products { get; set; } = new();
         public List<StoreHomeViewModel> Stores { get; set; } = new();
     }
-
+    public class SearchhViewModel
+    {
+        public string Query { get; set; } = string.Empty;
+        public List<ProductHomeViewModel> Products { get; set; } = new();
+        public List<StoreHomeViewModel> Stores { get; set; } = new();
+    }
 }

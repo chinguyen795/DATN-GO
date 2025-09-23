@@ -267,7 +267,8 @@
                                 </button>
                                 <div class="d-flex gap-2">
                                     <button type="button" class="btn btn-danger rounded-pill px-4"
-                                            id="btnCancelOrder">
+                                            id="btnCancelOrder" style="margin-right: 10px;">
+                                            
                                         Hủy đơn
                                     </button>
                                     <button type="button" class="btn btn-success rounded-pill px-4"
@@ -289,32 +290,32 @@
                                 <ul class="nav nav-pills mb-3 px-2" id="orderTabs" role="tablist" style="gap: 0.5rem;">
                                     <li class="nav-item flex-fill text-center" role="presentation">
                                         <a class="nav-link active fw-bold py-2 px-2 text-black" id="allOrdersTab" data-bs-toggle="pill" href="#allOrders" role="tab" aria-controls="allOrders" aria-selected="true">
-                                            <i class="mdi mdi-format-list-bulleted"></i> TẤT CẢ
+                                            <i class="mdi mdi-format-list-bulleted"></i> Tất cả
                                         </a>
                                     </li>
                                     <li class="nav-item flex-fill text-center" role="presentation">
                                         <a class="nav-link fw-bold text-black py-2 px-2" id="pendingTab" data-bs-toggle="pill" href="#pendingOrders" role="tab" aria-controls="pendingOrders" aria-selected="false">
-                                            <i class="mdi mdi-clock-outline"></i> CHỜ XỬ LÝ
+                                            <i class="mdi mdi-clock-outline"></i> Chờ xử lý
                                         </a>
                                     </li>
                                     <li class="nav-item flex-fill text-center" role="presentation">
                                         <a class="nav-link fw-bold text-black py-2 px-2" id="readyTab" data-bs-toggle="pill" href="#readyOrders" role="tab" aria-controls="readyOrders" aria-selected="false">
-                                            <i class="mdi mdi-package-variant"></i> CHỜ LẤY HÀNG
+                                            <i class="mdi mdi-package-variant"></i> Chờ lấy hàng
                                         </a>
                                     </li>
                                     <li class="nav-item flex-fill text-center" role="presentation">
                                         <a class="nav-link fw-bold text-black py-2 px-2" id="shippingTab" data-bs-toggle="pill" href="#shippingOrders" role="tab" aria-controls="shippingOrders" aria-selected="false">
-                                            <i class="mdi mdi-truck-delivery"></i> ĐANG GIAO
+                                            <i class="mdi mdi-truck-delivery"></i> Đang giao
                                         </a>
                                     </li>
                                     <li class="nav-item flex-fill text-center" role="presentation">
                                         <a class="nav-link fw-bold text-black py-2 px-2" id="completedTab" data-bs-toggle="pill" href="#completedOrders" role="tab" aria-controls="completedOrders" aria-selected="false">
-                                            <i class="mdi mdi-check-circle-outline"></i> ĐÃ HOÀN THÀNH
+                                            <i class="mdi mdi-check-circle-outline"></i> Đã hoàn thành
                                         </a>
                                     </li>
                                     <li class="nav-item flex-fill text-center" role="presentation">
                                         <a class="nav-link fw-bold text-black py-2 px-2" id="cancelledTab" data-bs-toggle="pill" href="#cancelledOrders" role="tab" aria-controls="cancelledOrders" aria-selected="false">
-                                            <i class="mdi mdi-close-circle-outline"></i> ĐÃ HỦY
+                                            <i class="mdi mdi-close-circle-outline"></i> Đã hủy
                                         </a>
                                     </li>
                                 </ul>
@@ -677,7 +678,7 @@
                                                 </div>
                                                 <div class="text-center">
                                                     <h3 class="display-6 fw-bold mb-1" id="pendingOrders">0</h3>
-                                                    <p class="mb-2 fw-light">Chờ xử lý Hàng</p>
+                                                    <p class="mb-2 fw-light">Chờ xử lý hàng</p>
                                                     <div class="progress bg-white"
                                                          style="height: 8px; border-radius: 5px;">
                                                         <div class="progress-bar bg-white" role="progressbar"

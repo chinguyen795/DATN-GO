@@ -10,13 +10,15 @@ namespace DATN_GO.Controllers
         private readonly HttpClient _httpClient;
         private readonly UserService _userService;
         private readonly BankService _bankService;
+        private readonly StoreService _storeService;
         private readonly UserTradingPaymentService _userTradingPaymentService;
-        public WalletController(IHttpClientFactory factory, UserService userService, BankService bankService, UserTradingPaymentService userTradingPaymentService)
+        public WalletController(IHttpClientFactory factory, UserService userService, BankService bankService, UserTradingPaymentService userTradingPaymentService, StoreService storeService)
         {
             _httpClient = factory.CreateClient();
             _userService = userService;
             _bankService = bankService;
             _userTradingPaymentService = userTradingPaymentService;
+            _storeService = storeService;
         }
         public async Task<IActionResult> Index()
         {
@@ -27,7 +29,8 @@ namespace DATN_GO.Controllers
                 TempData["ToastType"] = "danger";
                 return RedirectToAction("Login", "UserAuthentication");
             }
-
+            var store = await _storeService.GetStoreByUserIdAsync(userId);
+            ViewData["StoreStatus"] = store?.Status; // enum StoreStatus
             var user = await _userService.GetUserByIdAsync(userId);
             if (user == null)
             {

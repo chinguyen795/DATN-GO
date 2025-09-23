@@ -25,7 +25,12 @@ namespace DATN_GO.Controllers
         public async Task<IActionResult> Store(string search)
         {
             var storeEntities = await _storeService.GetAllStoresAsync();
-
+            if (HttpContext.Session.TryGetValue("Id", out var idBytes)
+    && int.TryParse(System.Text.Encoding.UTF8.GetString(idBytes), out var userId))
+            {
+                var store = await _storeService.GetStoreByUserIdAsync(userId);
+                ViewData["StoreStatus"] = store?.Status; // enum StoreStatus
+            }
             // Chỉ cho phép hiển thị Active & Inactive
             var allowed = new[] { StoreStatus.Active };
             storeEntities = storeEntities
@@ -112,6 +117,7 @@ namespace DATN_GO.Controllers
 
         public async Task<IActionResult> Detail(int id, string? search)
         {
+
             // 1) Store
             var storeResponse = await _http.GetAsync($"/api/Stores/{id}");
             if (!storeResponse.IsSuccessStatusCode)
@@ -121,7 +127,7 @@ namespace DATN_GO.Controllers
             var store = JsonConvert.DeserializeObject<StoreAdminViewModel>(storeJson);
             if (store == null)
                 return NotFound();
-
+            ViewData["StoreStatus"] = store?.Status; // enum StoreStatus
             // 2) Products by store
             var productResponse = await _http.GetAsync($"/api/Products/store/{id}");
             if (productResponse.IsSuccessStatusCode)

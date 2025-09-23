@@ -9,24 +9,29 @@ namespace DATN_GO.Controllers
     [AutoValidateAntiforgeryToken] // dùng với AJAX header RequestVerificationToken
     public class VoucherAdminController : Controller
     {
+
+        private readonly StoreService _storeService;
         private readonly VoucherService _voucherService;
         private readonly IConfiguration _configuration;
 
-        public VoucherAdminController(VoucherService voucherService, IConfiguration configuration)
+        public VoucherAdminController(VoucherService voucherService, IConfiguration configuration, StoreService storeService)
         {
             _voucherService = voucherService;
             _configuration = configuration;
+            _storeService = storeService;
         }
         private int GetCurrentUserId()
         {
             var idStr = HttpContext.Session.GetString("Id");
             return int.TryParse(idStr, out var uid) ? uid : 0;
+
         }
         [HttpGet]
         public async Task<IActionResult> Index(string? search, string? sort, int page = 1, int pageSize = 8)
         {
             var vouchers = await _voucherService.GetVouchersByStoreOrAdminAsync(null) ?? new List<Vouchers>();
             vouchers = vouchers.Where(v => v.StoreId == null).ToList(); // chỉ voucher sàn
+            
 
             // search
             if (!string.IsNullOrWhiteSpace(search))
@@ -63,6 +68,14 @@ namespace DATN_GO.Controllers
             {
                 var userVouchers = await _voucherService.GetUserVouchersAsync(userId);
                 savedIds = userVouchers.Select(x => x.voucherId).ToHashSet();
+
+                
+            }
+            if (HttpContext.Session.TryGetValue("Id", out var idBytes)
+    && int.TryParse(System.Text.Encoding.UTF8.GetString(idBytes), out var userIdd))
+            {
+                var store = await _storeService.GetStoreByUserIdAsync(userIdd);
+                ViewData["StoreStatus"] = store?.Status; // enum StoreStatus
             }
 
             ViewBag.CurrentPage = page;

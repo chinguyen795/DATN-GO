@@ -447,7 +447,7 @@ namespace DATN_API.Controllers
                         return BadRequest(new { message = "Không tạo được vận đơn GHTK cho COD." });
                     }
 
-                    order.Status = OrderStatus.ChoLayHang;
+                    order.Status = OrderStatus.ChoXuLy;
                     order.LabelId = label;
                     await _db.SaveChangesAsync();
 
@@ -682,5 +682,160 @@ namespace DATN_API.Controllers
             var hit = candidates.FirstOrDefault(c => c.Values.SequenceEqual(chosen));
             return hit?.PvId;
         }
+        [HttpPost("balance-create")]
+        public async Task<IActionResult> CreateBalanceOrder([FromBody] CreateVnpOrderRequest req)
+        {
+            if (req == null || req.UserId <= 0 || req.AddressId <= 0)
+                return BadRequest(new { message = "Thiếu UserId/AddressId" });
+
+            await using var tx = await _db.Database.BeginTransactionAsync();
+            try
+            {
+                var cart = await _cartService.GetCartByUserIdAsync(req.UserId);
+                if (cart == null) return BadRequest(new { message = "Cart not found" });
+
+                var shippingGroups = await _cartService.GetShippingGroupsByUserIdAsync(req.UserId, req.AddressId);
+                if (shippingGroups == null || !shippingGroups.Any())
+                    return BadRequest(new { message = "Không tính được phí vận chuyển." });
+
+                var selected = cart.CartItems.Where(x => x.IsSelected).ToList();
+                if (!selected.Any()) return BadRequest(new { message = "Không có sản phẩm nào được chọn." });
+
+                var subTotal = selected.Sum(x => x.TotalValue);
+                decimal voucherReduce = 0;
+                if (req.UserVoucherId.HasValue)
+                {
+                    var voucher = cart.Vouchers.FirstOrDefault(v => v.Id == req.UserVoucherId.Value);
+                    if (voucher != null) voucherReduce = voucher.Reduce;
+                }
+
+                // Group theo store + phân bổ voucher theo tỷ lệ subtotal mỗi store
+                var groups = selected.GroupBy(x => x.StoreId).ToList();
+
+                // Tính tổng phải charge từ ví dựa trên tổng các storeGrandTotal để tránh lệch
+                var createdOrders = new List<Orders>();
+                var storeTotals = new List<decimal>();
+
+                foreach (var group in groups)
+                {
+                    var storeSubTotal = group.Sum(i => i.TotalValue);
+                    var storeShippingFee = shippingGroups.FirstOrDefault(g => g.StoreId == group.Key)?.ShippingFee ?? 0m;
+
+                    decimal storeVoucherReduce = 0;
+                    if (voucherReduce > 0 && subTotal > 0)
+                        storeVoucherReduce = voucherReduce * (storeSubTotal / subTotal);
+
+                    var storeGrandTotal = Math.Max(0m, storeSubTotal + storeShippingFee - storeVoucherReduce);
+                    storeTotals.Add(storeGrandTotal);
+                }
+
+                var totalAmount = storeTotals.Sum();
+
+                // check & trừ ví
+                var user = await _db.Users.FindAsync(req.UserId);
+                if (user == null) return BadRequest(new { message = "User not found" });
+                if (user.Balance < totalAmount)
+                    return BadRequest(new { message = "Số dư không đủ để thanh toán." });
+
+                user.Balance -= totalAmount;
+                await _db.SaveChangesAsync();
+
+                // Tạo đơn theo store và PUSH GHTK để lấy label
+                int idx = 0;
+                foreach (var group in groups)
+                {
+                    var storeId = group.Key;
+                    var storeSubTotal = group.Sum(i => i.TotalValue);
+                    var storeShippingFee = shippingGroups.FirstOrDefault(g => g.StoreId == storeId)?.ShippingFee ?? 0m;
+
+                    decimal storeVoucherReduce = 0;
+                    if (voucherReduce > 0 && subTotal > 0)
+                        storeVoucherReduce = voucherReduce * (storeSubTotal / subTotal);
+
+                    var storeGrandTotal = (long)Math.Round(Math.Max(0m, storeSubTotal + storeShippingFee - storeVoucherReduce));
+
+                    var shipMethod = await _db.ShippingMethods
+                       .FirstOrDefaultAsync(sm => sm.StoreId == storeId && sm.MethodName == "GHTK_AUTO");
+                    if (shipMethod == null)
+                    {
+                        shipMethod = new ShippingMethods { StoreId = storeId, MethodName = "GHTK_AUTO", Price = 0 };
+                        _db.ShippingMethods.Add(shipMethod);
+                        await _db.SaveChangesAsync();
+                    }
+
+                    var order = new Orders
+                    {
+                        UserId = req.UserId,
+                        OrderDate = NowVn(),
+                        PaymentMethod = "BALANCE",
+                        PaymentStatus = "Paid",               // ✅ ví = Paid ngay
+                        Status = OrderStatus.ChoXuLy,
+                        TotalPrice = storeGrandTotal,
+                        DeliveryFee = storeShippingFee,
+                        VoucherId = null,
+                        ShippingMethodId = shipMethod.Id
+                    };
+                    _db.Orders.Add(order);
+                    await _db.SaveChangesAsync();
+
+                    foreach (var item in group)
+                    {
+                        int? pvId = await ResolveProductVariantIdAsync(item.ProductId, item.CartId);
+                        _db.OrderDetails.Add(new OrderDetails
+                        {
+                            OrderId = order.Id,
+                            ProductId = item.ProductId,
+                            ProductVariantId = pvId,
+                            Quantity = item.Quantity,
+                            Price = item.Price
+                        });
+                    }
+                    await _db.SaveChangesAsync();
+
+                    // 🔥 Push GHTK để lấy mã vận đơn (label)
+                    string? label;
+                    try
+                    {
+                        label = await _orders.PushOrderToGhtkAndSaveLabelCodAsync(order.Id);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Rollback cả transaction -> hoàn tiền ví
+                        await tx.RollbackAsync();
+                        return BadRequest(new { message = $"GHTK lỗi: {ex.Message}" });
+                    }
+
+                    if (string.IsNullOrWhiteSpace(label))
+                    {
+                        await tx.RollbackAsync();
+                        return BadRequest(new { message = "Không tạo được vận đơn GHTK cho Balance." });
+                    }
+
+                    order.Status = OrderStatus.ChoLayHang; // giống COD sau khi có label
+                    order.LabelId = label;
+                    await _db.SaveChangesAsync();
+
+                    await DeductStockIfNeededAsync(order.Id);
+
+                    createdOrders.Add(order);
+                    idx++;
+                }
+
+                try { await _cartService.ClearSelectedAsync(req.UserId); } catch { }
+
+                await tx.CommitAsync();
+                return Ok(new
+                {
+                    message = "Thanh toán bằng Balance thành công",
+                    orders = createdOrders.Select(o => new { o.Id, o.TotalPrice, o.LabelId })
+                });
+            }
+            catch (Exception e)
+            {
+                await tx.RollbackAsync();
+                return StatusCode(500, new { message = "Lỗi hệ thống khi tạo đơn Balance.", detail = e.Message });
+            }
+        }
+
     }
 }

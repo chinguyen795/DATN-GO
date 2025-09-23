@@ -1,8 +1,16 @@
-﻿﻿﻿﻿﻿@{
+﻿@using DATN_GO.Models
+@{
     var useContainer = ViewData["UseContainer"] as bool? ?? true;
     var cartCount = Context.Session.GetInt32("CartCount") ?? 0;
-
+    var fullname = Context.Session.GetString("FullName");
+    // Lấy StoreStatus từ ViewData (có thể null nếu controller khác chưa set)
+    // Dùng pattern matching cho an toàn:
+    StoreStatus? storeStatus = ViewData["StoreStatus"] is StoreStatus s ? s : (StoreStatus?)null;
+    // hoặc nếu muốn default:
+    // var storeStatus = ViewData["StoreStatus"] is StoreStatus s ? s : StoreStatus.Inactive;
 }
+
+
 <!doctype html>
 <html lang="en">
 
@@ -175,6 +183,45 @@
                                            Voucher
                                         </a>
                                     </li>
+<li class="nav-item">
+    @if (string.IsNullOrEmpty(fullname))
+    {
+        <!-- Nếu chưa đăng nhập -->
+        <a class="nav-link text-crimson d-flex align-items-center gap-1"
+           asp-controller="UserAuthentication" asp-action="Login">
+            Kênh người bán
+        </a>
+    }
+    else if (storeStatus == StoreStatus.PendingApproval || storeStatus == StoreStatus.NotApproved)
+    {
+        <a class="nav-link text-crimson d-flex align-items-center gap-1"
+           asp-controller="SalesRegistration" asp-action="PendingApproval">
+            Kênh người bán
+        </a>
+    }
+    else if (storeStatus == StoreStatus.Rejected)
+    {
+        <a class="nav-link text-crimson d-flex align-items-center gap-1"
+           asp-controller="SalesRegistration" asp-action="SalesRegistration">
+            Kênh người bán
+        </a>
+    }
+    else if (storeStatus == StoreStatus.Active)
+    {
+        <a class="nav-link text-crimson d-flex align-items-center gap-1"
+           asp-controller="Home" asp-action="Index" asp-area="Seller">
+            Kênh người bán
+        </a>
+    }
+    else
+    {
+        <a class="nav-link text-crimson d-flex align-items-center gap-1"
+           asp-controller="SalesRegistration" asp-action="SalesRegistration">
+            Kênh người bán
+        </a>
+    }
+</li>
+
                                     @*                                     <li class="nav-item">
                                     <a class="nav-link text-crimson d-flex align-items-center gap-1"
                                     asp-controller="Blog" asp-action="Blog">
@@ -572,25 +619,31 @@
     </div>
     @await RenderSectionAsync("Scripts", required: false)
     <!-- Floating Chat AI -->
-    <button id="aiChatFab" class="btn btn-crimson">
-        <i class="bi bi-chat-dots-fill text-white"></i>
+    <button id="aiChatFab" class="chat-fab">
+        <i class="bi bi-chat-dots-fill"></i>
     </button>
 
-    <div id="aiChatBox" class="shadow">
-        <div id="aiChatHeader">
+    <div id="aiChatBox" class="chatbox shadow-lg">
+        <!-- Header -->
+        <div class="chatbox-header">
             <div class="d-flex align-items-center gap-2">
-                <i class="bi bi-robot"></i>
-                <strong>Trợ Lý Gờ Ô</strong>
+@*                 <img src="https://postimg.cc/kRm2b88X" width="28" height="28" class="rounded-circle border" alt="bot" />
+ *@                <strong>Trợ lý GỜ Ô </strong>
             </div>
-            <button id="aiChatClose" class="btn btn-sm btn-light">Đóng</button>
+            <button id="aiChatClose" class="btn btn-sm btn-light rounded-circle">
+                <i class="bi bi-x-lg"></i>
+            </button>
         </div>
 
-        <div id="aiChatMessages"></div>
+        <!-- Messages -->
+        <div id="aiChatMessages" class="chatbox-body"></div>
 
-        <div id="aiChatInputBar">
-            <input id="aiMsg" class="form-control" placeholder="Hỏi về TMĐT: sản phẩm, đơn, doanh thu...">
-            <button id="aiSend" class="btn btn-crimson">GỬI</button>
-
+        <!-- Input -->
+        <div class="chatbox-footer">
+            <input id="aiMsg" class="form-control" placeholder="Nhập tin nhắn..." />
+            <button id="aiSend" class="btn btn-crimson rounded-circle">
+                <i class="bi bi-send-fill"></i>
+            </button>
         </div>
     </div>
     <!-- /Floating Chat AI -->
@@ -978,3 +1031,109 @@
         document.addEventListener('DOMContentLoaded', refreshCartCount);
     })();
 </script>
+<style>
+    /* Floating button */
+    .chat-fab {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        background: linear-gradient(135deg,#dc3545,#ff6f91);
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        width: 56px;
+        height: 56px;
+        font-size: 26px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 6px 18px rgba(220,53,69,.5);
+        transition: all .25s ease;
+        z-index: 1065;
+    }
+
+        .chat-fab:hover {
+            transform: scale(1.1) rotate(8deg);
+            box-shadow: 0 8px 22px rgba(220,53,69,.7);
+        }
+
+    /* Chatbox */
+    .chatbox {
+        position: fixed;
+        right: 20px;
+        bottom: 86px;
+        width: 360px;
+        max-height: 75vh;
+        background: #fff;
+        border-radius: 16px;
+        overflow: hidden;
+        display: none;
+        flex-direction: column;
+        z-index: 1065;
+        border: 1px solid #eee;
+    }
+
+    .chatbox-header {
+        background: linear-gradient(135deg,#dc3545,#ff6f91);
+        color: #fff;
+        padding: 10px 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .chatbox-body {
+        flex: 1;
+        padding: 12px;
+        overflow-y: auto;
+        background: #f8f9fa;
+    }
+
+    .chatbox-footer {
+        display: flex;
+        gap: 8px;
+        padding: 10px;
+        border-top: 1px solid #eee;
+        background: #fff;
+    }
+
+        .chatbox-footer input {
+            border-radius: 20px;
+            padding: 8px 14px;
+        }
+
+        .chatbox-footer button {
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+    /* Bubble */
+    .ai-bubble {
+        margin: 6px 0;
+        padding: 10px 14px;
+        border-radius: 18px;
+        max-width: 80%;
+        word-wrap: break-word;
+        font-size: 14px;
+    }
+
+        .ai-bubble.user {
+            margin-left: auto;
+            background: #dc3545;
+            color: #fff;
+            border-bottom-right-radius: 6px;
+        }
+
+        .ai-bubble.bot {
+            margin-right: auto;
+            background: #fff;
+            border: 1px solid #eee;
+            color: #333;
+            border-bottom-left-radius: 6px;
+        }
+
+</style>

@@ -240,7 +240,7 @@
 
                 var hiddenClass = index >= 12 ? "d-none" : ""; // ẩn nếu vượt quá 12 sp đầu
 
-                <div class="col-lg-3 col-md-4 col-sm-6 mb-2 @hiddenClass"
+                <div class="col-lg-4 col-md-4 col-sm-6 mb-2 @hiddenClass"
                      data-aos="fade-up"
                      data-category="@item.CategoryId"
                      data-province="@store?.Address"
@@ -405,7 +405,8 @@
 
             const priceSort = document.querySelector("#sortPriceSelect").value;
 
-            let products = [...document.querySelectorAll("#productList > div.col-lg-3")];
+            let products = [...document.querySelectorAll("#productList > div")];
+
 
             products.forEach(prod => {
                 const title = prod.querySelector(".card-title").textContent.toLowerCase();

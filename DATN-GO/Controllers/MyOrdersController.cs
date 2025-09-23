@@ -7,8 +7,14 @@ using Microsoft.AspNetCore.Mvc;
 public class MyOrdersController : Controller
 {
     private readonly OrderService _orders;
+    private readonly StoreService _storeService;
 
-    public MyOrdersController(OrderService orders) => _orders = orders;
+    public MyOrdersController(OrderService orders, StoreService storeService)
+    {
+        _orders = orders;
+        _storeService = storeService;
+    }
+
 
     [HttpGet]
     public async Task<IActionResult> Index()
@@ -22,6 +28,13 @@ public class MyOrdersController : Controller
             TempData["ToastMessage"] = "Vui lòng đăng nhập để xem đơn hàng.";
             TempData["ToastType"] = "danger";
             return RedirectToAction("Login", "UserAuthentication");
+        }
+
+        if (userId is int uid)
+        {
+            var store = await _storeService.GetStoreByUserIdAsync(uid);
+            if (store != null)
+                ViewData["StoreStatus"] = store.Status; // enum StoreStatus
         }
 
         var (ok, data, msg) = await _orders.GetOrdersByUserAsync(userId.Value);

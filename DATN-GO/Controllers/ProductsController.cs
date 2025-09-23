@@ -46,6 +46,13 @@ namespace DATN_GO.Controllers
 
         public async Task<IActionResult> Products()
         {
+            if (HttpContext.Session.TryGetValue("Id", out var idBytes)
+    && int.TryParse(System.Text.Encoding.UTF8.GetString(idBytes), out var userId))
+            {
+                var store = await _storeService.GetStoreByUserIdAsync(userId);
+                ViewData["StoreStatus"] = store?.Status; // enum StoreStatus
+            }
+
             var products = await _productService.GetAllProductsAsync();
             var productCards = new List<Products>();
 
@@ -207,7 +214,7 @@ namespace DATN_GO.Controllers
                 ViewBag.StoreLogo = store.Avatar ?? "/image/default-logo.png";
                 ViewBag.StoreAddress = store.Province ?? "Chưa cập nhật địa chỉ";
             }
-
+            ViewData["StoreStatus"] = store?.Status; // enum StoreStatus
             // Giá min/max
             ViewBag.MinMaxPrice = await _priceService.GetMinMaxPriceByProductIdAsync(id);
 

@@ -33,6 +33,14 @@ namespace DATN_GO.Controllers
 
         public async Task<IActionResult> Index()
         {
+            // Lấy trạng thái kênh người bán (nếu có)
+            if (HttpContext.Session.TryGetValue("Id", out var idBytes)
+                && int.TryParse(System.Text.Encoding.UTF8.GetString(idBytes), out var userId))
+            {
+                var store = await _storeService.GetStoreByUserIdAsync(userId);
+                ViewData["StoreStatus"] = store?.Status; // enum StoreStatus
+            }
+
             // 1) Danh mục (Visible)
             var (_, categories, _) = await _categoryService.GetAllCategoriesAsync();
             categories ??= new List<Categories>();
@@ -67,12 +75,29 @@ namespace DATN_GO.Controllers
                 })
                 .ToList();
 
-            // 6) Lấy giá đơn (fallback khi không có variant)
-            var featuredProductIds = products.OrderByDescending(p => p.Views).Take(8).Select(p => p.Id).ToList();
-            var suggestedProductIds = products.OrderBy(_ => Guid.NewGuid()).Take(8).Select(p => p.Id).ToList();
-            var allNeededProductIds = featuredProductIds.Concat(suggestedProductIds).Distinct().ToList();
+            // 6) Chọn nguồn dữ liệu cho Featured / Suggested
+            //    👉 Không còn Take(8) cứng. Có thể đổi FEATURED_MAX = int.MaxValue để lấy tất cả.
+            const int FEATURED_MAX = 200; // hoặc int.MaxValue
+            const int SUGGESTED_MAX = 8;
 
-            var priceDict = new Dictionary<int, decimal>();
+            var featuredSource = products
+                .OrderByDescending(p => p.Views)
+                .Take(FEATURED_MAX)
+                .ToList();
+
+            var suggestedSource = products
+                .OrderBy(_ => Guid.NewGuid())
+                .Take(SUGGESTED_MAX)
+                .ToList();
+
+            // 6.1) Lấy giá đơn (fallback khi không có variant) dựa trên 2 source thực dùng
+            var allNeededProductIds = featuredSource
+                .Select(p => p.Id)
+                .Concat(suggestedSource.Select(p => p.Id))
+                .Distinct()
+                .ToList();
+
+            var priceDict = new Dictionary<int, decimal>(allNeededProductIds.Count);
             foreach (var productId in allNeededProductIds)
             {
                 var price = await _priceService.GetPriceByProductIdAsync(productId);
@@ -112,7 +137,7 @@ namespace DATN_GO.Controllers
 
             // 8) Build ViewModel
 
-            // Stores
+            // Stores (hiển thị 4 thẻ, bạn có thể tăng nếu muốn)
             var storeCards = stores.Take(4).Select(s =>
             {
                 float rating = -1f;
@@ -136,17 +161,14 @@ namespace DATN_GO.Controllers
                 };
             }).ToList();
 
-            // FeaturedProducts (dùng service variant giống trang Products)
-            var featuredSource = products.OrderByDescending(p => p.Views).Take(8).ToList();
+            // FeaturedProducts (giống trang Products: ưu tiên min/max từ variants; không có thì dùng priceDict/fallback)
             var featuredCards = new List<ProductHomeViewModel>();
             foreach (var p in featuredSource)
             {
-                // lấy rating
                 float prodAvg = 0f;
                 if (prodRatingMap.TryGetValue(p.Id, out var pr))
                     prodAvg = (float)Math.Round(pr.Avg, 1);
 
-                // lấy variants giống trang Products()
                 var productVariants = await _productVariantService.GetByProductIdAsync(p.Id);
 
                 MinMaxPriceResponse info;
@@ -190,8 +212,7 @@ namespace DATN_GO.Controllers
                 });
             }
 
-            // SuggestedProducts (y hệt)
-            var suggestedSource = products.OrderBy(_ => Guid.NewGuid()).Take(8).ToList();
+            // SuggestedProducts (tương tự)
             var suggestedCards = new List<ProductHomeViewModel>();
             foreach (var p in suggestedSource)
             {
@@ -268,12 +289,11 @@ namespace DATN_GO.Controllers
 
 
         [HttpGet]
-        // --- Search Action ---
         public async Task<IActionResult> Search(string query)
         {
             if (string.IsNullOrWhiteSpace(query))
             {
-                return View(new SearchViewModel
+                return View(new SearchhViewModel
                 {
                     Query = query,
                     Products = new List<ProductHomeViewModel>(),
@@ -282,35 +302,80 @@ namespace DATN_GO.Controllers
             }
 
             var stores = await _storeService.GetAllStoresAsync() ?? new();
-            var storesDictionary = stores.ToDictionary(s => s.Id, s => s.Name);
+            var storeDict = stores.ToDictionary(s => s.Id, s => s.Name);
 
             var products = await _productService.GetAllProductsAsync() ?? new();
-            var matchedProducts = products
-                .Where(p => (!string.IsNullOrEmpty(p.Name) && p.Name.Contains(query, StringComparison.OrdinalIgnoreCase)))
-                .Select(p => new ProductHomeViewModel
+            var prodRatingMap = await _storeService.GetProductRatingsAsync();
+
+            var matchedProducts = new List<ProductHomeViewModel>();
+
+            foreach (var p in products.Where(p =>
+                         !string.IsNullOrEmpty(p.Name) &&
+                         p.Name.Contains(query, StringComparison.OrdinalIgnoreCase)))
+            {
+                float rating = 0f;
+                if (prodRatingMap.TryGetValue(p.Id, out var pr))
+                    rating = (float)Math.Round(pr.Avg, 1);
+
+                // === xử lý Price với variant ===
+                var productVariants = await _productVariantService.GetByProductIdAsync(p.Id);
+
+                MinMaxPriceResponse info;
+                if (productVariants != null && productVariants.Any())
+                {
+                    decimal min = productVariants.Min(v => v.Price);
+                    decimal max = productVariants.Max(v => v.Price);
+
+                    info = new MinMaxPriceResponse
+                    {
+                        IsVariant = true,
+                        MinPrice = min,
+                        MaxPrice = max,
+                        Price = min,
+                        OriginalPrice = max
+                    };
+                }
+                else
+                {
+                    var fallback = p.CostPrice ?? 0m;
+                    info = new MinMaxPriceResponse
+                    {
+                        IsVariant = false,
+                        Price = fallback
+                    };
+                }
+
+                var displayPrice = info.MinPrice ?? info.Price ?? 0m;
+
+                matchedProducts.Add(new ProductHomeViewModel
                 {
                     Id = p.Id,
                     Name = p.Name,
                     MainImage = string.IsNullOrEmpty(p.MainImage) ? "/images/no-image.png" : p.MainImage,
                     CategoryName = p.Category?.Name ?? "Chưa phân loại",
-                    StoreName = storesDictionary.ContainsKey(p.StoreId) ? storesDictionary[p.StoreId] : "Không rõ cửa hàng",
-                    Price = p.CostPrice ?? 0,
-                    Rating = p.Rating ?? 0
-                }).ToList();
+                    StoreName = storeDict.TryGetValue(p.StoreId, out var sname) ? sname : "Không rõ cửa hàng",
+                    Price = displayPrice,
+                    Rating = rating,
+                    PriceInfo = info
+                });
+            }
 
             var matchedStores = stores
-                .Where(s => !string.IsNullOrEmpty(s.Name) && s.Name.Contains(query, StringComparison.OrdinalIgnoreCase))
+                .Where(s => !string.IsNullOrEmpty(s.Name) &&
+                            s.Name.Contains(query, StringComparison.OrdinalIgnoreCase))
                 .Select(s => new StoreHomeViewModel
                 {
                     Id = s.Id,
                     Name = s.Name,
                     Ward = s.Ward,
+                    District = s.District,
+                    Province = s.Province,
                     Avatar = string.IsNullOrEmpty(s.Avatar) ? "/images/no-store.png" : s.Avatar,
-                    Rating = s.Rating,
+                    Rating = s.Rating < 0 ? 0 : s.Rating,
                     Status = "Mở cửa"
                 }).ToList();
 
-            var vm = new SearchViewModel
+            var vm = new SearchhViewModel
             {
                 Query = query,
                 Products = matchedProducts,
@@ -319,7 +384,6 @@ namespace DATN_GO.Controllers
 
             return View(vm);
         }
-
 
     }
 }

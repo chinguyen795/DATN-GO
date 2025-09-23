@@ -46,7 +46,7 @@ namespace DATN_GO.Controllers
             }
             var store = await _storeService.GetStoreByUserIdAsync(userId);
             ViewBag.StoreStatus = store?.Status;
-
+            ViewData["StoreStatus"] = store?.Status;
             return View(user);
         }
 

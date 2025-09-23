@@ -49,8 +49,6 @@ namespace DATN_API.Services.Ai
 
             // 3) Gọi AI với context được tối ưu
             return (await CallAiWithContextAsync(cleanMessage)).Trim();
-
-
         }
 
         private string CleanInput(string input)
@@ -77,22 +75,47 @@ namespace DATN_API.Services.Ai
                 return "Không có gì! Tôi luôn sẵn sàng hỗ trợ bạn tìm kiếm sản phẩm thời trang phù hợp. Còn cần tư vấn gì khác không?";
             }
 
+            // Thống kê cửa hàng
+            if (Regex.IsMatch(msg, @"(bao nhiêu|có mấy).*(cửa hàng|shop|store)"))
+            {
+                return "**🏪 Thông tin Cửa hàng:**\n" +
+                       "Hiện tại hệ thống **GỜ Ô** đang vận hành với nhiều cửa hàng trên toàn quốc.\n\n" +
+                       "Để biết thông tin chi tiết về địa điểm cửa hàng gần bạn nhất, vui lòng:\n" +
+                       "• Truy cập mục **Cửa hàng** trên website\n" +
+                       "• Hoặc liên hệ hotline để được hỗ trợ\n\n" +
+                       "Bạn cần tìm sản phẩm gì không?";
+            }
+
+            // Thống kê sản phẩm
+            if (Regex.IsMatch(msg, @"(bao nhiêu|có mấy).*(sản phẩm|sp|món|mặt hàng)"))
+            {
+                return "**📦 Kho sản phẩm:**\n" +
+                       "Hệ thống **GỜ Ô** hiện có hàng ngàn sản phẩm thời trang đa dạng:\n" +
+                       "• **Áo**: thun, sơ mi, khoác, hoodie...\n" +
+                       "• **Quần**: jean, âu, short, legging...\n" +
+                       "• **Váy đầm**: công sở, dự tiệc, casual...\n" +
+                       "• **Giày dép**: sneaker, sandal, boot...\n" +
+                       "• **Phụ kiện**: túi xách, mũ, trang sức...\n\n" +
+                       "Bạn quan tâm loại sản phẩm nào?";
+            }
+
             // Cách đặt hàng
             if (Regex.IsMatch(msg, @"(cách|làm sao).*(đặt|mua).*(hàng|sản phẩm)"))
             {
                 return "**🛒 Cách đặt hàng:**\n" +
                        "1️⃣ Chọn sản phẩm → **Thêm vào giỏ**\n" +
                        "2️⃣ Vào **Giỏ hàng** → **Thanh toán**\n" +
-                       "3️⃣ Chọn phương thức: **VNPay** (online) hoặc **COD** (tiền mặt)\n" +
+                       "3️⃣ Chọn phương thức: **VNPay** (online), **MoMo** (ví điện tử), hoặc **COD** (tiền mặt)\n" +
                        "4️⃣ Nhập **voucher** (nếu có) → Xác nhận đặt hàng\n\n" +
                        "Bạn cần hỗ trợ tìm sản phẩm nào không?";
             }
 
             // Thanh toán
-            if (Regex.IsMatch(msg, @"\b(thanh toán|payment|vnpay|cod|tiền)\b"))
+            if (Regex.IsMatch(msg, @"\b(thanh toán|payment|vnpay|momo|cod|tiền)\b"))
             {
                 return "**💳 Phương thức thanh toán:**\n" +
                        "• **VNPay**: Thanh toán online qua thẻ/QR\n" +
+                       "• **MoMo**: Thanh toán qua ví điện tử MoMo\n" +
                        "• **COD**: Trả tiền mặt khi nhận hàng\n" +
                        "• **Voucher**: Giảm giá khi đơn hàng đủ điều kiện\n\n" +
                        "Bạn muốn xem sản phẩm nào để đặt hàng?";
@@ -150,7 +173,7 @@ namespace DATN_API.Services.Ai
                 "mua ao", "mua quan", "mua giay", "mua tui", "mua vay", "mua dam",
                 "dat hang", "gio hang", "thanh toan", "giao hang", "ship hang",
                 "voucher thoi trang", "khuyen mai", "giam gia", "sale off",
-                "doi tra", "bao hanh", "vnpay", "cod"
+                "doi tra", "bao hanh", "vnpay", "momo", "cod"
             };
 
             // Từ khóa kỹ thuật về thời trang
@@ -159,7 +182,8 @@ namespace DATN_API.Services.Ai
                 "mau sac", "chat lieu", "form ao", "form quan",
                 "phoi do", "mix do", "style", "thoi trang"
             };
-
+            string[] genericFashionTerms = { "ao", "quan", "giay", "vay", "tui" };
+            bool hasGenericTerms = genericFashionTerms.Any(term => msg.Contains(term));
             // Kiểm tra có từ khóa thời trang cụ thể
             bool hasFashionTerms = fashionTerms.Any(term => msg.Contains(term));
             bool hasShoppingTerms = shoppingTerms.Any(term => msg.Contains(term));
@@ -171,7 +195,14 @@ namespace DATN_API.Services.Ai
                                       msg.Contains("tui") || msg.Contains("vay") || msg.Contains("phu kien"));
 
             // Chỉ return true khi có bằng chứng rõ ràng về thời trang
-            return hasFashionTerms || hasShoppingTerms || hasFashionSpecs || hasPriceWithFashion;
+            bool hasFindWithGeneric = (msg.Contains("tim") || msg.Contains("mua")) && hasGenericTerms;
+
+            return hasFashionTerms
+                || hasShoppingTerms
+                || hasFashionSpecs
+                || hasPriceWithFashion
+                || hasGenericTerms
+                || hasFindWithGeneric;
         }
 
         private async Task<string> TryDirectAnswerAsync(string message)
@@ -198,6 +229,12 @@ namespace DATN_API.Services.Ai
 
             var matchedCategories = new List<(int, string)>();
 
+            // Kiểm tra giới tính trong tin nhắn
+            bool isFemale = normalizedMessage.Contains("nu") || normalizedMessage.Contains("nữ") ||
+                           normalizedMessage.Contains("cho nu") || normalizedMessage.Contains("cho nữ") ||
+                           normalizedMessage.Contains("danh cho nu") || normalizedMessage.Contains("dành cho nữ");
+            bool isMale = normalizedMessage.Contains("nam") && !isFemale; // Ưu tiên nữ nếu có cả hai
+
             foreach (var category in allCategories)
             {
                 var normalizedCategoryName = StripDiacritics(category.Name.ToLowerInvariant());
@@ -209,7 +246,7 @@ namespace DATN_API.Services.Ai
                     continue;
                 }
 
-                // Kiểm tra với từ khóa thời trang phổ biến
+                // Kiểm tra với từ khóa thời trang và giới tính
                 var fashionKeywords = new Dictionary<string, string[]>
                 {
                     ["ao"] = new[] { "áo", "shirt", "top" },
@@ -224,9 +261,32 @@ namespace DATN_API.Services.Ai
                     if (kvp.Value.Any(keyword => normalizedMessage.Contains(StripDiacritics(keyword))) &&
                         normalizedCategoryName.Contains(kvp.Key))
                     {
+                        // Kiểm tra giới tính để lọc category phù hợp
+                        if (isFemale && normalizedCategoryName.Contains("nam"))
+                        {
+                            continue; // Bỏ qua category nam khi tìm cho nữ
+                        }
+                        if (isMale && normalizedCategoryName.Contains("nu"))
+                        {
+                            continue; // Bỏ qua category nữ khi tìm cho nam
+                        }
+
                         matchedCategories.Add((category.Id, category.Name));
                         break;
                     }
+                }
+            }
+
+            // Nếu có yêu cầu giới tính cụ thể nhưng không tìm thấy, tìm category phù hợp
+            if (!matchedCategories.Any() && (isFemale || isMale))
+            {
+                var genderKeyword = isFemale ? "nu" : "nam";
+                var alternativeCategories = allCategories.Where(c =>
+                    StripDiacritics(c.Name.ToLowerInvariant()).Contains(genderKeyword)).ToList();
+
+                foreach (var cat in alternativeCategories)
+                {
+                    matchedCategories.Add((cat.Id, cat.Name));
                 }
             }
 
@@ -295,7 +355,7 @@ namespace DATN_API.Services.Ai
                     var products = await query
                         .OrderByDescending(p => p.UpdateAt)
                         .Take(5)
-                        .Select(p => new { p.Id, p.Slug, p.Name, p.CostPrice, p.Quantity })
+                        .Select(p => new { p.Id, p.Slug, p.Name })
                         .ToListAsync();
 
                     if (products.Any())
@@ -316,7 +376,6 @@ namespace DATN_API.Services.Ai
                             responseBuilder.AppendLine($"🛍️ **{product.Name}**");
                             responseBuilder.AppendLine($"🔗 {url}");
                             responseBuilder.AppendLine();
-
                         }
                     }
                 }
@@ -332,7 +391,7 @@ namespace DATN_API.Services.Ai
                 var fashionProducts = await fashionQuery
                     .OrderByDescending(p => p.UpdateAt)
                     .Take(6)
-                    .Select(p => new { p.Id, p.Slug, p.Name, p.CostPrice, p.Quantity, CategoryName = p.Category.Name })
+                    .Select(p => new { p.Id, p.Slug, p.Name, CategoryName = p.Category.Name })
                     .ToListAsync();
 
                 if (fashionProducts.Any())
@@ -346,7 +405,6 @@ namespace DATN_API.Services.Ai
                         responseBuilder.AppendLine($"🛍️ **{product.Name}** ({product.CategoryName})");
                         responseBuilder.AppendLine($"🔗 {url}");
                         responseBuilder.AppendLine();
-
                     }
                 }
             }
@@ -354,7 +412,7 @@ namespace DATN_API.Services.Ai
             if (responseBuilder.Length > 0)
             {
                 responseBuilder.AppendLine("---");
-                responseBuilder.AppendLine("**📋 Cách đặt hàng:** Bấm link → Thêm vào giỏ → Thanh toán → Chọn **VNPay** hoặc **COD**");
+                responseBuilder.AppendLine("**📋 Cách đặt hàng:** Bấm link → Thêm vào giỏ → Thanh toán → Chọn **VNPay**, **MoMo**, hoặc **COD**");
                 return responseBuilder.ToString().Trim();
             }
 
@@ -433,10 +491,9 @@ QUY TẮC TRẢ LỜI:
 1. Ngắn gọn, dễ hiểu, sử dụng emoji phù hợp
 2. Format sản phẩm: 
    🛍️ **Tên sản phẩm**
-   💰 Giá: XXXđ | 📦 SL: XX
    🔗 [Link URL]
 3. Chỉ sử dụng thông tin được cung cấp, không bịa đặt
-4. Kết thúc bằng hướng dẫn đặt hàng nếu có sản phẩm
+4. Kết thúc bằng hướng dẫn đặt hàng nếu có sản phẩm: **VNPay**, **MoMo**, hoặc **COD**
 5. Không nhắc đến kỹ thuật, database hay hệ thống backend
 
 PHONG CÁCH: Thân thiện, chuyên nghiệp, hỗ trợ tích cực";
@@ -463,7 +520,7 @@ Hãy trả lời câu hỏi dựa trên thông tin sản phẩm trên. Nếu kh�
                     TopProducts = c.Products
                         .OrderByDescending(p => p.UpdateAt)
                         .Take(3)
-                        .Select(p => new { p.Id, p.Slug, p.Name, p.CostPrice, p.Quantity })
+                        .Select(p => new { p.Id, p.Slug, p.Name })
                         .ToList()
                 })
                 .OrderByDescending(c => c.ProductCount)
@@ -477,8 +534,6 @@ Hãy trả lời câu hỏi dựa trên thông tin sản phẩm trên. Nếu kh�
                 TopProducts = c.TopProducts.Select(p => new {
                     p.Id,
                     p.Name,
-                    p.CostPrice,
-                    p.Quantity,
                     Url = BuildProductUrl(p.Id, p.Slug)
                 }).ToList()
             }).ToList();
@@ -563,7 +618,7 @@ Hãy trả lời câu hỏi dựa trên thông tin sản phẩm trên. Nếu kh�
                        "• **Loại sản phẩm**: áo/quần/váy/giày/túi?\n" +
                        "• **Tầm giá**: khoảng bao nhiêu?\n" +
                        "• **Size**: S/M/L hay size số?\n\n" +
-                       "**📋 Đặt hàng**: Thêm vào giỏ → Thanh toán → **VNPay**/**COD**";
+                       "**📋 Đặt hàng**: Thêm vào giỏ → Thanh toán → **VNPay**/**MoMo**/**COD**";
             }
 
             if (Regex.IsMatch(msg, @"(giày|dép)"))
@@ -571,7 +626,7 @@ Hãy trả lời câu hỏi dựa trên thông tin sản phẩm trên. Nếu kh�
                 return "**👟 Danh mục Giày dép**\n\n" +
                        "Shop có: sneaker, sandal, boot, giày cao gót...\n\n" +
                        "Bạn cho mình biết size chân để tư vấn chính xác nhé!\n\n" +
-                       "**📋 Đặt hàng**: Chọn sản phẩm → **VNPay**/**COD**";
+                       "**📋 Đặt hàng**: Chọn sản phẩm → **VNPay**/**MoMo**/**COD**";
             }
 
             return "**💬 Tôi là TRỢ LÝ GỜ Ô**\n\n" +

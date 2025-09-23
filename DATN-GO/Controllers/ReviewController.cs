@@ -9,18 +9,26 @@ namespace DATN_GO.Controllers
     {
         private readonly ReviewService _reviewService;
         private readonly GoogleCloudStorageService _gcsService;
+        private readonly StoreService _storeService;
         private readonly ILogger<ReviewController> _logger;
 
-        public ReviewController(ReviewService reviewService, GoogleCloudStorageService gcsService, ILogger<ReviewController> logger)
+        public ReviewController(ReviewService reviewService, GoogleCloudStorageService gcsService, ILogger<ReviewController> logger, StoreService storeService)
         {
             _reviewService = reviewService;
             _gcsService = gcsService;
             _logger = logger;
+            _storeService = storeService;
         }
 
         // Hiển thị tất cả review (admin hoặc debug)
         public async Task<IActionResult> Index()
         {
+            if (HttpContext.Session.TryGetValue("Id", out var idBytes)
+    && int.TryParse(System.Text.Encoding.UTF8.GetString(idBytes), out var userId))
+            {
+                var store = await _storeService.GetStoreByUserIdAsync(userId);
+                ViewData["StoreStatus"] = store?.Status; // enum StoreStatus
+            }
             _logger.LogInformation("Bắt đầu lấy tất cả review.");
             var reviews = await _reviewService.GetAllReviewsAsync();
             _logger.LogInformation("Lấy {Count} review thành công.", reviews?.Count ?? 0);

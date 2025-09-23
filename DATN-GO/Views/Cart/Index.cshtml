@@ -6,6 +6,11 @@
     ViewData["Title"] = "Cart Page";
 }
 <style>
+
+    .btn, h2 {
+        text-transform: none !important;
+    }
+
     .text-truncate-2 {
         display: -webkit-box;
         -webkit-line-clamp: 2;
@@ -36,6 +41,7 @@
             transform: none;
             box-shadow: none;
         }
+
     .cart-item-row.fade-in {
         animation: fadeInUp 0.5s ease-out;
     }
@@ -82,6 +88,7 @@
         color: #333;
         margin: 0;
     }
+
     .store-name-link {
         display: flex;
         align-items: center;
@@ -152,20 +159,23 @@
             transform: translateY(0);
         }
     }
+
     #scroll-loading {
-    border-top: 1px solid #dee2e6;
-}
-.spinner-border-sm {
-    width: 1rem;
-    height: 1rem;
-}
-.fade-in {
-    animation: fadeInUp 0.5s ease-out;
-}
+        border-top: 1px solid #dee2e6;
+    }
+
+    .spinner-border-sm {
+        width: 1rem;
+        height: 1rem;
+    }
+
+    .fade-in {
+        animation: fadeInUp 0.5s ease-out;
+    }
 
 </style>
 
-<h2 class="text-center mb-4 text-crimson">Giỏ Hàng Của Bạn</h2>
+<h2 class="text-center mb-4 text-crimson">GIỎ HÀNG CỦA BẠN</h2>
 <div class="row container-fluid">
     <div class="col-lg-8">
         <div class="card border-crimson mb-3">
@@ -190,12 +200,12 @@
                     <div class="store-group" data-store-id="@storeGroup.Key.StoreId">
                         <div class="store-header">
                             <div class="store-info">
-                               
+
                                 <a href="/Store/Detail/@storeGroup.Key.StoreId" class="store-name-link">
                                     <img src="@(string.IsNullOrEmpty(storeGroup.First().StoreAvatar) ? "/images/store-default.png" : storeGroup.First().StoreAvatar)"
                                          alt="@storeGroup.Key.StoreName"
                                          class="store-logo">
-                                         <div>
+                                    <div>
                                         <h6 class="store-name">@storeGroup.Key.StoreName</h6>
                                         <small class="store-item-count">@storeGroup.Count() sản phẩm</small>
                                     </div>
@@ -210,8 +220,7 @@
                                     <label for="store-@storeGroup.Key.StoreId">Chọn tất cả</label>
                                 </div>
                                 <i class="bi bi-chevron-down collapse-icon fs-5"
-                                   onclick="toggleStoreGroup(@storeGroup.Key.StoreId)"
-                                ></i>
+                                   onclick="toggleStoreGroup(@storeGroup.Key.StoreId)"></i>
                             </div>
                         </div>
 
@@ -277,12 +286,11 @@
                                                                 data-current-qty="@item.Quantity"
                                                                 data-max-qty="@item.MaxQuantity"
                                                                 style="height: 35px; width: 35px;"
-                                                        @(item.Quantity <= 1 ? "disabled" : "")>
+                                                                @(item.Quantity <= 1 ? "disabled" : "")>
                                                             <i class="bi bi-dash"></i>
                                                         </button>
 
-                                                        <input
-                                                               class="form-control form-control-sm text-center quantity-input"
+                                                        <input class="form-control form-control-sm text-center quantity-input"
                                                                value="@item.Quantity"
                                                                min="1"
                                                                max="@item.MaxQuantity"
@@ -296,7 +304,7 @@
                                                                 data-current-qty="@item.Quantity"
                                                                 data-max-qty="@item.MaxQuantity"
                                                                 style="height: 35px; width: 35px;"
-                                                        @(item.Quantity >= item.MaxQuantity ? "disabled" : "")>
+                                                                @(item.Quantity >= item.MaxQuantity ? "disabled" : "")>
                                                             <i class="bi bi-plus"></i>
                                                         </button>
                                                     </div>
@@ -381,7 +389,15 @@
 
                 <div class="mb-4 border-top pt-3">
                     <label class="form-label fw-semibold mb-3">Phương thức thanh toán</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="paymentBalance"
+                               value="balance">
+                        <label class="form-check-label d-flex align-items-center" for="paymentBalance">
+                            <i class="bi bi-wallet2 me-2 text-success fs-5"></i>
+                            <span>Thanh toán bằng số dư ví (@ViewBag.Balance.ToString("N0")) đ</span>
 
+                        </label>
+                    </div>
                     <div class="form-check mb-2">
                         <input class="form-check-input" type="radio" name="paymentMethod" id="paymentMoMo"
                                value="momo" checked>
@@ -424,7 +440,20 @@
     const btn = document.getElementById('btn-checkout');
     const voucherSelect = document.getElementById('voucherSelect');
     const addressSelect = document.getElementById('addressSelect');
-    const toast = (msg) => alert(msg);
+    const toast = (msg, type = "info") => {
+        Swal.fire({
+            icon: type,
+            title: type === "success" ? "🎉 Thành công" :
+                   type === "error"   ? "❌ Lỗi" :
+                   "ℹ️ Thông báo",
+            text: msg,
+            timer: 5000,                // ⏱ hiện 5 giây
+            showConfirmButton: true,   // ❌ không có nút OK
+            timerProgressBar: true,     // thanh chạy ngầm
+            position: "center"
+        });
+    };
+
 
     // Store group toggle functionality
     function toggleStoreGroup(storeId) {
@@ -504,10 +533,47 @@
                 }
 
                 const { orderId, labelId } = await payRes.json();
-                toast(`Đặt hàng COD thành công${labelId ? ' - Mã vận đơn: ' + labelId : ''}`);
-                window.location.href = `/Checkout/Success?orderId=${orderId}`;
+                toast(`Đặt hàng COD thành công${labelId ? ' - Mã vận đơn: ' + labelId : ''}`, "success");
+                    setTimeout(() => {
+                    window.location.href = `/Checkout/Success?orderId=${orderId}`;
+                                       }, 5000);
                 return;
             }
+                if (method === 'balance') {
+      const userVoucherId = voucherSelect?.value ? Number(voucherSelect.value) : null;
+      const body = { userId, addressId, userVoucherId };
+
+      const payRes = await fetch(`${API_BASE_URL}Payment/balance-create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+
+      btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
+
+      if (!payRes.ok) {
+        const msg = await payRes.text();
+        return toast('Thanh toán bằng Balance thất bại: ' + msg);
+      }
+
+      const { orders } = await payRes.json();
+      if (!orders?.length) return toast('Không nhận được đơn hàng sau thanh toán.');
+
+      if (orders.length === 1) {
+        const o = orders[0];
+        toast(`Thanh toán thành công - Mã vận đơn: ${o.labelId ?? 'N/A'}`);
+        window.location.href = `/Checkout/Success?orderId=${o.id}`;
+      } else {
+        // nhiều store → nhiều vận đơn
+        const labels = orders.map(o => `#${o.id}: ${o.labelId ?? 'N/A'}`).join(', ');
+        toast(`Thanh toán thành công - Mã vận đơn: ${labels}`);
+        // Điều hướng về trang lịch sử đơn hàng tổng hợp
+        window.location.href = `/Orders`;
+      }
+      return;
+    }
+
+
 
             if (method === 'momo') {
                 const userVoucherId = voucherSelect?.value ? Number(voucherSelect.value) : null;
@@ -835,7 +901,7 @@
 
             const paginationInfo = document.createElement('div');
             paginationInfo.className = 'pagination-info';
-           
+
 
             // Thêm vào cuối card body
             const cardBody = document.querySelector('.card-body');
@@ -919,7 +985,7 @@
                 isLoading = false;
                 toggleLoadingIndicator(false);
 
-            }, 500); 
+            }, 500);
         }
 
         function handleScroll() {
@@ -1215,3 +1281,46 @@
         recalculateShippingFee();
     });
 </script>
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Hàm popup đẹp
+        const showPopup = (msg, type = 'info') => {
+            Swal.fire({
+                icon: type,
+                title: type === 'success' ? 'Thành công 🎉' :
+                       type === 'error' ? 'Thất bại ❌' : 'Thông báo',
+                text: msg,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#dc143c',
+                timer: type === 'success' ? 2500 : undefined
+            });
+        };
+
+        // Khi bấm nút thanh toán
+        document.getElementById("btnCheckout").addEventListener("click", async function () {
+            try {
+                let response = await fetch("/Order/CheckoutCod", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    body: JSON.stringify({})
+                });
+
+                let data = await response.json();
+
+                if (data.success) {
+                    showPopup("Đặt hàng COD thành công - Mã vận đơn: " + data.labelId, "success");
+                } else {
+                    showPopup("Đặt hàng COD thất bại: " + data.message, "error");
+                }
+            } catch (err) {
+                console.error(err);
+                showPopup("Có lỗi xảy ra khi kết nối server!", "error");
+            }
+        });
+    </script>
+}
+ó 

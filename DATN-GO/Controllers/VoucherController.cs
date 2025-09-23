@@ -1,4 +1,5 @@
 ﻿using DATN_GO.Models;
+using DATN_GO.Service;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Newtonsoft.Json;
@@ -8,11 +9,13 @@ namespace DATN_GO.Controllers
     public class VoucherController : Controller
     {
         private readonly HttpClient _httpClient;
+        private readonly StoreService _storeService;
 
-        public VoucherController(IHttpClientFactory factory)
+        public VoucherController(IHttpClientFactory factory, StoreService storeService)
         {
             _httpClient = factory.CreateClient();
             _httpClient.BaseAddress = new Uri("https://localhost:7096/api/vouchers/"); // Đổi nếu API khác port
+            _storeService = storeService;
         }
 
         // View chính
@@ -22,11 +25,13 @@ namespace DATN_GO.Controllers
             if (!HttpContext.Session.TryGetValue("Id", out byte[] idBytes) ||
                 !int.TryParse(System.Text.Encoding.UTF8.GetString(idBytes), out int userId))
             {
+
                 TempData["ToastMessage"] = "Bạn chưa đăng nhập hoặc phiên làm việc đã hết hạn.";
                 TempData["ToastType"] = "danger";
                 return RedirectToAction("Login", "UserAuthentication");
             }
-
+            var store = await _storeService.GetStoreByUserIdAsync(userId);
+            ViewData["StoreStatus"] = store?.Status; // enum StoreStatus
             var user = await GetUserById(userId); // gọi hàm riêng lấy thông tin user
             if (user == null)
             {
@@ -66,6 +71,9 @@ namespace DATN_GO.Controllers
             {
                 return Json(new List<object>());
             }
+                var store = await _storeService.GetStoreByUserIdAsync(userId);
+                ViewData["StoreStatus"] = store?.Status; // enum StoreStatus
+            
 
             try
             {
@@ -126,7 +134,8 @@ namespace DATN_GO.Controllers
                 {
                     return Json(new { isSaved = false, message = "User not logged in" });
                 }
-
+                var store = await _storeService.GetStoreByUserIdAsync(userId);
+                ViewData["StoreStatus"] = store?.Status; // enum StoreStatus
                 var response = await _httpClient.GetAsync($"https://localhost:7096/api/UserVouchers/check/{userId}/{voucherId}");
 
                 if (!response.IsSuccessStatusCode)
@@ -153,6 +162,13 @@ namespace DATN_GO.Controllers
         [ActionName("VoucherAdmin")]
         public async Task<IActionResult> VoucherAdmin()
         {
+            if (HttpContext.Session.TryGetValue("Id", out var idBytes)
+    && int.TryParse(System.Text.Encoding.UTF8.GetString(idBytes), out var userId))
+            {
+                var store = await _storeService.GetStoreByUserIdAsync(userId);
+                ViewData["StoreStatus"] = store?.Status; // enum StoreStatus
+            }
+
             return View();
         }
 
@@ -161,6 +177,7 @@ namespace DATN_GO.Controllers
         [HttpGet]
         public IActionResult Logout()
         {
+
             HttpContext.Session.Clear();
 
             TempData["ToastMessage"] = "Bạn đã đăng xuất thành công!";

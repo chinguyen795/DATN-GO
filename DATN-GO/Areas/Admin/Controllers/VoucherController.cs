@@ -18,7 +18,7 @@ namespace DATN_GO.Areas.Admin.Controllers
         }
 
         // ================== LIST ==================
-        public async Task<IActionResult> Voucher(string? search, string? sort, int page = 1, int pageSize = 4)
+        public async Task<IActionResult> Voucher(string? search, string? sort, int page = 1, int pageSize = 6)
         {
             // vẫn yêu cầu đăng nhập
             var userIdStr = HttpContext.Session.GetString("Id");

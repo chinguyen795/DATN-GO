@@ -6,6 +6,7 @@
 @functions {
     string GetStatusDisplayName(string status)
     {
+        status = status?.Trim();
         return status switch
         {
             "PendingApproval" => "Chờ duyệt",
@@ -13,10 +14,20 @@
             "Rejected" => "Từ chối",
             "Approved" => "Đã duyệt",
             "Hidden" => "Ẩn",
-            _ => status
+            _ => "Chờ duyệt"
         };
     }
 }
+<style>
+    .btn, h2, th {
+        text-transform: none !important;
+    }
+
+    .badge {
+        text-transform: none !important;
+    }
+
+</style>
 
 <div class="page-wrapper">
 
@@ -101,7 +112,11 @@
                                             <td>@p.CategoryName</td>
                                 
                                             <td>@p.StoreName</td>
-                                            <td><span class="badge badge-warning">@GetStatusDisplayName(p.Status)</span></td>
+                                            <td>
+                                                <span class="badge badge-warning">
+                                                    @GetStatusDisplayName(p.Status)
+                                                </span>
+                                            </td>
                                             <td>
                                                 <button class="btn btn-sm btn-success btn-approve" data-id="@p.Id">
                                                     <i class="bi bi-check-circle-fill"></i> Duyệt

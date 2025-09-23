@@ -1,25 +1,28 @@
-﻿using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Security.Claims;
-using System.Text.Json;
+﻿using DATN_GO.Models;
+using DATN_GO.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using DATN_GO.Models;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Security.Claims;
+using System.Text.Json;
 
 namespace DATN_GO.Controllers
 {
     public class AdminVouchersController : Controller
     {
         private readonly HttpClient _http;
+        private readonly StoreService _storeService;
         private readonly string _apiBase;
 
-        public AdminVouchersController(IConfiguration config)
+        public AdminVouchersController(IConfiguration config, StoreService storeService)
         {
             _apiBase = config["ApiOptions:BaseUrl"]?.TrimEnd('/') ?? "https://localhost:7096";
             _http = new HttpClient { BaseAddress = new Uri(_apiBase + "/") };
             // Nếu API cần Bearer token của user:
             // var token = ...; _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            _storeService = storeService;
         }
 
         private int GetCurrentUserId()
@@ -74,6 +77,12 @@ namespace DATN_GO.Controllers
             var vouchers = await res.Content.ReadFromJsonAsync<List<Vouchers>>(new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
                            ?? new List<Vouchers>();
 
+            if (HttpContext.Session.TryGetValue("Id", out var idBytes)
+                && int.TryParse(System.Text.Encoding.UTF8.GetString(idBytes), out var userId))
+            {
+                var store = await _storeService.GetStoreByUserIdAsync(userId);
+                ViewData["StoreStatus"] = store?.Status; // enum StoreStatus
+            }
             // 2) Nếu đã đăng nhập: lấy list voucher user đã lưu (platform) để đánh dấu nút & map userVoucherId
             var uid = GetCurrentUserId();
             var savedSet = new HashSet<int>();                      // voucherId đã lưu
