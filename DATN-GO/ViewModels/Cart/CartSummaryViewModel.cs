@@ -17,5 +17,13 @@ namespace DATN_GO.ViewModels.Cart
         public decimal MinOrder { get; set; }
         public DateTime EndDate { get; set; }
         public string StoreName { get; set; }
+        public int? StoreId { get; set; }
+        public bool IsPercentage { get; set; }
     }
+    public sealed class StoreVoucherRequest
+    {
+        public int StoreId { get; set; }
+        public List<int> SelectedCartIds { get; set; } = new();
+    }
+
 }

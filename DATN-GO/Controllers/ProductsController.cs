@@ -218,6 +218,8 @@ namespace DATN_GO.Controllers
             // Giá min/max
             ViewBag.MinMaxPrice = await _priceService.GetMinMaxPriceByProductIdAsync(id);
 
+            var price = await _priceService.GetPriceByIdAsync(id);
+            ViewBag.Price = price;
             // Reviews (đừng gọi 2 lần)
             var reviews = await _reviewService.GetReviewsByProductIdAsync(id) ?? new List<ReviewViewModel>();
             ViewBag.Reviews = reviews;

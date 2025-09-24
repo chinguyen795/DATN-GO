@@ -193,7 +193,9 @@ namespace DATN_API.Services
                     Reduce = uv.Voucher.Reduce,
                     MinOrder = uv.Voucher.MinOrder,
                     EndDate = uv.Voucher.EndDate,
-                    StoreName = uv.Voucher.Store?.Name ?? "Sàn TMĐT"
+                    StoreName = uv.Voucher.Store?.Name ?? "Sàn TMĐT",
+                    StoreId = uv.Voucher.StoreId,
+                    IsPercentage = uv.Voucher.IsPercentage
                 })
 
       .GroupBy(v => v.VoucherId)
@@ -252,6 +254,18 @@ namespace DATN_API.Services
             };
 
 
+        }
+
+        public async Task UpdateSelectionAsync(List<int> selectedCartIds)
+        {
+            var carts = await _context.Carts.ToListAsync();
+
+            foreach (var cart in carts)
+            {
+                cart.IsSelected = selectedCartIds.Contains(cart.Id);
+            }
+
+            await _context.SaveChangesAsync();
         }
 
 
@@ -905,17 +919,6 @@ namespace DATN_API.Services
             return true;
         }
 
-        public async Task UpdateSelectionAsync(List<int> selectedCartIds)
-        {
-            var carts = await _context.Carts.ToListAsync();
-
-            foreach (var cart in carts)
-            {
-                cart.IsSelected = selectedCartIds.Contains(cart.Id);
-            }
-
-            await _context.SaveChangesAsync();
-        }
 
         public async Task<int> ClearSelectedAsync(int userId)
         {

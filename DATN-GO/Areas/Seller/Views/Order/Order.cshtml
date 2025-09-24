@@ -134,7 +134,7 @@
         margin-bottom: 0.2rem !important;
     }
 
-    .btn {
+    .btn, th, a {
         text-transform: none !important;
     }
 </style>
@@ -148,7 +148,7 @@
                 <span class="sr-only">Toggle navigation</span>
             </button>
 
-            <span class="page-title">ĐƠN HÀNG @userIdStr</span>
+            <span class="page-title">ĐƠN HÀNG</span>
 
             <div class="navbar-right ">
 
@@ -191,95 +191,113 @@
         <main class="py-5">
             <div class="container-fluid">
 
-                <div class="modal fade" id="orderDetailsModal" tabindex="-1"
-                     aria-labelledby="orderDetailsModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-lg modal-dialog-centered">
-                        <div class="modal-content rounded-3 shadow-lg">
-                            <div class="modal-header text-white border-bottom border-danger">
-                                <h5 class="modal-title fw-bold text-danger" id="orderDetailsModalLabel">
-                                    Chi tiết
-                                    đơn hàng
-                                </h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                                        aria-label="Close"></button>
+                <div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-labelledby="orderDetailsModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content border-0 rounded-4 shadow-lg">
+
+                            <!-- Header -->
+                            <div class="modal-header bg-danger text-white border-bottom-0 rounded-top-4 py-3">
+                                <h5 class="modal-title fw-bold" id="orderDetailsModalLabel">Chi tiết đơn hàng</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Đóng"></button>
                             </div>
+
+                            <!-- Body -->
                             <div class="modal-body p-4">
-                                <div class="row mb-4 gx-4">
-                                    <div class="col-md-6 border-end pe-4">
-                                        <p class="mb-2">
-                                            <strong>Mã đơn:</strong> <span id="modalOrderId"
-                                                                           class="text-danger fw-bold"></span>
-                                        </p>
-                                        <p class="mb-2">
-                                            <strong>Khách hàng:</strong> <span id="modalCustomerName" class="text-danger fw-bold"></span>
-                                        </p>
-                                        <p class="mb-0">
-                                            <strong>Ngày đặt:</strong> <span id="modalOrderDate"
-                                                                             class="text-danger fw-bold"></span>
-                                        </p>
+                                <div class="row g-4">
+                                    <!-- Cột trái: thông tin KH -->
+                                    <div class="col-md-6">
+                                        <div class="p-3 rounded-3 border bg-light">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <span class="badge bg-danger me-2 text-light">Mã đơn</span>
+                                                <span id="modalOrderId" class="fw-bold text-danger"></span>
+                                            </div>
+                                            <div class="mb-2">
+                                                <small class="text-muted d-block">Khách hàng</small>
+                                                <span id="modalCustomerName" class="fw-semibold"></span>
+                                            </div>
+                                            <div class="mb-2">
+                                                <small class="text-muted d-block">SĐT</small>
+                                                <span id="modalCustomerPhone" class="fw-semibold"></span>
+                                            </div>
+                                            <div class="mb-0">
+                                                <small class="text-muted d-block">Ngày đặt</small>
+                                                <span id="modalOrderDate" class="fw-semibold"></span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="col-md-6 ps-4">
-                                        <p class="mb-2">
-                                            <strong>Số lượng:</strong> <span id="modalQuantity"
-                                                                             class="text-danger fw-bold"></span>
-                                        </p>
-                                        <p class="mb-2">
-                                            <strong>Tổng tiền:</strong> <span id="modalTotalAmount"
-                                                                              class="text-danger fw-bold"></span>
-                                        </p>
-                                        <p class="mb-0">
-                                            <strong>Trạng thái:</strong> <span id="modalStatus"
-                                                                               class="badge bg-danger text-white rounded-pill px-3 py-2"></span>
-                                        </p>
+
+                                    <!-- Cột phải: tổng quan đơn -->
+                                    <div class="col-md-6">
+                                        <div class="p-3 rounded-3 border">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <span class="text-muted">Số lượng</span>
+                                                <span id="modalQuantity" class="fw-bold"></span>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <span class="text-muted">Tổng tiền</span>
+                                                <span id="modalTotalAmount" class="fw-bold text-danger"></span>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <span class="text-muted">Phí hoa hồng sàn (5%)</span>
+                                                <span id="modalCommission" class="fw-bold text-danger"></span>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="text-muted">Trạng thái</span>
+                                                <span id="modalStatus" class="badge bg-danger text-white rounded-pill px-3 py-2">—</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="table-responsive border rounded-3 p-2 bg-white">
-                                    <table class="table table-hover mb-0">
-                                        <thead class="bg-light">
-                                            <tr>
-                                                <th scope="col">Sản phẩm</th>
-                                                <th scope="col">Số lượng</th>
-                                                <th scope="col">Đơn giá</th>
-                                                <th scope="col">Thành tiền</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="modalOrderItems">
-                                            <tr class="bg-light">
-                                                <td>Sản phẩm A</td>
-                                                <td>1</td>
-                                                <td>500.000đ</td>
-                                                <td>500.000đ</td>
-                                            </tr>
-                                            <tr class="bg-light">
-                                                <td>Sản phẩm B</td>
-                                                <td>1</td>
-                                                <td>550.000đ</td>
-                                                <td>550.000đ</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+
+                                <!-- Bảng sản phẩm -->
+                                <div class="mt-4 border rounded-3 p-2 bg-white">
+                                    <div class="d-flex justify-content-between align-items-center px-2 py-2">
+                                        <h6 class="mb-0 fw-bold">Sản phẩm</h6>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover mb-0">
+                                            <thead class="bg-light">
+                                                <tr>
+                                                    <th scope="col">Sản phẩm</th>
+                                                    <th scope="col" class="text-center">Số lượng</th>
+                                                    <th scope="col" class="text-end">Đơn giá</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="modalOrderItems">
+                                                <!-- JS render -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Label GHTK -->
+                                <div id="modalLabelRow" class="mt-4 p-3 border rounded-3 bg-light d-flex align-items-center flex-wrap gap-2">
+                                    <div class="me-auto">
+                                        <strong>Mã đơn hàng:</strong>
+                                        <code id="modalLabelId" class="ms-1"></code>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" style="margin-right: 5px" id="btnCopyLabel">Copy</button>
+                                    <a class="btn btn-sm btn-outline-primary rounded-pill"
+                                       href="https://khachhang-staging.ghtklab.com/web/don-hang"
+                                       target="_blank" rel="noopener">
+                                        Tra cứu GHTK
+                                    </a>
                                 </div>
                             </div>
-                            <div class="modal-footer justify-content-between p-3 border-top border-light">
-                                <button type="button" class="btn btn-light rounded-pill px-4"
-                                        data-bs-dismiss="modal">
-                                    Đóng
-                                </button>
+
+                            <!-- Footer -->
+                            <div class="modal-footer border-top-0 pt-0 pb-4 px-4">
+                                <button type="button" class="btn btn-outline-dark rounded-pill fw-semibold px-4" data-bs-dismiss="modal">Đóng</button>
                                 <div class="d-flex gap-2">
-                                    <button type="button" class="btn btn-danger rounded-pill px-4"
-                                            id="btnCancelOrder" style="margin-right: 10px;">
-                                            
-                                        Hủy đơn
-                                    </button>
-                                    <button type="button" class="btn btn-success rounded-pill px-4"
-                                            id="btnUpdateStatus">
-                                        Cập nhật trạng thái
-                                    </button>
+                                    <button type="button" class="btn btn-danger rounded-pill fw-semibold px-4 " style="margin-right: 5px" id="btnCancelOrder">Hủy đơn</button>
+                                    <button type="button" class="btn btn-success rounded-pill fw-semibold px-4" id="btnUpdateStatus">Cập nhật trạng thái</button>
                                 </div>
                             </div>
+
                         </div>
                     </div>
                 </div>
+
                 <div class="row g-4">
                     <div class="col-lg-8">
                         <div class="card shadow-lg rounded-4">
@@ -327,12 +345,12 @@
                                             <table class="table table-hover align-middle mb-0">
                                                 <thead class="bg-danger text-dark">
                                                     <tr>
-                                                        <th scope="col" class="fw-bold bg-danger text-white">Mã Đơn</th>
-                                                        <th scope="col" class="fw-bold bg-danger text-white">Khách Hàng</th>
-                                                        <th scope="col" class="fw-bold bg-danger text-white">Số Lượng</th>
-                                                        <th scope="col" class="fw-bold bg-danger text-white">Tổng Tiền</th>
-                                                        <th scope="col" class="fw-bold bg-danger text-white">Ngày Đặt</th>
-                                                        <th scope="col" class="fw-bold bg-danger text-white">Trạng Thái</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Mã đơn</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Khách hàng</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Số lượng</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Tổng tiền</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Ngày đặt</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Trạng thái</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -369,12 +387,12 @@
                                             <table class="table table-hover align-middle mb-0">
                                                 <thead class="bg-danger text-dark">
                                                     <tr>
-                                                        <th scope="col" class="fw-bold text-dark">Mã Đơn</th>
-                                                        <th scope="col" class="fw-bold text-dark">Khách Hàng</th>
-                                                        <th scope="col" class="fw-bold text-dark">Số Lượng</th>
-                                                        <th scope="col" class="fw-bold text-dark">Tổng Tiền</th>
-                                                        <th scope="col" class="fw-bold text-dark">Ngày Đặt</th>
-                                                        <th scope="col" class="fw-bold text-dark">Thao Tác</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Mã đơn</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Khách hàng</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Số lượng</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Tổng tiền</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Ngày đặt</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Trạng thái</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -416,12 +434,12 @@
                                             <table class="table table-hover align-middle mb-0">
                                                 <thead class="bg-danger text-dark">
                                                     <tr>
-                                                        <th scope="col" class="fw-bold text-dark">Mã Đơn</th>
-                                                        <th scope="col" class="fw-bold text-dark">Khách Hàng</th>
-                                                        <th scope="col" class="fw-bold text-dark">Số Lượng</th>
-                                                        <th scope="col" class="fw-bold text-dark">Tổng Tiền</th>
-                                                        <th scope="col" class="fw-bold text-dark">Ngày Đặt</th>
-                                                        <th scope="col" class="fw-bold text-dark">Trạng Thái</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Mã đơn</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Khách hàng</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Số lượng</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Tổng tiền</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Ngày đặt</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Trạng thái</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -456,12 +474,12 @@
                                             <table class="table table-hover align-middle mb-0">
                                                 <thead class="bg-danger text-dark">
                                                     <tr>
-                                                        <th scope="col" class="fw-bold text-dark">Mã Đơn</th>
-                                                        <th scope="col" class="fw-bold text-dark">Khách Hàng</th>
-                                                        <th scope="col" class="fw-bold text-dark">Số Lượng</th>
-                                                        <th scope="col" class="fw-bold text-dark">Tổng Tiền</th>
-                                                        <th scope="col" class="fw-bold text-dark">Ngày Đặt</th>
-                                                        <th scope="col" class="fw-bold text-dark">Trạng Thái</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Mã đơn</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Khách hàng</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Số lượng</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Tổng tiền</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Ngày đặt</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Trạng thái</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -496,12 +514,12 @@
                                             <table class="table table-hover align-middle mb-0">
                                                 <thead class="bg-danger text-dark">
                                                     <tr>
-                                                        <th scope="col" class="fw-bold text-dark">Mã Đơn</th>
-                                                        <th scope="col" class="fw-bold text-dark">Khách Hàng</th>
-                                                        <th scope="col" class="fw-bold text-dark">Số Lượng</th>
-                                                        <th scope="col" class="fw-bold text-dark">Tổng Tiền</th>
-                                                        <th scope="col" class="fw-bold text-dark">Ngày Đặt</th>
-                                                        <th scope="col" class="fw-bold text-dark">Trạng Thái</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Mã đơn</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Khách hàng</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Số lượng</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Tổng tiền</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Ngày đặt</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Trạng thái</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -536,12 +554,12 @@
                                             <table class="table table-hover align-middle mb-0">
                                                 <thead class="bg-danger text-dark">
                                                     <tr>
-                                                        <th scope="col" class="fw-bold text-dark">Mã Đơn</th>
-                                                        <th scope="col" class="fw-bold text-dark">Khách Hàng</th>
-                                                        <th scope="col" class="fw-bold text-dark">Số Lượng</th>
-                                                        <th scope="col" class="fw-bold text-dark">Tổng Tiền</th>
-                                                        <th scope="col" class="fw-bold text-dark">Ngày Đặt</th>
-                                                        <th scope="col" class="fw-bold text-dark">Lý Do Hủy</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Mã đơn</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Khách hàng</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Số lượng</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Tổng tiền</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Ngày đặt</th>
+                                                        <th scope="col" class="fw-bold bg-danger text-white">Trạng thái</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -586,7 +604,7 @@
                             </div>
                             <div class="card-body d-flex flex-column p-4">
                                 <div class="mb-5">
-                                    <label class="form-label small fw-semibold text-muted">Thời Gian</label>
+                                    <label class="form-label small fw-semibold text-muted">Thời gian</label>
                                     <div class="row g-2">
                                         <div class="col-6">
                                             <div class="input-group input-group-sm rounded-pill overflow-hidden shadow-sm d-flex align-items-center">
@@ -803,6 +821,7 @@
 <script>
     const API_BASE_URL = 'https://localhost:7096/api'; // Khai báo duy nhất 1 lần
     let productTotal = 0;
+
     document.addEventListener('DOMContentLoaded', function () {
         // --- Xử lý style tab ---
         const originalColors = {};
@@ -824,8 +843,10 @@
             activeTab.classList.remove(originalColors[activeTab.id]);
             activeTab.classList.add('bg-danger', 'bg-opacity-25', 'text-white');
         }
+
         // --- Modal chi tiết đơn hàng ---
         const orderDetailsModal = new bootstrap.Modal(document.getElementById('orderDetailsModal'));
+
         function formatCurrency(value) {
             if (typeof value !== 'number') return value;
             return value.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
@@ -840,57 +861,100 @@
             };
             return map[status] || ['Không xác định', 'bg-secondary text-white'];
         }
+
         document.querySelectorAll('tr[data-order-id]').forEach(row => {
             row.addEventListener('click', async (event) => {
                 if (event.target.closest('td:last-child')) return;
                 const orderId = row.getAttribute('data-order-id');
                 if (!orderId) return;
+
                 try {
                     const resp = await fetch(`${API_BASE_URL}/orders/${orderId}/detail`);
                     if (!resp.ok) throw new Error('Không lấy được thông tin đơn hàng');
                     const order = await resp.json();
+
                     document.getElementById('modalOrderId').textContent = `#${order.id}`;
                     document.getElementById('modalCustomerName').textContent = order.customerName || 'N/A';
+                    document.getElementById('modalCustomerPhone').textContent = order.customerPhone || '—';
+
                     const createdAt = new Date(order.createdAt);
                     document.getElementById('modalOrderDate').textContent = createdAt.toLocaleDateString('vi-VN');
                     document.getElementById('modalQuantity').textContent = `${order.totalQuantity} món`;
                     document.getElementById('modalTotalAmount').textContent = formatCurrency(order.grandTotal);
+
+                    // Tính 5% phí sàn từ GrandTotal
+                    const commission = Math.max(0, Number(order.grandTotal || 0) * 0.05);
+                    document.getElementById('modalCommission').textContent = formatCurrency(commission);
+
+                    // Trạng thái
                     const [statusText, statusClass] = mapStatus(order.status);
                     const modalStatus = document.getElementById('modalStatus');
                     modalStatus.textContent = statusText;
                     modalStatus.className = '';
                     modalStatus.classList.add('badge', ...statusClass.split(' '), 'rounded-pill', 'px-3', 'py-2');
+
+                    // Ẩn/hiện nút Hủy theo trạng thái (Đang giao/Hoàn thành -> ẩn)
+                    const cancelBtn = document.getElementById('btnCancelOrder');
+                    const hideCancel = order.status === 'DangGiao' || order.status === 'DaHoanThanh';
+                    cancelBtn.classList.toggle('d-none', hideCancel);
+                    cancelBtn.disabled = hideCancel;
+                    cancelBtn.title = hideCancel ? 'Đơn đang giao/đã hoàn thành, không thể hủy' : '';
+
+                    // Label/GHTK
+                    const labelRow = document.getElementById('modalLabelRow');
+                    const labelIdEl = document.getElementById('modalLabelId');
+                    const copyBtn = document.getElementById('btnCopyLabel');
+                    if (order.labelId) {
+                        labelRow.classList.remove('d-none');
+                        labelIdEl.textContent = order.labelId;
+                        copyBtn.onclick = async () => {
+                            try {
+                                await navigator.clipboard.writeText(order.labelId);
+                                copyBtn.textContent = 'Đã copy';
+                                setTimeout(() => (copyBtn.textContent = 'Copy'), 1500);
+                            } catch {
+                                alert('Không copy được. Vui lòng copy tay: ' + order.labelId);
+                            }
+                        };
+                    } else {
+                        labelRow.classList.add('d-none');
+                        labelIdEl.textContent = '';
+                        copyBtn.onclick = null;
+                    }
+
+                    // Items
                     const tbody = document.getElementById('modalOrderItems');
                     tbody.innerHTML = '';
                     if (order.orderDetails && order.orderDetails.length > 0) {
                         order.orderDetails.forEach(item => {
                             const tr2 = document.createElement('tr');
                             tr2.classList.add('bg-light');
-                            const totalPrice = item.quantity * item.unitPrice;
-                            productTotal += totalPrice;
                             tr2.innerHTML = `
-                                        <td>${item.productName || ''}</td>
-                                        <td>${item.quantity}</td>
-                                        <td>${formatCurrency(item.unitPrice)}</td>
-                                        <td>${formatCurrency(totalPrice)}</td>
-                                    `;
+                                <td>${item.productName || ''}</td>
+                                <td class="text-center">${item.quantity}</td>
+                                <td class="text-end">${formatCurrency(item.unitPrice)}</td>
+                            `;
                             tbody.appendChild(tr2);
                         });
                     } else {
-                        tbody.innerHTML = `<tr><td colspan="4" class="text-center">Không có sản phẩm</td></tr>`;
+                        tbody.innerHTML = `<tr><td colspan="3" class="text-center">Không có sản phẩm</td></tr>`;
                     }
+
                     orderDetailsModal.show();
                 } catch (error) {
                     showCustomToast(error.message, false);
                 }
             });
         });
+
         // --- Modal Xác nhận đơn hàng ---
         const confirmOrderModalEl = document.getElementById('confirmOrderModal');
         const confirmOrderModal = new bootstrap.Modal(confirmOrderModalEl);
+
         // --- Modal Từ chối đơn hàng ---
         const rejectOrderModalEl = document.getElementById('rejectOrderModal');
         const rejectOrderModal = new bootstrap.Modal(rejectOrderModalEl);
+
         // Hàm cập nhật trạng thái chung
         async function updateOrderStatus(orderId, newStatus) {
             try {
@@ -902,11 +966,12 @@
                     throw new Error(text || 'Cập nhật trạng thái thất bại');
                 }
                 showCustomToast('Cập nhật trạng thái thành công!', true);
-                location.reload(); // Reload trang sau khi thành công
+                location.reload();
             } catch (error) {
                 showCustomToast('Lỗi: ' + error.message, false);
             }
         }
+
         // Gán sự kiện mở modal xác nhận khi bấm nút xác nhận (btn-success) trên bảng
         document.querySelectorAll('.btn-success').forEach(button => {
             button.addEventListener('click', function (e) {
@@ -915,10 +980,11 @@
                 if (!tr) return;
                 const orderId = tr.getAttribute('data-order-id');
                 if (!orderId) return;
-                confirmOrderModalEl.dataset.orderId = orderId; // Lưu orderId vào dataset của modal
+                confirmOrderModalEl.dataset.orderId = orderId;
                 confirmOrderModal.show();
             });
         });
+
         // Xử lý nút xác nhận trong modal xác nhận đơn hàng
         document.getElementById('btnConfirmAccept').addEventListener('click', function () {
             const orderId = confirmOrderModalEl.dataset.orderId;
@@ -926,34 +992,35 @@
                 showCustomToast('Không xác định được đơn hàng', false);
                 return;
             }
-            updateOrderStatus(orderId, 'ChoLayHang'); // Gọi hàm cập nhật trạng thái
-            confirmOrderModal.hide(); // Đóng modal
+            updateOrderStatus(orderId, 'ChoLayHang');
+            confirmOrderModal.hide();
         });
-           // Chỉ bind cho nút "Xác nhận" trong bảng Chờ xử lý
-    document.querySelectorAll('.js-accept-order').forEach(button => {
-      button.addEventListener('click', function (e) {
-        e.stopPropagation();
-        const tr = this.closest('tr');
-        if (!tr) return;
-        const orderId = tr.getAttribute('data-order-id');
-        if (!orderId) return;
-        confirmOrderModalEl.dataset.orderId = orderId;
-        confirmOrderModal.show();
-      });
-    });
 
-    // Chỉ bind cho nút "Từ chối" trong bảng Chờ xử lý
-    document.querySelectorAll('.js-reject-order').forEach(button => {
-      button.addEventListener('click', function (e) {
-        e.stopPropagation();
-        const tr = this.closest('tr');
-        if (!tr) return;
-        const orderId = tr.getAttribute('data-order-id');
-        if (!orderId) return;
-        rejectOrderModalEl.dataset.orderId = orderId;
-        rejectOrderModal.show();
-      });
-    });
+        // Bind cho nút "Xác nhận" trong bảng Chờ xử lý
+        document.querySelectorAll('.js-accept-order').forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const tr = this.closest('tr');
+                if (!tr) return;
+                const orderId = tr.getAttribute('data-order-id');
+                if (!orderId) return;
+                confirmOrderModalEl.dataset.orderId = orderId;
+                confirmOrderModal.show();
+            });
+        });
+
+        // Bind cho nút "Từ chối" trong bảng Chờ xử lý
+        document.querySelectorAll('.js-reject-order').forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.stopPropagation();
+                const tr = this.closest('tr');
+                if (!tr) return;
+                const orderId = tr.getAttribute('data-order-id');
+                if (!orderId) return;
+                rejectOrderModalEl.dataset.orderId = orderId;
+                rejectOrderModal.show();
+            });
+        });
 
         document.getElementById('btnConfirmReject').addEventListener('click', function () {
             const orderId = rejectOrderModalEl.dataset.orderId;
@@ -961,9 +1028,10 @@
                 showCustomToast('Không xác định được đơn hàng', false);
                 return;
             }
-            updateOrderStatus(orderId, 'DaHuy'); // Gọi hàm cập nhật trạng thái
-            rejectOrderModal.hide(); // Đóng modal
+            updateOrderStatus(orderId, 'DaHuy');
+            rejectOrderModal.hide();
         });
+
         // --- Nút cập nhật trạng thái trong Modal chi tiết ---
         document.getElementById("btnUpdateStatus").addEventListener("click", async function () {
             const orderIdText = document.getElementById("modalOrderId").textContent;
@@ -982,13 +1050,22 @@
                 }
                 const data = await resp.json();
                 showCustomToast(data.message || "Cập nhật thành công!", true);
-                // 🔄 Cập nhật badge trạng thái trong modal
+
+                // Cập nhật badge trạng thái trong modal
                 const [statusText, statusClass] = mapStatus(data.status);
                 const modalStatus = document.getElementById("modalStatus");
                 modalStatus.textContent = statusText;
                 modalStatus.className = "";
                 modalStatus.classList.add("badge", ...statusClass.split(" "), "rounded-pill", "px-3", "py-2");
-                // 🔄 Cập nhật badge ở ngoài bảng luôn
+
+                // Ẩn/hiện nút Hủy theo trạng thái mới
+                const cancelBtn = document.getElementById('btnCancelOrder');
+                const hideCancel = data.status === 'DangGiao' || data.status === 'DaHoanThanh';
+                cancelBtn.classList.toggle('d-none', hideCancel);
+                cancelBtn.disabled = hideCancel;
+                cancelBtn.title = hideCancel ? 'Đơn đang giao/đã hoàn thành, không thể hủy' : '';
+
+                // Cập nhật badge ở ngoài bảng (nếu có)
                 const row = document.querySelector(`tr[data-order-id="${orderId}"]`);
                 if (row) {
                     const statusCell = row.querySelector(".order-status");
@@ -1002,95 +1079,88 @@
                 showCustomToast("❌ Lỗi: " + error.message, false);
             }
         });
-            // --- Nút Hủy đơn trong Modal chi tiết ---
+
         // --- Nút Hủy đơn trong Modal chi tiết ---
-    const cancelOrderConfirmModalEl = document.getElementById('cancelOrderConfirmModal');
-    const cancelOrderConfirmModal = new bootstrap.Modal(cancelOrderConfirmModalEl);
+        const cancelOrderConfirmModalEl = document.getElementById('cancelOrderConfirmModal');
+        const cancelOrderConfirmModal = new bootstrap.Modal(cancelOrderConfirmModalEl);
 
-    document.getElementById("btnCancelOrder").addEventListener("click", function () {
-      cancelOrderConfirmModal.show();
-    });
-
-    document.getElementById("btnConfirmCancelInDetails").addEventListener("click", async function () {
-      const orderIdText = document.getElementById("modalOrderId").textContent;
-      const orderId = orderIdText.replace("#", "").trim();
-      if (!orderId) {
-        showCustomToast("Không tìm thấy mã đơn", false);
-        return;
-      }
-
-      // chống double click + feedback UX
-      const btn = this;
-      const oldHtml = btn.innerHTML;
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang hủy...';
-
-      try {
-        const resp = await fetch(`${API_BASE_URL}/orders/${orderId}/cancel/seller/${userId}`, {
-          method: "POST"
+        document.getElementById("btnCancelOrder").addEventListener("click", function () {
+            // Chặn mở modal nếu trạng thái hiện tại là Đang giao / Hoàn thành
+            const statusText = (document.getElementById('modalStatus').textContent || '').trim();
+            if (statusText.includes('Đang giao') || statusText.includes('Hoàn thành')) {
+                return;
+            }
+            cancelOrderConfirmModal.show();
         });
 
-        // Nếu fail -> lấy message (có thể là text, có thể là json)
-        if (!resp.ok) {
-          let message = "Hủy đơn thất bại";
-          const ct = resp.headers.get('content-type') || '';
-          if (ct.includes('application/json')) {
-            const j = await resp.json().catch(() => ({}));
-            if (j && j.message) message = j.message;
-          } else {
-            const t = await resp.text().catch(() => '');
-            if (t) message = t;
-          }
-          throw new Error(message);
-        }
+        document.getElementById("btnConfirmCancelInDetails").addEventListener("click", async function () {
+            const orderIdText = document.getElementById("modalOrderId").textContent;
+            const orderId = orderIdText.replace("#", "").trim();
+            if (!orderId) {
+                showCustomToast("Không tìm thấy mã đơn", false);
+                return;
+            }
 
-        // Nếu success: có thể 200(JSON) hoặc 204(No Content)
-        let data = { message: "Đã hủy đơn hàng!", status: "DaHuy" };
-        const ct = resp.headers.get('content-type') || '';
-        if (ct.includes('application/json')) {
-          const j = await resp.json().catch(() => null);
-          if (j) data = { ...data, ...j };
-        }
-        location.reload();
-        showCustomToast(data.message || "Đã hủy đơn hàng!", true);
+            const btn = this;
+            const oldHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang hủy...';
 
-        // Cập nhật trạng thái trong modal chi tiết
-        const [statusText, statusClass] = mapStatus("DaHuy");
-        const modalStatus = document.getElementById("modalStatus");
-        modalStatus.textContent = statusText;
-        modalStatus.className = "";
-        modalStatus.classList.add("badge", ...statusClass.split(" "), "rounded-pill", "px-3", "py-2");
+            try {
+                const resp = await fetch(`${API_BASE_URL}/orders/${orderId}/cancel/seller/${userId}`, {
+                    method: "POST"
+                });
 
-        // Cập nhật badge ở hàng tương ứng trong bảng
-        const row = document.querySelector(`tr[data-order-id="${orderId}"]`);
-        if (row) {
-          // Ưu tiên phần tử có class .order-status; nếu chưa có thì tìm .badge trong cột trạng thái
-          const statusBadge =
-            row.querySelector(".order-status") ||
-            row.querySelector("td:last-child .badge") ||
-            row.querySelector(".badge");
+                if (!resp.ok) {
+                    let message = "Hủy đơn thất bại";
+                    const ct = resp.headers.get('content-type') || '';
+                    if (ct.includes('application/json')) {
+                        const j = await resp.json().catch(() => ({}));
+                        if (j && j.message) message = j.message;
+                    } else {
+                        const t = await resp.text().catch(() => '');
+                        if (t) message = t;
+                    }
+                    throw new Error(message);
+                }
 
-          if (statusBadge) {
-            statusBadge.textContent = statusText;
-            statusBadge.className = "";
-            statusBadge.classList.add("badge", ...statusClass.split(" "), "rounded-pill", "px-3", "py-2");
-          }
-        }
+                let data = { message: "Đã hủy đơn hàng!", status: "DaHuy" };
+                const ct = resp.headers.get('content-type') || '';
+                if (ct.includes('application/json')) {
+                    const j = await resp.json().catch(() => null);
+                    if (j) data = { ...data, ...j };
+                }
+                location.reload();
+                showCustomToast(data.message || "Đã hủy đơn hàng!", true);
 
-        // đóng modal confirm
-         
-        // (tùy chọn) đóng luôn modal chi tiết:
-        // bootstrap.Modal.getInstance(document.getElementById('orderDetailsModal'))?.hide();
-        location.reload();
-      } catch (error) {
-        showCustomToast("❌ Lỗi: " + error.message, false);
-           location.reload();
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = oldHtml;
-      }
-    });
+                const [statusText, statusClass] = mapStatus("DaHuy");
+                const modalStatus = document.getElementById("modalStatus");
+                modalStatus.textContent = statusText;
+                modalStatus.className = "";
+                modalStatus.classList.add("badge", ...statusClass.split(" "), "rounded-pill", "px-3", "py-2");
 
+                const row = document.querySelector(`tr[data-order-id="${orderId}"]`);
+                if (row) {
+                    const statusBadge =
+                        row.querySelector(".order-status") ||
+                        row.querySelector("td:last-child .badge") ||
+                        row.querySelector(".badge");
+
+                    if (statusBadge) {
+                        statusBadge.textContent = statusText;
+                        statusBadge.className = "";
+                        statusBadge.classList.add("badge", ...statusClass.split(" "), "rounded-pill", "px-3", "py-2");
+                    }
+                }
+                location.reload();
+            } catch (error) {
+                showCustomToast("❌ Lỗi: " + error.message, false);
+                location.reload();
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = oldHtml;
+            }
+        });
 
         // --- PHẦN QUẢN LÝ THỐNG KÊ ---
         const userId = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(userIdStr));
@@ -1098,6 +1168,7 @@
         const endDateInput = document.getElementById('endDate');
         const quickDateSelectButton = document.getElementById('quickDateSelectButton');
         const dropdownItems = document.querySelectorAll('#quickDateSelectButton + .dropdown-menu .dropdown-item');
+
         function formatNumber(num) {
             return num.toLocaleString('vi-VN');
         }
@@ -1115,7 +1186,6 @@
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(await response.text() || 'Lỗi lấy dữ liệu thống kê');
                 const json = await response.json();
-                console.log("📊 API response:", json);
                 return json;
             } catch (error) {
                 showCustomToast('Không tải được số liệu: ' + error.message, false);
@@ -1157,32 +1227,21 @@
             let start, end;
             switch (value) {
                 case 'today':
-                    start = today;
-                    end = new Date(today.getTime() + 24 * 60 * 60 * 1000);
-                    break;
+                    start = today; end = new Date(today.getTime() + 24 * 60 * 60 * 1000); break;
                 case 'yesterday':
-                    start = new Date(today.getTime() - 24 * 60 * 60 * 1000);
-                    end = today;
-                    break;
+                    start = new Date(today.getTime() - 24 * 60 * 60 * 1000); end = today; break;
                 case 'thisWeek':
-                    start = new Date(today);
-                    start.setDate(today.getDate() - today.getDay());
-                    end = new Date(today.getTime() + 24 * 60 * 60 * 1000);
-                    break;
+                    start = new Date(today); start.setDate(today.getDate() - today.getDay());
+                    end = new Date(today.getTime() + 24 * 60 * 60 * 1000); break;
                 case 'lastWeek':
-                    start = new Date(today);
-                    start.setDate(today.getDate() - today.getDay() - 7);
-                    end = new Date(start);
-                    end.setDate(start.getDate() + 7);
-                    break;
+                    start = new Date(today); start.setDate(today.getDate() - today.getDay() - 7);
+                    end = new Date(start); end.setDate(start.getDate() + 7); break;
                 case 'thisMonth':
                     start = new Date(today.getFullYear(), today.getMonth(), 1);
-                    end = new Date(today.getFullYear(), today.getMonth() + 1, 1);
-                    break;
+                    end = new Date(today.getFullYear(), today.getMonth() + 1, 1); break;
                 case 'lastMonth':
                     start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-                    end = new Date(today.getFullYear(), today.getMonth(), 1);
-                    break;
+                    end = new Date(today.getFullYear(), today.getMonth(), 1); break;
                 default:
                     start = null; end = null;
             }
@@ -1219,25 +1278,26 @@
         });
         loadStatistics();
     });
+
     function showCustomToast(message, isSuccess = false) {
         const container = document.getElementById('custom-toast-container');
         if (!container) return;
 
         const toastId = `toast-${Date.now()}`;
         const toastHTML = `
-                    <div id="${toastId}" class="toast custom-toast shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
-                        <div class="toast-header ${isSuccess ? "bg-success" : "bg-danger"} text-white">
-                            <img src="${isSuccess ? "/icons/happy.gif" : "/icons/sad.gif"}" class="rounded me-2" alt="${isSuccess ? "Success" : "Error"}" width="24" height="24">
-                            <strong class="me-auto">${isSuccess ? "Thành công" : "Lỗi"}</strong>
-                            <small>Vừa xong</small>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"
-                                    style="width: 26.4px; height: 26.4px;"></button>
-                        </div>
-                        <div class="toast-body">
-                            ${message}
-                        </div>
-                    </div>
-                `;
+            <div id="${toastId}" class="toast custom-toast shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
+                <div class="toast-header ${isSuccess ? "bg-success" : "bg-danger"} text-white">
+                    <img src="${isSuccess ? "/icons/happy.gif" : "/icons/sad.gif"}" class="rounded me-2" alt="${isSuccess ? "Success" : "Error"}" width="24" height="24">
+                    <strong class="me-auto">${isSuccess ? "Thành công" : "Lỗi"}</strong>
+                    <small>Vừa xong</small>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"
+                            style="width: 26.4px; height: 26.4px;"></button>
+                </div>
+                <div class="toast-body">
+                    ${message}
+                </div>
+            </div>
+        `;
 
         container.insertAdjacentHTML('beforeend', toastHTML);
         const toastEl = document.getElementById(toastId);
@@ -1247,5 +1307,4 @@
             toastEl.remove();
         });
     }
-        
 </script>

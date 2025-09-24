@@ -132,49 +132,50 @@ namespace DATN_API.Services
         }
 
 
-        public async Task<List<OrderViewModel>> GetOrdersByStoreUserAsync(int userId)
-        {
-            var store = await _context.Stores.FirstOrDefaultAsync(s => s.UserId == userId);
-            if (store == null) return new List<OrderViewModel>();
-
-            var orders = await _context.Orders
-                .Where(o => o.ShippingMethod != null && o.ShippingMethod.StoreId == store.Id)
-                .Include(o => o.User)
-                .Include(o => o.Voucher)
-                .Include(o => o.ShippingMethod)
-                .Include(o => o.OrderDetails).ThenInclude(od => od.Product)
-                .ToListAsync();
-
-            return orders.Select(o => new OrderViewModel
+            public async Task<List<OrderViewModel>> GetOrdersByStoreUserAsync(int userId)
             {
-                Id = o.Id,
-                CustomerName = o.User?.FullName ?? string.Empty,
-                CustomerPhone = o.User?.Phone,
-                StoreName = o.ShippingMethod?.store?.Name,
-                ShippingMethodName = o.ShippingMethod?.MethodName ?? string.Empty,
+                var store = await _context.Stores.FirstOrDefaultAsync(s => s.UserId == userId);
+                if (store == null) return new List<OrderViewModel>();
 
-                // ✅ TỪ ORDERS
-                ShippingFee = o.DeliveryFee,
-                TotalPrice = o.TotalPrice,
-                LabelId = o.LabelId,
+                var orders = await _context.Orders
+                    .Where(o => o.ShippingMethod != null && o.ShippingMethod.StoreId == store.Id)
+                    .OrderByDescending(o => o.Id)
+                    .Include(o => o.User)
+                    .Include(o => o.Voucher)
+                    .Include(o => o.ShippingMethod)
+                    .Include(o => o.OrderDetails).ThenInclude(od => od.Product)
+                    .ToListAsync();
 
-                VoucherName = o.Voucher?.Type.ToString(),
-                VoucherReduce = o.Voucher?.Reduce,
-                CreatedAt = o.OrderDate,
-                PaymentMethod = o.PaymentMethod,
-                PaymentStatus = o.PaymentStatus,
-                Status = o.Status.ToString(),
-                OrderDetails = o.OrderDetails.Select(od => new OrderDetailViewModel
+                return orders.Select(o => new OrderViewModel
                 {
-                    ProductId = od.ProductId,
-                    ProductName = od.Product?.Name ?? string.Empty,
-                    ProductImage = od.Product?.MainImage,
-                    Quantity = od.Quantity,
-                    UnitPrice = od.Price
-                }).ToList()
-            }).ToList();
+                    Id = o.Id,
+                    CustomerName = o.User?.FullName ?? string.Empty,
+                    CustomerPhone = o.User?.Phone,
+                    StoreName = o.ShippingMethod?.store?.Name,
+                    ShippingMethodName = o.ShippingMethod?.MethodName ?? string.Empty,
+                     
+                    // ✅ TỪ ORDERS
+                    ShippingFee = o.DeliveryFee,
+                    TotalPrice = o.TotalPrice,
+                    LabelId = o.LabelId,
 
-        }
+                    VoucherName = o.Voucher?.Type.ToString(),
+                    VoucherReduce = o.Voucher?.Reduce,
+                    CreatedAt = o.OrderDate,
+                    PaymentMethod = o.PaymentMethod,
+                    PaymentStatus = o.PaymentStatus,
+                    Status = o.Status.ToString(),
+                    OrderDetails = o.OrderDetails.Select(od => new OrderDetailViewModel
+                    {
+                        ProductId = od.ProductId,
+                        ProductName = od.Product?.Name ?? string.Empty,
+                        ProductImage = od.Product?.MainImage,
+                        Quantity = od.Quantity,
+                        UnitPrice = od.Price
+                    }).ToList()
+                }).ToList();
+
+            }
         public async Task<object> GetStatisticsByUserAsync(int userId, DateTime? start, DateTime? end, DateTime? startCompare, DateTime? endCompare)
         {
             // ✅ Tìm store theo userId

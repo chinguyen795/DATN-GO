@@ -50,12 +50,7 @@ namespace DATN_GO.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(CreateCategoryRequest request, IFormFile? imageFile)
         {
-            if (!IsValidName(request.Name))
-            {
-                TempData["ToastMessage"] = "Tên danh mục không được chứa số hoặc ký tự đặc biệt.";
-                TempData["ToastType"] = "error";
-                return RedirectToAction("Index");
-            }
+             
 
             if (!IsValidHashtag(request.Hashtag))
             {

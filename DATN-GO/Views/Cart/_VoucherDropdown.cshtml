@@ -1,15 +1,23 @@
 ﻿@model List<DATN_GO.ViewModels.Cart.UserVoucherViewModel>
-
-@foreach (var voucher in Model
-    .GroupBy(v => v.VoucherId)
-    .Select(g => g.First())
-.OrderByDescending(v => v.Reduce))
-{
-  <option value="@voucher.VoucherId" 
-        data-reduce="@voucher.Reduce" 
-        data-min-order="@voucher.MinOrder">
-    @voucher.Reduce.ToString("N0") đ – Đơn tối thiểu @voucher.MinOrder.ToString("N0") đ – HSD @voucher.EndDate.ToString("dd/MM/yyyy") – @voucher.StoreName
-</option>
-
+@{
+    // ViewBag.SelectedPlatformVoucherId phải là UserVoucher.Id
+    var selectedId = (ViewBag.SelectedPlatformVoucherId ?? 0).ToString();
 }
 
+@foreach (var v in Model
+    .Where(x => !x.StoreId.HasValue || x.StoreId == 0)           // voucher sàn
+    .GroupBy(x => x.VoucherId).Select(g => g.First())            // khử trùng lặp theo voucher gốc
+    .OrderByDescending(x => x.IsPercentage).ThenByDescending(x => x.Reduce))
+{
+    var val = v.Id.ToString(); // ✅ value là UserVoucher.Id
+                               <option value="@val"
+                                       data-reduce="@v.Reduce"
+                                       data-min-order="@v.MinOrder"
+                                       data-is-percentage="@v.IsPercentage.ToString().ToLowerInvariant()"
+                                       selected="@(val == selectedId ? "selected" : null)">
+                                   <!-- ✅ có tên attribute -->
+        @(v.IsPercentage
+            ? $"{v.Reduce:#,0}% – Đơn tối thiểu {v.MinOrder:N0}đ – HSD {v.EndDate:dd/MM/yyyy}"
+            : $"{v.Reduce:N0}đ – Đơn tối thiểu {v.MinOrder:N0}đ – HSD {v.EndDate:dd/MM/yyyy}")
+</option>
+}

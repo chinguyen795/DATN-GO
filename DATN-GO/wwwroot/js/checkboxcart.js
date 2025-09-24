@@ -1,49 +1,114 @@
-﻿$(document).ready(function () {
+﻿﻿$(function () {
     const userId = $('#userId').val();
-    console.log("User ID:", userId);
+    const API_UPDATE_SELECTION = (window.API_BASE_URL || '') + 'cart/update-selection';
+
+    // ---------- utils ----------
+    const debounce = (fn, ms = 250) => {
+        let t;
+        return (...a) => {
+            clearTimeout(t);
+            t = setTimeout(() => fn(...a), ms);
+        };
+    };
+
+    let lock = false, pending = false;
+
+    const getNumber = txt => parseFloat(String(txt || '0').replace(/[^\d]/g, '')) || 0;
 
     function getSelectedCartIds() {
-        const selectedIds = [];
+        const ids = [];
         $('.item-checkbox:checked').each(function () {
-            const cartId = $(this).data('cart-id') || $(this).closest('tr').data('cart-id');
-            if (cartId !== undefined) selectedIds.push(cartId);
+            const id = $(this).data('cart-id') || $(this).closest('tr').data('cart-id');
+            if (id !== undefined) ids.push(id);
         });
-        console.log("Selected cart IDs:", selectedIds);
-        return selectedIds;
+        return ids;
     }
 
-    function updateSelectionAPI(selectedIds, callback) {
-        console.log("Sending selected cart IDs to API:", selectedIds);
+    function updateSelectionAPI(selectedIds, cb) {
         $.ajax({
-            url: API_BASE_URL + 'cart/update-selection',
+            url: API_UPDATE_SELECTION,
             type: 'PUT',
             contentType: 'application/json',
-            data: JSON.stringify(selectedIds),
-            success: function () {
-                console.log("Update selection success.");
-                if (typeof callback === 'function') callback();
-            },
-            error: function (xhr, status, error) {
-                console.error("Error in updateSelectionAPI:", status, error, xhr.responseText);
+            data: JSON.stringify(selectedIds || []),
+            success: () => cb?.(),
+            error: (xhr, s, e) => {
+                console.error('updateSelectionAPI:', s, e, xhr?.responseText);
+                cb?.();
             }
         });
     }
 
-    function updateVoucherDropdown(callback) {
+    // ---------- sync subtotal ----------
+    function syncRowTotalsFromDOM() {
+        document.querySelectorAll('.item-checkbox').forEach(cb => {
+            const row = cb.closest('tr');
+            if (!row) return;
+            const qtyEl = row.querySelector('.quantity-input');
+            const priceEl = row.querySelector('.price');
+
+            const qty = parseInt(qtyEl?.value, 10) || parseInt(cb.dataset.quantity || '1', 10) || 1;
+            const price = getNumber(priceEl?.textContent);
+            const total = price * qty;
+
+            cb.dataset.quantity = String(qty);
+            cb.dataset.total = String(total);
+
+            const totalCell = row.querySelector('.total');
+            if (totalCell) totalCell.textContent = total.toLocaleString('vi-VN') + ' đ';
+        });
+    }
+
+    // ---------- refresh voucher SHOP (1 store) ----------
+    function refreshStoreVoucherOptions(storeId, done) {
+        const $sel = $(`.store-voucher-select[data-store-id="${storeId}"]`);
+        if ($sel.length === 0) { done?.(); return; }
+
+        const keep = $sel.val() || '';
+        const selectedCartIds = getSelectedCartIds();
+
+        fetch('/Cart/UpdateStoreVoucherOptions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ storeId: Number(storeId), selectedCartIds })
+        })
+            .then(r => r.ok ? r.text() : Promise.reject(r.status))
+            .then(html => {
+                const $opts = $('<div>').html(html).find('option');
+                try { $sel.selectpicker('destroy'); } catch { }
+                $sel.empty().append($opts);
+
+                if (keep && $sel.find(`option[value="${keep}"]`).length) $sel.val(keep);
+                else $sel.val('');
+
+                $sel.selectpicker(); // re-init
+            })
+            .catch(() => { })
+            .finally(() => done?.());
+    }
+
+    function refreshAllStoreVouchers(done) {
+        const $sels = $('.store-voucher-select');
+        let left = $sels.length;
+        if (left === 0) { done?.(); return; }
+        $sels.each(function () {
+            const sid = $(this).data('store-id');
+            refreshStoreVoucherOptions(sid, () => { if (--left === 0) done?.(); });
+        });
+    }
+
+    // ---------- refresh voucher SÀN ----------
+    function updatePlatformVoucherDropdown(cb) {
         const selectedIds = getSelectedCartIds();
+        const $sel = $('#voucherSelect');
 
         updateSelectionAPI(selectedIds, function () {
-            const $voucherSelect = $('#voucherSelect');
-
             if (selectedIds.length === 0) {
-                console.log("No selected cart items, clearing voucher dropdown.");
-                $voucherSelect.selectpicker('destroy');
-                $voucherSelect.empty().selectpicker();
-                if (typeof callback === 'function') callback();
-                return;
+                try { $sel.selectpicker('destroy'); } catch { }
+                $sel.empty();
+                $sel.selectpicker(); // re-init rỗng cũng ok
+                window.recalcAllDiscountsAndTotals?.();
+                return cb?.();
             }
-
-            console.log("Updating voucher dropdown with selected cart IDs:", selectedIds);
 
             $.ajax({
                 url: '/Cart/UpdateVoucherDropdown',
@@ -51,123 +116,139 @@
                 contentType: 'application/json',
                 data: JSON.stringify(selectedIds),
                 success: function (partialHtml) {
-                    console.log("Voucher dropdown updated successfully.");
-                    $voucherSelect.selectpicker('destroy');
-                    $voucherSelect.empty().append(partialHtml).selectpicker();
-                    if (typeof callback === 'function') callback();
+                    const prev = $sel.selectpicker('val') || '';
+                    const $opts = $('<div>').html(partialHtml).find('option');
+
+                    try { $sel.selectpicker('destroy'); } catch { }
+                    $sel.empty().append($opts);
+                    // ưu tiên value được server “selected”, fallback về prev nếu còn tồn tại
+                    const fromServer = $sel.find('option[selected]').last().val();
+                    if (fromServer) $sel.val(String(fromServer));
+                    else if (prev && $sel.find(`option[value="${prev}"]`).length) $sel.val(prev);
+                    else $sel.val('');
+
+                    $sel.selectpicker(); // re-init thay vì refresh
+                    fixSelectpickerButtonText($sel);
+
+                    refreshAllStoreVouchers(() => { window.recalcAllDiscountsAndTotals?.(); cb?.(); });
                 },
-                error: function (xhr, status, error) {
-                    console.error("Error updating voucher dropdown:", status, error, xhr.responseText);
-                    if (typeof callback === 'function') callback();
+                error: function () {
+                    try { $sel.selectpicker('destroy'); } catch { }
+                    $sel.empty().selectpicker();
+                    refreshAllStoreVouchers(() => { window.recalcAllDiscountsAndTotals?.(); cb?.(); });
                 }
             });
         });
     }
 
+    function fixSelectpickerButtonText($sel) {
+        const text = ($sel.find('option:selected').text() || '').trim();
+        const $btn = $sel.parent().find('button.dropdown-toggle');
+        $btn.removeClass('bs-placeholder').attr('title', text || '— Không dùng —');
+        $btn.find('.filter-option-inner-inner').text(text || '— Không dùng —');
+    }
+
+    // ---------- phí ship ----------
     function updateShippingFee() {
         const addressId = $('#addressSelect').val();
         if (!addressId || !userId) {
-            console.warn("Missing addressId or userId. addressId:", addressId, "userId:", userId);
+            $('#shipping-fee').text('0₫');
+            window.recalcAllDiscountsAndTotals?.();
             return;
         }
 
-        console.log("Fetching shipping fee with:", { userId, addressId });
-
         fetch('/Cart/GetShippingFee', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ addressId })
         })
-            .then(response => {
-                if (!response.ok) {
-                    console.error("API /Cart/GetShippingFee returned error:", response.status);
-                    throw new Error("HTTP error " + response.status);
-                }
-                return response.json();
-            })
+            .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
             .then(data => {
-                console.log("Shipping groups returned:", data);
-                if (!Array.isArray(data) || data.length === 0) {
-                    console.warn("No shipping group data received.");
-                    $('#shipping-fee').text('0₫');
-                    updateGrandTotal(0);
-                    return;
-                }
-                const totalShippingFee = data.reduce((sum, group) => sum + group.shippingFee, 0);
-                $('#shipping-fee').text(totalShippingFee.toLocaleString('vi-VN') + '₫');
-                updateGrandTotal(totalShippingFee);
+                const fee = Array.isArray(data) ? data.reduce((s, g) => s + (g.shippingFee || 0), 0) : 0;
+                $('#shipping-fee').text(fee.toLocaleString('vi-VN') + '₫');
+                window.recalcAllDiscountsAndTotals?.();
             })
-            .catch(err => {
-                console.error("Lỗi khi tính phí vận chuyển:", err);
+            .catch(() => {
                 $('#shipping-fee').text('0₫');
-                updateGrandTotal(0);
+                window.recalcAllDiscountsAndTotals?.();
             });
     }
 
-    function parseCurrency(str) {
-        if (!str) return 0;
-        return Number(str.replace(/[^\d-]/g, '')) || 0;
+    // ---------- wrapper có lock + debounce ----------
+    function refreshVoucherAndShipping() {
+        if (lock) { pending = true; return; }
+        lock = true;
+
+        const selectedIds = getSelectedCartIds();
+        updateSelectionAPI(selectedIds, function () {
+            updateShippingFee();
+            updatePlatformVoucherDropdown(function () {
+                lock = false;
+                if (pending) { pending = false; debouncedRefresh(); }
+            });
+        });
     }
 
+    const debouncedRefresh = debounce(refreshVoucherAndShipping, 250);
 
+    // ---------- events ----------
+    $('#voucherSelect').off('changed.bs.select change').on('changed.bs.select change', function () {
+        const $sel = $(this);
+        const val = $sel.selectpicker('val');
 
-    function updateGrandTotal(shippingFee) {
-        const subtotal = parseCurrency($('#subtotal').text());
-        const discount = parseCurrency($('#voucher-discount').text());
-        const total = subtotal + shippingFee - discount;
-        $('#grand-total').text(total.toLocaleString('vi-VN') + '₫');
-    }
+        const vid = parseInt(val || '0', 10) || 0;
+        fetch('/Cart/SaveSelectedPlatformVoucher', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(vid)
+        }).catch(() => { });
 
-    function handleVoucherChange() {
-        const $selected = $('#voucherSelect option:selected');
-        const reduce = parseCurrency($selected.data('reduce') || '0') / 100;
-        const minOrder = parseCurrency($selected.data('min-order') || '0');
-        const subtotal = parseCurrency($('#subtotal').text());
+        const text = ($sel.find('option:selected').text() || '').trim();
+        const $btn = $sel.parent().find('button.dropdown-toggle');
+        $btn.removeClass('bs-placeholder').attr('title', text || '— Không dùng —');
+        $btn.find('.filter-option-inner-inner').text(text || '— Không dùng —');
 
-        console.log("Voucher selected – Reduce:", reduce, "MinOrder:", minOrder, "Subtotal:", subtotal);
-
-        $('#voucher-discount').text(reduce.toLocaleString('vi-VN') + '₫');
-
-
-        const shippingFee = parseCurrency($('#shipping-fee').text());
-        updateGrandTotal(shippingFee);
-    }
-
-    $('#voucherSelect').on('changed.bs.select change', handleVoucherChange);
-
-    $('#addressSelect').on('change', function () {
-        console.log("Address changed:", $(this).val());
-        updateShippingFee();
+        window.recalcAllDiscountsAndTotals?.();
     });
 
+    $(document).on('changed.bs.select change', '.store-voucher-select', function () {
+        window.recalcAllDiscountsAndTotals?.();
+    });
+
+    $('#addressSelect').on('change', updateShippingFee);
+
+    // lần đầu
+    syncRowTotalsFromDOM();
     if ($('.item-checkbox:checked').length > 0) {
-        console.log("Checkboxes already selected on page load.");
-        updateVoucherDropdown(function () {
-            updateShippingFee();
-        });
+        window.recalcAllDiscountsAndTotals?.();
     } else {
-        console.log("No item selected on page load.");
+        refreshAllStoreVouchers(() => window.recalcAllDiscountsAndTotals?.());
     }
 
     $('#selectAllItems').on('change', function () {
         const checked = $(this).is(':checked');
         $('.item-checkbox').prop('checked', checked);
-        console.log("Select all toggled:", checked);
-
-        updateVoucherDropdown(function () {
-            updateShippingFee();
-        });
+        syncRowTotalsFromDOM();
+        debouncedRefresh();
     });
 
     $('.item-checkbox').on('change', function () {
         const selected = $('.item-checkbox:checked').length;
         const total = $('.item-checkbox').length;
         $('#selectAllItems').prop('checked', selected === total);
-
-        updateVoucherDropdown(function () {
-            updateShippingFee();
-        });
+        syncRowTotalsFromDOM();
+        debouncedRefresh();
     });
+
+    // nơi khác đổi số lượng
+    document.addEventListener('quantity-updated', () => {
+        syncRowTotalsFromDOM();
+        window.recalcAllDiscountsAndTotals?.();
+    });
+
+    // input trực tiếp số lượng
+    $(document).on('input', '.quantity-input', debounce(() => {
+        syncRowTotalsFromDOM();
+        window.recalcAllDiscountsAndTotals?.();
+    }, 200));
 });

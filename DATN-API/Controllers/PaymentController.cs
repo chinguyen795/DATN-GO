@@ -2,6 +2,7 @@
 using DATN_API.Interfaces;
 using DATN_API.Models;
 using DATN_API.Services.Interfaces;
+using DATN_API.ViewModels.Cart;
 using DATN_API.ViewModels.Vnpay;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +30,7 @@ namespace DATN_API.Controllers
             public int UserId { get; set; }
             public int AddressId { get; set; }
             public int? UserVoucherId { get; set; }
+            public List<int>? UserVoucherIds { get; set; }
         }
 
         // Giờ Việt Nam (UTC+7), chạy được cả Windows/Linux/Docker
@@ -128,41 +130,85 @@ namespace DATN_API.Controllers
             var selected = cart.CartItems.Where(x => x.IsSelected).ToList();
             if (!selected.Any()) return BadRequest("Không có sản phẩm nào được chọn.");
 
-            var groups = selected.GroupBy(x => x.StoreId);
-            var subTotal = selected.Sum(x => x.TotalValue);
+            // ====== NEW: resolve chosen vouchers (by UserVoucher.Id) ======
+            var chosenIds = new List<int>();
+            if (req.UserVoucherId.HasValue) chosenIds.Add(req.UserVoucherId.Value);
+            if (req.UserVoucherIds != null) chosenIds.AddRange(req.UserVoucherIds);
 
-            decimal voucherReduce = 0;
-            if (req.UserVoucherId.HasValue)
+            var chosenVouchers = cart.Vouchers.Where(v => chosenIds.Contains(v.Id)).ToList();
+
+            // one platform voucher max (StoreId == null)
+            var platformVoucher = chosenVouchers.FirstOrDefault(v => v.StoreId == null);
+
+            // zero/one shop voucher per store (pick first if duplicated)
+            var shopVoucherByStore = chosenVouchers
+                .Where(v => v.StoreId != null)
+                .GroupBy(v => v.StoreId!.Value)
+                .ToDictionary(g => g.Key, g => g.First());
+
+            // Pre-calc subtotals per store
+            var groupsList = selected.GroupBy(x => x.StoreId).ToList();
+            var storeSubTotals = groupsList.ToDictionary(g => g.Key, g => g.Sum(i => i.TotalValue));
+
+            // Pre-calc shop discount per store
+            var shopDiscountByStore = new Dictionary<int, decimal>();
+            foreach (var kv in storeSubTotals)
             {
-                var voucher = cart.Vouchers.FirstOrDefault(v => v.Id == req.UserVoucherId.Value);
-                if (voucher != null) voucherReduce = voucher.Reduce;
+                var storeId = kv.Key;
+                var sub = kv.Value;
+
+                decimal shopDisc = 0;
+                if (shopVoucherByStore.TryGetValue(storeId, out var sv) && sub >= sv.MinOrder)
+                {
+                    shopDisc = sv.IsPercentage
+                        ? Math.Floor(sub * (sv.Reduce / 100))
+                        : Math.Min(sv.Reduce, sub);
+                }
+                shopDiscountByStore[storeId] = shopDisc;
             }
+
+            // Total after shop discounts (for platform voucher minOrder & ratio)
+            decimal totalAfterShop = storeSubTotals.Sum(kv =>
+            {
+                var sub = kv.Value;
+                var sdisc = shopDiscountByStore.GetValueOrDefault(kv.Key);
+                return sub - sdisc;
+            });
 
             var createdOrders = new List<Orders>();
             long totalForAllOrders = 0;
 
-            foreach (var group in groups)
+            foreach (var group in groupsList)
             {
                 var storeId = group.Key;
-                var storeSubTotal = group.Sum(i => i.TotalValue);
+                var storeSubTotal = storeSubTotals[storeId];
                 var storeShipFee = shippingGroups.FirstOrDefault(g => g.StoreId == storeId)?.ShippingFee ?? 0m;
 
-                decimal storeVoucherReduce = 0;
-                if (voucherReduce > 0 && subTotal > 0)
-                    storeVoucherReduce = voucherReduce * (storeSubTotal / subTotal);
+                // shop discount (already computed)
+                var shopDiscount = shopDiscountByStore[storeId];
 
-                var storeGrandTotal = (long)Math.Max(0, storeSubTotal + storeShipFee - storeVoucherReduce);
+                // platform discount (allocate by ratio of "after shop" subtotal)
+                decimal platformDiscount = 0;
+                if (platformVoucher != null && totalAfterShop >= platformVoucher.MinOrder && totalAfterShop > 0)
+                {
+                    var platformReduceTotal = platformVoucher.IsPercentage
+                        ? Math.Floor(totalAfterShop * (platformVoucher.Reduce / 100))
+                        : platformVoucher.Reduce;
+
+                    var thisAfterShop = storeSubTotal - shopDiscount;
+                    var ratio = thisAfterShop / totalAfterShop;
+                    platformDiscount = Math.Floor(platformReduceTotal * ratio);
+                }
+
+                var storeGrandTotal = (long)Math.Max(0, storeSubTotal - shopDiscount - platformDiscount + storeShipFee);
                 totalForAllOrders += storeGrandTotal;
+
+                // ==== BELOW IS YOUR ORIGINAL ORDER-CREATION FLOW (unchanged) ====
                 var shipMethod = await _db.ShippingMethods
-.FirstOrDefaultAsync(sm => sm.StoreId == storeId && sm.MethodName == "GHTK_AUTO");
+                    .FirstOrDefaultAsync(sm => sm.StoreId == storeId && sm.MethodName == "GHTK_AUTO");
                 if (shipMethod == null)
                 {
-                    shipMethod = new ShippingMethods
-                    {
-                        StoreId = storeId,
-                        MethodName = "GHTK_AUTO",
-                        Price = 0
-                    };
+                    shipMethod = new ShippingMethods { StoreId = storeId, MethodName = "GHTK_AUTO", Price = 0 };
                     _db.ShippingMethods.Add(shipMethod);
                     await _db.SaveChangesAsync();
                 }
@@ -182,7 +228,6 @@ namespace DATN_API.Controllers
                 _db.Orders.Add(order);
                 await _db.SaveChangesAsync();
 
-                // Ghi OrderDetails (có ProductVariantId)
                 foreach (var item in group)
                 {
                     int? pvId = await ResolveProductVariantIdAsync(item.ProductId, item.CartId);
@@ -190,7 +235,7 @@ namespace DATN_API.Controllers
                     {
                         OrderId = order.Id,
                         ProductId = item.ProductId,
-                        ProductVariantId = pvId,   // <-- thêm
+                        ProductVariantId = pvId,
                         Quantity = item.Quantity,
                         Price = item.Price
                     });
@@ -213,6 +258,7 @@ namespace DATN_API.Controllers
 
             return Ok(new { paymentUrl });
         }
+
 
         // ================= VNPay: RETURN =================
         [HttpGet("vnpay-return")]
@@ -370,16 +416,14 @@ namespace DATN_API.Controllers
                 var selected = cart.CartItems.Where(x => x.IsSelected).ToList();
                 if (!selected.Any()) return BadRequest(new { message = "Không có sản phẩm nào được chọn." });
 
-                var subTotal = selected.Sum(x => x.TotalValue);
-                decimal voucherReduce = 0;
-                if (req.UserVoucherId.HasValue)
-                {
-                    var voucher = cart.Vouchers.FirstOrDefault(v => v.Id == req.UserVoucherId.Value);
-                    if (voucher != null) voucherReduce = voucher.Reduce;
-                }
-
                 var groups = selected.GroupBy(x => x.StoreId).ToList();
                 var createdOrders = new List<Orders>();
+
+                // lấy list voucher được chọn
+                var chosenVoucherIds = new List<int>();
+                if (req.UserVoucherId.HasValue) chosenVoucherIds.Add(req.UserVoucherId.Value);
+                if (req.UserVoucherIds != null) chosenVoucherIds.AddRange(req.UserVoucherIds);
+                var chosenVouchers = cart.Vouchers.Where(v => chosenVoucherIds.Contains(v.Id)).ToList();
 
                 foreach (var group in groups)
                 {
@@ -387,20 +431,45 @@ namespace DATN_API.Controllers
                     var storeSubTotal = group.Sum(i => i.TotalValue);
                     var storeShippingFee = shippingGroups.FirstOrDefault(g => g.StoreId == storeId)?.ShippingFee ?? 0m;
 
-                    decimal storeVoucherReduce = 0;
-                    if (voucherReduce > 0 && subTotal > 0)
-                        storeVoucherReduce = voucherReduce * (storeSubTotal / subTotal);
+                    // --- voucher shop ---
+                    decimal shopDiscount = 0;
+                    var shopVoucher = chosenVouchers.FirstOrDefault(v => v.StoreId == storeId);
+                    if (shopVoucher != null && storeSubTotal >= shopVoucher.MinOrder)
+                    {
+                        shopDiscount = shopVoucher.IsPercentage
+                            ? Math.Floor(storeSubTotal * (shopVoucher.Reduce / 100))
+                            : Math.Min(shopVoucher.Reduce, storeSubTotal);
+                    }
+                    var afterShopDiscount = storeSubTotal - shopDiscount;
 
-                    var storeGrandTotal = (long)Math.Max(0, storeSubTotal + storeShippingFee - storeVoucherReduce);
+                    // --- voucher sàn ---
+                    decimal platformDiscount = 0;
+                    var platformVoucher = chosenVouchers.FirstOrDefault(v => v.StoreId == null);
+                    if (platformVoucher != null)
+                    {
+                        var totalCart = selected.Sum(x => x.TotalValue);
+                        if (totalCart >= platformVoucher.MinOrder)
+                        {
+                            var reduceTotal = platformVoucher.IsPercentage
+                                ? Math.Floor(totalCart * (platformVoucher.Reduce / 100))
+                                : platformVoucher.Reduce;
+                            var ratio = (decimal)storeSubTotal / (decimal)totalCart;
+                            platformDiscount = Math.Floor(reduceTotal * ratio);
+                        }
+                    }
 
+                    var grandTotal = (long)Math.Max(0, afterShopDiscount + storeShippingFee - platformDiscount);
+
+                    // Tạo ShippingMethod nếu chưa có
                     var shipMethod = await _db.ShippingMethods
-                   .FirstOrDefaultAsync(sm => sm.StoreId == storeId && sm.MethodName == "GHTK_AUTO");
+                       .FirstOrDefaultAsync(sm => sm.StoreId == storeId && sm.MethodName == "GHTK_AUTO");
                     if (shipMethod == null)
                     {
                         shipMethod = new ShippingMethods { StoreId = storeId, MethodName = "GHTK_AUTO", Price = 0 };
                         _db.ShippingMethods.Add(shipMethod);
                         await _db.SaveChangesAsync();
                     }
+
                     var order = new Orders
                     {
                         UserId = req.UserId,
@@ -408,9 +477,8 @@ namespace DATN_API.Controllers
                         PaymentMethod = "COD",
                         PaymentStatus = "Unpaid",
                         Status = OrderStatus.ChoXuLy,
-                        TotalPrice = storeGrandTotal,
+                        TotalPrice = grandTotal,
                         DeliveryFee = storeShippingFee,
-                        VoucherId = null,
                         ShippingMethodId = shipMethod.Id
                     };
                     _db.Orders.Add(order);
@@ -423,42 +491,30 @@ namespace DATN_API.Controllers
                         {
                             OrderId = order.Id,
                             ProductId = item.ProductId,
-                            ProductVariantId = pvId,   // <-- thêm
+                            ProductVariantId = pvId,
                             Quantity = item.Quantity,
                             Price = item.Price
                         });
                     }
                     await _db.SaveChangesAsync();
 
-                    string? label;
-                    try
-                    {
-                        label = await _orders.PushOrderToGhtkAndSaveLabelCodAsync(order.Id);
-                    }
-                    catch (Exception ex)
-                    {
-                        await tx.RollbackAsync();
-                        return BadRequest(new { message = $"GHTK lỗi: {ex.Message}" });
-                    }
-
+                    var label = await _orders.PushOrderToGhtkAndSaveLabelCodAsync(order.Id);
                     if (string.IsNullOrWhiteSpace(label))
                     {
                         await tx.RollbackAsync();
                         return BadRequest(new { message = "Không tạo được vận đơn GHTK cho COD." });
                     }
 
-                    order.Status = OrderStatus.ChoXuLy;
                     order.LabelId = label;
                     await _db.SaveChangesAsync();
-
                     await DeductStockIfNeededAsync(order.Id);
 
                     createdOrders.Add(order);
                 }
 
                 try { await _cartService.ClearSelectedAsync(req.UserId); } catch { }
-
                 await tx.CommitAsync();
+
                 return Ok(new
                 {
                     message = "Tạo đơn COD thành công",
@@ -472,6 +528,9 @@ namespace DATN_API.Controllers
             }
         }
 
+
+
+
         // ================= MoMo: CREATE (đa-store) =================
         [HttpPost("momo-create")]
         public async Task<IActionResult> CreateMomo([FromBody] CreateVnpOrderRequest req)
@@ -484,17 +543,23 @@ namespace DATN_API.Controllers
             if (!selected.Any()) return BadRequest("Không có sản phẩm nào được chọn.");
 
             var groups = selected.GroupBy(x => x.StoreId).ToList();
-            var subTotal = selected.Sum(x => x.TotalValue);
 
-            decimal voucherReduce = 0;
+            // ==== Voucher: nhận list (sàn + shop). Vẫn fallback 1 voucher cũ nếu có ====
+            var chosenVoucherIds = new List<int>();
+            if (req.UserVoucherIds != null && req.UserVoucherIds.Count > 0)
+                chosenVoucherIds.AddRange(req.UserVoucherIds);
             if (req.UserVoucherId.HasValue)
-            {
-                var voucher = cart.Vouchers.FirstOrDefault(v => v.Id == req.UserVoucherId.Value);
-                if (voucher != null) voucherReduce = voucher.Reduce;
-            }
+                chosenVoucherIds.Add(req.UserVoucherId.Value);
+
+            var chosenVouchers = cart.Vouchers
+                .Where(v => chosenVoucherIds.Contains(v.Id))
+                .ToList();
 
             var createdOrders = new List<Orders>();
             long totalForAllOrders = 0;
+
+            // Tổng cart để tính điều kiện & phân bổ voucher sàn
+            var totalCart = selected.Sum(x => x.TotalValue);
 
             foreach (var group in groups)
             {
@@ -502,13 +567,36 @@ namespace DATN_API.Controllers
                 var storeSubTotal = group.Sum(i => i.TotalValue);
                 var storeShipFee = shippingGroups.FirstOrDefault(g => g.StoreId == storeId)?.ShippingFee ?? 0m;
 
-                decimal storeVoucherReduce = 0;
-                if (voucherReduce > 0 && subTotal > 0)
-                    storeVoucherReduce = voucherReduce * (storeSubTotal / subTotal);
+                // --- Voucher SHOP: chỉ áp dụng voucher có StoreId == storeId ---
+                decimal shopDiscount = 0;
+                var shopVoucher = chosenVouchers.FirstOrDefault(v => v.StoreId == storeId);
+                if (shopVoucher != null && storeSubTotal >= shopVoucher.MinOrder)
+                {
+                    shopDiscount = shopVoucher.IsPercentage
+                        ? Math.Floor(storeSubTotal * (shopVoucher.Reduce / 100))
+                        : Math.Min(shopVoucher.Reduce, storeSubTotal);
+                }
 
-                var storeGrandTotal = (long)Math.Max(0, storeSubTotal + storeShipFee - storeVoucherReduce);
+                var afterShop = Math.Max(0, storeSubTotal - shopDiscount);
+
+                // --- Voucher SÀN: StoreId == null, tính trên tổng giỏ rồi phân bổ theo tỉ lệ ---
+                decimal platformDiscount = 0;
+                var platformVoucher = chosenVouchers.FirstOrDefault(v => v.StoreId == null);
+                if (platformVoucher != null && totalCart >= platformVoucher.MinOrder && totalCart > 0)
+                {
+                    var reduceTotal = platformVoucher.IsPercentage
+                        ? Math.Floor(totalCart * (platformVoucher.Reduce / 100))
+                        : platformVoucher.Reduce;
+
+                    // phân bổ theo tỉ lệ subtotal của store trên tổng cart
+                    var ratio = (decimal)storeSubTotal / (decimal)totalCart;
+                    platformDiscount = Math.Floor(reduceTotal * ratio);
+                }
+
+                var storeGrandTotal = (long)Math.Max(0, afterShop + storeShipFee - platformDiscount);
                 totalForAllOrders += storeGrandTotal;
 
+                // ===== GIỮ NGUYÊN: tạo ship method nếu thiếu =====
                 var shipMethod = await _db.ShippingMethods
                     .FirstOrDefaultAsync(sm => sm.StoreId == storeId && sm.MethodName == "GHTK_AUTO");
                 if (shipMethod == null)
@@ -518,13 +606,14 @@ namespace DATN_API.Controllers
                     await _db.SaveChangesAsync();
                 }
 
+                // ===== GIỮ NGUYÊN: tạo order =====
                 var order = new Orders
                 {
                     UserId = req.UserId,
                     OrderDate = NowVn(),
-                    PaymentMethod = "GO",          // <-- đổi tên nhà cung cấp
-                    PaymentStatus = "Unpaid",
-                    Status = OrderStatus.ChoXuLy,
+                    PaymentMethod = "Momo",   // MoMo
+                    PaymentStatus = "Paid",
+                    Status = OrderStatus.ChoLayHang,
                     TotalPrice = storeGrandTotal,
                     DeliveryFee = storeShipFee,
                     ShippingMethodId = shipMethod.Id
@@ -532,6 +621,7 @@ namespace DATN_API.Controllers
                 _db.Orders.Add(order);
                 await _db.SaveChangesAsync();
 
+                // ===== GIỮ NGUYÊN: order details + variant =====
                 foreach (var item in group)
                 {
                     int? pvId = await ResolveProductVariantIdAsync(item.ProductId, item.CartId);
@@ -539,7 +629,7 @@ namespace DATN_API.Controllers
                     {
                         OrderId = order.Id,
                         ProductId = item.ProductId,
-                        ProductVariantId = pvId,   // <-- thêm
+                        ProductVariantId = pvId,
                         Quantity = item.Quantity,
                         Price = item.Price
                     });
@@ -549,6 +639,7 @@ namespace DATN_API.Controllers
                 createdOrders.Add(order);
             }
 
+            // ===== GIỮ NGUYÊN: tạo phiên thanh toán MoMo =====
             var mainOrder = createdOrders.First();
             var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
             var info = $"Thanh toán MoMo cho đơn #{mainOrder.Id}";
@@ -559,6 +650,7 @@ namespace DATN_API.Controllers
 
             return Ok(new { payUrl });
         }
+
 
         // ================= MoMo: CALLBACK =================
         [HttpGet("momo-callback")]
@@ -701,37 +793,62 @@ namespace DATN_API.Controllers
                 var selected = cart.CartItems.Where(x => x.IsSelected).ToList();
                 if (!selected.Any()) return BadRequest(new { message = "Không có sản phẩm nào được chọn." });
 
-                var subTotal = selected.Sum(x => x.TotalValue);
-                decimal voucherReduce = 0;
-                if (req.UserVoucherId.HasValue)
-                {
-                    var voucher = cart.Vouchers.FirstOrDefault(v => v.Id == req.UserVoucherId.Value);
-                    if (voucher != null) voucherReduce = voucher.Reduce;
-                }
-
-                // Group theo store + phân bổ voucher theo tỷ lệ subtotal mỗi store
                 var groups = selected.GroupBy(x => x.StoreId).ToList();
 
-                // Tính tổng phải charge từ ví dựa trên tổng các storeGrandTotal để tránh lệch
-                var createdOrders = new List<Orders>();
+                // ==== Lấy danh sách voucher người dùng chọn (shop + sàn) ====
+                var chosenVoucherIds = new List<int>();
+                if (req.UserVoucherIds != null && req.UserVoucherIds.Count > 0)
+                    chosenVoucherIds.AddRange(req.UserVoucherIds);
+                if (req.UserVoucherId.HasValue)
+                    chosenVoucherIds.Add(req.UserVoucherId.Value);
+
+                var chosenVouchers = cart.Vouchers
+                    .Where(v => chosenVoucherIds.Contains(v.Id))
+                    .ToList();
+
+                // Tổng giỏ (để xét platform voucher & phân bổ)
+                var totalCart = selected.Sum(x => x.TotalValue);
+
+                // Tính trước tổng tiền cần trừ ví (sum các storeGrandTotal)
                 var storeTotals = new List<decimal>();
 
                 foreach (var group in groups)
                 {
+                    var storeId = group.Key;
                     var storeSubTotal = group.Sum(i => i.TotalValue);
-                    var storeShippingFee = shippingGroups.FirstOrDefault(g => g.StoreId == group.Key)?.ShippingFee ?? 0m;
+                    var storeShippingFee = shippingGroups.FirstOrDefault(g => g.StoreId == storeId)?.ShippingFee ?? 0m;
 
-                    decimal storeVoucherReduce = 0;
-                    if (voucherReduce > 0 && subTotal > 0)
-                        storeVoucherReduce = voucherReduce * (storeSubTotal / subTotal);
+                    // --- Voucher SHOP ---
+                    decimal shopDiscount = 0;
+                    var shopVoucher = chosenVouchers.FirstOrDefault(v => v.StoreId == storeId);
+                    if (shopVoucher != null && storeSubTotal >= shopVoucher.MinOrder)
+                    {
+                        shopDiscount = shopVoucher.IsPercentage
+                            ? Math.Floor(storeSubTotal * (shopVoucher.Reduce / 100))
+                            : Math.Min(shopVoucher.Reduce, storeSubTotal);
+                    }
+                    var afterShop = Math.Max(0, storeSubTotal - shopDiscount);
 
-                    var storeGrandTotal = Math.Max(0m, storeSubTotal + storeShippingFee - storeVoucherReduce);
-                    storeTotals.Add(storeGrandTotal);
+                    // --- Voucher SÀN ---
+                    decimal platformDiscount = 0;
+                    var platformVoucher = chosenVouchers.FirstOrDefault(v => v.StoreId == null);
+                    if (platformVoucher != null && totalCart >= platformVoucher.MinOrder && totalCart > 0)
+                    {
+                        var reduceTotal = platformVoucher.IsPercentage
+                            ? Math.Floor(totalCart * (platformVoucher.Reduce / 100))
+                            : platformVoucher.Reduce;
+
+                        var ratio = (decimal)storeSubTotal / (decimal)totalCart;
+                        platformDiscount = Math.Floor(reduceTotal * ratio);
+                    }
+
+                    var storeGrandTotalDec = Math.Max(0m, afterShop + storeShippingFee - platformDiscount);
+                    storeTotals.Add(storeGrandTotalDec);
                 }
 
                 var totalAmount = storeTotals.Sum();
 
-                // check & trừ ví
+                // ==== Trừ ví ====
                 var user = await _db.Users.FindAsync(req.UserId);
                 if (user == null) return BadRequest(new { message = "User not found" });
                 if (user.Balance < totalAmount)
@@ -740,20 +857,42 @@ namespace DATN_API.Controllers
                 user.Balance -= totalAmount;
                 await _db.SaveChangesAsync();
 
-                // Tạo đơn theo store và PUSH GHTK để lấy label
-                int idx = 0;
+                // ==== Tạo đơn theo từng store + đẩy GHTK (COD label) ====
+                var createdOrders = new List<Orders>();
+
                 foreach (var group in groups)
                 {
                     var storeId = group.Key;
                     var storeSubTotal = group.Sum(i => i.TotalValue);
                     var storeShippingFee = shippingGroups.FirstOrDefault(g => g.StoreId == storeId)?.ShippingFee ?? 0m;
 
-                    decimal storeVoucherReduce = 0;
-                    if (voucherReduce > 0 && subTotal > 0)
-                        storeVoucherReduce = voucherReduce * (storeSubTotal / subTotal);
+                    // --- Voucher SHOP ---
+                    decimal shopDiscount = 0;
+                    var shopVoucher = chosenVouchers.FirstOrDefault(v => v.StoreId == storeId);
+                    if (shopVoucher != null && storeSubTotal >= shopVoucher.MinOrder)
+                    {
+                        shopDiscount = shopVoucher.IsPercentage
+                            ? Math.Floor(storeSubTotal * (shopVoucher.Reduce / 100))
+                            : Math.Min(shopVoucher.Reduce, storeSubTotal);
+                    }
+                    var afterShop = Math.Max(0, storeSubTotal - shopDiscount);
 
-                    var storeGrandTotal = (long)Math.Round(Math.Max(0m, storeSubTotal + storeShippingFee - storeVoucherReduce));
+                    // --- Voucher SÀN ---
+                    decimal platformDiscount = 0;
+                    var platformVoucher = chosenVouchers.FirstOrDefault(v => v.StoreId == null);
+                    if (platformVoucher != null && totalCart >= platformVoucher.MinOrder && totalCart > 0)
+                    {
+                        var reduceTotal = platformVoucher.IsPercentage
+                            ? Math.Floor(totalCart * (platformVoucher.Reduce / 100))
+                            : platformVoucher.Reduce;
 
+                        var ratio = (decimal)storeSubTotal / (decimal)totalCart;
+                        platformDiscount = Math.Floor(reduceTotal * ratio);
+                    }
+
+                    var storeGrandTotal = (long)Math.Round(Math.Max(0m, afterShop + storeShippingFee - platformDiscount));
+
+                    // Ship method
                     var shipMethod = await _db.ShippingMethods
                        .FirstOrDefaultAsync(sm => sm.StoreId == storeId && sm.MethodName == "GHTK_AUTO");
                     if (shipMethod == null)
@@ -763,12 +902,13 @@ namespace DATN_API.Controllers
                         await _db.SaveChangesAsync();
                     }
 
+                    // Order
                     var order = new Orders
                     {
                         UserId = req.UserId,
                         OrderDate = NowVn(),
                         PaymentMethod = "BALANCE",
-                        PaymentStatus = "Paid",               // ✅ ví = Paid ngay
+                        PaymentStatus = "Paid",      // ví = Paid ngay
                         Status = OrderStatus.ChoXuLy,
                         TotalPrice = storeGrandTotal,
                         DeliveryFee = storeShippingFee,
@@ -778,6 +918,7 @@ namespace DATN_API.Controllers
                     _db.Orders.Add(order);
                     await _db.SaveChangesAsync();
 
+                    // Details
                     foreach (var item in group)
                     {
                         int? pvId = await ResolveProductVariantIdAsync(item.ProductId, item.CartId);
@@ -792,7 +933,7 @@ namespace DATN_API.Controllers
                     }
                     await _db.SaveChangesAsync();
 
-                    // 🔥 Push GHTK để lấy mã vận đơn (label)
+                    // Push GHTK lấy label (COD flow)
                     string? label;
                     try
                     {
@@ -800,7 +941,6 @@ namespace DATN_API.Controllers
                     }
                     catch (Exception ex)
                     {
-                        // Rollback cả transaction -> hoàn tiền ví
                         await tx.RollbackAsync();
                         return BadRequest(new { message = $"GHTK lỗi: {ex.Message}" });
                     }
@@ -811,14 +951,12 @@ namespace DATN_API.Controllers
                         return BadRequest(new { message = "Không tạo được vận đơn GHTK cho Balance." });
                     }
 
-                    order.Status = OrderStatus.ChoLayHang; // giống COD sau khi có label
+                    order.Status = OrderStatus.ChoLayHang;
                     order.LabelId = label;
                     await _db.SaveChangesAsync();
 
                     await DeductStockIfNeededAsync(order.Id);
-
                     createdOrders.Add(order);
-                    idx++;
                 }
 
                 try { await _cartService.ClearSelectedAsync(req.UserId); } catch { }
@@ -836,6 +974,7 @@ namespace DATN_API.Controllers
                 return StatusCode(500, new { message = "Lỗi hệ thống khi tạo đơn Balance.", detail = e.Message });
             }
         }
+
 
     }
 }

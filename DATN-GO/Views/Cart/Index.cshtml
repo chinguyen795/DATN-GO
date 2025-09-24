@@ -6,11 +6,6 @@
     ViewData["Title"] = "Cart Page";
 }
 <style>
-
-    .btn, h2 {
-        text-transform: none !important;
-    }
-
     .text-truncate-2 {
         display: -webkit-box;
         -webkit-line-clamp: 2;
@@ -18,6 +13,11 @@
         overflow: hidden;
         text-overflow: ellipsis;
     }
+
+    .btn, h2 {
+        text-transform: none !important;
+    }
+
 
     .load-more-btn {
         background: linear-gradient(45deg, #dc3545, #c82333);
@@ -173,6 +173,10 @@
         animation: fadeInUp 0.5s ease-out;
     }
 
+    .dropdown-menu{
+        min-width: 25%!important;
+    }
+
 </style>
 
 <h2 class="text-center mb-4 text-crimson">GIỎ HÀNG CỦA BẠN</h2>
@@ -189,38 +193,50 @@
                     </div>
                 </div>
             </div>
+
             <div class="card-body p-0">
                 @{
-                    var groupedItems = Model.CartItems.GroupBy(x => new { x.StoreId, x.StoreName }).ToList();
+                    // 🔧 CHỈ group THEO StoreId — LẤY TÊN/AVATAR TỪ PHẦN TỬ ĐẦU
+                    var groupedItems = Model.CartItems
+                    .GroupBy(x => x.StoreId)
+                    .Select(g => new
+                    {
+                        StoreId = g.Key,
+                        StoreName = g.First().StoreName,
+                        StoreAvatar = g.First().StoreAvatar,
+                        Items = g.ToList()
+                    })
+                    .ToList();
+
                     int totalItemIndex = 0;
                 }
 
                 @foreach (var storeGroup in groupedItems)
                 {
-                    <div class="store-group" data-store-id="@storeGroup.Key.StoreId">
+                    <div class="store-group" data-store-id="@storeGroup.StoreId">
                         <div class="store-header">
                             <div class="store-info">
-
-                                <a href="/Store/Detail/@storeGroup.Key.StoreId" class="store-name-link">
-                                    <img src="@(string.IsNullOrEmpty(storeGroup.First().StoreAvatar) ? "/images/store-default.png" : storeGroup.First().StoreAvatar)"
-                                         alt="@storeGroup.Key.StoreName"
+                                <a href="/Store/Detail/@storeGroup.StoreId" class="store-name-link">
+                                    <img src="@(string.IsNullOrEmpty(storeGroup.StoreAvatar) ? "/images/store-default.png" : storeGroup.StoreAvatar)"
+                                         alt="@storeGroup.StoreName"
                                          class="store-logo">
                                     <div>
-                                        <h6 class="store-name">@storeGroup.Key.StoreName</h6>
-                                        <small class="store-item-count">@storeGroup.Count() sản phẩm</small>
+                                        <h6 class="store-name">@storeGroup.StoreName</h6>
+                                        <small class="store-item-count">@storeGroup.Items.Count sản phẩm</small>
                                     </div>
                                 </a>
                             </div>
+
                             <div class="store-controls">
                                 <div class="store-select-all">
                                     <input class="form-check-input store-checkbox"
                                            type="checkbox"
-                                           id="store-@storeGroup.Key.StoreId"
-                                           data-store-id="@storeGroup.Key.StoreId">
-                                    <label for="store-@storeGroup.Key.StoreId">Chọn tất cả</label>
+                                           id="store-@storeGroup.StoreId"
+                                           data-store-id="@storeGroup.StoreId">
+                                    <label for="store-@storeGroup.StoreId">Chọn tất cả</label>
                                 </div>
                                 <i class="bi bi-chevron-down collapse-icon fs-5"
-                                   onclick="toggleStoreGroup(@storeGroup.Key.StoreId)"></i>
+                                   onclick="toggleStoreGroup(@storeGroup.StoreId)"></i>
                             </div>
                         </div>
 
@@ -238,7 +254,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach (var item in storeGroup)
+                                        @foreach (var item in storeGroup.Items)
                                         {
                                             <tr class="cart-item-row @(totalItemIndex >= 10 ? "d-none" : "")"
                                                 data-cart-id="@item.CartId"
@@ -254,7 +270,7 @@
                                                                data-store-id="@item.StoreId"
                                                                data-price="@item.Price"
                                                                data-quantity="@item.Quantity"
-                                                               data-total="@item.Total">
+                                                               data-total="@(item.Total / 100M)">
                                                     </div>
                                                 </td>
                                                 <td>
@@ -268,7 +284,9 @@
                                                         <div class="flex-grow-1">
                                                             <a href="/Products/DetailProducts/@item.ProductId"
                                                                class="text-decoration-none text-dark product-name-link">
-                                                                <p class="mb-1 fw-bold text-truncate-2 product-name-hover">@item.ProductName</p>
+                                                                <p class="mb-1 fw-bold text-truncate-2 product-name-hover">
+                                                                    @item.ProductName
+                                                                </p>
                                                             </a>
                                                             @if (item.Variants != null && item.Variants.Count > 0)
                                                             {
@@ -286,7 +304,7 @@
                                                                 data-current-qty="@item.Quantity"
                                                                 data-max-qty="@item.MaxQuantity"
                                                                 style="height: 35px; width: 35px;"
-                                                                @(item.Quantity <= 1 ? "disabled" : "")>
+                                                        @(item.Quantity <= 1 ? "disabled" : "")>
                                                             <i class="bi bi-dash"></i>
                                                         </button>
 
@@ -304,10 +322,13 @@
                                                                 data-current-qty="@item.Quantity"
                                                                 data-max-qty="@item.MaxQuantity"
                                                                 style="height: 35px; width: 35px;"
-                                                                @(item.Quantity >= item.MaxQuantity ? "disabled" : "")>
+                                                        @(item.Quantity >= item.MaxQuantity ? "disabled" : "")>
                                                             <i class="bi bi-plus"></i>
                                                         </button>
                                                     </div>
+                                                    <small class="text-muted d-block mt-1">
+                                                        Còn lại: @item.MaxQuantity sản phẩm
+                                                    </small>
                                                 </td>
                                                 <td class="text-end price" style="white-space: nowrap;">@item.Price.ToString("N0") đ</td>
                                                 <td class="text-end total" style="white-space: nowrap;">@item.Total.ToString("N0") đ</td>
@@ -320,15 +341,39 @@
                                                     </form>
                                                 </td>
                                             </tr>
+
                                             totalItemIndex++;
                                         }
                                     </tbody>
                                 </table>
+
+                                <div class="store-voucher border-top p-3 d-flex align-items-center gap-3">
+                                    <div class="fw-semibold">Voucher cửa hàng</div>
+
+                                    <select class="selectpicker w-100 store-voucher-select"
+                                            data-store-id="@storeGroup.StoreId"
+                                            title="— Không dùng —"
+                                            data-container="body"
+                                            data-dropup-auto="false">
+                                        @await Html.PartialAsync("_StoreVoucherOptions",
+                                                 Model.Vouchers
+                                                 .Where(x => x.StoreId == storeGroup.StoreId)
+                                                 .GroupBy(x => x.VoucherId).Select(g => g.First())
+                                                 .OrderByDescending(x => x.IsPercentage)
+                                                 .ThenByDescending(x => x.Reduce))
+                                    </select>
+
+
+                                    <div class="ms-auto small">
+                                        Đã áp dụng:
+                                        <span class="text-success fw-semibold" id="store-discount-@storeGroup.StoreId">0đ</span>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
                     </div>
                 }
-
             </div>
         </div>
     </div>
@@ -343,8 +388,10 @@
                     <label for="discountCode" class="form-label fw-semibold">Mã giảm giá</label>
                     <div class="input-group">
                         <select class="selectpicker w-100" id="voucherSelect" name="SelectedVoucherId"
-                                data-live-search="true" data-width="auto" title="Chọn voucher">
+                                data-live-search="true" data-width="auto" title="— Không dùng —">
                         </select>
+
+
                     </div>
                 </div>
                 <div class="mb-4 border-top pt-3">
@@ -355,11 +402,18 @@
                     </a>
                     <div>
                         <select class="form-select" id="addressSelect">
-                            @foreach (var address in Model.Addresses)
+                            @if (Model?.Addresses != null && Model.Addresses.Any())
                             {
-                                <option value="@address.Id" title="@address.FullAddress">
-                                    @address.FullAddress
-                                </option>
+                                foreach (var address in Model.Addresses)
+                                {
+                                    <option value="@address.Id" title="@address.FullAddress">
+                                        @address.FullAddress
+                                    </option>
+                                }
+                            }
+                            else
+                            {
+                                <option disabled selected>Chưa có địa chỉ</option>
                             }
                         </select>
                     </div>
@@ -376,9 +430,18 @@
                         <span id="shipping-fee">0₫</span>
                     </li>
                     <li class="list-group-item d-flex justify-content-between align-items-center px-0 pb-2">
-                        Voucher giảm giá
-                        <span id="voucher-discount">0</span>
+                        Giảm theo shop
+                        <span id="store-discount-total">0đ</span>
                     </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 pb-2">
+                        Giảm sàn
+                        <span id="platform-discount">0đ</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 pb-2">
+                        Tổng giảm giá
+                        <span id="voucher-discount">0đ</span>
+                    </li>
+
                     <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 mt-3">
                         <div>
                             <strong class="fs-5">Tổng tiền</strong>
@@ -400,7 +463,7 @@
                     </div>
                     <div class="form-check mb-2">
                         <input class="form-check-input" type="radio" name="paymentMethod" id="paymentMoMo"
-                               value="momo" checked>
+                               value="momo">
                         <label class="form-check-label d-flex align-items-center" for="paymentMoMo">
                             <img src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png"
                                  alt="MoMo" height="24" class="me-2">
@@ -435,177 +498,185 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     const API_BASE_URL = '@ViewBag.ApiBaseUrl';
     const btn = document.getElementById('btn-checkout');
     const voucherSelect = document.getElementById('voucherSelect');
     const addressSelect = document.getElementById('addressSelect');
-    const toast = (msg, type = "info") => {
-        Swal.fire({
-            icon: type,
-            title: type === "success" ? "🎉 Thành công" :
-                   type === "error"   ? "❌ Lỗi" :
-                   "ℹ️ Thông báo",
-            text: msg,
-            timer: 5000,                // ⏱ hiện 5 giây
-            showConfirmButton: true,   // ❌ không có nút OK
-            timerProgressBar: true,     // thanh chạy ngầm
-            position: "center"
+
+    // Popup helper với countdown
+    const toast = (message, type = 'info', redirectUrl = null) => {
+      if (window.Swal && Swal.fire) {
+        let timerInterval;
+        return Swal.fire({
+          icon: type,
+          title: type === 'success' ? 'Thành công 🎉' :
+                 type === 'error' ? 'Thất bại ❌' : 'Thông báo',
+          html: redirectUrl
+            ? `${message}<br><b>Chuyển trang sau <span id="countdown">3</span> giây...</b>`
+            : message,
+          timer: redirectUrl ? 3000 : undefined,
+          timerProgressBar: true,
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#dc143c',
+          didOpen: () => {
+            if (redirectUrl) {
+              const countdownEl = Swal.getPopup().querySelector('#countdown');
+              let timeLeft = 3;
+              timerInterval = setInterval(() => {
+                timeLeft--;
+                if (timeLeft >= 0 && countdownEl) countdownEl.textContent = timeLeft;
+              }, 1000);
+            }
+          },
+          willClose: () => {
+            if (timerInterval) clearInterval(timerInterval);
+            if (redirectUrl) window.location.href = redirectUrl;
+          }
         });
+      } else {
+        alert(message);
+        if (redirectUrl) setTimeout(() => { window.location.href = redirectUrl; }, 3000);
+        return Promise.resolve();
+      }
     };
 
-
-    // Store group toggle functionality
-    function toggleStoreGroup(storeId) {
-        const storeGroup = document.querySelector(`[data-store-id="${storeId}"]`);
-        if (storeGroup) {
-            storeGroup.classList.toggle('collapsed');
-        }
-    }
-
     btn?.addEventListener('click', async () => {
-        try {
-            const method = (document.querySelector('input[name="paymentMethod"]:checked')?.value || '').toLowerCase();
+      try {
+        const method = (document.querySelector('input[name="paymentMethod"]:checked')?.value || '').toLowerCase();
+        const userId = Number(document.getElementById('userId')?.value || 0);
+        if (!userId) return toast('Bạn cần đăng nhập.', 'error');
 
-            const userId = Number(document.getElementById('userId')?.value || 0);
-            if (!userId) return toast('Bạn cần đăng nhập.');
+        const addressId = Number(addressSelect?.value || 0);
+        if (!addressId) return toast('Vui lòng chọn địa chỉ giao hàng.', 'error');
 
-            const addressId = Number(addressSelect?.value || 0);
-            if (!addressId) return toast('Vui lòng chọn địa chỉ giao hàng.');
+        const selectedIds = [...document.querySelectorAll('.item-checkbox')]
+          .filter(cb => cb.checked)
+          .map(cb => Number(cb.dataset.cartId));
+        if (selectedIds.length === 0) return toast('Vui lòng chọn ít nhất một sản phẩm.', 'error');
 
-            const selectedIds = [...document.querySelectorAll('.item-checkbox')]
-                .filter(cb => cb.checked)
-                .map(cb => Number(cb.dataset.cartId));
-            if (selectedIds.length === 0) return toast('Vui lòng chọn ít nhất một sản phẩm.');
-
-            btn.disabled = true; btn.textContent = 'Đang xử lý...';
-            const upRes = await fetch(`${API_BASE_URL}Cart/update-selection`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(selectedIds)
-            });
-            if (!upRes.ok) {
-                btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
-                return toast('Cập nhật lựa chọn giỏ hàng thất bại.');
-            }
-
-            if (method === 'vnpay') {
-                const userVoucherId = voucherSelect?.value ? Number(voucherSelect.value) : null;
-                const body = { userId, addressId, userVoucherId };
-
-                const payRes = await fetch(`${API_BASE_URL}Payment/vnpay-create`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
-                });
-
-                if (!payRes.ok) {
-                    btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
-                    const msg = await payRes.text();
-                    return toast('Tạo thanh toán VNPay thất bại: ' + msg);
-                }
-
-                const { paymentUrl } = await payRes.json();
-                if (!paymentUrl) {
-                    btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
-                    return toast('Không lấy được paymentUrl từ server.');
-                }
-
-                window.location.href = paymentUrl;
-                return;
-            }
-
-            if (method === 'cod') {
-                const userVoucherId = voucherSelect?.value ? Number(voucherSelect.value) : null;
-                const body = { userId, addressId, userVoucherId };
-
-                const payRes = await fetch(`${API_BASE_URL}Payment/cod-create`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
-                });
-
-                btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
-
-                if (!payRes.ok) {
-                    const msg = await payRes.text();
-                    return toast('Tạo đơn COD thất bại: ' + msg);
-                }
-
-                const { orderId, labelId } = await payRes.json();
-                toast(`Đặt hàng COD thành công${labelId ? ' - Mã vận đơn: ' + labelId : ''}`, "success");
-                    setTimeout(() => {
-                    window.location.href = `/Checkout/Success?orderId=${orderId}`;
-                                       }, 5000);
-                return;
-            }
-                if (method === 'balance') {
-      const userVoucherId = voucherSelect?.value ? Number(voucherSelect.value) : null;
-      const body = { userId, addressId, userVoucherId };
-
-      const payRes = await fetch(`${API_BASE_URL}Payment/balance-create`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-
-      btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
-
-      if (!payRes.ok) {
-        const msg = await payRes.text();
-        return toast('Thanh toán bằng Balance thất bại: ' + msg);
-      }
-
-      const { orders } = await payRes.json();
-      if (!orders?.length) return toast('Không nhận được đơn hàng sau thanh toán.');
-
-      if (orders.length === 1) {
-        const o = orders[0];
-        toast(`Thanh toán thành công - Mã vận đơn: ${o.labelId ?? 'N/A'}`);
-        window.location.href = `/Checkout/Success?orderId=${o.id}`;
-      } else {
-        // nhiều store → nhiều vận đơn
-        const labels = orders.map(o => `#${o.id}: ${o.labelId ?? 'N/A'}`).join(', ');
-        toast(`Thanh toán thành công - Mã vận đơn: ${labels}`);
-        // Điều hướng về trang lịch sử đơn hàng tổng hợp
-        window.location.href = `/Orders`;
-      }
-      return;
-    }
-
-
-
-            if (method === 'momo') {
-                const userVoucherId = voucherSelect?.value ? Number(voucherSelect.value) : null;
-                const body = { userId, addressId, userVoucherId };
-
-                const payRes = await fetch(`${API_BASE_URL}Payment/momo-create`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
-                });
-
-                btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
-
-                if (!payRes.ok) {
-                    const msg = await payRes.text();
-                    return toast('Tạo thanh toán MoMo thất bại: ' + msg);
-                }
-
-                const { payUrl } = await payRes.json();
-                if (!payUrl) return toast('Không nhận được payUrl từ server.');
-
-                window.location.href = payUrl;
-                return;
-            }
-
-        } catch (e) {
-            console.error(e);
-            btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
-            toast('Có lỗi xảy ra. Vui lòng thử lại.');
+        // 1) Update selection
+        btn.disabled = true; btn.textContent = 'Đang xử lý...';
+        const upRes = await fetch(`${API_BASE_URL}Cart/update-selection`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(selectedIds)
+        });
+        if (!upRes.ok) {
+          btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
+          return toast('Cập nhật lựa chọn giỏ hàng thất bại.', 'error');
         }
+
+        // 2) Gom voucher
+        const userVoucherIds = [];
+        if (voucherSelect?.value) userVoucherIds.push(Number(voucherSelect.value));
+        document.querySelectorAll('.store-voucher-select').forEach(sel => {
+          if (sel.value) userVoucherIds.push(Number(sel.value));
+        });
+
+        const commonBody = { userId, addressId, userVoucherIds };
+
+        // 3) Theo method
+        if (method === 'vnpay') {
+          const payRes = await fetch(`${API_BASE_URL}Payment/vnpay-create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(commonBody)
+          });
+          btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
+
+          if (!payRes.ok) {
+            const msg = await payRes.text();
+            return toast('Tạo thanh toán VNPay thất bại: ' + msg, 'error');
+          }
+          const { paymentUrl } = await payRes.json();
+          if (!paymentUrl) return toast('Không lấy được paymentUrl từ server.', 'error');
+
+          return toast('Đang chuyển hướng tới VNPay...', 'success', paymentUrl);
+        }
+
+        if (method === 'momo') {
+          const payRes = await fetch(`${API_BASE_URL}Payment/momo-create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(commonBody)
+          });
+          btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
+
+          if (!payRes.ok) {
+            const msg = await payRes.text();
+            return toast('Tạo thanh toán MoMo thất bại: ' + msg, 'error');
+          }
+          const { payUrl } = await payRes.json();
+          if (!payUrl) return toast('Không nhận được payUrl từ server.', 'error');
+
+          return toast('Đang chuyển hướng tới MoMo...', 'success', payUrl);
+        }
+
+        if (method === 'balance') {
+          const payRes = await fetch(`${API_BASE_URL}Payment/balance-create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(commonBody)
+          });
+          btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
+
+          if (!payRes.ok) {
+            const msg = await payRes.text();
+            return toast('Thanh toán bằng Balance thất bại: ' + msg, 'error');
+          }
+
+          const { orders } = await payRes.json();
+          if (!orders?.length) return toast('Không nhận được đơn hàng sau thanh toán.', 'error');
+
+          if (orders.length === 1) {
+            const o = orders[0];
+            return toast(`Thanh toán thành công - Mã vận đơn: ${o.labelId ?? 'N/A'}`, 'success', `/Checkout/Success?orderId=${o.id}`);
+          } else {
+            const labels = orders.map(o => `#${o.id}: ${o.labelId ?? 'N/A'}`).join(', ');
+            return toast(`Thanh toán thành công - Mã vận đơn: ${labels}`, 'success', `/Orders`);
+          }
+        }
+
+        if (method === 'cod') {
+          const payRes = await fetch(`${API_BASE_URL}Payment/cod-create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(commonBody)
+          });
+          btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
+
+          if (!payRes.ok) {
+            const msg = await payRes.text();
+            return toast('Tạo đơn COD thất bại: ' + msg, 'error');
+          }
+
+          const { orders } = await payRes.json();
+          if (!orders?.length) return toast('Không nhận được đơn hàng.', 'error');
+
+          if (orders.length === 1) {
+            const o = orders[0];
+            return toast(`Đặt hàng COD thành công - Mã vận đơn: ${o.labelId ?? 'N/A'}`, 'success', `/Checkout/Success?orderId=${o.id}`);
+          } else {
+            const labels = orders.map(o => `#${o.id}: ${o.labelId ?? 'N/A'}`).join(', ');
+            return toast(`Đặt hàng COD thành công - Mã vận đơn: ${labels}`, 'success', `/Orders`);
+          }
+        }
+
+        btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
+        return toast('Vui lòng chọn phương thức thanh toán.', 'error');
+
+      } catch (e) {
+        console.error(e);
+        btn.disabled = false; btn.textContent = 'Tiến hành thanh toán';
+        toast('Có lỗi xảy ra. Vui lòng thử lại.', 'error');
+      }
     });
 </script>
+
+
+
 
 <script>
     (function () {
@@ -814,52 +885,52 @@
 
 <script>
     (() => {
-      const BUY_NOW_KEY = '__BUY_NOW_PIDS';
+        const BUY_NOW_KEY = '__BUY_NOW_PIDS';
 
-      document.addEventListener('DOMContentLoaded', () => {
-        const selectAll = document.getElementById('selectAllItems');
-        if (selectAll) selectAll.checked = false;
+        document.addEventListener('DOMContentLoaded', () => {
+            const selectAll = document.getElementById('selectAllItems');
+            if (selectAll) selectAll.checked = false;
 
-        const boxes = document.querySelectorAll('.item-checkbox');
-        boxes.forEach(cb => cb.checked = false);
+            const boxes = document.querySelectorAll('.item-checkbox');
+            boxes.forEach(cb => cb.checked = false);
 
-        let buyNowPids = [];
-        try {
-          buyNowPids = JSON.parse(localStorage.getItem(BUY_NOW_KEY) || '[]') || [];
-        } catch { buyNowPids = []; }
+            let buyNowPids = [];
+            try {
+                buyNowPids = JSON.parse(localStorage.getItem(BUY_NOW_KEY) || '[]') || [];
+            } catch { buyNowPids = []; }
 
-        if (Array.isArray(buyNowPids) && buyNowPids.length) {
-          buyNowPids.forEach(pid => {
-            const targets =
-              document.querySelectorAll(`.item-checkbox[data-product-id="${pid}"]`);
-            targets.forEach(cb => {
-              if (!cb.checked) {
-                cb.checked = true;
-                cb.dispatchEvent(new Event('change', { bubbles: true }));
-              }
+            if (Array.isArray(buyNowPids) && buyNowPids.length) {
+                buyNowPids.forEach(pid => {
+                    const targets =
+                        document.querySelectorAll(`.item-checkbox[data-product-id="${pid}"]`);
+                    targets.forEach(cb => {
+                        if (!cb.checked) {
+                            cb.checked = true;
+                            cb.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                    });
+                });
+
+                const allChecked = [...boxes].length > 0 && [...boxes].every(x => x.checked);
+                if (selectAll) selectAll.checked = allChecked;
+
+                localStorage.removeItem(BUY_NOW_KEY);
+            }
+
+            selectAll?.addEventListener('change', (e) => {
+                const checked = e.target.checked;
+                document.querySelectorAll('.item-checkbox').forEach(cb => {
+                    cb.checked = checked;
+                    cb.dispatchEvent(new Event('change', { bubbles: true }));
+                });
             });
-          });
-
-          const allChecked = [...boxes].length > 0 && [...boxes].every(x => x.checked);
-          if (selectAll) selectAll.checked = allChecked;
-
-          localStorage.removeItem(BUY_NOW_KEY);
-        }
-
-        selectAll?.addEventListener('change', (e) => {
-          const checked = e.target.checked;
-          document.querySelectorAll('.item-checkbox').forEach(cb => {
-            cb.checked = checked;
-            cb.dispatchEvent(new Event('change', { bubbles: true }));
-          });
+            document.querySelectorAll('.item-checkbox').forEach(cb => {
+                cb.addEventListener('change', () => {
+                    const list = Array.from(document.querySelectorAll('.item-checkbox'));
+                    if (selectAll) selectAll.checked = (list.length && list.every(x => x.checked));
+                });
+            });
         });
-        document.querySelectorAll('.item-checkbox').forEach(cb => {
-          cb.addEventListener('change', () => {
-            const list = Array.from(document.querySelectorAll('.item-checkbox'));
-            if (selectAll) selectAll.checked = (list.length && list.every(x => x.checked));
-          });
-        });
-      });
     })();
 </script>
 <script>
@@ -1030,7 +1101,7 @@
 
         window.addEventListener('resize', throttle(handleScroll, 200));
         window.addEventListener('beforeunload', () => {
-        window.removeEventListener('scroll', throttledScroll);
+            window.removeEventListener('scroll', throttledScroll);
         });
 
         const oldLoadMoreBtn = document.getElementById('load-more-btn');
@@ -1167,7 +1238,7 @@
             }
         }
 
-         function updateCartSummary() {
+        function updateCartSummary() {
             let subtotal = 0;
             document.querySelectorAll('.item-checkbox:checked').forEach(cb => {
                 const total = parseFloat(cb.dataset.total || 0);
@@ -1281,46 +1352,177 @@
         recalculateShippingFee();
     });
 </script>
-@section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        // Hàm popup đẹp
-        const showPopup = (msg, type = 'info') => {
-            Swal.fire({
-                icon: type,
-                title: type === 'success' ? 'Thành công 🎉' :
-                       type === 'error' ? 'Thất bại ❌' : 'Thông báo',
-                text: msg,
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#dc143c',
-                timer: type === 'success' ? 2500 : undefined
-            });
-        };
 
-        // Khi bấm nút thanh toán
-        document.getElementById("btnCheckout").addEventListener("click", async function () {
-            try {
-                let response = await fetch("/Order/CheckoutCod", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
-                    },
-                    body: JSON.stringify({})
+
+<script>
+    (function () {
+        // --- helpers ---
+        const fmtVND = n => `${(n || 0).toLocaleString('vi-VN')}₫`; // ★ dùng đồng bộ
+        const getNumber = txt => parseFloat(String(txt || '0').replace(/[^\d]/g, '')) || 0;
+
+        function getCheckedItems() {
+            return [...document.querySelectorAll('.item-checkbox:checked')].map(cb => ({
+                storeId: cb.dataset.storeId,
+                total: getNumber(cb.dataset.total)
+            }));
+        }
+
+        function calcStoreSubtotals() {
+            const map = {};
+            getCheckedItems().forEach(x => {
+                map[x.storeId] = (map[x.storeId] || 0) + x.total;
+            });
+            return map;
+        }
+
+        function parseVoucherFromOption(opt) {
+            const rawReduce = parseFloat(opt?.dataset?.reduce || 0);     // %: 12 ; tiền: 40000 (đ)
+            const rawMinOrder = parseFloat(opt?.dataset?.minOrder || 0);   // đồng, vd 190000
+            const isPct = String(opt?.dataset?.isPercentage || '').toLowerCase() === 'true';
+
+            // DB của bạn: tất cả đều đã là đơn vị thực tế (không cần chia)
+            const reduce = rawReduce;     // % giữ nguyên 12 ; tiền giữ nguyên 40000 (đ)
+            const minOrder = rawMinOrder;   // giữ nguyên (đồng)
+
+            return { type: isPct ? 'percent' : 'cash', reduce, minOrder };
+        }
+
+
+        function getSelectedStoreVoucher(storeId) {
+            const sel = document.querySelector(`.store-voucher-select[data-store-id="${storeId}"]`);
+            if (!sel || !sel.value) return null;
+            const opt = sel.options[sel.selectedIndex];
+            const v = parseVoucherFromOption(opt); // ★
+            return { userVoucherId: sel.value, ...v };
+        }
+
+        function getSelectedPlatformVoucher() {
+            const sel = document.getElementById('voucherSelect');
+            if (!sel || !sel.value) return null;
+            const opt = sel.options[sel.selectedIndex];
+            const v = parseVoucherFromOption(opt); // ★
+            return { userVoucherId: sel.value, ...v };
+        }
+
+        // --- core: tính giảm giá ---
+        (function () {
+            // ===== helpers =====
+            const fmt = n => `${(n || 0).toLocaleString('vi-VN')}₫`;
+            const num = s => parseFloat(String(s || '0').replace(/[^\d]/g, '')) || 0;
+
+            // set text cho tất cả node cùng id (tránh có 2 bản DOM)
+            function setMoneyById(id, amount) { document.querySelectorAll(`#${id}`).forEach(el => el.textContent = fmt(amount)); }
+
+            // đọc option voucher theo đúng đơn vị DB (không chia 100)
+            function parseVoucherFromOption(opt) {
+                const rawReduce = parseFloat(opt?.dataset?.reduce || 0);      // %: 12 ; tiền: 40000 (đ)
+                const rawMinOrder = parseFloat(opt?.dataset?.minOrder || 0);    // đồng
+                const isPct = String(opt?.dataset?.isPercentage || '').toLowerCase() === 'true';
+                return { type: isPct ? 'percent' : 'cash', reduce: rawReduce, minOrder: rawMinOrder };
+            }
+
+            // hàm public để các script khác có thể gọi
+            window.recalcAllDiscountsAndTotals = function recalcAllDiscountsAndTotals() {
+                // 1) Tạm tính
+                const checked = [...document.querySelectorAll('.item-checkbox:checked')];
+                const subtotal = checked.reduce((s, cb) => s + num(cb.dataset.total), 0);
+                setMoneyById('subtotal', subtotal);
+
+                // 2) Giảm theo shop
+                const byStore = {};
+                checked.forEach(cb => { const sid = cb.dataset.storeId; byStore[sid] = (byStore[sid] || 0) + num(cb.dataset.total); });
+
+                let storeDiscountTotal = 0;
+                Object.keys(byStore).forEach(storeId => {
+                    const sub = byStore[storeId] || 0;
+                    const sel = document.querySelector(`.store-voucher-select[data-store-id="${storeId}"]`);
+                    let d = 0;
+                    if (sel && sel.value) {
+                        const v = parseVoucherFromOption(sel.options[sel.selectedIndex]);
+                        if (sub >= v.minOrder) {
+                            d = (v.type === 'percent') ? Math.floor(sub * (v.reduce / 100)) : Math.min(v.reduce, sub);
+                        }
+                    }
+                    storeDiscountTotal += d;
+                    document.querySelectorAll(`#store-discount-${storeId}`).forEach(el => el.textContent = fmt(d));
                 });
 
-                let data = await response.json();
-
-                if (data.success) {
-                    showPopup("Đặt hàng COD thành công - Mã vận đơn: " + data.labelId, "success");
-                } else {
-                    showPopup("Đặt hàng COD thất bại: " + data.message, "error");
+                // 3) Giảm sàn
+                const base = Math.max(0, subtotal - storeDiscountTotal);
+                let platformDiscount = 0;
+                const pvSel = document.getElementById('voucherSelect');
+                if (pvSel && pvSel.value) {
+                    const pv = parseVoucherFromOption(pvSel.options[pvSel.selectedIndex]);
+                    if (base >= pv.minOrder) {
+                        platformDiscount = (pv.type === 'percent') ? Math.floor(base * (pv.reduce / 100)) : Math.min(pv.reduce, base);
+                    }
                 }
-            } catch (err) {
-                console.error(err);
-                showPopup("Có lỗi xảy ra khi kết nối server!", "error");
-            }
+
+                // 4) Tổng giảm & hiển thị
+                setMoneyById('store-discount-total', storeDiscountTotal);
+                setMoneyById('platform-discount', platformDiscount);
+                const totalDiscount = storeDiscountTotal + platformDiscount;
+                setMoneyById('voucher-discount', totalDiscount);
+
+                // 5) Ship & 6) Tổng tiền
+                const shipping = num(document.getElementById('shipping-fee')?.textContent);
+                const grand = Math.max(0, subtotal + shipping - totalDiscount);
+                setMoneyById('grand-total', grand);
+
+                // debug nhanh
+                console.debug('[recalc]', { subtotal, storeDiscountTotal, platformDiscount, totalDiscount, shipping, grand });
+            };
+
+            // ===== events & debounce / chặn handler cũ =====
+            document.addEventListener('DOMContentLoaded', () => {
+                // chặn plugin/handler cũ đè tổng giảm
+                $('#voucherSelect').off('changed.bs.select change').on('changed.bs.select change', function (e) {
+                    e.stopImmediatePropagation();
+                    recalcAllDiscountsAndTotals();
+                    setTimeout(recalcAllDiscountsAndTotals, 0); // nếu plugin còn sửa sau 1 tick, set lại
+                });
+
+                $(document).on('changed.bs.select change', '.store-voucher-select', function () {
+                    window.recalcAllDiscountsAndTotals?.();
+                });
+
+
+                // tick item
+                document.querySelectorAll('.item-checkbox').forEach(cb => cb.addEventListener('change', recalcAllDiscountsAndTotals));
+                // nơi khác sau khi đổi số lượng
+                document.addEventListener('quantity-updated', recalcAllDiscountsAndTotals);
+                // đổi địa chỉ: sau khi bạn cập nhật #shipping-fee, gọi lại
+                document.getElementById('addressSelect')?.addEventListener('change', () => setTimeout(recalcAllDiscountsAndTotals, 50));
+
+                // lần đầu
+                recalcAllDiscountsAndTotals();
+            });
+        })();
+        // --- sự kiện ---
+        function wireEvents() {
+            document.querySelectorAll('.item-checkbox').forEach(cb => {
+                cb.addEventListener('change', () => { recalcAllDiscountsAndTotals(); });
+            });
+
+            document.addEventListener('quantity-updated', () => { recalcAllDiscountsAndTotals(); });
+
+            document.querySelectorAll('.store-voucher-select').forEach(sel => {
+                sel.addEventListener('change', () => { recalcAllDiscountsAndTotals(); });
+            });
+
+            document.getElementById('voucherSelect')?.addEventListener('change', () => { recalcAllDiscountsAndTotals(); });
+
+            document.getElementById('addressSelect')?.addEventListener('change', () => {
+                setTimeout(() => recalcAllDiscountsAndTotals(), 50);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            wireEvents();
+            recalcAllDiscountsAndTotals();
         });
-    </script>
-}
-ó 
+
+        // Ở nơi cập nhật số lượng xong nhớ:
+        // document.dispatchEvent(new Event('quantity-updated'));
+    })();
+</script>

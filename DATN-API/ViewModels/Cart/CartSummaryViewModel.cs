@@ -4,7 +4,7 @@
     {
         public List<CartItemViewModel> CartItems { get; set; }
         public List<AddressViewModel> Addresses { get; set; }
-        public List<UserVoucherViewModel> Vouchers { get; set; } 
+        public List<UserVoucherViewModel> Vouchers { get; set; }
         public decimal TotalWeight { get; set; }
         public decimal TotalValue { get; set; }
     }
@@ -17,5 +17,7 @@
         public decimal MinOrder { get; set; }
         public DateTime EndDate { get; set; }
         public string StoreName { get; set; }
+        public int? StoreId { get; set; }
+        public bool IsPercentage { get; set; }
     }
 }

@@ -1,0 +1,17 @@
+﻿@model IEnumerable<DATN_GO.ViewModels.Cart.UserVoucherViewModel>
+
+@foreach (var v in Model
+   .GroupBy(x => x.VoucherId).Select(g => g.First())
+   .OrderByDescending(x => x.IsPercentage)
+   .ThenByDescending(x => x.Reduce))
+{
+    <option value="@v.Id"
+            data-voucher-id="@v.VoucherId"
+            data-reduce="@v.Reduce"
+            data-min-order="@v.MinOrder"
+            data-is-percentage="@v.IsPercentage.ToString().ToLower()">
+        @(v.IsPercentage
+            ? $"{v.Reduce:#,0}% – Đơn tối thiểu {v.MinOrder:N0}đ – HSD {v.EndDate:dd/MM/yyyy}"
+            : $"{v.Reduce:N0}đ – Đơn tối thiểu {v.MinOrder:N0}đ – HSD {v.EndDate:dd/MM/yyyy}")
+    </option>
+}

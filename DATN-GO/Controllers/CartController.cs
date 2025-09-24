@@ -14,15 +14,17 @@ namespace DATN_GO.Controllers
     {
         private readonly CartService _cartService;
         private readonly StoreService _storeService;
+
         private readonly UserService _userService;
         private readonly IConfiguration _configuration;
 
         public CartController(CartService cartService, IConfiguration configuration, UserService userService, StoreService storeService)
         {
-            _cartService = cartService;
-            _configuration = configuration;
             _userService = userService;
             _storeService = storeService;
+            _cartService = cartService;
+            _configuration = configuration;
+
         }
 
         public async Task<IActionResult> Index()
@@ -30,20 +32,49 @@ namespace DATN_GO.Controllers
             if (!HttpContext.Session.TryGetValue("Id", out byte[] idBytes) ||
                 !int.TryParse(Encoding.UTF8.GetString(idBytes), out int userId))
             {
-
                 TempData["ToastMessage"] = "Bạn cần đăng nhập để xem giỏ hàng.";
                 TempData["ToastType"] = "danger";
                 return RedirectToAction("Login", "UserAuthentication");
             }
+
             var store = await _storeService.GetStoreByUserIdAsync(userId);
-            ViewData["StoreStatus"] = store?.Status; // enum StoreStatus
+            ViewData["StoreStatus"] = store?.Status;
+
             ViewBag.ApiBaseUrl = _configuration["ApiSettings:BaseUrl"];
+
             var user = await _userService.GetUserByIdAsync(userId);
-            ViewBag.Balance = user.Balance;
-            var cartSummary = await _cartService.GetCartByUserIdAsync(userId);
+            ViewBag.Balance = user?.Balance ?? 0;
+
+            var cartSummary = await _cartService.GetCartByUserIdAsync(userId)
+                              ?? new CartSummaryViewModel();
+
+            // 👉 nếu service giỏ hàng KHÔNG gán Addresses, tự gán rỗng hoặc nạp từ user/address service
+            cartSummary.Addresses ??= new List<AddressViewModel>();
+
+            // (nếu có API địa chỉ riêng, điền thật sự)
+            // cartSummary.Addresses = await _userService.GetAddressesAsync(userId) ?? new List<AddressViewModel>();
+
+            // voucher đã chọn
+            var selectedVoucherId = HttpContext.Session.GetInt32("SelectedPlatformVoucherId") ?? 0;
+            ViewBag.SelectedPlatformVoucherId = selectedVoucherId;
+
             ViewBag.UserId = userId;
             return View(cartSummary);
+        }
 
+
+        [HttpPut]
+        [Route("cart/update-selection")]
+        public async Task<IActionResult> UpdateSelection([FromBody] List<int> selectedCartIds)
+        {
+            if (!HttpContext.Session.TryGetValue("Id", out var idBytes) ||
+                !int.TryParse(Encoding.UTF8.GetString(idBytes), out var userId))
+            {
+                return Unauthorized();
+            }
+
+            await _cartService.UpdateSelectionAsync(selectedCartIds ?? new List<int>());
+            return Ok(new { message = "Selection updated" });
         }
 
 
@@ -145,28 +176,62 @@ namespace DATN_GO.Controllers
                 return StatusCode(500, new { message = "Có lỗi xảy ra", error = ex.Message });
             }
         }
-
         [HttpPost]
         public async Task<IActionResult> UpdateVoucherDropdown([FromBody] List<int> selectedCartIds)
         {
-
             if (!HttpContext.Session.TryGetValue("Id", out byte[] idBytes) ||
                 !int.TryParse(Encoding.UTF8.GetString(idBytes), out int userId))
             {
                 return Unauthorized();
             }
 
-
             await _cartService.UpdateSelectionAsync(selectedCartIds);
 
             var cartSummary = await _cartService.GetCartByUserIdAsync(userId);
-            if (cartSummary == null)
-            {
-                return BadRequest();
-            }
+            if (cartSummary == null) return BadRequest();
+
+            // 👉 lấy lại id voucher đang chọn từ Session để Razor đánh dấu selected
+            var selectedVoucherId = HttpContext.Session.GetInt32("SelectedPlatformVoucherId") ?? 0;
+            ViewBag.SelectedPlatformVoucherId = selectedVoucherId;
 
             return PartialView("_VoucherDropdown", cartSummary.Vouchers);
         }
+
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateStoreVoucherOptions([FromBody] StoreVoucherRequest req)
+        {
+            if (!HttpContext.Session.TryGetValue("Id", out var idBytes) ||
+                !int.TryParse(Encoding.UTF8.GetString(idBytes), out var userId))
+                return Unauthorized();
+
+            // cập nhật selection trước để service tính lại voucher hợp lệ
+            await _cartService.UpdateSelectionAsync(req?.SelectedCartIds ?? new List<int>());
+
+            var cartSummary = await _cartService.GetCartByUserIdAsync(userId);
+            if (cartSummary == null) return BadRequest();
+
+            // LẤY VOUCHER THEO SHOP + KHỬ TRÙNG LẶP
+            var storeVouchers = cartSummary.Vouchers
+                .Where(v => v.StoreId == req.StoreId)
+                .GroupBy(v => v.VoucherId)
+                .Select(g => g.First())
+                .OrderByDescending(v => v.IsPercentage)
+                .ThenByDescending(v => v.Reduce)
+                .ToList();
+
+            return PartialView("_StoreVoucherOptions", storeVouchers);
+        }
+
+
+
+        [HttpPost]
+        public IActionResult SaveSelectedPlatformVoucher([FromBody] int voucherId)
+        {
+            HttpContext.Session.SetInt32("SelectedPlatformVoucherId", voucherId);
+            return Ok();
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> GetShippingFee([FromBody] ShippingGroupRequest request)

@@ -257,8 +257,23 @@
 
     @if (Model.SuggestedProducts != null && Model.SuggestedProducts.Any())
     {
+        var rated = Model.SuggestedProducts
+        .Where(p => p.Rating > 0)
+        .OrderByDescending(p => p.Rating)
+        .ToList();
+
+        var unrated = Model.SuggestedProducts
+        .Where(p => !(p.Rating > 0)) // gồm 0 hoặc null
+        .OrderBy(_ => Guid.NewGuid()) // random
+        .ToList();
+
+        var topProducts = rated
+        .Concat(unrated) // ưu tiên có sao trước, thiếu thì bốc random từ không sao
+        .Take(4)
+        .ToList();
+
         <div class="row g-4">
-            @foreach (var product in Model.SuggestedProducts.Take(4))
+            @foreach (var product in topProducts)
             {
                 var info = product.PriceInfo;
                 decimal? min = info?.MinPrice ?? info?.Price ?? product.Price;
@@ -359,6 +374,8 @@
     {
         <p class="text-muted">Chưa có sản phẩm gợi ý.</p>
     }
+
+
 </section>
 
 <!-- Thịnh hành -->
@@ -450,6 +467,19 @@
                                   title="@product.CategoryName">
                                 @product.CategoryName
                             </span>
+                            <div class="rating text-warning d-flex align-items-center"
+                                 data-bs-toggle="tooltip"
+                                 title="@(product.Rating <= 0 ? "Chưa có đánh giá" : $"Đánh giá: {product.Rating:0.0} sao")">
+                                @if (product.Rating <= 0)
+                                {
+                                    <span class="text-muted small fst-italic">Chưa có đánh giá</span>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-star-fill icon-sm"></i>
+                                    <span class="ms-1 text-dark">@product.Rating.ToString("0.0")</span>
+                                }
+                            </div>
                             <h5 class="card-title fw-bold mb-1 text-truncate-1">
                                 <a asp-controller="Products"
                                    asp-action="DetailProducts"
