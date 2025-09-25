@@ -46,6 +46,8 @@ namespace DATN_GO.ViewModels
         public decimal? OldPrice { get; set; }
         public double Rating { get; set; }
         public MinMaxPriceResponse PriceInfo { get; set; } = new();
+        // 👉 : số lượt mua
+        public int PurchaseCount { get; set; }
     }
     public class SearchViewModel
     {

@@ -50,6 +50,24 @@ namespace DATN_GO.Areas.Admin.Controllers
         // Hiển thị danh sách cửa hàng chờ duyệt
         public async Task<IActionResult> BrowseStore()
         {
+            // vẫn yêu cầu đăng nhập
+            var userIdStr = HttpContext.Session.GetString("Id");
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
+            {
+                TempData["ToastMessage"] = "Vui lòng đăng nhập để tiếp tục!";
+                TempData["ToastType"] = "error";
+                return RedirectToAction("Index", "Home", new { area = "" });
+            }
+
+            // vẫn khóa admin
+            var user = await _decorationService.GetUserByIdAsync(userId);
+            if (user == null || user.RoleId != 3)
+            {
+                TempData["ToastMessage"] = "Bạn không có quyền truy cập vào trang này!";
+                TempData["ToastType"] = "error";
+                return RedirectToAction("Index", "Home", new { area = "" });
+            }
+            ViewBag.UserInfo = user;
             var response = await _http.GetAsync("/api/Stores/PendingApproval");
             if (!response.IsSuccessStatusCode)
                 return View(new List<StoreAdminViewModel>());

@@ -1,9 +1,10 @@
-﻿using DATN_API.Models;
-using DATN_API.Interfaces;
+﻿using DATN_API.Interfaces;
+using DATN_API.Models;
+using DATN_API.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using DATN_API.ViewModels;
+using Twilio.TwiML.Voice;
 
 namespace DATN_API.Services
 {
@@ -17,7 +18,9 @@ namespace DATN_API.Services
 
         public async Task<IEnumerable<Categories>> GetAllAsync()
         {
-            return await _context.Categories.ToListAsync();
+            return await _context.Categories
+                .OrderByDescending(p => p.Id)
+                .ToListAsync();
         }
 
         public async Task<IEnumerable<CategoryWithUsageViewModel>> GetAllWithUsageAsync()
@@ -43,6 +46,8 @@ namespace DATN_API.Services
 
         public async Task<Categories> CreateAsync(Categories model)
         {
+            if (model.CreateAt == default)
+                model.CreateAt = DateTime.UtcNow;
             _context.Categories.Add(model);
             await _context.SaveChangesAsync();
             return model;

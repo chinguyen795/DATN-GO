@@ -53,7 +53,7 @@ namespace DATN_GO.Controllers
 
             // 3) Rating
             var storeRatingMap = await _storeService.GetRatingsByStoreUserAsync();
-            var products = await _productService.GetAllProductsAsync() ?? new(); // có thể chưa include ProductVariants
+            var products = await _productService.GetAllProductsAsync() ?? new();
             var prodRatingMap = await _storeService.GetProductRatingsAsync();
 
             // 4) Đếm sản phẩm theo danh mục
@@ -75,9 +75,8 @@ namespace DATN_GO.Controllers
                 })
                 .ToList();
 
-            // 6) Chọn nguồn dữ liệu cho Featured / Suggested
-            //    👉 Không còn Take(8) cứng. Có thể đổi FEATURED_MAX = int.MaxValue để lấy tất cả.
-            const int FEATURED_MAX = 200; // hoặc int.MaxValue
+            // 6) Chọn nguồn dữ liệu
+            const int FEATURED_MAX = 200;
             const int SUGGESTED_MAX = 8;
 
             var featuredSource = products
@@ -85,12 +84,10 @@ namespace DATN_GO.Controllers
                 .Take(FEATURED_MAX)
                 .ToList();
 
-            var suggestedSource = products
-                .OrderBy(_ => Guid.NewGuid())
-                .Take(SUGGESTED_MAX)
-                .ToList();
+            // lấy tất cả sản phẩm, KHÔNG random
+            var suggestedSource = products.ToList();
 
-            // 6.1) Lấy giá đơn (fallback khi không có variant) dựa trên 2 source thực dùng
+            // 6.1) Lấy giá đơn
             var allNeededProductIds = featuredSource
                 .Select(p => p.Id)
                 .Concat(suggestedSource.Select(p => p.Id))
@@ -137,7 +134,7 @@ namespace DATN_GO.Controllers
 
             // 8) Build ViewModel
 
-            // Stores (hiển thị 4 thẻ, bạn có thể tăng nếu muốn)
+            // Stores
             var storeCards = stores.Take(4).Select(s =>
             {
                 float rating = -1f;
@@ -161,7 +158,7 @@ namespace DATN_GO.Controllers
                 };
             }).ToList();
 
-            // FeaturedProducts (giống trang Products: ưu tiên min/max từ variants; không có thì dùng priceDict/fallback)
+            // FeaturedProducts
             var featuredCards = new List<ProductHomeViewModel>();
             foreach (var p in featuredSource)
             {
@@ -182,7 +179,7 @@ namespace DATN_GO.Controllers
                         IsVariant = true,
                         MinPrice = min,
                         MaxPrice = max,
-                        Price = min,            // hiển thị min
+                        Price = min,
                         OriginalPrice = max
                     };
                 }
@@ -208,11 +205,12 @@ namespace DATN_GO.Controllers
                     StoreName = storeDict.TryGetValue(p.StoreId, out var sname) ? sname : "Đang cập nhật",
                     Price = displayPrice,
                     Rating = prodAvg,
-                    PriceInfo = info
+                    PriceInfo = info,
+                    PurchaseCount = p.OrderDetails?.Sum(od => od.Quantity) ?? 0
                 });
             }
 
-            // SuggestedProducts (tương tự)
+            // SuggestedProducts
             var suggestedCards = new List<ProductHomeViewModel>();
             foreach (var p in suggestedSource)
             {
@@ -259,15 +257,23 @@ namespace DATN_GO.Controllers
                     StoreName = storeDict.TryGetValue(p.StoreId, out var sname) ? sname : "Đang cập nhật",
                     Price = displayPrice,
                     Rating = prodAvg,
-                    PriceInfo = info
+                    PriceInfo = info,
+                    PurchaseCount = p.OrderDetails?.Sum(od => od.Quantity) ?? 0
                 });
             }
+
+            // 👉 Sort Suggested theo lượt mua ↓, tie-break rating ↓, KHÔNG random
+            var suggestedCardsTop = suggestedCards
+                .OrderByDescending(x => x.PurchaseCount)
+                .ThenByDescending(x => x.Rating)
+                .Take(SUGGESTED_MAX)
+                .ToList();
 
             var vm = new HomeViewModel
             {
                 Stores = storeCards,
                 FeaturedProducts = featuredCards,
-                SuggestedProducts = suggestedCards,
+                SuggestedProducts = suggestedCardsTop,
                 Categories = visibleCategories.Select(c => new CategoryHomeViewModel
                 {
                     Id = c.Id,
@@ -280,6 +286,8 @@ namespace DATN_GO.Controllers
 
             return View(vm);
         }
+
+
 
 
 

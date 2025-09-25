@@ -8,6 +8,22 @@
         text-transform: none !important;
     }
 
+    .stats-row {
+        overflow-x: auto; /* nếu 3 box dài quá thì scroll ngang */
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .store-stats .stat-item {
+        min-width: 220px; /* giữ box đủ rộng */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #productCount, #orderCount, #revenueCount {
+        white-space: nowrap; /* số không xuống dòng */
+    }
+
 </style>
 <div class="page-wrapper">
     <header class="main-header" id="header">
@@ -183,26 +199,27 @@
                                     </div>
                                     <div class="col-md-4 text-md-end">
                                         <div class="store-stats">
-                                            <div class="row text-center">
-                                                <div class="col-4">
+                                            <div class="row text-center flex-nowrap stats-row g-2">
+                                                <div class="col-auto">
                                                     <div class="stat-item p-3 bg-light rounded">
                                                         <h5 class="mb-0 text-primary fw-bold" id="productCount">0</h5>
                                                         <small class="text-muted">Sản phẩm</small>
                                                     </div>
                                                 </div>
-                                                <div class="col-4">
+                                                <div class="col-auto">
                                                     <div class="stat-item p-3 bg-light rounded">
                                                         <h5 class="mb-0 text-success fw-bold" id="orderCount">0</h5>
                                                         <small class="text-muted">Đơn hàng</small>
                                                     </div>
                                                 </div>
-                                                <div class="col-4">
+                                                <div class="col-auto">
                                                     <div class="stat-item p-3 bg-light rounded">
                                                         <h5 class="mb-0 text-info fw-bold" id="revenueCount">0</h5>
                                                         <small class="text-muted">Doanh thu</small>
                                                     </div>
                                                 </div>
                                             </div>
+
                                             @* <div class="mt-3">
                                                 <button class="btn btn-outline-primary btn-sm me-2">
                                                     <i class="mdi mdi-pencil"></i> Chỉnh sửa
@@ -792,7 +809,7 @@
                                     <td>${statusHtml}</td>
                                     <td>
                                         <button class="btn btn-sm btn-outline-info btn-product-detail" data-product-id="${p.id}">
-                                            <i class="mdi mdi-eye-outline"></i> Chi tiết
+                                            <i class="mdi mdi-eye-outline"></i>
                                         </button>
                                     </td>
                                 </tr>`;
@@ -861,5 +878,10 @@
                 }
             });
         }
+                $("#revenueCount").text(
+            (store.orders?.reduce((sum, o) => sum + o.totalAmount, 0) || 0)
+            .toLocaleString("vi-VN")
+        );
+
     </script>
 }

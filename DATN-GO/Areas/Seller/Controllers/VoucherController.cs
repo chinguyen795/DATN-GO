@@ -18,7 +18,7 @@ namespace DATN_GO.Areas.Seller.Controllers
         }
 
         // ================== LIST ==================
-        public async Task<IActionResult> Voucher(string? search, string? sort, int page = 1, int pageSize = 4)
+        public async Task<IActionResult> Voucher(string? search, string? sort, int page = 1, int pageSize = 8)
         {
             var userIdStr = HttpContext.Session.GetString("Id");
             if (string.IsNullOrEmpty(userIdStr))

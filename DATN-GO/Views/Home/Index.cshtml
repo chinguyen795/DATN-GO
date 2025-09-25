@@ -174,8 +174,13 @@
     <div class="row g-4" id="storeList">
         @if (Model.Stores != null && Model.Stores.Any())
         {
+            var sortedStores = Model.Stores
+            .OrderByDescending(s => s.Rating >= 0)   // cửa hàng có sao lên trước
+            .ThenByDescending(s => s.Rating)         // sắp theo số sao giảm dần
+            .ToList();
+
             var storeIndex = 0;
-            @foreach (var store in Model.Stores)
+            foreach (var store in sortedStores)
             {
                 <div class="col-lg-6 store-card @(storeIndex >= 2 ? "d-none" : "")" data-aos="fade-up">
                     <div class="restaurant-card card border-0 shadow-sm hover-scale">
@@ -257,18 +262,10 @@
 
     @if (Model.SuggestedProducts != null && Model.SuggestedProducts.Any())
     {
-        var rated = Model.SuggestedProducts
-        .Where(p => p.Rating > 0)
-        .OrderByDescending(p => p.Rating)
-        .ToList();
-
-        var unrated = Model.SuggestedProducts
-        .Where(p => !(p.Rating > 0)) // gồm 0 hoặc null
-        .OrderBy(_ => Guid.NewGuid()) // random
-        .ToList();
-
-        var topProducts = rated
-        .Concat(unrated) // ưu tiên có sao trước, thiếu thì bốc random từ không sao
+        var topProducts = Model.SuggestedProducts
+        .OrderByDescending(p => p.PurchaseCount) // sắp theo lượt mua giảm dần
+        .ThenByDescending(p => p.Rating)         // nếu bằng lượt mua thì xét rating
+        .ThenBy(_ => Guid.NewGuid())             // random khi vẫn bằng nhau
         .Take(4)
         .ToList();
 
@@ -294,7 +291,8 @@
                     <div class="product-card card h-100 border-0 shadow-sm hover-scale">
                         <div class="position-relative">
                             <a asp-controller="Products" asp-action="DetailProducts" asp-route-id="@product.Id">
-                                <img src="@product.MainImage" class="card-img-top"
+                                <img src="@(string.IsNullOrEmpty(product.MainImage) ? "/images/no-image.png" : product.MainImage)"
+                                     class="card-img-top"
                                      style="height: 200px; object-fit: cover;"
                                      alt="@product.Name"
                                      data-bs-toggle="tooltip" title="@product.Name" />

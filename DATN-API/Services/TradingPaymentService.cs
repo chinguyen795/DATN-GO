@@ -8,12 +8,14 @@ namespace DATN_API.Services
     public class TradingPaymentService : ITradingPaymentService
     {
         private readonly ApplicationDbContext _db;
+        private readonly IEmailService _emailService;
 
-        public TradingPaymentService(ApplicationDbContext db)
+        public TradingPaymentService(ApplicationDbContext db, IEmailService emailService)
         {
             _db = db;
+            _emailService = emailService;
         }
-
+        
         public async Task<List<TradingPayment>> GetAllAsync()
         {
             return await _db.TradingPayments
@@ -30,10 +32,56 @@ namespace DATN_API.Services
 
         public async Task<TradingPayment> CreateAsync(TradingPayment payment)
         {
+            // 1) Lưu đơn mới vào DB
             _db.TradingPayments.Add(payment);
             await _db.SaveChangesAsync();
+
+            // 2) Lấy thông tin store (giả sử TradingPayment có StoreId)
+            var store = await _db.Stores
+                .AsNoTracking()
+                .FirstOrDefaultAsync(s => s.Id == payment.StoreId);
+
+            // 3) Lấy user nhận mail (ví dụ tất cả user có Id = 3)
+            var recipients = await _db.Users
+                .AsNoTracking()
+                .Where(u => u.Id == 3)
+                .ToListAsync();
+
+            if (store != null && recipients.Any())
+            {
+                var subject = "🏬 Yêu cầu rút tiền mới từ Store";
+                var costFormatted = (payment.Cost).ToString("N0");
+
+                var body = $@"
+<div style=""font-family:Arial,sans-serif;line-height:1.6"">
+  <h2>💸 Đơn yêu cầu rút tiền từ Store</h2>
+  <p><b>🏬 Tên cửa hàng:</b> {store.Name}</p>
+  <p><b>📱 Số điện thoại:</b> {store.Phone}</p>
+  <p><b>🏦 Ngân hàng:</b> {store.Bank}</p>
+  <p><b>💳 Số tài khoản:</b> {store.BankAccount}</p>
+  {(string.IsNullOrWhiteSpace(store.BankAccountOwner) ? "" : $"<p><b>🪪 Chủ tài khoản:</b> {store.BankAccountOwner}</p>")}
+  <p><b>💰 Số tiền yêu cầu:</b> {costFormatted} VND</p>
+  <hr/>
+  <p>✅ Vui lòng xử lý giao dịch này sớm nhất có thể.</p>
+</div>";
+
+                foreach (var rcpt in recipients)
+                {
+                    try
+                    {
+                        if (!string.IsNullOrWhiteSpace(rcpt.Email))
+                            await _emailService.SendEmailAsync(rcpt.Email, subject, body);
+                    }
+                    catch (Exception ex)
+                    {
+                        // TODO: log lỗi
+                    }
+                }
+            }
+
             return payment;
         }
+
 
         public async Task<TradingPayment> UpdateAsync(int id, TradingPayment payment)
         {

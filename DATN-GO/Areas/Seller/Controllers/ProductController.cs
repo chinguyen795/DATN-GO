@@ -128,8 +128,11 @@ namespace DATN_GO.Areas.Seller.Controllers
         public async Task<IActionResult> CreateProduct()
         {
             var userId = HttpContext.Session.GetString("Id");
+            int userIdInt = Convert.ToInt32(userId);
             if (string.IsNullOrEmpty(userId)) return RedirectToAction("Index", "Home");
 
+            // Lấy StoreId và StoreName của người dùng đang đăng nhập
+            var storeInfo = await _voucherService.GetStoreInfoByUserIdAsync(userIdInt);
             var user = await _userService.GetUserByIdAsync(int.Parse(userId));
             var categories = await _categoryService.GetAllCategoriesAsync();
             ViewBag.Categories = categories.Data.Select(c => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
@@ -138,6 +141,7 @@ namespace DATN_GO.Areas.Seller.Controllers
                 Text = c.Name
             }).ToList();
             ViewBag.UserName = user.FullName;
+            ViewBag.StoreName = storeInfo.StoreName;
             ViewBag.UserAvatar = string.IsNullOrEmpty(user.Avatar)
                 ? "/images/default-avatar.jpg"
                 : user.Avatar;
