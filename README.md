@@ -132,20 +132,20 @@ Tất cả các luồng đều được tích hợp API, cơ chế thanh toán, 
 
 ## 📸 Giao diện cơ bản
 
-![Trang chủ](Source/imagemd/Trang%20chủ.png)
-![Trang sản phẩm](Source/imagemd/Trang%20sản%20phẩm.png)
-![Chi tiết sản phẩm](Source/imagemd/Chi%20tiết%20sp.png)
-![Giỏ hàng](Source/imagemd/Giỏ%20hàng.png)
-![Đơn hàng user](Source/imagemd/Đơn%20hàng%20user.png)
-![Nguồn tiền user](Source/imagemd/Nguồn%20tiền%20user.png)
-![Đăng ký bán hàng](Source/imagemd/Đk%20Bán%20hàng.png)
+![Trang chủ](./imagemd/Trang%20chủ.png.png)
+![Trang sản phẩm](./imagemd/Trang%20sản%20phẩm.png)
+![Chi tiết sản phẩm](./imagemd/Chi%20tiết%20sp.png)
+![Giỏ hàng](./imagemd/Giỏ%20hàng.png)
+![Đơn hàng user](./imagemd/Đơn%20hàng%20user.png)
+![Nguồn tiền user](./imagemd/Nguồn%20tiền%20user.png)
+![Đăng ký bán hàng](./imagemd/Đk%20Bán%20hàng.png)
 
-![Trang chủ store](Source/imagemd/Trang%20chủ%20store.png)
-![Thêm sản phẩm](Source/imagemd/Thêm%20sản%20phẩm.png)
-![Đơn hàng store](Source/imagemd/Đơn%20hàng%20store.png)
-![Trang chủ admin](Source/imagemd/Trang%20chủ%20admin.png)
-![Quản lý store](Source/imagemd/Quản%20lý%20store.png)
-![Duyệt sản phẩm](Source/imagemd/Duyệt%20sản%20phẩm.png)
-![Voucher](Source/imagemd/Voucher.png)
+![Trang chủ store](./imagemd/Trang%20chủ%20store.png)
+![Thêm sản phẩm](./imagemd/Thêm%20sản%20phẩm.png)
+![Đơn hàng store](./imagemd/Đơn%20hàng%20store.png)
+![Trang chủ admin](./imagemd/Trang%20chủ%20admin.png)
+![Quản lý store](./imagemd/Quản%20lý%20store.png)
+![Duyệt sản phẩm](./imagemd/Duyệt%20sản%20phẩm.png)
+![Voucher](./imagemd/Voucher.png)
 
 
