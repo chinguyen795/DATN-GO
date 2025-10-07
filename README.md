@@ -132,7 +132,7 @@ Tất cả các luồng đều được tích hợp API, cơ chế thanh toán, 
 
 ## 📸 Giao diện cơ bản
 
-![Trang chủ](./imagemd/Trang%20chủ.png.png)
+![Trang chủ](./imagemd/Trang%20chủ.png)
 ![Trang sản phẩm](./imagemd/Trang%20sản%20phẩm.png)
 ![Chi tiết sản phẩm](./imagemd/Chi%20tiết%20sp.png)
 ![Giỏ hàng](./imagemd/Giỏ%20hàng.png)
