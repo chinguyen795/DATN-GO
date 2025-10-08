@@ -3,7 +3,7 @@
 - **DATN-API:** Xây dựng bằng ASP.NET Core Web API (.NET 8)
 - **DATN-GO:** Giao diện website (ASP.NET MVC)
 - **SQL Sever**
-**Trong appsetting:** cấu hình kết nối csdl --> Add migration --> Update database. Thêm các api cần thiết.
+- **Trong appsetting:** cấu hình kết nối csdl --> Add migration --> Update database. Thêm các api cần thiết.
 
 ## 🧩 Luồng hoạt động hệ thống
 
