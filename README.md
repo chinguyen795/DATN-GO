@@ -144,7 +144,7 @@ Tất cả các luồng đều được tích hợp API, cơ chế thanh toán, 
 ![Thêm sản phẩm](./imagemd/thêm%20sản%20phẩm.png)
 ![Đơn hàng store](./imagemd/đơn%20hàng%20store.png)
 ![Trang chủ admin](./imagemd/Trang%20chủ%20admin.png)
-![Quản lý store](./imagemd/Quản%20lý%20store.png)
+![Quản lý store](./imagemd/quản%20lý%20store.png)
 ![Duyệt sản phẩm](./imagemd/Duyệt%20sản%20phẩm.png)
 ![Voucher](./imagemd/Voucher.png)
 
